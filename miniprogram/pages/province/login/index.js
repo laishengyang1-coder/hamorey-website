@@ -25,10 +25,11 @@ Page({
 
     if (!res.ok) { wx.showToast({ title: res.message || '登录失败', icon: 'none' }); return; }
 
-    const role = res.data.role;
-    if (role === 'province') {
+    // 后端返回角色为大写：PROVINCE / STORE（与 DB、网页端一致）
+    const role = (res.data.role || '').toUpperCase();
+    if (role === 'PROVINCE') {
       wx.switchTab({ url: '/pages/province/index/index' });
-    } else if (role === 'store') {
+    } else if (role === 'STORE') {
       wx.switchTab({ url: '/pages/store/index/index' });
     } else {
       wx.showToast({ title: '未知角色类型', icon: 'none' });

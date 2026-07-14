@@ -45,11 +45,11 @@ Page({
       return;
     }
 
-    // 根据角色跳转
-    const role = res.data.role;
-    if (role === 'store') {
+    // 根据角色跳转（后端返回角色为大写：STORE / PROVINCE）
+    const role = (res.data.role || '').toUpperCase();
+    if (role === 'STORE') {
       wx.switchTab({ url: '/pages/store/index/index' });
-    } else if (role === 'province') {
+    } else if (role === 'PROVINCE') {
       wx.switchTab({ url: '/pages/province/index/index' });
     } else {
       wx.showToast({ title: '未知角色类型', icon: 'none' });

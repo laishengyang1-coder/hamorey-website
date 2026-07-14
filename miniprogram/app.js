@@ -40,7 +40,7 @@ App({
     userInfo: null,
     /** 是否已登录 */
     isLoggedIn: false,
-    /** 用户角色（store / province / admin） */
+    /** 用户角色（STORE / PROVINCE / HQ_ADMIN，大写，与后端一致） */
     role: '',
     /** 系统信息 */
     systemInfo: null,
@@ -52,18 +52,21 @@ App({
 
   /**
    * 检查登录状态，未登录则跳转登录页
-   * @param {string} role 期望的角色（store / province）
+   * @param {string} role 期望的角色（不区分大小写：STORE / PROVINCE）
    * @returns {boolean} 是否已登录且角色匹配
    */
   checkLogin(role) {
     if (!this.globalData.isLoggedIn) {
-      const loginPage = role === 'province'
+      // 未登录：跳转对应角色的登录页（不区分大小写）
+      const expected = (role || '').toUpperCase();
+      const loginPage = expected === 'PROVINCE'
         ? '/pages/province/login/index'
         : '/pages/store/login/index';
       wx.redirectTo({ url: loginPage });
       return false;
     }
-    if (role && this.globalData.role !== role) {
+    // 已登录但角色不匹配（角色在 globalData / 后端均为大写，比较时统一转大写避免大小写不一致）
+    if (role && this.globalData.role.toUpperCase() !== role.toUpperCase()) {
       wx.showToast({ title: '权限不足', icon: 'none' });
       return false;
     }

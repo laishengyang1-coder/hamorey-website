@@ -72,7 +72,7 @@ function isLoggedIn() {
 
 /**
  * 获取当前用户角色
- * @returns {string} 'store' | 'province' | ''
+ * @returns {string} 'STORE' | 'PROVINCE' | '' （大写，与后端一致）
  */
 function getRole() {
   return (app && app.globalData && app.globalData.role) || '';

@@ -27,12 +27,13 @@ Component({
      */
     updateTabs() {
       const app = getApp();
-      const role = (app && app.globalData && app.globalData.role) || '';
+      // 后端 / globalData 中角色为大写：STORE / PROVINCE（与 DB、网页端一致）
+      const role = ((app && app.globalData && app.globalData.role) || '').toUpperCase();
 
       let tabs = [];
       let visible = false;
 
-      if (role === 'store') {
+      if (role === 'STORE') {
         visible = true;
         tabs = [
           {
@@ -60,7 +61,7 @@ Component({
             iconSelected: '/images/tab-points-active.png'
           }
         ];
-      } else if (role === 'province') {
+      } else if (role === 'PROVINCE') {
         visible = true;
         tabs = [
           {
