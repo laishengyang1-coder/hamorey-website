@@ -1,0 +1,1 @@
+export { onRequestPut } from '../products';

@@ -12,7 +12,7 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "hamorey-db"
-database_id = "local"
+database_id = "5dd15190-727d-485c-ab2e-a4f263302273"
 
 # ============================================================
 # R2 存储桶 binding（施工照片 / 质保证书 PDF）
