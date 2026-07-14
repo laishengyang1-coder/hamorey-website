@@ -31,8 +31,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
-  font-size: 100rpx;
-}
 
 .detail-name {
   font-size: var(--font-xl);
