@@ -59,46 +59,19 @@
   padding: 50rpx 48rpx 20rpx;
 }
 
-.brand-logo-box {
-  display: flex;
-  align-items: center;
-  margin-bottom: 24rpx;
-}
-
-.brand-logo-icon {
-  width: 56rpx;
-  height: 56rpx;
-  background: #FFFFFF;
-  border-radius: 14rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16rpx;
-}
-
-.logo-shape {
-  width: 30rpx;
-  height: 30rpx;
-  background: var(--color-primary);
-  border-radius: 5rpx;
-  transform: rotate(45deg);
-}
-
-.brand-logo-text {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #FFFFFF;
-  letter-spacing: 6rpx;
+.brand-logo-img {
+  width: 520rpx;
+  height: 152rpx;
+  margin-bottom: 16rpx;
 }
 
 .brand-slogan {
-  font-size: 38rpx;
-  font-weight: 700;
+  font-size: 32rpx;
+  font-weight: 400;
   color: #FFFFFF;
-  letter-spacing: 4rpx;
-  margin-bottom: 12rpx;
-  font-style: italic;
-  text-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.5);
+  letter-spacing: 6rpx;
+  margin-bottom: 10rpx;
+  text-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.5);
 }
 
 .brand-subtitle {

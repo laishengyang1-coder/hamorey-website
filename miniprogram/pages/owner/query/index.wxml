@@ -11,13 +11,8 @@
   <view class="page-content">
     <!-- 顶部品牌区 -->
     <view class="brand-header">
-      <view class="brand-logo-box">
-        <view class="brand-logo-icon">
-          <view class="logo-shape"></view>
-        </view>
-        <text class="brand-logo-text">和膜</text>
-      </view>
-      <view class="brand-slogan">THIS IS FOR YOU</view>
+      <image class="brand-logo-img" src="/images/logo.jpg" mode="aspectFit" />
+      <view class="brand-slogan">和膜 不止于膜</view>
       <view class="brand-subtitle">HAMOREY 质保查询系统</view>
     </view>
 
