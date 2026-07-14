@@ -9,6 +9,7 @@ import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 
 interface Organization {
   id: string;
@@ -41,7 +42,6 @@ const COLUMNS: Column[] = [
   { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
   { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
   { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
-  { key: 'actions', title: '操作', dataIndex: 'id', render: (_v, record) => (<button onClick={(e) => { e.stopPropagation(); handleDelete(record as unknown as Organization); }} className="text-sm text-red-500 hover:text-red-700">删除</button>) },
 ];
 
 export default function StoreListPage() {
@@ -124,7 +124,7 @@ export default function StoreListPage() {
     }
   };
 
-  const handleDelete = (org: Organization) => { setDeleteTarget(org); };
+  const handleDeleteClick = (org: Organization) => { setDeleteTarget(org); };
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -152,7 +152,7 @@ export default function StoreListPage() {
       />
       <FilterBar fields={FILTER_FIELDS} onFilter={handleFilter} className="mb-4" />
       <DataTable
-        columns={COLUMNS}
+        columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (<button onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDeleteClick(record); }} className='text-sm text-red-500 hover:text-red-700'>删除</button>) }]}
         data={data as any}
         loading={loading}
         error={error}
@@ -223,7 +223,7 @@ export default function StoreListPage() {
 
       <ConfirmDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
         title="确认删除" description={`确定要删除「${deleteTarget?.name}」吗？此操作不可撤销。`}
-        onConfirm={confirmDelete} loading={deleting} confirmText="删除" confirmVariant="danger" />
+        onConfirm={confirmDelete} loading={deleting} confirmText="删除" variant="danger" />
     </div>
   );
 }
