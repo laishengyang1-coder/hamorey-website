@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS organizations (
     name        TEXT NOT NULL,
     province    TEXT,
     city        TEXT,
+    address     TEXT,
     contact_name TEXT,
     phone       TEXT,
     status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'disabled')),

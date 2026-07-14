@@ -18,6 +18,7 @@ interface Organization {
   type: string;
   province: string | null;
   city: string | null;
+  address: string | null;
   contact_name: string | null;
   phone: string | null;
   status: string;
@@ -39,6 +40,7 @@ const COLUMNS: Column[] = [
   { key: 'name', title: '名称', dataIndex: 'name' },
   { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-' },
   { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
+  { key: 'address', title: '详细地址', dataIndex: 'address', render: (v) => (v as string) || '-' },
   { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
   { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
   { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
@@ -54,7 +56,7 @@ export default function StoreListPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Organization | null>(null);
   const [form, setForm] = useState({
-    code: '', name: '', province: '', city: '', contact_name: '', phone: '', username: '', password: '',
+    code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '',
   });
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
@@ -84,7 +86,7 @@ export default function StoreListPage() {
 
   const openCreate = () => {
     setSelected(null);
-    setForm({ code: '', name: '', province: '', city: '', contact_name: '', phone: '', username: '', password: '' });
+    setForm({ code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '' });
     setDrawerOpen(true);
   };
 
@@ -92,7 +94,7 @@ export default function StoreListPage() {
     setSelected(org);
     setForm({
       code: org.code, name: org.name,
-      province: org.province || '', city: org.city || '',
+      province: org.province || '', city: org.city || '', address: org.address || '',
       contact_name: org.contact_name || '', phone: org.phone || '', username: '', password: '',
     });
     setDrawerOpen(true);
@@ -105,7 +107,7 @@ export default function StoreListPage() {
         await apiRequest(`/admin/organizations/${selected.id}`, {
           method: 'PUT',
           body: JSON.stringify({
-            name: form.name, province: form.province, city: form.city,
+            name: form.name, province: form.province, city: form.city, address: form.address,
             contact_name: form.contact_name, phone: form.phone,
           }),
         });
@@ -187,6 +189,11 @@ export default function StoreListPage() {
               <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
+            <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

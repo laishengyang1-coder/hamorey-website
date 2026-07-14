@@ -89,6 +89,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       name?: string;
       province?: string;
       city?: string;
+      address?: string;
       contact_name?: string;
       phone?: string;
     };
@@ -114,8 +115,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await execute(
       context.env.DB,
-      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, contact_name, phone, status, created_by, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
+      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
       id,
       body.code,
       body.type,
@@ -123,10 +124,35 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       body.name,
       body.province || null,
       body.city || null,
+      body.address || null,
       body.contact_name || null,
       body.phone || null,
       user?.userId || null,
     );
+
+    // 为新增门店自动创建官网公开资料（默认服务点、立即公开）
+    if (body.type === 'STORE') {
+      const existingProfile = await queryFirst(
+        context.env.DB,
+        `SELECT id FROM store_public_profiles WHERE organization_id = ?`,
+        id,
+      );
+      if (!existingProfile) {
+        const profileId = generateId();
+        await execute(
+          context.env.DB,
+          `INSERT INTO store_public_profiles (id, organization_id, public_name, auth_level, province, city, address, phone, is_public, sort_order, created_at, updated_at)
+           VALUES (?, ?, ?, 'Service_Point', ?, ?, ?, ?, 1, 0, datetime('now'), datetime('now'))`,
+          profileId,
+          id,
+          body.name,
+          body.province || null,
+          body.city || null,
+          body.address || null,
+          body.phone || null,
+        );
+      }
+    }
 
     await writeOperationLog(
       context.env.DB,
@@ -161,12 +187,13 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       name?: string;
       province?: string;
       city?: string;
+      address?: string;
       contact_name?: string;
       phone?: string;
       status?: string;
     };
 
-    const existing = await queryFirst(context.env.DB, `SELECT id FROM organizations WHERE id = ?`, orgId);
+    const existing = await queryFirst<{ id: string; type: string }>(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
     if (!existing) return error('组织不存在', 404);
 
     const updates: string[] = [];
@@ -175,6 +202,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.name !== undefined) { updates.push('name = ?'); params.push(body.name); }
     if (body.province !== undefined) { updates.push('province = ?'); params.push(body.province); }
     if (body.city !== undefined) { updates.push('city = ?'); params.push(body.city); }
+    if (body.address !== undefined) { updates.push('address = ?'); params.push(body.address); }
     if (body.contact_name !== undefined) { updates.push('contact_name = ?'); params.push(body.contact_name); }
     if (body.phone !== undefined) { updates.push('phone = ?'); params.push(body.phone); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
@@ -189,6 +217,52 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       `UPDATE organizations SET ${updates.join(', ')} WHERE id = ?`,
       ...params,
     );
+
+    // 同步更新门店的官网公开资料（只同步基础字段，不覆盖授权等级/营业时间等）
+    if (existing.type === 'STORE') {
+      const profile = await queryFirst<{ id: string }>(
+        context.env.DB,
+        `SELECT id FROM store_public_profiles WHERE organization_id = ?`,
+        orgId,
+      );
+      if (profile) {
+        const profileUpdates: string[] = [];
+        const profileParams: unknown[] = [];
+        if (body.name !== undefined) { profileUpdates.push('public_name = ?'); profileParams.push(body.name); }
+        if (body.province !== undefined) { profileUpdates.push('province = ?'); profileParams.push(body.province); }
+        if (body.city !== undefined) { profileUpdates.push('city = ?'); profileParams.push(body.city); }
+        if (body.address !== undefined) { profileUpdates.push('address = ?'); profileParams.push(body.address); }
+        if (body.phone !== undefined) { profileUpdates.push('phone = ?'); profileParams.push(body.phone); }
+        if (profileUpdates.length > 0) {
+          profileUpdates.push("updated_at = datetime('now')");
+          profileParams.push(profile.id);
+          await execute(
+            context.env.DB,
+            `UPDATE store_public_profiles SET ${profileUpdates.join(', ')} WHERE id = ?`,
+            ...profileParams,
+          );
+        }
+      } else {
+        // 若门店此前无公开资料，自动补一条
+        const orgName =
+          body.name ??
+          (await queryFirst<{ name: string }>(context.env.DB, `SELECT name FROM organizations WHERE id = ?`, orgId))?.name ??
+          '';
+        const profileId = generateId();
+        await execute(
+          context.env.DB,
+          `INSERT INTO store_public_profiles (id, organization_id, public_name, auth_level, province, city, address, phone, is_public, sort_order, created_at, updated_at)
+           VALUES (?, ?, ?, 'Service_Point', ?, ?, ?, ?, 1, 0, datetime('now'), datetime('now'))`,
+          profileId,
+          orgId,
+          orgName,
+          body.province ?? null,
+          body.city ?? null,
+          body.address ?? null,
+          body.phone ?? null,
+        );
+      }
+    }
 
     const user = getAuthUser(context.data);
     await writeOperationLog(

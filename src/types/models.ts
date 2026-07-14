@@ -34,6 +34,7 @@ export interface Organization {
   name: string;
   province: string | null;
   city: string | null;
+  address: string | null;
   contact_name: string | null;
   phone: string | null;
   status: OrgStatus;
