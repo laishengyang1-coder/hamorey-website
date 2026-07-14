@@ -33,9 +33,38 @@
       <view class="mini-label">待审核</view>
     </view>
     <view class="mini-stat">
+      <view class="mini-value text-accent">{{dashboard.todayRecords}}</view>
+      <view class="mini-label">今日新增</view>
+    </view>
+    <view class="mini-stat">
       <view class="mini-value">{{dashboard.frozenPoints}}</view>
       <view class="mini-label">冻结积分</view>
     </view>
+  </view>
+
+  <!-- 排行 -->
+  <view class="rank-section">
+    <view class="section-title">门店质保排行</view>
+    <view class="rank-card" wx:if="{{storeRanking.length > 0}}">
+      <view class="rank-item" wx:for="{{storeRanking}}" wx:key="name">
+        <view class="rank-index {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</view>
+        <view class="rank-name">{{item.name}}</view>
+        <view class="rank-count">{{item.count}}</view>
+      </view>
+    </view>
+    <view class="rank-empty" wx:else>下属门店暂无质保记录</view>
+  </view>
+
+  <view class="rank-section">
+    <view class="section-title">产品质保排行</view>
+    <view class="rank-card" wx:if="{{productRanking.length > 0}}">
+      <view class="rank-item" wx:for="{{productRanking}}" wx:key="name">
+        <view class="rank-index {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</view>
+        <view class="rank-name">{{item.name}}</view>
+        <view class="rank-count">{{item.count}}</view>
+      </view>
+    </view>
+    <view class="rank-empty" wx:else>暂无产品质保记录</view>
   </view>
 
   <!-- 快捷入口 -->

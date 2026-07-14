@@ -126,6 +126,79 @@
   color: var(--color-text);
 }
 
+/* 今日新增强调色 */
+.text-accent {
+  color: var(--color-accent) !important;
+}
+
+/* 排行榜 */
+.rank-section {
+  margin: 24rpx;
+}
+
+.rank-card {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 8rpx 0;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 28rpx;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-index {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rank-index.rank-top {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.rank-name {
+  flex: 1;
+  margin: 0 20rpx;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-count {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.rank-empty {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 40rpx 0;
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
 /* 退出按钮 */
 .logout-wrap {
   padding: 24rpx 48rpx 48rpx;
