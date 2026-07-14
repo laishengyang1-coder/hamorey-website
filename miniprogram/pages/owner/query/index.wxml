@@ -1,6 +1,6 @@
 <view class="page-container">
-  <!-- 上半屏背景图 -->
-  <image class="page-bg" src="/images/home-bg.jpg" mode="aspectFill" />
+  <!-- 全屏背景图：完整展示，不裁剪 -->
+  <image class="page-bg" src="/images/home-bg.jpg" mode="aspectFit" />
   <view class="page-bg-overlay"></view>
 
   <!-- 内容层 -->
