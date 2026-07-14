@@ -56,13 +56,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       username?: string; password?: string;
     };
     const errors: Array<{ field: string; message: string }> = [];
-    if (!body.code) errors.push({ field: 'code', message: '门店编码不能为空' });
     if (!body.name) errors.push({ field: 'name', message: '门店名称不能为空' });
     if (!body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
     if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '登录密码至少 8 位' });
     if (errors.length > 0) return validationError(errors);
 
-    const existing = await queryFirst(context.env.DB, `SELECT id FROM organizations WHERE code = ?`, body.code);
+    // 自动生成门店编码 MD-xxx
+    let code = body.code;
+    if (!code) {
+      const row = await queryFirst<{ max_code: string | null }>(
+        context.env.DB,
+        `SELECT MAX(code) AS max_code FROM organizations WHERE type = 'STORE'`,
+      );
+      const maxCode = row?.max_code || '';
+      const numPart = maxCode.replace('MD-', '');
+      const next = String(parseInt(numPart || '0', 10) + 1).padStart(3, '0');
+      code = `MD-${next}`;
+    }
+
+    const existing = await queryFirst(context.env.DB, `SELECT id FROM organizations WHERE code = ?`, code);
     if (existing) return error('门店编码已存在', 409);
 
     const existingUser = await queryFirst(context.env.DB, `SELECT id FROM users WHERE username = ?`, body.username);
@@ -76,7 +88,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       {
         sql: `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, created_by, created_at, updated_at)
               VALUES (?, ?, 'STORE', ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
-        params: [id, body.code, user.orgId, body.name, body.province || null, body.city || null,
+        params: [id, code, user.orgId, body.name, body.province || null, body.city || null,
           body.address || null, body.contact_name || null, body.phone || null, user.userId],
       },
       {

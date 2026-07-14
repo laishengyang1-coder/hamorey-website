@@ -61,7 +61,6 @@ Page({
 
   async handleSubmit() {
     const { form, isEdit, storeId } = this.data;
-    if (!form.code.trim()) { wx.showToast({ title: '请输入门店编码', icon: 'none' }); return; }
     if (!form.name.trim()) { wx.showToast({ title: '请输入门店名称', icon: 'none' }); return; }
     if (!isEdit && !form.username.trim()) { wx.showToast({ title: '请输入登录账号', icon: 'none' }); return; }
     if (!isEdit && form.password.length < 8) { wx.showToast({ title: '登录密码至少 8 位', icon: 'none' }); return; }
@@ -69,7 +68,6 @@ Page({
     this.setData({ submitting: true });
 
     const payload = {
-      code: form.code.trim(),
       name: form.name.trim(),
       province: form.province.trim() || undefined,
       city: form.city.trim() || undefined,

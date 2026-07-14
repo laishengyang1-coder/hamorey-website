@@ -9,15 +9,13 @@
       </view>
       <view class="section-body">
         <view class="form-group">
-          <view class="form-label"><text class="required">*</text>门店编码</view>
+          <view class="form-label">门店编码</view>
           <input
             class="form-input"
-            placeholder="请输入门店编码"
+            value="{{isEdit ? form.code : '（自动生成 MD-xxx）'}}"
+            placeholder="自动生成"
             placeholder-class="search-placeholder"
-            value="{{form.code}}"
-            bindinput="onInput"
-            data-field="code"
-            disabled="{{isEdit}}"
+            disabled="{{!isEdit}}"
           />
         </view>
         <view class="form-group">

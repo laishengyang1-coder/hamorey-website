@@ -187,10 +187,10 @@ export default function StoreListPage() {
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑门店' : '新增门店'}>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">编码 *</label>
-            <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })}
-              disabled={!!selected}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:bg-gray-50" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">编码</label>
+            <input value={form.code || '（自动生成）'}
+              disabled={true}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-gray-50 text-gray-400" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">名称 *</label>
@@ -248,7 +248,7 @@ export default function StoreListPage() {
           <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
-              disabled={saving || !form.code || !form.name || (!selected && (!form.username || form.password.length < 8))}
+              disabled={saving || !form.name || (!selected && (!form.username || form.password.length < 8))}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50"
             >
               {saving ? '保存中...' : selected ? '保存修改' : '创建门店'}

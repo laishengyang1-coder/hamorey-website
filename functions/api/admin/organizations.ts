@@ -98,7 +98,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // 校验
     const errors: Array<{ field: string; message: string }> = [];
-    if (!body.code) errors.push({ field: 'code', message: '组织编码不能为空' });
     if (!body.type || !['PROVINCE', 'STORE'].includes(body.type))
       errors.push({ field: 'type', message: '组织类型必须为 PROVINCE 或 STORE' });
     if (!body.name) errors.push({ field: 'name', message: '组织名称不能为空' });
@@ -106,11 +105,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '登录密码至少 8 位' });
     if (errors.length > 0) return validationError(errors);
 
+    // 自动生成编码（如未提供）
+    let code = body.code;
+    if (!code) {
+      const prefix = body.type === 'STORE' ? 'MD-' : '';
+      const digitLen = body.type === 'STORE' ? 3 : 3;
+      const row = await queryFirst<{ max_code: string | null }>(
+        context.env.DB,
+        `SELECT MAX(code) AS max_code FROM organizations WHERE type = ?`,
+        body.type,
+      );
+      const maxCode = row?.max_code || '';
+      const numPart = maxCode.replace(prefix, '');
+      const next = String(parseInt(numPart || '0', 10) + 1).padStart(digitLen, '0');
+      code = `${prefix}${next}`;
+    }
+
     // 检查编码唯一性
     const existing = await queryFirst(
       context.env.DB,
       `SELECT id FROM organizations WHERE code = ?`,
-      body.code,
+      code,
     );
     if (existing) return error('组织编码已存在', 409);
 
@@ -130,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, created_by, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
       id,
-      body.code,
+      code,
       body.type,
       body.parent_id || null,
       body.name,
