@@ -59,6 +59,8 @@ export function OrganizationForm({
         city: initial.city || '',
         contact_name: initial.contact_name || '',
         phone: initial.phone || '',
+        username: '',
+        password: '',
       });
     }
   }, [initial, type, parentId]);

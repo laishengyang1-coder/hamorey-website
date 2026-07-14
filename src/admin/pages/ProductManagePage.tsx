@@ -70,7 +70,7 @@ export default function ProductManagePage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">产品分类 *</label>
             <select value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
               <option value="">请选择分类</option>
-              {products.filter((p) => p.status === 'active').map((p) => <option key={p.id} value={p.id}>{p.name_cn}</option>)}
+              {products.map((p) => <option key={p.id} value={p.id}>{p.name_cn}</option>)}
             </select>
           </div>
           <div>
