@@ -11,7 +11,7 @@
   <view class="page-content">
     <!-- 顶部品牌区 -->
     <view class="brand-header">
-      <image class="brand-logo-img" src="/images/logo.jpg" mode="aspectFit" />
+      <image class="brand-logo-img" src="/images/logo.png" mode="aspectFit" />
       <view class="brand-slogan">和膜 不止于膜</view>
       <view class="brand-subtitle">HAMOREY 质保查询系统</view>
     </view>

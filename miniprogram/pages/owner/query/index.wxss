@@ -60,8 +60,8 @@
 }
 
 .brand-logo-img {
-  width: 520rpx;
-  height: 152rpx;
+  width: 360rpx;
+  height: 105rpx;
   margin-bottom: 16rpx;
 }
 
