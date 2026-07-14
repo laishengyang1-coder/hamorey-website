@@ -95,3 +95,4 @@ function RankingSection({ title, items }: { title: string; items: RankingItem[] 
       )}
     </div>
   );
+}
