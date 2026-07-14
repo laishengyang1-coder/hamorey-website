@@ -2,7 +2,7 @@
 // DashboardLayout — 后台通用布局（轻量专业风格）
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/cn';
 import { useAuth } from '../hooks/useAuth';
@@ -12,6 +12,7 @@ export interface MenuItem {
   label: string;
   path: string;
   badge?: number;
+  children?: MenuItem[];
 }
 
 interface DashboardLayoutProps {
@@ -25,10 +26,65 @@ export function DashboardLayout({ menuItems, role, title = '和膜 HAMOREY' }: D
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const currentPath = location.pathname;
-  const activeKey = menuItems.find((item) => currentPath.startsWith(item.path))?.key;
+
+  // 递归查找所有叶子项的 key→path 映射用于 active 判定
+  const leafMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const walk = (items: MenuItem[]) => {
+      for (const item of items) {
+        if (item.children?.length) walk(item.children);
+        else map.set(item.key, item.path);
+      }
+    };
+    walk(menuItems);
+    return map;
+  }, [menuItems]);
+
+  // 查找当前路径匹配的叶子 key
+  const activeKey = useMemo(() => {
+    let best: { key: string; len: number } | null = null;
+    for (const [key, path] of leafMap) {
+      if (currentPath.startsWith(path) && path.length > (best?.len ?? 0)) {
+        best = { key, len: path.length };
+      }
+    }
+    return best?.key ?? '';
+  }, [currentPath, leafMap]);
+
+  // 自动展开含 active 子项的分组
+  useEffect(() => {
+    const toExpand = new Set<string>();
+    const walk = (items: MenuItem[], parentKey?: string) => {
+      for (const item of items) {
+        if (item.children?.length) {
+          walk(item.children, item.key);
+        } else if (item.key === activeKey && parentKey) {
+          toExpand.add(parentKey);
+        }
+      }
+    };
+    walk(menuItems);
+    if (toExpand.size > 0) {
+      setExpandedGroups((prev) => {
+        const next = new Set(prev);
+        for (const k of toExpand) next.add(k);
+        return next;
+      });
+    }
+  }, [activeKey, menuItems]);
+
+  const toggleGroup = (key: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -57,27 +113,97 @@ export function DashboardLayout({ menuItems, role, title = '和膜 HAMOREY' }: D
 
         {/* 菜单 */}
         <nav className="flex-1 overflow-y-auto py-2 px-2.5">
-          {menuItems.map((item) => (
-            <Link
-              key={item.key}
-              to={item.path}
-              className={cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all mb-0.5',
-                activeKey === item.key
-                  ? 'bg-[#5C1A1A]/8 text-[#5C1A1A] font-medium'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
-              )}
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <span className="shrink-0 w-1 h-1 rounded-full" style={{ backgroundColor: activeKey === item.key ? '#5C1A1A' : 'transparent' }} />
-              {!sidebarCollapsed && (
-                <span className="flex-1 truncate">{item.label}</span>
-              )}
-              {item.badge !== undefined && item.badge > 0 && !sidebarCollapsed && (
-                <span className="rounded-full bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600">{item.badge}</span>
-              )}
-            </Link>
-          ))}
+          {menuItems.map((item) => {
+            const isParent = item.children && item.children.length > 0;
+            const isExpanded = expandedGroups.has(item.key);
+            const hasActiveChild = item.children?.some((child) =>
+              child.children
+                ? child.children.some((c) => leafMap.get(c.key) && currentPath.startsWith(leafMap.get(c.key)!))
+                : leafMap.get(child.key) && currentPath.startsWith(leafMap.get(child.key)!)
+            );
+
+            if (isParent) {
+              return (
+                <div key={item.key} className="mb-0.5">
+                  <button
+                    onClick={() => toggleGroup(item.key)}
+                    className={cn(
+                      'flex items-center gap-2.5 w-full rounded-lg px-3 py-2 text-sm transition-all text-left',
+                      hasActiveChild
+                        ? 'text-[#5C1A1A] font-medium'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+                    )}
+                    title={sidebarCollapsed ? item.label : undefined}
+                  >
+                    <span className={cn('shrink-0 w-1 h-1 rounded-full', hasActiveChild ? 'bg-[#5C1A1A]' : 'bg-transparent')} />
+                    {!sidebarCollapsed && (
+                      <>
+                        <span className="flex-1 truncate text-xs font-medium uppercase tracking-wider text-gray-400">
+                          {item.label}
+                        </span>
+                        <svg
+                          className={cn('h-3 w-3 transition-transform', isExpanded && 'rotate-90')}
+                          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                  {!sidebarCollapsed && isExpanded && (
+                    <div className="ml-3 mt-0.5 border-l border-gray-100">
+                      {item.children!.map((child) => {
+                        const childActive = leafMap.get(child.key) && currentPath.startsWith(leafMap.get(child.key)!);
+                        return (
+                          <Link
+                            key={child.key}
+                            to={child.path}
+                            className={cn(
+                              'flex items-center gap-2 py-1.5 pl-4 pr-2 text-sm transition-all rounded-r-md',
+                              childActive
+                                ? 'text-[#5C1A1A] font-medium bg-[#5C1A1A]/5'
+                                : 'text-gray-500 hover:text-gray-700',
+                            )}
+                          >
+                            <span className="truncate">{child.label}</span>
+                            {child.badge !== undefined && child.badge > 0 && (
+                              <span className="rounded-full bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600">
+                                {child.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // 叶子节点（无 children 的独立项）
+            const leafActive = leafMap.get(item.key) && currentPath.startsWith(leafMap.get(item.key)!);
+            return (
+              <Link
+                key={item.key}
+                to={item.path}
+                className={cn(
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all mb-0.5',
+                  leafActive
+                    ? 'bg-[#5C1A1A]/8 text-[#5C1A1A] font-medium'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+                )}
+                title={sidebarCollapsed ? item.label : undefined}
+              >
+                <span className={cn('shrink-0 w-1 h-1 rounded-full', leafActive ? 'bg-[#5C1A1A]' : 'bg-transparent')} />
+                {!sidebarCollapsed && (
+                  <span className="flex-1 truncate">{item.label}</span>
+                )}
+                {item.badge !== undefined && item.badge > 0 && !sidebarCollapsed && (
+                  <span className="rounded-full bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600">{item.badge}</span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* 用户信息 + 退出 */}
