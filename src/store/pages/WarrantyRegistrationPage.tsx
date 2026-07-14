@@ -2,7 +2,7 @@
 // WarrantyRegistrationPage — 门店质保登记（6步流程）
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest, uploadWarrantyPhoto } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
@@ -25,6 +25,49 @@ export default function WarrantyRegistrationPage() {
   const [success, setSuccess] = useState('');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoNames, setPhotoNames] = useState<string[]>([]);
+
+  // 质保码自动补全
+  const [codeQuery, setCodeQuery] = useState('');
+  const [codeOptions, setCodeOptions] = useState<Array<{ id: string; code: string; model_name: string; model_code: string }>>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // 点击外部关闭下拉
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const searchCodes = useCallback(async (value: string) => {
+    if (!value.trim()) { setCodeOptions([]); setDropdownOpen(false); return; }
+    try {
+      const res = await apiRequest<{ items: typeof codeOptions }>(`/store/warranty-codes?q=${encodeURIComponent(value)}&limit=10`);
+      setCodeOptions(res.items || []);
+      setDropdownOpen(true);
+    } catch {
+      setCodeOptions([]);
+    }
+  }, []);
+
+  const handleCodeInput = (value: string) => {
+    setCodeQuery(value);
+    updateField('warranty_code', value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => searchCodes(value), 200);
+  };
+
+  const selectCode = (item: typeof codeOptions[0]) => {
+    setCodeQuery(item.code);
+    updateField('warranty_code', item.code);
+    setDropdownOpen(false);
+    setCodeOptions([]);
+  };
 
   const [form, setForm] = useState({
     warranty_code: '',
@@ -84,7 +127,7 @@ export default function WarrantyRegistrationPage() {
         <p className="mt-2 text-gray-500">{success}</p>
         <div className="flex gap-3 mt-6">
           <button onClick={() => navigate('/store/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
-          <button onClick={() => { setSuccess(''); setStep(0); setPhotoNames([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
+          <button onClick={() => { setSuccess(''); setCodeQuery(''); setCodeOptions([]); setStep(0); setPhotoNames([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
             className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">继续登记</button>
         </div>
       </div>
@@ -98,12 +141,34 @@ export default function WarrantyRegistrationPage() {
         {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
         <div className="bg-white rounded-xl border border-gray-100 p-6 min-h-[300px]">
           {step === 0 && (
-            <div className="max-w-md">
+            <div className="max-w-md" ref={dropdownRef}>
               <label className="block text-sm font-medium text-gray-700 mb-2">质保码 *</label>
-              <input value={form.warranty_code} onChange={(e) => updateField('warranty_code', e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                placeholder="请输入质保码" />
-              <p className="mt-2 text-xs text-gray-400">输入门店库存中的有效质保码</p>
+              <div className="relative">
+                <input
+                  value={codeQuery}
+                  onChange={(e) => handleCodeInput(e.target.value)}
+                  onFocus={() => { if (codeOptions.length > 0) setDropdownOpen(true); }}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  placeholder="输入字母或数字搜索质保码"
+                  autoComplete="off"
+                />
+                {dropdownOpen && codeOptions.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white rounded-lg border border-gray-100 shadow-lg max-h-56 overflow-y-auto">
+                    {codeOptions.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => selectCode(item)}
+                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#5C1A1A]/5 transition-colors border-b border-gray-50 last:border-0"
+                      >
+                        <span className="font-medium text-gray-900">{item.code}</span>
+                        <span className="ml-2 text-xs text-gray-400">{item.model_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-gray-400">输入质保码后自动匹配门店库存中的可用质保码</p>
             </div>
           )}
 

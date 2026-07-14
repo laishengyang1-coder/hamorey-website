@@ -1,9 +1,9 @@
 // ============================================================
-// GET /api/store/warranty-codes — 门店质保码库存
+// GET /api/store/warranty-codes — 门店搜索可用质保码（自动补全）
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryAll, queryFirst, parsePagination , getAuthUser} from '../_lib';
+import { queryAll, getAuthUser } from '../_lib';
 import { ok, error } from '../_middleware';
 
 interface Env {
@@ -12,33 +12,37 @@ interface Env {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
-    const url = new URL(context.request.url);
     const user = getAuthUser(context.data);
-    const status = url.searchParams.get('status') || '';
-    const keyword = url.searchParams.get('keyword') || '';
-    const { page, pageSize, offset } = parsePagination(url);
+    if (!user) return error('未登录', 401);
 
-    const conditions: string[] = ['wc.owner_org_id = ?'];
-    const params: unknown[] = [user?.orgId];
+    const url = new URL(context.request.url);
+    const q = (url.searchParams.get('q') || '').trim();
+    const limit = Math.min(20, Math.max(1, Number(url.searchParams.get('limit') || 10)));
 
-    if (status) { conditions.push('wc.status = ?'); params.push(status); }
-    if (keyword) { conditions.push('wc.code LIKE ?'); params.push(`%${keyword}%`); }
+    const conditions = ['wc.owner_org_id = ?', "wc.status IN ('active', 'available')"];
+    const params: unknown[] = [user.orgId];
 
-    const where = `WHERE ${conditions.join(' AND ')}`;
+    if (q) {
+      conditions.push('wc.code LIKE ?');
+      params.push(`%${q}%`);
+    }
 
-    const [items, totalRow] = await Promise.all([
-      queryAll(context.env.DB,
-        `SELECT wc.*, pm.model_code, pm.display_name AS model_name
-         FROM warranty_codes wc JOIN product_models pm ON wc.product_model_id = pm.id
-         ${where} ORDER BY wc.created_at DESC LIMIT ? OFFSET ?`,
-        ...params, pageSize, offset,
-      ),
-      queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${where}`, ...params),
-    ]);
+    const items = await queryAll(
+      context.env.DB,
+      `SELECT wc.id, wc.code, wc.status, wc.batch_no,
+              pm.display_name AS model_name, pm.model_code
+       FROM warranty_codes wc
+       JOIN product_models pm ON wc.product_model_id = pm.id
+       WHERE ${conditions.join(' AND ')}
+       ORDER BY wc.code
+       LIMIT ?`,
+      ...params,
+      limit,
+    );
 
-    return ok({ items, total: totalRow?.cnt ?? 0, page, pageSize });
+    return ok({ items, total: items.length });
   } catch (err) {
-    console.error('[store/warranty-codes]', err);
-    return error('获取质保码库存失败', 500);
+    console.error('[store/warranty-codes GET]', err);
+    return error('查询质保码失败', 500);
   }
 };
