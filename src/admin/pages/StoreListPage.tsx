@@ -219,7 +219,7 @@ export default function StoreListPage() {
           <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
-              disabled={saving || !form.code || !form.name}
+              disabled={saving || !form.code || !form.name || (!selected && (!form.username || !form.password))}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50"
             >
               {saving ? '保存中...' : selected ? '保存修改' : '创建门店'}

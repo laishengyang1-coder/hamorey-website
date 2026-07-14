@@ -6,7 +6,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies } from '../_lib';
+import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies, sha256 } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -92,6 +92,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       address?: string;
       contact_name?: string;
       phone?: string;
+      username?: string;
+      password?: string;
     };
 
     // 校验
@@ -100,6 +102,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.type || !['PROVINCE', 'STORE'].includes(body.type))
       errors.push({ field: 'type', message: '组织类型必须为 PROVINCE 或 STORE' });
     if (!body.name) errors.push({ field: 'name', message: '组织名称不能为空' });
+    if (!body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
+    if (!body.password) errors.push({ field: 'password', message: '登录密码不能为空' });
     if (errors.length > 0) return validationError(errors);
 
     // 检查编码唯一性
@@ -109,6 +113,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       body.code,
     );
     if (existing) return error('组织编码已存在', 409);
+
+    // 检查登录账号唯一性（前置校验，避免创建组织后账号冲突产生孤儿组织）
+    const existingUser = await queryFirst(
+      context.env.DB,
+      `SELECT id FROM users WHERE username = ?`,
+      body.username,
+    );
+    if (existingUser) return error('登录账号已存在', 409);
 
     const id = generateId();
     const user = getAuthUser(context.data);
@@ -128,6 +140,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       body.contact_name || null,
       body.phone || null,
       user?.userId || null,
+    );
+
+    // 为新增组织创建登录账号（省代 → PROVINCE，门店 → STORE）
+    const accountId = generateId();
+    const passwordHash = await sha256(body.password as string);
+    await execute(
+      context.env.DB,
+      `INSERT INTO users (id, organization_id, username, password_hash, role, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+      accountId,
+      id,
+      body.username,
+      passwordHash,
+      body.type,
     );
 
     // 为新增门店自动创建官网公开资料（默认服务点、立即公开）
