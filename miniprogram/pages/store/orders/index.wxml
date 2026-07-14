@@ -18,7 +18,7 @@
 
   <!-- 空 -->
   <view wx:elif="{{!loading && orders.length === 0}}" class="empty-state">
-    <view class="empty-state-icon">📦</view>
+    <view class="empty-state-icon"></view>
     <view class="empty-state-text">暂无兑换记录</view>
   </view>
 

@@ -258,10 +258,24 @@ picker, form, label {
 }
 
 .empty-state-icon {
-  width: 160rpx;
-  height: 160rpx;
+  width: 140rpx;
+  height: 140rpx;
   margin-bottom: 32rpx;
-  opacity: 0.4;
+  border-radius: var(--radius-lg);
+  background: var(--color-border-light);
+  position: relative;
+}
+
+.empty-state-icon::after {
+  content: '';
+  position: absolute;
+  width: 44rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: var(--color-text-light);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .empty-state-text {

@@ -13,7 +13,7 @@
 
   <!-- 空 -->
   <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-state">
-    <view class="empty-state-icon">🎁</view>
+    <view class="empty-state-icon"></view>
     <view class="empty-state-text">暂无兑换商品</view>
   </view>
 
@@ -32,7 +32,7 @@
         mode="aspectFill"
         class="reward-image"
       />
-      <view wx:else class="reward-image-placeholder">🎁</view>
+      <view wx:else class="reward-image-placeholder"></view>
       <view class="reward-info">
         <view class="reward-name text-ellipsis">{{item.name || '--'}}</view>
         <view class="reward-points">{{item.points_required || 0}} 积分</view>

@@ -19,8 +19,14 @@
 
   <!-- 快捷入口 -->
   <view class="quick-row">
-    <view class="quick-btn" bindtap="goRewards">🎁 积分商城</view>
-    <view class="quick-btn" bindtap="goOrders">📦 兑换记录</view>
+    <view class="quick-btn" bindtap="goRewards">
+      <image class="quick-btn-icon" src="/images/icon-gift.png" mode="aspectFit" />
+      <text class="quick-btn-text">积分商城</text>
+    </view>
+    <view class="quick-btn" bindtap="goOrders">
+      <image class="quick-btn-icon" src="/images/icon-box.png" mode="aspectFit" />
+      <text class="quick-btn-text">兑换记录</text>
+    </view>
   </view>
 
   <!-- 积分流水 -->

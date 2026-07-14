@@ -32,6 +32,20 @@
   align-items: center;
   justify-content: center;
   background: var(--color-bg-card);
+  position: relative;
+}
+
+.reward-image-placeholder::after {
+  content: '';
+  position: absolute;
+  width: 40rpx;
+  height: 5rpx;
+  border-radius: 3rpx;
+  background: var(--color-text-light);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
   font-size: 64rpx;
 }
 

@@ -1,6 +1,7 @@
 <view class="page-container">
-  <!-- 门店信息 -->
+  <!-- 门店头部 -->
   <view class="store-header">
+    <view class="brand-line">和膜 HAMOREY</view>
     <view class="store-name">{{storeName}}</view>
     <view class="store-meta">{{storeCity || ''}}</view>
   </view>
@@ -26,34 +27,34 @@
     <view class="section-title mb-24">快捷操作</view>
     <view class="action-grid">
       <view class="action-item" bindtap="goRegister">
-        <view class="action-icon">📝</view>
+        <image class="action-icon" src="/images/icon-register.png" mode="aspectFit" />
         <view class="action-text">登记质保</view>
       </view>
       <view class="action-item" bindtap="goRecords">
-        <view class="action-icon">📋</view>
+        <image class="action-icon" src="/images/tab-record-active.png" mode="aspectFit" />
         <view class="action-text">质保记录</view>
       </view>
       <view class="action-item" bindtap="goCodes">
-        <view class="action-icon">🎫</view>
+        <image class="action-icon" src="/images/tab-code-active.png" mode="aspectFit" />
         <view class="action-text">质保码</view>
       </view>
       <view class="action-item" bindtap="goPoints">
-        <view class="action-icon">💰</view>
+        <image class="action-icon" src="/images/tab-points-active.png" mode="aspectFit" />
         <view class="action-text">积分</view>
       </view>
       <view class="action-item" bindtap="goRewards">
-        <view class="action-icon">🎁</view>
+        <image class="action-icon" src="/images/icon-gift.png" mode="aspectFit" />
         <view class="action-text">积分商城</view>
       </view>
       <view class="action-item" bindtap="goOrders">
-        <view class="action-icon">📦</view>
+        <image class="action-icon" src="/images/icon-box.png" mode="aspectFit" />
         <view class="action-text">兑换记录</view>
       </view>
     </view>
   </view>
 
   <!-- 退出登录 -->
-  <view class="logout-btn" bindtap="handleLogout">
-    <text>退出登录</text>
+  <view class="logout-wrap">
+    <view class="logout-btn" bindtap="handleLogout">退出登录</view>
   </view>
 </view>

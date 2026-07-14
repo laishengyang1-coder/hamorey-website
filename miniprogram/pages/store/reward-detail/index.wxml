@@ -17,7 +17,7 @@
       mode="aspectFill"
       class="detail-image"
     />
-    <view wx:else class="detail-image-placeholder">🎁</view>
+    <view wx:else class="detail-image-placeholder"></view>
 
     <!-- 商品信息 -->
     <view class="section">

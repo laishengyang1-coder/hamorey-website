@@ -62,13 +62,25 @@
 
 .quick-btn {
   flex: 1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 24rpx;
   background: var(--color-bg-white);
   border-radius: var(--radius-md);
-  font-size: var(--font-sm);
   color: var(--color-text);
   box-shadow: var(--shadow-sm);
+}
+
+.quick-btn-icon {
+  width: 44rpx;
+  height: 44rpx;
+  margin-bottom: 10rpx;
+}
+
+.quick-btn-text {
+  font-size: var(--font-sm);
+  color: var(--color-text);
 }
 
 /* 流水 */
