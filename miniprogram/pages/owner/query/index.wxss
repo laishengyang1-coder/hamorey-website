@@ -7,8 +7,8 @@
   overflow: hidden;
 }
 
-/* 全屏背景图：完整展示，不裁剪 */
-.page-bg {
+/* 全屏背景轮播：铺满整个屏幕，无黑边 */
+.page-bg-swiper {
   position: absolute;
   top: 0;
   left: 0;
@@ -16,6 +16,13 @@
   height: 100vh;
   z-index: 0;
   background: #000000;
+}
+
+.page-bg-swiper .page-bg {
+  width: 100%;
+  height: 100%;
+  /* aspectFill 会等比缩放并裁剪溢出部分，保证不留黑边 */
+  /* 此组合写真壁纸比例与竖屏手机接近，裁切幅度小 */
 }
 
 .page-bg-overlay {

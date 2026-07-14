@@ -1,6 +1,10 @@
 <view class="page-container">
-  <!-- 全屏背景图：完整展示，不裁剪 -->
-  <image class="page-bg" src="/images/home-bg.jpg" mode="aspectFit" />
+  <!-- 全屏背景图轮播：铺满屏幕，自动切换 -->
+  <swiper class="page-bg-swiper" indicator-dots="{{true}}" autoplay="{{true}}" circular="{{true}}" interval="{{5000}}" duration="{{800}}" indicator-color="rgba(255,255,255,0.3)" indicator-active-color="#FFFFFF">
+    <swiper-item wx:for="{{bgList}}" wx:key="*this">
+      <image class="page-bg" src="{{item}}" mode="aspectFill" />
+    </swiper-item>
+  </swiper>
   <view class="page-bg-overlay"></view>
 
   <!-- 内容层 -->

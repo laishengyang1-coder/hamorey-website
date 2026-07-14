@@ -5,7 +5,13 @@ const api = require('../../../utils/api');
 
 Page({
   data: {
-    keyword: ''
+    keyword: '',
+    bgList: [
+      '/images/home-bg.jpg',
+      '/images/home-bg-1.jpg',
+      '/images/home-bg-2.jpg',
+      '/images/home-bg-3.jpg'
+    ]
   },
 
   /** 自动识别查询类型 */
