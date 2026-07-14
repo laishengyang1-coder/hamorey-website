@@ -8,11 +8,19 @@ interface Env {
 }
 
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
-  // 尝试从静态资源服务请求
+  const url = new URL(request.url);
   const response = await env.ASSETS.fetch(request);
+
   if (response.status === 404) {
-    // SPA 回退：未知路由返回 index.html，由 React Router 处理
+    const isStaticFile = url.pathname.startsWith('/assets/') || /\/[^/]+\.[^/]+$/.test(url.pathname);
+
+    // API 和静态文件缺失时必须保留真实 404，不能返回 HTML。
+    if (url.pathname.startsWith('/api/') || isStaticFile) {
+      return response;
+    }
+
     return env.ASSETS.fetch(new URL('/index.html', request.url));
   }
+
   return response;
 };

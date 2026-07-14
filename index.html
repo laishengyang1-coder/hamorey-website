@@ -18,6 +18,29 @@
   </head>
   <body>
     <div id="root"></div>
+    <div
+      id="boot-fallback"
+      hidden
+      role="alert"
+      style="position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:#F6F1EA;color:#211B18;padding:24px;font-family:system-ui,sans-serif;text-align:center"
+    >
+      <div style="width:100%;max-width:440px">
+        <div style="width:52px;height:52px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#5C1A1A;color:#fff;font-size:22px;font-weight:700">和</div>
+        <h1 style="margin:0;font-size:24px">页面暂时未能加载</h1>
+        <p style="margin:12px 0 24px;color:#746A63;line-height:1.7">请重新加载页面以获取最新版本。</p>
+        <button type="button" onclick="window.location.reload()" style="border:0;border-radius:8px;background:#5C1A1A;color:#fff;padding:10px 20px;cursor:pointer;font-size:14px">重新加载</button>
+      </div>
+    </div>
+    <script>
+      window.setTimeout(function () {
+        var root = document.getElementById('root');
+        var fallback = document.getElementById('boot-fallback');
+        if (fallback && (!root || root.childElementCount === 0)) {
+          fallback.hidden = false;
+          fallback.style.display = 'flex';
+        }
+      }, 4000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

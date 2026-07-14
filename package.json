@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev:full": "wrangler pages dev . --port 8788",
-    "build": "tsc -p tsconfig.functions.json --noEmit && tsc -b && vite build && cp dist/index.html dist/200.html",
+    "build": "tsc -p tsconfig.functions.json --noEmit && tsc -b && vite build && node scripts/check-spa-build.mjs",
     "preview": "vite preview",
     "db:init": "wrangler d1 execute hamorey-db --local --file=./schema.sql",
     "db:migrate": "wrangler d1 execute hamorey-db --local --file=./migrations/phase2.sql",
@@ -17,7 +17,8 @@
     "db:seed:remote": "wrangler d1 execute hamorey-db --file=./seed.sql",
     "deploy": "npm run build && wrangler pages deploy dist",
     "typecheck": "tsc --noEmit",
-    "test:contracts": "node scripts/check-api-contracts.mjs"
+    "test:contracts": "node scripts/check-api-contracts.mjs",
+    "test:spa-build": "node scripts/check-spa-build.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.1",
