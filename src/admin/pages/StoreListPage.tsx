@@ -128,6 +128,7 @@ export default function StoreListPage() {
           body: JSON.stringify({
             name: form.name, province: form.province, city: form.city, address: form.address,
             contact_name: form.contact_name, phone: form.phone,
+            parent_id: form.parent_id || null,
           }),
         });
       } else {
@@ -137,6 +138,7 @@ export default function StoreListPage() {
         });
       }
       setDrawerOpen(false);
+      alert(selected ? '门店已更新' : '门店已创建');
       fetchData(page, filters);
     } catch (err) {
       alert(err instanceof Error ? err.message : '保存失败');

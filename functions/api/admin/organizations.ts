@@ -233,6 +233,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       contact_name?: string;
       phone?: string;
       status?: string;
+      parent_id?: string | null;
     };
 
     const existing = await queryFirst<{ id: string; type: string }>(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
@@ -247,6 +248,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.address !== undefined) { updates.push('address = ?'); params.push(body.address); }
     if (body.contact_name !== undefined) { updates.push('contact_name = ?'); params.push(body.contact_name); }
     if (body.phone !== undefined) { updates.push('phone = ?'); params.push(body.phone); }
+    if (body.parent_id !== undefined) { updates.push('parent_id = ?'); params.push(body.parent_id); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
 
     if (updates.length === 0) return error('没有需要更新的字段', 400);
