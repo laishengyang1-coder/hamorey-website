@@ -28,7 +28,7 @@ const REQUEST_TIMEOUT = 30000;
 
 const TOKEN_KEY = 'hamorey_auth_token';
 
-function getToken(): string | null {
+export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY);
   } catch {

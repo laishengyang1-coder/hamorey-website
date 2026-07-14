@@ -4,10 +4,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getToken } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+
+function photoUrl(fileKey: string, token: string): string {
+  return `/api/public/photos/${encodeURIComponent(fileKey)}?token=${encodeURIComponent(token)}`;
+}
 
 interface WarrantyPhoto { id: string; file_key: string; sort_order: number; }
 interface AuditLog { id: string; action: string; from_status: string; to_status: string; note: string | null; operator_name: string; created_at: string; }
@@ -73,6 +77,7 @@ export default function ReviewDetailPage() {
   if (!detail) return <div className="p-12 text-center text-gray-400">记录不存在</div>;
 
   const { record, photos, auditLogs } = detail;
+  const token = getToken() || '';
 
   const Field = ({ label, value }: { label: string; value: string | null | number }) => (
     <div><span className="text-xs text-gray-500">{label}</span><p className="text-sm text-gray-900 mt-0.5">{value ?? '-'}</p></div>
@@ -124,9 +129,11 @@ export default function ReviewDetailPage() {
               <h3 className="text-sm font-semibold text-gray-900 mb-3">施工照片 ({photos.length})</h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {photos.map((p) => (
-                  <div key={p.id} className="aspect-square rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                    照片 {p.sort_order}
-                  </div>
+                  <a key={p.id} href={photoUrl(p.file_key, token)} target="_blank" rel="noreferrer"
+                    className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
+                    <img src={photoUrl(p.file_key, token)} alt={`施工照片 ${p.sort_order}`}
+                      className="w-full h-full object-cover" />
+                  </a>
                 ))}
               </div>
             </div>
