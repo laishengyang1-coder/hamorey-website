@@ -67,17 +67,10 @@ const brandRouter = createBrowserRouter([
 const adminRouter = createBrowserRouter([
   {
     path: '/admin',
-    element: (
-      <Suspense fallback={<LoadingScreen />}>
-        <AdminApp />
-      </Suspense>
-    ),
+    element: <ErrorBoundary label="总部后台"><Suspense fallback={<LoadingScreen />}><AdminApp /></Suspense></ErrorBoundary>,
     children: [
-      { path: '*', element: (
-        <Suspense fallback={<LoadingScreen />}>
-          <AdminApp />
-        </Suspense>
-      ) },
+      { path: 'login', element: <Suspense fallback={<LoadingScreen />}><AdminApp /></Suspense> },
+      { path: '*', element: <Suspense fallback={<LoadingScreen />}><AdminApp /></Suspense> },
     ],
   },
 ])
@@ -85,17 +78,9 @@ const adminRouter = createBrowserRouter([
 const provinceRouter = createBrowserRouter([
   {
     path: '/province',
-    element: (
-      <Suspense fallback={<LoadingScreen />}>
-        <ProvinceApp />
-      </Suspense>
-    ),
+    element: <ErrorBoundary label="省代后台"><Suspense fallback={<LoadingScreen />}><ProvinceApp /></Suspense></ErrorBoundary>,
     children: [
-      { path: '*', element: (
-        <Suspense fallback={<LoadingScreen />}>
-          <ProvinceApp />
-        </Suspense>
-      ) },
+      { path: '*', element: <Suspense fallback={<LoadingScreen />}><ProvinceApp /></Suspense> },
     ],
   },
 ])
@@ -103,20 +88,45 @@ const provinceRouter = createBrowserRouter([
 const storeRouter = createBrowserRouter([
   {
     path: '/store',
-    element: (
-      <Suspense fallback={<LoadingScreen />}>
-        <StoreApp />
-      </Suspense>
-    ),
+    element: <ErrorBoundary label="门店后台"><Suspense fallback={<LoadingScreen />}><StoreApp /></Suspense></ErrorBoundary>,
     children: [
-      { path: '*', element: (
-        <Suspense fallback={<LoadingScreen />}>
-          <StoreApp />
-        </Suspense>
-      ) },
+      { path: '*', element: <Suspense fallback={<LoadingScreen />}><StoreApp /></Suspense> },
     ],
   },
 ])
+
+// 错误边界组件 — 显示具体错误信息
+function ErrorBoundary({ children, label }: { children: React.ReactNode; label: string }) {
+  return (
+    <React.Suspense fallback={<LoadingScreen />}>
+      <ErrorBoundaryInner label={label}>{children}</ErrorBoundaryInner>
+    </React.Suspense>
+  )
+}
+
+class ErrorBoundaryInner extends React.Component<{ children: React.ReactNode; label: string }, { error: Error | null }> {
+  constructor(props: { children: React.ReactNode; label: string }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div className="max-w-md text-center">
+            <h1 className="text-lg font-bold text-red-600 mb-2">{this.props.label} 加载失败</h1>
+            <p className="text-sm text-gray-500 mb-4 break-all">{this.state.error.message}</p>
+            <pre className="text-xs text-left text-gray-400 bg-gray-100 rounded-lg p-4 overflow-auto max-h-60">{this.state.error.stack?.slice(0, 500)}</pre>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 /**
  * 根据 URL 路径决定渲染哪个 SPA
