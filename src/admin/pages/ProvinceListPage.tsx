@@ -10,7 +10,6 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 
 interface Organization {
   id: string;
