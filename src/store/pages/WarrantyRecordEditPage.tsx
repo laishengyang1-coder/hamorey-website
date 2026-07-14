@@ -4,9 +4,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getToken } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { StatusBadge } from '../../shared/components/StatusBadge';
+
+function photoUrl(fileKey: string, token: string): string {
+  return `/api/public/photos/${encodeURIComponent(fileKey)}?token=${encodeURIComponent(token)}`;
+}
+
+interface WarrantyPhoto { id: string; file_key: string; sort_order: number; }
 
 interface Detail {
   record: {
@@ -16,6 +22,7 @@ interface Detail {
     installation_date: string; status: string; current_reject_reason: string | null;
     model_name: string;
   };
+  photos: WarrantyPhoto[];
 }
 
 export default function WarrantyRecordEditPage() {
@@ -63,7 +70,8 @@ export default function WarrantyRecordEditPage() {
   if (error && !detail) return <div className="p-12 text-center text-red-500">{error}</div>;
   if (!detail) return <div className="p-12 text-center text-gray-400">记录不存在</div>;
 
-  const { record } = detail;
+  const { record, photos } = detail;
+  const token = getToken() || ''; 
   const isRejected = record.status === 'rejected';
 
   return (
@@ -74,6 +82,21 @@ export default function WarrantyRecordEditPage() {
         <div className="mb-6 rounded-lg bg-red-50 border border-red-100 p-4">
           <p className="text-sm font-medium text-red-700">驳回原因</p>
           <p className="mt-1 text-sm text-red-600">{record.current_reject_reason}</p>
+        </div>
+      )}
+
+      {photos && photos.length > 0 && (
+        <div className="mb-6 bg-white rounded-xl border border-gray-100 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">施工照片 ({photos.length})</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {photos.map((p) => (
+              <a key={p.id} href={photoUrl(p.file_key, token)} target="_blank" rel="noreferrer"
+                className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
+                <img src={photoUrl(p.file_key, token)} alt={`施工照片 ${p.sort_order}`}
+                  className="w-full h-full object-cover" />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
