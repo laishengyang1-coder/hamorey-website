@@ -19,7 +19,7 @@ export const siteConfig = {
   /** 站点 URL */
   siteUrl: 'https://hemoppf.com',
   /** ICP 备案号（占位） */
-  icpNumber: '粤ICP备XXXXXXXX号',
+  icpNumber: '',
   /** 联系方式 */
   contact: {
     phone: '',

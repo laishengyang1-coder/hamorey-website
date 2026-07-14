@@ -87,7 +87,7 @@ export function Footer() {
             © {new Date().getFullYear()} {siteConfig.brandName} {siteConfig.brandNameEn}. All rights reserved.
           </p>
           <p className="text-xs text-content-muted">
-            {siteConfig.icpNumber}
+            {siteConfig.icpNumber && <span>{siteConfig.icpNumber}</span>}
           </p>
         </div>
       </Container>
