@@ -46,9 +46,9 @@ export default function WarrantyCodeImportPage() {
     setError(null);
     try {
       const importRows = rows.map((r) => ({
-        code: String(r['编码'] || r['code'] || ''),
+        code: String(r['质保编码'] || r['编码'] || r['code'] || ''),
         batch_no: String(r['批次号'] || r['batch_no'] || r['批次'] || ''),
-        model_code: String(r['型号编码'] || r['model_code'] || ''),
+        model_code: String(r['产品型号'] || r['型号编码'] || r['model_code'] || ''),
         product_name: String(r['产品名称'] || r['product_name'] || ''),
       }));
       const result = await apiRequest<CheckResult>('/admin/warranty-codes/import', {
@@ -69,9 +69,9 @@ export default function WarrantyCodeImportPage() {
     setError(null);
     try {
       const importRows = rows.map((r) => ({
-        code: String(r['编码'] || r['code'] || ''),
-        batch_no: String(r['批次号'] || r['batch_no'] || ''),
-        model_code: String(r['型号编码'] || r['model_code'] || ''),
+        code: String(r['质保编码'] || r['编码'] || r['code'] || ''),
+        batch_no: String(r['批次号'] || r['batch_no'] || r['批次'] || ''),
+        model_code: String(r['产品型号'] || r['型号编码'] || r['model_code'] || ''),
         product_name: String(r['产品名称'] || r['product_name'] || ''),
       }));
       const result = await apiRequest<{ batchId: string; total: number }>('/admin/warranty-codes/import', {
