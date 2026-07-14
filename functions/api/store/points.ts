@@ -29,7 +29,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return ok({
       available: points.available,
       frozen: points.frozen,
-      items: ledger,
+      ledger: ledger,
       total: totalRow[0]?.cnt ?? 0,
       page,
       pageSize,
