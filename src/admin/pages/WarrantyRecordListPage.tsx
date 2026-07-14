@@ -3,12 +3,18 @@
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getToken } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
+
+function photoUrl(fileKey: string, token: string): string {
+  return `/api/public/photos/${fileKey}?token=${encodeURIComponent(token)}`;
+}
+
+interface PhotoItem { id: string; file_key: string; sort_order: number; }
 
 interface WarrantyRecord {
   id: string; warranty_code: string; certificate_no: string | null;
@@ -48,6 +54,11 @@ export default function WarrantyRecordListPage() {
   const [editRecord, setEditRecord] = useState<WarrantyRecord | null>(null);
   const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', installation_date: '' });
   const [saving, setSaving] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detail, setDetail] = useState<{ record: any; photos: PhotoItem[] } | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const token = getToken() || '';
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
     setLoading(true); setError(null);
@@ -60,6 +71,16 @@ export default function WarrantyRecordListPage() {
   }, []);
 
   useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+
+  const openDetail = async (record: WarrantyRecord) => {
+    setDetailLoading(true);
+    try {
+      const res = await apiRequest<{ record: any; photos: PhotoItem[] }>(`/admin/warranty-records/${record.id}`);
+      setDetail(res);
+      setDetailOpen(true);
+    } catch { /* ignore */ }
+    finally { setDetailLoading(false); }
+  };
 
   const openEdit = (record: WarrantyRecord) => {
     setEditRecord(record);
@@ -92,7 +113,50 @@ export default function WarrantyRecordListPage() {
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} className="mb-4" />
       <DataTable
         columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (<button onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(record); }} className='text-sm text-[#5C1A1A] hover:text-[#7A2828] font-medium'>编辑</button>) }]}
-        data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage} emptyText="暂无质保记录" />
+        data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage}
+        onRowClick={(record: any) => openDetail(record)}
+        emptyText="暂无质保记录" />
+
+      <DetailDrawer open={detailOpen} onOpenChange={setDetailOpen} title="质保详情">
+        {detailLoading ? (
+          <div className="flex items-center justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" /></div>
+        ) : detail ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <StatusBadge status={detail.record.status} />
+              <span>证书: {detail.record.certificate_no || '-'}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {[
+                ['质保码', detail.record.warranty_code], ['车主', detail.record.customer_name_snapshot],
+                ['电话', detail.record.customer_phone_snapshot], ['车牌', detail.record.plate_no_snapshot],
+                ['VIN', detail.record.vin_snapshot || '-'], ['品牌', detail.record.vehicle_brand_snapshot],
+                ['型号', detail.record.vehicle_model_snapshot || detail.record.model_name],
+                ['门店', detail.record.store_name_snapshot || detail.record.store_name],
+                ['施工日期', detail.record.installation_date?.slice(0, 10)],
+                ['质保到期', detail.record.warranty_expiry_date?.slice(0, 10) || '-'],
+                ['质保年限', `${detail.record.warranty_years_snapshot || '-'} 年`],
+              ].map(([label, val]) => (
+                <div key={label as string}><span className="text-xs text-gray-500">{label}</span><p className="text-sm text-gray-900 mt-0.5">{val as string}</p></div>
+              ))}
+            </div>
+            {detail.photos && detail.photos.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">施工照片 ({detail.photos.length})</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {detail.photos.map((p) => (
+                    <a key={p.id} href={photoUrl(p.file_key, token)} target="_blank" rel="noreferrer"
+                      className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
+                      <img src={photoUrl(p.file_key, token)} alt={`施工照片 ${p.sort_order}`}
+                        className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </DetailDrawer>
 
       <DetailDrawer open={editOpen} onOpenChange={setEditOpen} title="编辑质保记录">
         <div className="space-y-4">
