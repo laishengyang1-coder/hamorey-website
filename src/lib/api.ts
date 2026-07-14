@@ -157,6 +157,12 @@ async function request<T>(
       throw new ApiError(message, response.status, errorBody);
     }
 
+    // 防御：非 JSON 响应（如 SPA 404 回退 HTML）直接报错，避免 JSON.parse 崩溃
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new ApiError(`服务器返回了非 JSON 响应 (${response.status})`, response.status, null);
+    }
+
     const body: ApiResponse<T> = await response.json();
     if (body.code !== 'OK') {
       throw new ApiError(body.message || '请求失败', response.status, body.data);
