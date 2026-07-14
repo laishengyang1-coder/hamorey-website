@@ -2,5 +2,7 @@
   "navigationBarTitleText": "积分商城",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
-  }
+  },
+  "navigationStyle": "custom",
+  "backgroundColor": "#F5F0EB"
 }

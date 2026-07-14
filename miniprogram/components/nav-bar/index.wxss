@@ -1,9 +1,14 @@
+.nav-status-bar {
+  width: 100%;
+  background: var(--color-primary);
+}
+
 .nav-bar {
   display: flex;
   align-items: center;
   height: 88rpx;
   padding: 0 24rpx;
-  background: #5C1A1A;
+  background: var(--color-primary);
   color: #fff;
   box-sizing: border-box;
 }

@@ -2,5 +2,7 @@
   "navigationBarTitleText": "门店登录",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
-  }
+  },
+  "navigationStyle": "custom",
+  "backgroundColor": "#F5F0EB"
 }
