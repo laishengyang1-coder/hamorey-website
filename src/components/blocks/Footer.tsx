@@ -33,18 +33,28 @@ export function Footer() {
                 </svg>
                 <span>{siteConfig.contact.address}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-content-muted">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 1H5L6 4L4.5 5.5C5.5 7.5 6.5 8.5 8.5 9.5L10 8L13 9V11C13 12 12 13 11 13C5.5 13 1 8.5 1 3C1 2 2 1 3 1Z" stroke="currentColor" strokeWidth="1" />
-                </svg>
-                <span>{siteConfig.contact.phone}</span>
-              </div>
+              {siteConfig.contact.phone && (
+                <div className="flex items-center gap-2 text-sm text-content-muted">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 1H5L6 4L4.5 5.5C5.5 7.5 6.5 8.5 8.5 9.5L10 8L13 9V11C13 12 12 13 11 13C5.5 13 1 8.5 1 3C1 2 2 1 3 1Z" stroke="currentColor" strokeWidth="1" />
+                  </svg>
+                  <span>{siteConfig.contact.phone}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-sm text-content-muted">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <rect x="1" y="2" width="12" height="10" rx="1" stroke="currentColor" strokeWidth="1" />
                   <path d="M1 4L7 8L13 4" stroke="currentColor" strokeWidth="1" />
                 </svg>
                 <span>{siteConfig.contact.email}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-content-muted">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="2" y="1" width="10" height="12" rx="1" stroke="currentColor" strokeWidth="1" />
+                  <path d="M6 4L6 7L9 7" stroke="currentColor" strokeWidth="1" />
+                  <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="1" />
+                </svg>
+                <span>微信公众号：{siteConfig.social.wechat}</span>
               </div>
             </div>
           </div>

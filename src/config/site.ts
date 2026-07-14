@@ -22,9 +22,9 @@ export const siteConfig = {
   icpNumber: '粤ICP备XXXXXXXX号',
   /** 联系方式 */
   contact: {
-    phone: '400-888-0000',
-    email: 'service@hemoppf.com',
-    address: '广州市天河区（正式地址待补充）',
+    phone: '',
+    email: 'anhui@heheppf.com',
+    address: '上海市宝山区真陈路1018号和和新材',
     businessHours: '周一至周五 09:00-18:00',
   },
   /** 页尾行动区文案 */
@@ -39,7 +39,7 @@ export const siteConfig = {
   },
   /** 社交媒体（占位） */
   social: {
-    wechat: '和膜HAMOREY',
+    wechat: '和膜',
     weibo: '',
     douyin: '',
   },
