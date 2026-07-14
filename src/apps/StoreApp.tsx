@@ -6,19 +6,20 @@ import React, { Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DashboardLayout, type MenuItem } from '../shared/layouts/DashboardLayout';
 import { useAuth } from '../shared/hooks/useAuth';
+import { lazyWithRetry } from '../shared/lib/lazyWithRetry';
 
-const LoginPage = React.lazy(() => import('../store/pages/LoginPage'));
-const DashboardPage = React.lazy(() => import('../store/pages/DashboardPage'));
-const WarrantyRegistrationPage = React.lazy(() => import('../store/pages/WarrantyRegistrationPage'));
-const WarrantyRecordListPage = React.lazy(() => import('../store/pages/WarrantyRecordListPage'));
-const WarrantyRecordEditPage = React.lazy(() => import('../store/pages/WarrantyRecordEditPage'));
-const WarrantyCodeListPage = React.lazy(() => import('../store/pages/WarrantyCodeListPage'));
-const RejectedListPage = React.lazy(() => import('../store/pages/RejectedListPage'));
-const PointsPage = React.lazy(() => import('../store/pages/PointsPage'));
-const RewardsPage = React.lazy(() => import('../store/pages/RewardsPage'));
-const RedemptionPage = React.lazy(() => import('../store/pages/RedemptionPage'));
-const AddressPage = React.lazy(() => import('../store/pages/AddressPage'));
-const AccountSettingsPage = React.lazy(() => import('../store/pages/AccountSettingsPage'));
+const LoginPage = lazyWithRetry(() => import('../store/pages/LoginPage'));
+const DashboardPage = lazyWithRetry(() => import('../store/pages/DashboardPage'));
+const WarrantyRegistrationPage = lazyWithRetry(() => import('../store/pages/WarrantyRegistrationPage'));
+const WarrantyRecordListPage = lazyWithRetry(() => import('../store/pages/WarrantyRecordListPage'));
+const WarrantyRecordEditPage = lazyWithRetry(() => import('../store/pages/WarrantyRecordEditPage'));
+const WarrantyCodeListPage = lazyWithRetry(() => import('../store/pages/WarrantyCodeListPage'));
+const RejectedListPage = lazyWithRetry(() => import('../store/pages/RejectedListPage'));
+const PointsPage = lazyWithRetry(() => import('../store/pages/PointsPage'));
+const RewardsPage = lazyWithRetry(() => import('../store/pages/RewardsPage'));
+const RedemptionPage = lazyWithRetry(() => import('../store/pages/RedemptionPage'));
+const AddressPage = lazyWithRetry(() => import('../store/pages/AddressPage'));
+const AccountSettingsPage = lazyWithRetry(() => import('../store/pages/AccountSettingsPage'));
 
 const Loading = () => (
   <div className="flex items-center justify-center h-full">

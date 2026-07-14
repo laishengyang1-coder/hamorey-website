@@ -6,18 +6,19 @@ import React, { Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DashboardLayout, type MenuItem } from '../shared/layouts/DashboardLayout';
 import { useAuth } from '../shared/hooks/useAuth';
+import { lazyWithRetry } from '../shared/lib/lazyWithRetry';
 
-const LoginPage = React.lazy(() => import('../province/pages/LoginPage'));
-const DashboardPage = React.lazy(() => import('../province/pages/DashboardPage'));
-const StoreListPage = React.lazy(() => import('../province/pages/StoreListPage'));
-const WarrantyCodeInventoryPage = React.lazy(() => import('../province/pages/WarrantyCodeInventoryPage'));
-const WarrantyCodeAllocatePage = React.lazy(() => import('../province/pages/WarrantyCodeAllocatePage'));
-const SubRecordListPage = React.lazy(() => import('../province/pages/SubRecordListPage'));
-const PointsPage = React.lazy(() => import('../province/pages/PointsPage'));
-const RewardsPage = React.lazy(() => import('../province/pages/RewardsPage'));
-const RedemptionPage = React.lazy(() => import('../province/pages/RedemptionPage'));
-const AddressPage = React.lazy(() => import('../province/pages/AddressPage'));
-const AccountSettingsPage = React.lazy(() => import('../province/pages/AccountSettingsPage'));
+const LoginPage = lazyWithRetry(() => import('../province/pages/LoginPage'));
+const DashboardPage = lazyWithRetry(() => import('../province/pages/DashboardPage'));
+const StoreListPage = lazyWithRetry(() => import('../province/pages/StoreListPage'));
+const WarrantyCodeInventoryPage = lazyWithRetry(() => import('../province/pages/WarrantyCodeInventoryPage'));
+const WarrantyCodeAllocatePage = lazyWithRetry(() => import('../province/pages/WarrantyCodeAllocatePage'));
+const SubRecordListPage = lazyWithRetry(() => import('../province/pages/SubRecordListPage'));
+const PointsPage = lazyWithRetry(() => import('../province/pages/PointsPage'));
+const RewardsPage = lazyWithRetry(() => import('../province/pages/RewardsPage'));
+const RedemptionPage = lazyWithRetry(() => import('../province/pages/RedemptionPage'));
+const AddressPage = lazyWithRetry(() => import('../province/pages/AddressPage'));
+const AccountSettingsPage = lazyWithRetry(() => import('../province/pages/AccountSettingsPage'));
 
 const Loading = () => (
   <div className="flex items-center justify-center h-full">

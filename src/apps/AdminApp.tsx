@@ -6,30 +6,31 @@ import React, { Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DashboardLayout, type MenuItem } from '../shared/layouts/DashboardLayout';
 import { useAuth } from '../shared/hooks/useAuth';
+import { lazyWithRetry } from '../shared/lib/lazyWithRetry';
 
-// 懒加载页面
-const LoginPage = React.lazy(() => import('../admin/pages/LoginPage'));
-const DashboardPage = React.lazy(() => import('../admin/pages/DashboardPage'));
-const ProvinceListPage = React.lazy(() => import('../admin/pages/ProvinceListPage'));
-const StoreListPage = React.lazy(() => import('../admin/pages/StoreListPage'));
-const ReviewListPage = React.lazy(() => import('../admin/pages/ReviewListPage'));
-const ReviewDetailPage = React.lazy(() => import('../admin/pages/ReviewDetailPage'));
-const WarrantyRecordListPage = React.lazy(() => import('../admin/pages/WarrantyRecordListPage'));
-const ProductManagePage = React.lazy(() => import('../admin/pages/ProductManagePage'));
-const WarrantyCodeImportPage = React.lazy(() => import('../admin/pages/WarrantyCodeImportPage'));
-const WarrantyCodeInventoryPage = React.lazy(() => import('../admin/pages/WarrantyCodeInventoryPage'));
-const PointsRulesPage = React.lazy(() => import('../admin/pages/PointsRulesPage'));
-const RebateRulesPage = React.lazy(() => import('../admin/pages/RebateRulesPage'));
-const PointsLedgerPage = React.lazy(() => import('../admin/pages/PointsLedgerPage'));
-const RewardsPage = React.lazy(() => import('../admin/pages/RewardsPage'));
-const RedemptionListPage = React.lazy(() => import('../admin/pages/RedemptionListPage'));
-const ClaimPartsPage = React.lazy(() => import('../admin/pages/ClaimPartsPage'));
-const StorePublicPage = React.lazy(() => import('../admin/pages/StorePublicPage'));
-const PartnerLeadsPage = React.lazy(() => import('../admin/pages/PartnerLeadsPage'));
-const ContentEntriesPage = React.lazy(() => import('../admin/pages/ContentEntriesPage'));
-const ExportPage = React.lazy(() => import('../admin/pages/ExportPage'));
-const OperationLogsPage = React.lazy(() => import('../admin/pages/OperationLogsPage'));
-const SystemSettingsPage = React.lazy(() => import('../admin/pages/SystemSettingsPage'));
+// 懒加载页面（带部署后 chunk 失配自愈）
+const LoginPage = lazyWithRetry(() => import('../admin/pages/LoginPage'));
+const DashboardPage = lazyWithRetry(() => import('../admin/pages/DashboardPage'));
+const ProvinceListPage = lazyWithRetry(() => import('../admin/pages/ProvinceListPage'));
+const StoreListPage = lazyWithRetry(() => import('../admin/pages/StoreListPage'));
+const ReviewListPage = lazyWithRetry(() => import('../admin/pages/ReviewListPage'));
+const ReviewDetailPage = lazyWithRetry(() => import('../admin/pages/ReviewDetailPage'));
+const WarrantyRecordListPage = lazyWithRetry(() => import('../admin/pages/WarrantyRecordListPage'));
+const ProductManagePage = lazyWithRetry(() => import('../admin/pages/ProductManagePage'));
+const WarrantyCodeImportPage = lazyWithRetry(() => import('../admin/pages/WarrantyCodeImportPage'));
+const WarrantyCodeInventoryPage = lazyWithRetry(() => import('../admin/pages/WarrantyCodeInventoryPage'));
+const PointsRulesPage = lazyWithRetry(() => import('../admin/pages/PointsRulesPage'));
+const RebateRulesPage = lazyWithRetry(() => import('../admin/pages/RebateRulesPage'));
+const PointsLedgerPage = lazyWithRetry(() => import('../admin/pages/PointsLedgerPage'));
+const RewardsPage = lazyWithRetry(() => import('../admin/pages/RewardsPage'));
+const RedemptionListPage = lazyWithRetry(() => import('../admin/pages/RedemptionListPage'));
+const ClaimPartsPage = lazyWithRetry(() => import('../admin/pages/ClaimPartsPage'));
+const StorePublicPage = lazyWithRetry(() => import('../admin/pages/StorePublicPage'));
+const PartnerLeadsPage = lazyWithRetry(() => import('../admin/pages/PartnerLeadsPage'));
+const ContentEntriesPage = lazyWithRetry(() => import('../admin/pages/ContentEntriesPage'));
+const ExportPage = lazyWithRetry(() => import('../admin/pages/ExportPage'));
+const OperationLogsPage = lazyWithRetry(() => import('../admin/pages/OperationLogsPage'));
+const SystemSettingsPage = lazyWithRetry(() => import('../admin/pages/SystemSettingsPage'));
 
 const Loading = () => (
   <div className="flex items-center justify-center h-full">
