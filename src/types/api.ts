@@ -133,5 +133,6 @@ export interface HealthCheckResult {
   timestamp: string;
   services: {
     db: 'ok' | 'error';
+    storage: 'ok' | 'error';
   };
 }

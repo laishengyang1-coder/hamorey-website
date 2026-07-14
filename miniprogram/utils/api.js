@@ -68,14 +68,18 @@ function request(options = {}) {
       method,
       header: headers,
       dataType: 'json',
+      timeout: 30000,
       success(res) {
         if (loading) wx.hideLoading();
 
         // HTTP 2xx 视为成功
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          // 后端统一返回 { ok: true, data: ..., message: ... }
+          // 同时兼容当前 { code: 'OK' } 与旧版 { ok: true } 响应结构。
           const body = res.data;
-          if (body && body.ok !== false) {
+          const envelopeFailed = body && (
+            body.ok === false || (typeof body.code === 'string' && body.code !== 'OK')
+          );
+          if (!envelopeFailed) {
             resolve({
               ok: true,
               data: body.data !== undefined ? body.data : body,
@@ -195,11 +199,16 @@ function upload(filePath, uploadUrl) {
       header: {
         'Authorization': token ? `Bearer ${token}` : ''
       },
+      timeout: 30000,
       success(res) {
         wx.hideLoading();
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const body = JSON.parse(res.data);
+            if (body && (body.ok === false || (typeof body.code === 'string' && body.code !== 'OK'))) {
+              resolve({ ok: false, data: null, message: body.message || '上传失败' });
+              return;
+            }
             resolve({
               ok: true,
               data: body.data !== undefined ? body.data : body,
@@ -224,11 +233,41 @@ function upload(filePath, uploadUrl) {
   });
 }
 
+/**
+ * 下载受保护的施工照片。认证头不会出现在 URL、日志或页面历史中。
+ * @param {string} fileKey R2 文件键
+ * @returns {Promise<{ok: boolean, data: {tempFilePath: string}|null, message: string}>}
+ */
+function downloadProtectedPhoto(fileKey) {
+  const token = getToken();
+  const encodedKey = String(fileKey || '').split('/').map(encodeURIComponent).join('/');
+
+  return new Promise((resolve) => {
+    wx.downloadFile({
+      url: `${getBaseUrl()}/public/photos/${encodedKey}`,
+      header: token ? { 'Authorization': `Bearer ${token}` } : {},
+      timeout: 30000,
+      success(res) {
+        if (res.statusCode >= 200 && res.statusCode < 300 && res.tempFilePath) {
+          resolve({ ok: true, data: { tempFilePath: res.tempFilePath }, message: '' });
+          return;
+        }
+        if (res.statusCode === 401 && app && app.clearLoginState) app.clearLoginState();
+        resolve({ ok: false, data: null, message: res.statusCode === 401 ? '登录已过期' : '图片加载失败' });
+      },
+      fail(err) {
+        resolve({ ok: false, data: null, message: err.errMsg || '图片加载失败' });
+      }
+    });
+  });
+}
+
 module.exports = {
   request,
   get,
   post,
   put,
   del,
-  upload
+  upload,
+  downloadProtectedPhoto
 };

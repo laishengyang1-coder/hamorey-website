@@ -4,13 +4,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiRequest, getToken } from '../../lib/api';
+import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { StatusBadge } from '../../shared/components/StatusBadge';
-
-function photoUrl(fileKey: string, token: string): string {
-  return `/api/public/photos/${fileKey}?token=${encodeURIComponent(token)}`;
-}
+import { ProtectedImage } from '../../shared/components/ProtectedImage';
 
 interface WarrantyPhoto { id: string; file_key: string; sort_order: number; }
 
@@ -71,7 +68,6 @@ export default function WarrantyRecordEditPage() {
   if (!detail) return <div className="p-12 text-center text-gray-400">记录不存在</div>;
 
   const { record, photos } = detail;
-  const token = getToken() || ''; 
   const isRejected = record.status === 'rejected';
 
   return (
@@ -90,11 +86,7 @@ export default function WarrantyRecordEditPage() {
           <h3 className="text-sm font-semibold text-gray-900 mb-3">施工照片 ({photos.length})</h3>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {photos.map((p) => (
-              <a key={p.id} href={photoUrl(p.file_key, token)} target="_blank" rel="noreferrer"
-                className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
-                <img src={photoUrl(p.file_key, token)} alt={`施工照片 ${p.sort_order}`}
-                  className="w-full h-full object-cover" />
-              </a>
+              <ProtectedImage key={p.id} fileKey={p.file_key} alt={`施工照片 ${p.sort_order}`} />
             ))}
           </div>
         </div>

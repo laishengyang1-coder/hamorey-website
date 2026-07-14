@@ -86,9 +86,9 @@ Page({
       title: '提示',
       content: '确定退出登录吗？',
       confirmColor: '#5C1A1A',
-      success(res) {
+      async success(res) {
         if (res.confirm) {
-          auth.logout();
+          await auth.logout();
           wx.reLaunch({ url: '/pages/owner/query/index' });
         }
       }

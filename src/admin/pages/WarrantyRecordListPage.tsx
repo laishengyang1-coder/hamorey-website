@@ -3,16 +3,13 @@
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { apiRequest, getToken } from '../../lib/api';
+import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
-
-function photoUrl(fileKey: string, token: string): string {
-  return `/api/public/photos/${fileKey}?token=${encodeURIComponent(token)}`;
-}
+import { ProtectedImage } from '../../shared/components/ProtectedImage';
 
 interface PhotoItem { id: string; file_key: string; sort_order: number; }
 
@@ -58,7 +55,6 @@ export default function WarrantyRecordListPage() {
   const [detail, setDetail] = useState<{ record: any; photos: PhotoItem[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  const token = getToken() || '';
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
     setLoading(true); setError(null);
@@ -147,11 +143,7 @@ export default function WarrantyRecordListPage() {
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">施工照片 ({detail.photos.length})</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {detail.photos.map((p) => (
-                    <a key={p.id} href={photoUrl(p.file_key, token)} target="_blank" rel="noreferrer"
-                      className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
-                      <img src={photoUrl(p.file_key, token)} alt={`施工照片 ${p.sort_order}`}
-                        className="w-full h-full object-cover" />
-                    </a>
+                    <ProtectedImage key={p.id} fileKey={p.file_key} alt={`施工照片 ${p.sort_order}`} />
                   ))}
                 </div>
               </div>

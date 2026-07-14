@@ -13,6 +13,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const timestamp = new Date().toISOString();
 
   let dbStatus: 'ok' | 'error' = 'ok';
+  let storageStatus: 'ok' | 'error' = 'ok';
 
   if (env.DB) {
     try {
@@ -24,7 +25,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     dbStatus = 'error';
   }
 
-  const status = dbStatus === 'ok' ? 'ok' : 'degraded';
+  if (env.R2) {
+    try {
+      await env.R2.head('__hamorey_healthcheck__');
+    } catch {
+      storageStatus = 'error';
+    }
+  } else {
+    storageStatus = 'error';
+  }
+
+  const status = dbStatus === 'ok' && storageStatus === 'ok' ? 'ok' : 'degraded';
 
   return new Response(
     JSON.stringify({
@@ -35,6 +46,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         timestamp,
         services: {
           db: dbStatus,
+          storage: storageStatus,
         },
       },
     }),
@@ -43,6 +55,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
       },
     },
   );

@@ -55,8 +55,11 @@ Page({
   handleLogout() {
     wx.showModal({
       title: '提示', content: '确定退出登录吗？', confirmColor: '#5C1A1A',
-      success(res) {
-        if (res.confirm) { auth.logout(); wx.reLaunch({ url: '/pages/owner/query/index' }); }
+      async success(res) {
+        if (res.confirm) {
+          await auth.logout();
+          wx.reLaunch({ url: '/pages/owner/query/index' });
+        }
       }
     });
   }

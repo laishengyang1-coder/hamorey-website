@@ -5,7 +5,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, writePointsLedger , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 import { createCertificatePdf } from '../_certificate';
 
@@ -83,6 +83,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return error('未知操作', 400);
   } catch (err) {
     console.error('[admin/reviews POST]', err);
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes('UNIQUE constraint failed') || message.includes('INVALID_WARRANTY_')) {
+      return error('该质保记录已被审核，请刷新列表', 409);
+    }
     return error('操作失败', 500);
   }
 };
@@ -184,14 +188,14 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   statements.push({
     sql: `UPDATE warranty_records SET status = 'active', certificate_no = ?, warranty_expiry_date = ?,
           approved_at = datetime('now'), approved_by = ?, store_points_awarded = ?, province_points_awarded = ?,
-          updated_at = datetime('now') WHERE id = ?`,
+          updated_at = datetime('now') WHERE id = ? AND status = 'pending'`,
     params: [certNo, expiryDateStr, user?.userId || null, storePoints, provincePoints, recordId],
   });
 
   // 2. 更新质保码使用次数
   statements.push({
     sql: `UPDATE warranty_codes SET used_count = used_count + 1,
-          status = CASE WHEN used_count + 1 >= usage_limit THEN 'exhausted' ELSE status END
+          status = CASE WHEN used_count + 1 >= usage_limit THEN 'exhausted' ELSE 'partial_used' END
           WHERE id = ?`,
     params: [record.warranty_code_id],
   });
@@ -214,18 +218,38 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     });
   }
 
-  await batch(env.DB, statements);
-
-  // 5-6. 积分/返利流水（事务外，D1 batch 已足够）
+  // 5-6. 积分/返利流水与审核状态保持同一批次，避免部分成功。
   if (storePoints > 0) {
-    await writePointsLedger(env.DB, record.store_id, 'award', storePoints, 0, 'warranty', recordId, `质保审核通过: ${certNo}`, user?.userId || null);
+    statements.push({
+      sql: `INSERT INTO points_ledger
+            (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
+            VALUES (?, ?, 'award', ?, 0, 'warranty', ?, ?, ?, datetime('now'))`,
+      params: [generateId(), record.store_id, storePoints, recordId, `质保审核通过: ${certNo}`, user?.userId || null],
+    });
   }
   if (provincePoints > 0 && record.province_org_id) {
-    await writePointsLedger(env.DB, record.province_org_id, 'award', provincePoints, 0, 'warranty', recordId, `门店质保返利: ${certNo}`, user?.userId || null);
+    statements.push({
+      sql: `INSERT INTO points_ledger
+            (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
+            VALUES (?, ?, 'award', ?, 0, 'warranty', ?, ?, ?, datetime('now'))`,
+      params: [generateId(), record.province_org_id, provincePoints, recordId, `门店质保返利: ${certNo}`, user?.userId || null],
+    });
   }
 
   // 7. 操作日志
-  await writeOperationLog(env.DB, user?.userId || null, 'approve_warranty', 'warranty_records', recordId, { certNo }, ip);
+  statements.push({
+    sql: `INSERT INTO operation_logs
+          (id, user_id, action, target_type, target_id, detail_json, ip_address, created_at)
+          VALUES (?, ?, 'approve_warranty', 'warranty_records', ?, ?, ?, datetime('now'))`,
+    params: [generateId(), user?.userId || null, recordId, JSON.stringify({ certNo }), ip],
+  });
+
+  try {
+    await batch(env.DB, statements);
+  } catch (err) {
+    if (certFileKey) await env.R2.delete(certFileKey).catch(() => undefined);
+    throw err;
+  }
 
   return ok({ recordId, certNo, certFileKey }, '审核通过');
 }
@@ -234,6 +258,14 @@ async function handleReject(context: any, recordId: string): Promise<Response> {
   const { env } = context;
   const body = (await context.request.json()) as { reason?: string };
   if (!body.reason) return error('请填写驳回原因', 400);
+
+  const record = await queryFirst<{ status: string }>(
+    env.DB,
+    `SELECT status FROM warranty_records WHERE id = ?`,
+    recordId,
+  );
+  if (!record) return error('质保记录不存在', 404);
+  if (record.status !== 'pending') return error('该记录不是待审核状态', 400);
 
   const user = getAuthUser(context.data);
   const ip = getClientIP(context.request);

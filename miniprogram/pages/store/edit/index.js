@@ -51,7 +51,14 @@ Page({
     }
 
     const record = res.data.record || {};
-    const photos = res.data.photos || [];
+    const sourcePhotos = res.data.photos || [];
+    const photos = await Promise.all(sourcePhotos.map(async (photo) => {
+      const download = await api.downloadProtectedPhoto(photo.file_key);
+      return {
+        ...photo,
+        display_url: download.ok ? download.data.tempFilePath : ''
+      };
+    }));
     const auditLogs = res.data.auditLogs || [];
     const isRejected = record.status === 'rejected';
 
@@ -120,7 +127,11 @@ Page({
 
   previewPhoto(e) {
     const url = e.currentTarget.dataset.url;
-    const urls = this.data.photos.map(p => p.url || p.file_key);
+    const urls = this.data.photos.map(p => p.display_url).filter(Boolean);
+    if (!url || urls.length === 0) {
+      wx.showToast({ title: '图片暂时无法预览', icon: 'none' });
+      return;
+    }
     wx.previewImage({ current: url, urls });
   }
 });

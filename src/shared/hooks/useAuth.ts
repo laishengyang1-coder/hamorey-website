@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { AuthUser } from '../../lib/api';
-import { fetchMe, logout, setToken, clearToken } from '../../lib/api';
+import { fetchMe, logout, getToken, clearToken } from '../../lib/api';
 
 interface AuthState {
   user: AuthUser | null;
@@ -24,6 +24,11 @@ export function useAuth() {
     let cancelled = false;
 
     async function init() {
+      if (!getToken()) {
+        if (!cancelled) setState({ user: null, loading: false, error: null });
+        return;
+      }
+
       try {
         const user = await fetchMe();
         if (!cancelled) {

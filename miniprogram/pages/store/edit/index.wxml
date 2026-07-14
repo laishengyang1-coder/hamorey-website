@@ -180,10 +180,10 @@
             <image
               wx:for="{{photos}}"
               wx:key="id"
-              src="{{item.url || item.file_key}}"
+              src="{{item.display_url}}"
               mode="aspectFill"
               class="photo-item"
-              data-url="{{item.url || item.file_key}}"
+              data-url="{{item.display_url}}"
               bindtap="previewPhoto"
             />
           </view>

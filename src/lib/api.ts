@@ -209,6 +209,32 @@ export interface WarrantyPhotoUploadResult {
   contentType: string;
 }
 
+/** Fetch a protected binary asset without exposing the session token in the URL. */
+export async function fetchProtectedAsset(path: string): Promise<Blob> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  const token = getToken();
+
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      signal: controller.signal,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (response.status === 401) {
+      clearToken();
+      throw new ApiError('登录已过期，请重新登录', 401);
+    }
+    if (!response.ok) throw new ApiError(`图片加载失败 (${response.status})`, response.status);
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) throw new ApiError('服务器返回了无效的图片', response.status);
+    return response.blob();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /** Upload a warranty photo to the same R2 bucket used by the mini program. */
 export async function uploadWarrantyPhoto(file: File): Promise<WarrantyPhotoUploadResult> {
   const uploadTarget = await request<{ uploadUrl: string; fileKey: string }>('/store/upload-url', {

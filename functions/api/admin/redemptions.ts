@@ -6,7 +6,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, writeOperationLog, writePointsLedger, getOrgPoints , getAuthUser} from '../_lib';
+import { batch, generateId, queryFirst, queryAll, execute, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 
 interface Env { DB: D1Database; }
@@ -53,18 +53,27 @@ async function handleApprove(context: any, id: string) {
   if (red.status !== 'pending') return error('该兑换单状态不是待审核', 400);
 
   const user = getAuthUser(context.data);
-  const now = new Date().toISOString();
-
-  // 扣除冻结积分
-  await writePointsLedger(context.env.DB, red.organization_id, 'deduct', 0, red.total_points,
-    'redemption', red.id, '兑换审核通过，扣除积分', user?.userId || null);
-
-  await execute(context.env.DB,
-    `UPDATE redemptions SET status = 'approved', reviewed_by = ?, reviewed_at = ?, updated_at = datetime('now') WHERE id = ?`,
-    user?.userId || null, now, id);
-
-  await writeOperationLog(context.env.DB, user?.userId || null, 'approve_redemption',
-    'redemption', id, { status: 'approved' }, getClientIP(context.request));
+  const operatorId = user?.userId || null;
+  await batch(context.env.DB, [
+    {
+      sql: `INSERT INTO points_ledger
+            (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
+            VALUES (?, ?, 'deduct', 0, ?, 'redemption', ?, '兑换审核通过，扣除冻结积分', ?, datetime('now'))`,
+      params: [generateId(), red.organization_id, red.total_points, red.id, operatorId],
+    },
+    {
+      sql: `UPDATE redemptions
+            SET status = 'approved', reviewed_by = ?, reviewed_at = datetime('now'), updated_at = datetime('now')
+            WHERE id = ? AND status = 'pending'`,
+      params: [operatorId, id],
+    },
+    {
+      sql: `INSERT INTO operation_logs
+            (id, user_id, action, target_type, target_id, detail_json, ip_address, created_at)
+            VALUES (?, ?, 'approve_redemption', 'redemption', ?, ?, ?, datetime('now'))`,
+      params: [generateId(), operatorId, id, JSON.stringify({ status: 'approved' }), getClientIP(context.request)],
+    },
+  ]);
 
   return ok({ id, status: 'approved' }, '审核通过');
 }
@@ -79,17 +88,48 @@ async function handleReject(context: any, id: string) {
   if (red.status !== 'pending') return error('该兑换单状态不是待审核', 400);
 
   const user = getAuthUser(context.data);
+  const operatorId = user?.userId || null;
+  const items = await queryAll<{ reward_id: string; quantity: number }>(
+    context.env.DB,
+    `SELECT reward_id, quantity FROM redemption_items WHERE redemption_id = ?`,
+    id,
+  );
+  const statements: Array<{ sql: string; params: unknown[] }> = [
+    {
+      sql: `INSERT INTO points_ledger
+            (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
+            VALUES (?, ?, 'release', ?, ?, 'redemption', ?, ?, ?, datetime('now'))`,
+      params: [generateId(), red.organization_id, red.total_points, red.total_points, red.id, `兑换审核拒绝: ${body.review_note || '无'}`, operatorId],
+    },
+  ];
 
-  // 释放冻结积分
-  await writePointsLedger(context.env.DB, red.organization_id, 'release', red.total_points, 0,
-    'redemption', red.id, `兑换审核拒绝: ${body.review_note || '无'}`, user?.userId || null);
+  for (const item of items) {
+    statements.push({
+      sql: `UPDATE rewards
+            SET stock_quantity = stock_quantity + ?,
+                stock_status = CASE WHEN status = 'active' THEN 'available' ELSE stock_status END,
+                updated_at = datetime('now')
+            WHERE id = ? AND stock_quantity IS NOT NULL`,
+      params: [item.quantity, item.reward_id],
+    });
+  }
 
-  await execute(context.env.DB,
-    `UPDATE redemptions SET status = 'rejected', review_note = ?, reviewed_by = ?, reviewed_at = ?, updated_at = datetime('now') WHERE id = ?`,
-    body.review_note || null, user?.userId || null, new Date().toISOString(), id);
+  statements.push(
+    {
+      sql: `UPDATE redemptions
+            SET status = 'rejected', review_note = ?, reviewed_by = ?, reviewed_at = datetime('now'), updated_at = datetime('now')
+            WHERE id = ? AND status = 'pending'`,
+      params: [body.review_note || null, operatorId, id],
+    },
+    {
+      sql: `INSERT INTO operation_logs
+            (id, user_id, action, target_type, target_id, detail_json, ip_address, created_at)
+            VALUES (?, ?, 'reject_redemption', 'redemption', ?, ?, ?, datetime('now'))`,
+      params: [generateId(), operatorId, id, JSON.stringify({ status: 'rejected', note: body.review_note }), getClientIP(context.request)],
+    },
+  );
 
-  await writeOperationLog(context.env.DB, user?.userId || null, 'reject_redemption',
-    'redemption', id, { status: 'rejected', note: body.review_note }, getClientIP(context.request));
+  await batch(context.env.DB, statements);
 
   return ok({ id, status: 'rejected' }, '已拒绝');
 }
@@ -128,6 +168,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return error('未知操作', 400);
   } catch (err) {
     console.error('[admin/redemptions POST]', err);
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes('UNIQUE constraint failed') || message.includes('INSUFFICIENT_FROZEN_POINTS')) {
+      return error('兑换单已被处理，请刷新列表', 409);
+    }
     return error('操作失败', 500);
   }
 };

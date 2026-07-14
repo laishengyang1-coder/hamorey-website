@@ -58,8 +58,12 @@ async function getMe() {
 /**
  * 退出登录
  */
-function logout() {
-  app.clearLoginState();
+async function logout() {
+  try {
+    await api.post('/auth/logout', {}, { loading: false });
+  } finally {
+    app.clearLoginState();
+  }
 }
 
 /**

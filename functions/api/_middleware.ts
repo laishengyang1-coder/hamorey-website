@@ -26,18 +26,17 @@ const CORS_HEADERS: Record<string, string> = {
 // ============================================================
 // 公开路由匹配（不需要认证）
 // ============================================================
-const PUBLIC_PATHS = [
+const PUBLIC_PATHS = new Set([
   '/api/auth/login',
-  '/api/public/',
   '/api/stores',
-  '/api/warranty',
-  '/api/partner',
+  '/api/warranty-search',
+  '/api/partner-leads',
   '/api/contact',
   '/api/health',
-];
+]);
 
 function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((prefix) => pathname.startsWith(prefix));
+  return PUBLIC_PATHS.has(pathname) || pathname.startsWith('/api/public/');
 }
 
 // ============================================================
@@ -213,8 +212,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       headers: newHeaders,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : '服务器内部错误';
     console.error('[API Error]', err);
-    return error(message, 500);
+    return error('服务器内部错误，请稍后重试', 500);
   }
 };

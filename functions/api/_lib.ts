@@ -371,7 +371,7 @@ export async function getOrgPoints(
     db,
     `SELECT
        COALESCE(SUM(CASE WHEN change_type IN ('award', 'adjust', 'release') THEN points_change
-                         WHEN change_type IN ('deduct', 'revoke') THEN -points_change
+                         WHEN change_type IN ('deduct', 'revoke', 'freeze') THEN -points_change
                          ELSE 0 END), 0) AS available,
        COALESCE(SUM(CASE WHEN change_type = 'freeze' THEN frozen_change
                          WHEN change_type IN ('release', 'deduct') THEN -frozen_change
