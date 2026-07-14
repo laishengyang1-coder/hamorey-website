@@ -54,9 +54,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot,
               wr.product_name_snapshot, wr.product_model_snapshot,
+              pm.model_code,
               wr.warranty_years_snapshot, wr.installation_date,
               wr.warranty_expiry_date, wr.store_name_snapshot, wr.status
-       FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+       FROM warranty_records wr
+       JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+       LEFT JOIN product_models pm ON wr.product_model_id = pm.id
        WHERE ${comparison} AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`,
       value,

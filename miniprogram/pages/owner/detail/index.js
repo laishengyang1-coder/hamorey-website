@@ -67,7 +67,7 @@ Page({
    * 跳转报价页
    */
   goQuote() {
-    const modelCode = this.data.record.product_model_snapshot || '';
+    const modelCode = this.data.record.model_code || this.data.record.product_model_snapshot || '';
     wx.navigateTo({
       url: `/pages/owner/quote/index?model_code=${encodeURIComponent(modelCode)}`
     });

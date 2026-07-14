@@ -42,11 +42,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
        FROM claim_prices cprice
        JOIN product_models pm ON cprice.product_model_id = pm.id
        JOIN claim_parts cpart ON cprice.claim_part_id = cpart.id
-       WHERE pm.model_code = ? AND cprice.status = 'active'
+       WHERE (pm.model_code = ? OR pm.display_name = ?) AND cprice.status = 'active'
          AND cprice.effective_from <= datetime('now')
          AND (cprice.effective_to IS NULL OR cprice.effective_to >= datetime('now'))
        ORDER BY cpart.sort_order`,
-      modelCode,
+      modelCode, modelCode,
     );
 
     return ok({ model_code: modelCode, prices });
