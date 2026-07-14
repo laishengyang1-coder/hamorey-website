@@ -82,7 +82,7 @@ export default function ProductManagePage() {
   return (
     <div>
       <PageHeader title="产品管理" description="管理产品型号与质保年限" actions={
-        <button onClick={openNew} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增产品</button>
+        <button onClick={openNew} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增产品</button>
       } />
 
       <DataTable columns={COLS} data={models as any} loading={loading} emptyText="暂无产品型号" />
@@ -110,7 +110,7 @@ export default function ProductManagePage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">质保年限 *</label>
             <input type="number" min={1} max={15} value={form.warranty_years} onChange={(e) => setForm({ ...form, warranty_years: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : editing ? '保存修改' : '创建产品'}
           </button>
         </div>

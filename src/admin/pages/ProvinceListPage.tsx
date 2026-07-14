@@ -140,7 +140,7 @@ export default function ProvinceListPage() {
         actions={
           <button
             onClick={openCreate}
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors"
           >
             新增省代
           </button>
@@ -235,7 +235,7 @@ export default function ProvinceListPage() {
             <button
               onClick={handleSave}
               disabled={saving || !form.code || !form.name}
-              className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+              className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50"
             >
               {saving ? '保存中...' : selected ? '保存修改' : '创建省代'}
             </button>

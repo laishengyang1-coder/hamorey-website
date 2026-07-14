@@ -114,7 +114,7 @@ export default function WarrantyCodeInventoryPage() {
         actions={selected.size > 0 && (
           <div className="flex gap-2">
             <button onClick={() => { fetchOrgs(); setAllocateOpen(true); }}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">批量划拨 ({selected.size})</button>
+              className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">批量划拨 ({selected.size})</button>
             <button onClick={handleRevoke} disabled={operating}
               className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">批量撤回</button>
           </div>
@@ -142,7 +142,7 @@ export default function WarrantyCodeInventoryPage() {
               <button onClick={() => setAllocateOpen(false)}
                 className="rounded-lg border px-4 py-2 text-sm">取消</button>
               <button onClick={handleAllocate} disabled={operating || !toOrgId}
-                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
+                className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
                 {operating ? '处理中...' : `确认划拨 ${selected.size} 条`}
               </button>
             </div>

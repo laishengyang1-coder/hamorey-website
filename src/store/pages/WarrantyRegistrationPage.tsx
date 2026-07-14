@@ -62,7 +62,7 @@ export default function WarrantyRegistrationPage() {
         <h2 className="text-xl font-semibold text-gray-900">提交成功</h2>
         <p className="mt-2 text-gray-500">{success}</p>
         <div className="flex gap-3 mt-6">
-          <button onClick={() => navigate('/store/records')} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">查看记录</button>
+          <button onClick={() => navigate('/store/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
           <button onClick={() => { setSuccess(''); setStep(0); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
             className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">继续登记</button>
         </div>
@@ -169,11 +169,11 @@ export default function WarrantyRegistrationPage() {
             className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40">上一步</button>
           {step < 4 && (
             <button onClick={() => setStep(step + 1)}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">下一步</button>
+              className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">下一步</button>
           )}
           {step === 4 && (
             <button onClick={() => setStep(5)}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">确认提交</button>
+              className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">确认提交</button>
           )}
         </div>
       </StepWizard>

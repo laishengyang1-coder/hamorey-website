@@ -75,7 +75,7 @@ export default function RewardsPage() {
               <button
                 onClick={() => setSelectedId(r.id)}
                 disabled={r.stock_status === 'out_of_stock' || addresses.length === 0}
-                className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-[#7A2828] disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {r.stock_status === 'out_of_stock' ? '售罄' : '兑换'}
               </button>

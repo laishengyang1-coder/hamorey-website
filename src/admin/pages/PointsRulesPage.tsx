@@ -62,7 +62,7 @@ export default function PointsRulesPage() {
 
   return (
     <div>
-      <PageHeader title="积分规则" description="配置不同产品型号的积分奖励规则" actions={<button onClick={openCreate} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增规则</button>} />
+      <PageHeader title="积分规则" description="配置不同产品型号的积分奖励规则" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增规则</button>} />
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} onRowClick={openEdit} emptyText="暂无积分规则" />
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑积分规则' : '新增积分规则'}>
         <div className="space-y-4">
@@ -96,7 +96,7 @@ export default function PointsRulesPage() {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
             )}
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : '保存'}
           </button>
         </div>

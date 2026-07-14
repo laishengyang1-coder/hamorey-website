@@ -59,7 +59,7 @@ export function WarrantyCodeAllocateForm({ codeIds, onSuccess, onCancel }: Warra
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
         <button type="button" onClick={onCancel} className="rounded-lg border px-4 py-2 text-sm">取消</button>
         <button type="submit" disabled={loading}
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
+          className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
           {loading ? '划拨中...' : '确认划拨'}
         </button>
       </div>

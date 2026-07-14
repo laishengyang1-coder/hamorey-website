@@ -78,7 +78,7 @@ export default function SystemSettingsPage() {
                 <input type="text" value={editValue} onChange={(e) => setEditValue(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
               )}
             </div>
-            <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
+            <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
           </div>
         )}
       </DetailDrawer>

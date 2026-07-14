@@ -56,7 +56,7 @@ export default function AddressPage() {
 
   return (
     <div>
-      <PageHeader title="收货地址" description="管理兑换商品的收货地址" actions={<button onClick={openCreate} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增地址</button>} />
+      <PageHeader title="收货地址" description="管理兑换商品的收货地址" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增地址</button>} />
       {data.length === 0 ? (
         <div className="text-center py-16 text-gray-400 text-sm">暂无收货地址，请点击上方新增</div>
       ) : (
@@ -91,7 +91,7 @@ export default function AddressPage() {
           <div><label className="block text-sm font-medium text-gray-700 mb-1">区/县</label><input type="text" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">详细地址 *</label><input type="text" value={form.detail_address} onChange={(e) => setForm({ ...form, detail_address: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} className="rounded border-gray-300" /> 设为默认地址</label>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
         </div>
       </DetailDrawer>
 

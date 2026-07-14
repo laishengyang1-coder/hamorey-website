@@ -56,7 +56,7 @@ export default function ClaimPartsPage() {
 
   return (
     <div>
-      <PageHeader title="部位报价" description="配置各产品型号×部位的报价" actions={<button onClick={openCreate} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增报价</button>} />
+      <PageHeader title="部位报价" description="配置各产品型号×部位的报价" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增报价</button>} />
       <DataTable columns={COLUMNS} data={data as any} loading={loading} emptyText="暂无报价数据" />
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title="新增报价">
         <div className="space-y-4">
@@ -86,7 +86,7 @@ export default function ClaimPartsPage() {
             <input type="date" value={form.effective_from} onChange={(e) => setForm({ ...form, effective_from: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : '创建报价'}
           </button>
         </div>

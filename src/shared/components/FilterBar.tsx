@@ -68,7 +68,7 @@ export function FilterBar({ fields, onFilter, onReset, initialValues = {}, class
         <div className="flex items-center gap-2 pb-px">
           <button
             type="submit"
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors"
           >
             查询
           </button>
@@ -118,7 +118,7 @@ export function FilterBar({ fields, onFilter, onReset, initialValues = {}, class
       <div className="flex items-center gap-2 pb-px">
         <button
           type="submit"
-          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+          className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors"
         >
           查询
         </button>

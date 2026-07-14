@@ -59,7 +59,7 @@ export default function RebateRulesPage() {
 
   return (
     <div>
-      <PageHeader title="返利规则" description="配置省代返利比例" actions={<button onClick={openCreate} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增规则</button>} />
+      <PageHeader title="返利规则" description="配置省代返利比例" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增规则</button>} />
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无返利规则" />
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑返利规则' : '新增返利规则'}>
         <div className="space-y-4">
@@ -92,7 +92,7 @@ export default function RebateRulesPage() {
             <input type="date" value={form.effective_to} onChange={(e) => setForm({ ...form, effective_to: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : '保存'}
           </button>
         </div>

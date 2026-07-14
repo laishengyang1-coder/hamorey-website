@@ -37,7 +37,7 @@ export default function AccountSettingsPage() {
           <form onSubmit={handleSave} className="space-y-4">
             <div><label className="block text-sm font-medium text-gray-700 mb-1">原密码</label><input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" required /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">新密码（至少6位）</label><input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" minLength={6} required /></div>
-            <button type="submit" disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{saving ? '保存中...' : '修改密码'}</button>
+            <button type="submit" disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">{saving ? '保存中...' : '修改密码'}</button>
           </form>
         </div>
       </div>

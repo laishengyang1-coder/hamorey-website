@@ -80,7 +80,7 @@ export default function RewardsPage() {
 
   return (
     <div>
-      <PageHeader title="积分商城" description="管理兑换商品" actions={<button onClick={openCreate} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">新增商品</button>} />
+      <PageHeader title="积分商城" description="管理兑换商品" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增商品</button>} />
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无商品" />
 
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑商品' : '新增商品'}>
@@ -90,7 +90,7 @@ export default function RewardsPage() {
           <div><label className="block text-sm font-medium text-gray-700 mb-1">所需积分 *</label><input type="number" value={form.points_required} onChange={(e) => setForm({ ...form, points_required: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">库存数量</label><input type="number" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">描述</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
         </div>
       </DetailDrawer>
 

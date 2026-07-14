@@ -95,7 +95,7 @@ export default function StorePublicPage() {
           <div><label className="block text-sm font-medium text-gray-700 mb-1">地址</label><input type="text" value={String(form.address || '')} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">电话</label><input type="text" value={String(form.phone || '')} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" /></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.is_public} onChange={(e) => setForm({ ...form, is_public: e.target.checked ? 1 : 0 })} className="rounded border-gray-300" /> 在官网公开显示</label>
-          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
+          <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">{saving ? '保存中...' : '保存'}</button>
         </div>
       </DetailDrawer>
     </div>
