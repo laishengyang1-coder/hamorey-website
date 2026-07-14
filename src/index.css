@@ -212,3 +212,13 @@ button {
   white-space: nowrap;
   border: 0;
 }
+
+/* ============================================================
+   后台表单输入框文字颜色修复（浅色背景上白色文字看不清）
+   ============================================================ */
+input, textarea, select {
+  color: #111827;
+}
+input::placeholder, textarea::placeholder {
+  color: #9ca3af;
+}

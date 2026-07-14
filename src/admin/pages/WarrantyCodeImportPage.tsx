@@ -96,9 +96,25 @@ export default function WarrantyCodeImportPage() {
     setBatchName('');
   };
 
+  const downloadTemplate = () => {
+    const template = [
+      { '质保编码': 'FH060207260001', '批次号': 'Batch001', '产品型号': 'PPF', '产品名称': '和御HY8' },
+      { '质保编码': 'FH060207260002', '批次号': 'Batch001', '产品型号': 'WL-70', '产品名称': '和光70' },
+    ];
+    const ws = XLSX.utils.json_to_sheet(template);
+    ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 16 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '质保码导入模板');
+    XLSX.writeFile(wb, '质保码导入模板.xlsx');
+  };
+
   return (
     <div>
-      <PageHeader title="质保码导入" description="上传 Excel 文件批量导入质保码（4列：编码/批次号/型号编码/产品名称）" />
+      <PageHeader title="质保码导入" description="上传 Excel 文件批量导入质保码（4列：编码/批次号/型号编码/产品名称）" actions={
+        <button onClick={downloadTemplate} className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          下载导入模板
+        </button>
+      } />
       {success && <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div>}
       {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
 
