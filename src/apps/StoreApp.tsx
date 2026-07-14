@@ -45,6 +45,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/store/login" replace />;
   if (user.role !== 'STORE') return <Navigate to="/store/login" replace />;
   return <>{children}</>;
+}
 
 function DashboardShell() {
   return (
@@ -52,6 +53,7 @@ function DashboardShell() {
       <DashboardLayout menuItems={STORE_MENU} role="store" title="和膜门店管理" />
     </AuthGuard>
   );
+}
 
 const router = createBrowserRouter([
   {

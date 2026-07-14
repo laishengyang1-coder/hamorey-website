@@ -44,7 +44,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/province/login" replace />;
   if (user.role !== 'PROVINCE') return <Navigate to="/province/login" replace />;
   return <>{children}</>;
-
+}
 
 function DashboardShell() {
   return (
@@ -52,7 +52,7 @@ function DashboardShell() {
       <DashboardLayout menuItems={PROVINCE_MENU} role="province" title="和膜省代管理" />
     </AuthGuard>
   );
-
+}
 
 const router = createBrowserRouter([
   {
@@ -83,4 +83,3 @@ const router = createBrowserRouter([
 ]);
 
 export { router };
-
