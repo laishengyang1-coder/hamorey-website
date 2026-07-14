@@ -37,5 +37,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: a013bc5e2a5fab347f794d834e0f72d3
-          command: pages deploy dist --project-name=hamorey-website-v1 --branch=main --commit-dirty=true
+          command: pages deploy dist --project-name=hamorey-website-v1 --branch=main --commit-dirty=true --production
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
