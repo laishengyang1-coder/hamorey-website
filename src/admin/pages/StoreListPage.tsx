@@ -90,7 +90,7 @@ export default function StoreListPage() {
     setForm({
       code: org.code, name: org.name,
       province: org.province || '', city: org.city || '',
-      contact_name: org.contact_name || '', phone: org.phone || '',
+      contact_name: org.contact_name || '', phone: org.phone || '', username: '', password: '',
     });
     setDrawerOpen(true);
   };

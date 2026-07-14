@@ -100,6 +100,8 @@ export default function ProvinceListPage() {
       city: org.city || '',
       contact_name: org.contact_name || '',
       phone: org.phone || '',
+      username: '',
+      password: '',
     });
     setDrawerOpen(true);
   };
