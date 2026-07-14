@@ -16,6 +16,7 @@ interface Organization {
   code: string;
   name: string;
   type: string;
+  parent_id: string | null;
   province: string | null;
   city: string | null;
   address: string | null;
@@ -23,6 +24,11 @@ interface Organization {
   phone: string | null;
   status: string;
   created_at: string;
+}
+
+interface ProvinceOption {
+  id: string;
+  name: string;
 }
 
 const FILTER_FIELDS: FilterField[] = [
@@ -33,17 +39,6 @@ const FILTER_FIELDS: FilterField[] = [
     { value: 'disabled', label: '停用' },
   ]},
   { key: 'keyword', label: '关键词', type: 'text', placeholder: '名称/编码/联系人' },
-];
-
-const COLUMNS: Column[] = [
-  { key: 'code', title: '编码', dataIndex: 'code', width: '120px' },
-  { key: 'name', title: '名称', dataIndex: 'name' },
-  { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-' },
-  { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
-  { key: 'address', title: '详细地址', dataIndex: 'address', render: (v) => (v as string) || '-' },
-  { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
-  { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
-  { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
 ];
 
 export default function StoreListPage() {
@@ -57,10 +52,26 @@ export default function StoreListPage() {
   const [selected, setSelected] = useState<Organization | null>(null);
   const [form, setForm] = useState({
     code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '',
+    parent_id: '',
   });
+  const [provinces, setProvinces] = useState<ProvinceOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const provinceMap = Object.fromEntries(provinces.map((p) => [p.id, p.name]));
+
+  const COLUMNS: Column[] = [
+    { key: 'code', title: '编码', dataIndex: 'code', width: '120px' },
+    { key: 'name', title: '名称', dataIndex: 'name' },
+    { key: 'parent_name', title: '上级省代', dataIndex: 'parent_id', render: (v) => (v as string) ? (provinceMap[v as string] || (v as string)) : '-' },
+    { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-' },
+    { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
+    { key: 'address', title: '详细地址', dataIndex: 'address', render: (v) => (v as string) || '-' },
+    { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
+    { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
+    { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
+  ];
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
     setLoading(true);
@@ -79,6 +90,13 @@ export default function StoreListPage() {
 
   useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
 
+  // 获取省代列表供下拉选择
+  useEffect(() => {
+    apiRequest<{ items: ProvinceOption[] }>('/admin/organizations?type=PROVINCE&pageSize=200')
+      .then((res) => setProvinces(res.items || []))
+      .catch(() => {});
+  }, []);
+
   const handleFilter = (values: Record<string, string>) => {
     setFilters(values);
     setPage(1);
@@ -86,7 +104,7 @@ export default function StoreListPage() {
 
   const openCreate = () => {
     setSelected(null);
-    setForm({ code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '' });
+    setForm({ code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '', parent_id: '' });
     setDrawerOpen(true);
   };
 
@@ -96,6 +114,7 @@ export default function StoreListPage() {
       code: org.code, name: org.name,
       province: org.province || '', city: org.city || '', address: org.address || '',
       contact_name: org.contact_name || '', phone: org.phone || '', username: '', password: '',
+      parent_id: org.parent_id || '',
     });
     setDrawerOpen(true);
   };
@@ -114,7 +133,7 @@ export default function StoreListPage() {
       } else {
         await apiRequest('/admin/organizations', {
           method: 'POST',
-          body: JSON.stringify({ ...form, type: 'STORE' }),
+          body: JSON.stringify({ ...form, type: 'STORE', parent_id: form.parent_id || undefined }),
         });
       }
       setDrawerOpen(false);
@@ -177,6 +196,16 @@ export default function StoreListPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">名称 *</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">上级省代</label>
+            <select value={form.parent_id} onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white">
+              <option value="">- 无上级（直属总部） -</option>
+              {provinces.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
