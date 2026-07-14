@@ -262,4 +262,4 @@ const router = createBrowserRouter([
   },
 ]);
 
-export { router as adminRouter };
+export { router };
