@@ -46,8 +46,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
-  font-size: 64rpx;
-}
 
 .reward-info {
   padding: 20rpx 16rpx;
