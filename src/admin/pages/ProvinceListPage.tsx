@@ -46,6 +46,13 @@ const COLUMNS: Column[] = [
     key: 'status', title: '状态', dataIndex: 'status',
     render: (v) => <StatusBadge status={v as string} />,
   },
+  {
+    key: 'actions', title: '操作', dataIndex: 'id', render: (_v, record) => (
+      <button onClick={(e) => { e.stopPropagation(); handleDelete(record as unknown as Organization); }} className="text-sm text-red-500 hover:text-red-700">
+        删除
+      </button>
+    ),
+  },
 ];
 
 export default function ProvinceListPage() {
@@ -62,6 +69,8 @@ export default function ProvinceListPage() {
     username: '', password: '',
   });
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
     setLoading(true);
@@ -130,6 +139,18 @@ export default function ProvinceListPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDelete = (org: Organization) => { setDeleteTarget(org); };
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await apiRequest(`/admin/organizations/${deleteTarget.id}`, { method: 'DELETE' });
+      setDeleteTarget(null);
+      fetchData(page, filters);
+    } catch (err) { alert(err instanceof Error ? err.message : '删除失败'); }
+    finally { setDeleting(false); }
   };
 
   return (
@@ -242,6 +263,10 @@ export default function ProvinceListPage() {
           </div>
         </div>
       </DetailDrawer>
+
+      <ConfirmDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
+        title="确认删除" description={`确定要删除「${deleteTarget?.name}」吗？此操作不可撤销。`}
+        onConfirm={confirmDelete} loading={deleting} confirmText="删除" confirmVariant="danger" />
     </div>
   );
 }

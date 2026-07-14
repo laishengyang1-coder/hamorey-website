@@ -208,3 +208,32 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     return error('更新组织失败', 500);
   }
 };
+
+/** DELETE /api/admin/organizations/:id — 删除组织 */
+export const onRequestDelete: PagesFunction<Env> = async (context) => {
+  try {
+    const url = new URL(context.request.url);
+    const parts = url.pathname.split('/');
+    const orgId = parts[parts.length - 1];
+    if (!orgId || orgId === 'organizations') return error('缺少组织 ID', 400);
+
+    const org = await queryFirst(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
+    if (!org) return error('组织不存在', 404);
+
+    // 如果有子组织（省代下有门店），不允许删除
+    if (org.type === 'PROVINCE') {
+      const children = await queryFirst<{ cnt: number }>(context.env.DB,
+        `SELECT COUNT(*) AS cnt FROM organizations WHERE parent_id = ?`, orgId);
+      if (children && children.cnt > 0) return error('该省代下还有门店，请先删除门店', 400);
+    }
+
+    await execute(context.env.DB, `DELETE FROM organizations WHERE id = ?`, orgId);
+    const user = getAuthUser(context.data);
+    await writeOperationLog(context.env.DB, user?.userId || null, 'delete_organization', 'organization', orgId, { deleted_type: org.type }, getClientIP(context.request));
+
+    return ok(null, '删除成功');
+  } catch (err) {
+    console.error('[admin/organizations DELETE]', err);
+    return error('删除组织失败', 500);
+  }
+};
