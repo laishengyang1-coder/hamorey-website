@@ -14,7 +14,7 @@
     <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadCodes">重试</view>
   </view>
   <view wx:elif="{{!loading && codes.length === 0}}" class="empty-state">
-    <view class="empty-state-icon">🎫</view>
+    <view class="empty-state-icon"></view>
     <view class="empty-state-text">暂无质保码</view>
   </view>
 

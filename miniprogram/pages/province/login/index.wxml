@@ -1,22 +1,43 @@
 <view class="page-container">
-<nav-bar title="省代登录" />
-  <view class="login-header">
-    <view class="login-logo">HAMOREY</view>
-    <view class="login-subtitle">省代管理系统</view>
+  <nav-bar title="省代登录" />
+  <view class="login-hero">
+    <view class="hero-badge">和膜</view>
+    <view class="hero-brand">和膜 HAMOREY</view>
+    <view class="hero-sub">省代管理系统</view>
+    <view class="hero-slogan">不止于膜</view>
   </view>
 
-  <view class="login-form">
-    <view class="form-group">
-      <view class="form-label">用户名</view>
-      <input class="form-input" placeholder="请输入用户名" placeholder-class="search-placeholder" value="{{username}}" bindinput="onUsernameInput"/>
+  <view class="login-card">
+    <view class="field">
+      <view class="field-label">用户名</view>
+      <input
+        class="form-input"
+        placeholder="请输入用户名"
+        placeholder-class="search-placeholder"
+        value="{{username}}"
+        bindinput="onUsernameInput"
+      />
     </view>
-    <view class="form-group">
-      <view class="form-label">密码</view>
-      <input class="form-input" password="{{true}}" placeholder="请输入密码" placeholder-class="search-placeholder" value="{{password}}" bindinput="onPasswordInput"/>
+
+    <view class="field">
+      <view class="field-label">密码</view>
+      <input
+        class="form-input"
+        password="{{true}}"
+        placeholder="请输入密码"
+        placeholder-class="search-placeholder"
+        value="{{password}}"
+        bindinput="onPasswordInput"
+      />
     </view>
-    <view class="form-group mt-32">
-      <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting || !username || !password}}" bindtap="handleLogin">{{submitting ? '登录中...' : '登录'}}</button>
-    </view>
-    <view class="switch-entry" bindtap="goStoreLogin"><text>门店登录 ›</text></view>
+
+    <button
+      class="btn-primary login-btn"
+      loading="{{submitting}}"
+      disabled="{{submitting || !username || !password}}"
+      bindtap="handleLogin"
+    >{{submitting ? '登录中...' : '登录'}}</button>
+
+    <view class="switch-entry" bindtap="goStoreLogin"><text>我是门店，前往门店登录 ›</text></view>
   </view>
 </view>

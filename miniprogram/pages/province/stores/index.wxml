@@ -11,7 +11,7 @@
   <!-- 列表 -->
   <view wx:else>
     <view wx:if="{{stores.length === 0}}" class="empty-state">
-      <view class="empty-state-icon">🏪</view>
+      <view class="empty-state-icon"></view>
       <view class="empty-state-text">暂无下属门店</view>
     </view>
 

@@ -5,7 +5,7 @@
 
   <block wx:else>
     <image wx:if="{{reward.image_url}}" src="{{reward.image_url}}" mode="aspectFill" class="detail-image"/>
-    <view wx:else class="detail-image-placeholder">🎁</view>
+    <view wx:else class="detail-image-placeholder"></view>
 
     <view class="section">
       <view class="section-body">

@@ -5,43 +5,85 @@
   flex-direction: column;
 }
 
-.login-header {
+/* 品牌展示区 */
+.login-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120rpx 48rpx 60rpx;
+  padding: 40rpx 48rpx 56rpx;
 }
 
-.login-logo {
-  font-size: 52rpx;
+.hero-badge {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 2rpx solid rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
   font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.hero-brand {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
   margin-bottom: 12rpx;
 }
 
-.login-subtitle {
+.hero-sub {
   font-size: var(--font-sm);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 16rpx;
 }
 
-.login-form {
-  flex: 1;
-  padding: 48rpx;
-  margin: 0 32rpx;
+.hero-slogan {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 6rpx;
+  position: relative;
+  padding: 0 28rpx;
+}
+
+.hero-slogan::before,
+.hero-slogan::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20rpx;
+  height: 1rpx;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hero-slogan::before { left: 0; }
+.hero-slogan::after { right: 0; }
+
+/* 登录卡片 */
+.login-card {
+  margin: 0 32rpx 48rpx;
   background: var(--color-bg-white);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-lg);
+  padding: 48rpx 40rpx;
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.25);
 }
 
-.login-form .form-label {
-  color: var(--color-text);
-  font-size: var(--font-md);
-  font-weight: 500;
+.field {
+  margin-bottom: 24rpx;
 }
 
-.login-form .form-input {
-  border: 2rpx solid var(--color-border);
-  background: var(--color-bg-white);
+.field-label {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 10rpx;
+}
+
+.login-btn {
+  margin-top: 16rpx;
 }
 
 .switch-entry {

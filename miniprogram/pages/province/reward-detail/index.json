@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "商品详情",
+  "navigationStyle": "custom",
+  "backgroundColor": "#F5F0EB",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/index"
   }

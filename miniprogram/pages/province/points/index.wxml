@@ -17,8 +17,8 @@
   </view>
 
   <view class="quick-row">
-    <view class="quick-btn" bindtap="goRewards">🎁 积分商城</view>
-    <view class="quick-btn" bindtap="goOrders">📦 兑换记录</view>
+    <view class="quick-btn" bindtap="goRewards">积分商城</view>
+    <view class="quick-btn" bindtap="goOrders">兑换记录</view>
   </view>
 
   <view class="section">

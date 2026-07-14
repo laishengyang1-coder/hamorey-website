@@ -1,15 +1,15 @@
 <view class="page-container">
-<nav-bar title="门店登录" />
-  <!-- 品牌头部 -->
-  <view class="login-header">
-    <view class="login-logo">HAMOREY</view>
-    <view class="login-subtitle">门店管理系统</view>
+  <nav-bar title="门店登录" />
+  <view class="login-hero">
+    <view class="hero-badge">和膜</view>
+    <view class="hero-brand">和膜 HAMOREY</view>
+    <view class="hero-sub">门店管理系统</view>
+    <view class="hero-slogan">不止于膜</view>
   </view>
 
-  <!-- 登录表单 -->
-  <view class="login-form">
-    <view class="form-group">
-      <view class="form-label">用户名</view>
+  <view class="login-card">
+    <view class="field">
+      <view class="field-label">用户名</view>
       <input
         class="form-input"
         placeholder="请输入用户名"
@@ -19,8 +19,8 @@
       />
     </view>
 
-    <view class="form-group">
-      <view class="form-label">密码</view>
+    <view class="field">
+      <view class="field-label">密码</view>
       <input
         class="form-input"
         password="{{true}}"
@@ -31,18 +31,13 @@
       />
     </view>
 
-    <view class="form-group mt-32">
-      <button
-        class="btn-primary"
-        loading="{{submitting}}"
-        disabled="{{submitting || !username || !password}}"
-        bindtap="handleLogin"
-      >{{submitting ? '登录中...' : '登录'}}</button>
-    </view>
+    <button
+      class="btn-primary login-btn"
+      loading="{{submitting}}"
+      disabled="{{submitting || !username || !password}}"
+      bindtap="handleLogin"
+    >{{submitting ? '登录中...' : '登录'}}</button>
 
-    <!-- 省代入口 -->
-    <view class="switch-entry" bindtap="goProvinceLogin">
-      <text>省代登录 ›</text>
-    </view>
+    <view class="switch-entry" bindtap="goProvinceLogin"><text>我是省代，前往省代登录 ›</text></view>
   </view>
 </view>
