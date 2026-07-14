@@ -19,7 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const q = (url.searchParams.get('q') || '').trim();
     const limit = Math.min(20, Math.max(1, Number(url.searchParams.get('limit') || 10)));
 
-    const conditions = ['wc.owner_org_id = ?', "wc.status IN ('active', 'available')"];
+    const conditions = ['wc.owner_org_id = ?', "wc.status IN ('active', 'available', 'in_stock')"];
     const params: unknown[] = [user.orgId];
 
     if (q) {
