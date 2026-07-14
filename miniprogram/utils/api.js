@@ -89,15 +89,24 @@ function request(options = {}) {
             });
           }
         } else if (res.statusCode === 401) {
-          // Token 失效，清除登录态
-          if (app && app.clearLoginState) {
+          // 优先使用后端返回的真实错误信息（如「用户名或密码错误」）
+          const backendMessage = (res.data && res.data.message) ? res.data.message : '';
+
+          // 只有在本次请求确实携带了 token（auth === true）时，
+          // 才说明是「已登录态被踢下线/过期」，需要清理登录态。
+          // 登录类请求 auth:false，不应因 401 清空 storage 中的旧 token。
+          if (auth && app && app.clearLoginState) {
             app.clearLoginState();
           }
-          wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+
+          // 后端未返回 message 时，才回退到「登录已过期」文案
+          const fallbackMessage = '登录已过期';
+          const toastTitle = backendMessage || '登录已过期，请重新登录';
+          wx.showToast({ title: toastTitle, icon: 'none' });
           resolve({
             ok: false,
             data: null,
-            message: '登录已过期'
+            message: backendMessage || fallbackMessage
           });
         } else {
           const msg = (res.data && res.data.message)
