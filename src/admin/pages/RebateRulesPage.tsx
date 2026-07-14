@@ -39,6 +39,7 @@ export default function RebateRulesPage() {
     { key: 'model_name', title: '型号', dataIndex: 'model_name', render: (v, r) => r.is_global ? '全局' : (v as string) },
     { key: 'rebate_ratio', title: '返利比例', dataIndex: 'rebate_ratio', render: (v) => `${(Number(v) * 100).toFixed(0)}%` },
     { key: 'effective_from', title: '生效日期', dataIndex: 'effective_from', render: (v) => (v as string)?.slice(0, 10) },
+    { key: 'effective_to', title: '失效日期', dataIndex: 'effective_to', render: (v) => v ? (v as string).slice(0, 10) : '长期' },
     { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
   ];
 
@@ -62,7 +63,7 @@ export default function RebateRulesPage() {
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无返利规则" />
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑返利规则' : '新增返利规则'}>
         <div className="space-y-4">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.is_global} onChange={(e) => setForm({ ...form, is_global: e.target.checked })}
               disabled={!!selected} className="rounded border-gray-300" /> 全局规则（适用所有型号）
           </label>
@@ -84,6 +85,11 @@ export default function RebateRulesPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">生效日期 *</label>
             <input type="date" value={form.effective_from} onChange={(e) => setForm({ ...form, effective_from: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">失效日期（留空长期有效）</label>
+            <input type="date" value={form.effective_to} onChange={(e) => setForm({ ...form, effective_to: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
           <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">

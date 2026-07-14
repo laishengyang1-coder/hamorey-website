@@ -59,6 +59,7 @@ export default function ProvinceListPage() {
   const [selected, setSelected] = useState<Organization | null>(null);
   const [form, setForm] = useState({
     code: '', name: '', province: '', city: '', contact_name: '', phone: '',
+    username: '', password: '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -86,7 +87,7 @@ export default function ProvinceListPage() {
 
   const openCreate = () => {
     setSelected(null);
-    setForm({ code: '', name: '', province: '', city: '', contact_name: '', phone: '' });
+    setForm({ code: '', name: '', province: '', city: '', contact_name: '', phone: '', username: '', password: '' });
     setDrawerOpen(true);
   };
 
@@ -211,6 +212,23 @@ export default function ProvinceListPage() {
               />
             </div>
           </div>
+          {!selected && (
+            <div className="border-t border-gray-100 pt-4">
+              <p className="text-sm font-medium text-gray-500 mb-3">登录账号设置</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">账号 *</label>
+                  <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录用户名" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">密码 *</label>
+                  <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录密码" />
+                </div>
+              </div>
+            </div>
+          )}
           <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}

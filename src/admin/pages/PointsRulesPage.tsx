@@ -18,6 +18,7 @@ export default function PointsRulesPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<PointsRule | null>(null);
   const [form, setForm] = useState({ product_model_id: '', points: 0, effective_from: '', effective_to: '' });
+  const [permanent, setPermanent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [models, setModels] = useState<Array<{ id: string; model_code: string; display_name: string }>>([]);
 
@@ -35,16 +36,16 @@ export default function PointsRulesPage() {
     apiRequest<{ items: Array<{ id: string; model_code: string; display_name: string }> }>('/admin/product-models').then((r) => setModels(r.items)).catch(() => {});
   }, []);
 
-  const openCreate = () => { setSelected(null); setForm({ product_model_id: '', points: 0, effective_from: '', effective_to: '' }); setDrawerOpen(true); };
-  const openEdit = (rule: PointsRule) => { setSelected(rule); setForm({ product_model_id: rule.product_model_id, points: rule.points, effective_from: rule.effective_from?.slice(0, 10) || '', effective_to: rule.effective_to?.slice(0, 10) || '' }); setDrawerOpen(true); };
+  const openCreate = () => { setSelected(null); setForm({ product_model_id: '', points: 0, effective_from: '', effective_to: '' }); setPermanent(false); setDrawerOpen(true); };
+  const openEdit = (rule: PointsRule) => { setSelected(rule); setForm({ product_model_id: rule.product_model_id, points: rule.points, effective_from: rule.effective_from?.slice(0, 10) || '', effective_to: rule.effective_to?.slice(0, 10) || '' }); setPermanent(!rule.effective_to); setDrawerOpen(true); };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       if (selected) {
-        await apiRequest(`/admin/points-rules/${selected.id}`, { method: 'PUT', body: JSON.stringify(form) });
+        await apiRequest(`/admin/points-rules/${selected.id}`, { method: 'PUT', body: JSON.stringify({ ...form, effective_to: permanent ? null : form.effective_to }) });
       } else {
-        await apiRequest('/admin/points-rules', { method: 'POST', body: JSON.stringify(form) });
+        await apiRequest('/admin/points-rules', { method: 'POST', body: JSON.stringify({ ...form, effective_to: permanent ? null : form.effective_to }) });
       }
       setDrawerOpen(false); fetchData();
     } catch (err) { alert(err instanceof Error ? err.message : '保存失败'); }
@@ -84,9 +85,16 @@ export default function PointsRulesPage() {
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">失效日期（留空永久有效）</label>
-            <input type="date" value={form.effective_to} onChange={(e) => setForm({ ...form, effective_to: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">失效日期</label>
+            <div className="flex items-center gap-2 mb-2">
+              <input type="checkbox" id="permanent" checked={permanent} onChange={(e) => setPermanent(e.target.checked)}
+                className="rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
+              <label htmlFor="permanent" className="text-sm text-gray-600">长期有效</label>
+            </div>
+            {!permanent && (
+              <input type="date" value={form.effective_to} onChange={(e) => setForm({ ...form, effective_to: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+            )}
           </div>
           <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50">
             {saving ? '保存中...' : '保存'}
