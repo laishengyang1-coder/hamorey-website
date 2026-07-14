@@ -262,6 +262,4 @@ const router = createBrowserRouter([
   },
 ]);
 
-export default function AdminApp() {
-  return <RouterProvider router={router} />;
-}
+export { router as adminRouter };
