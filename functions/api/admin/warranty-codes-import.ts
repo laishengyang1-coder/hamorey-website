@@ -44,13 +44,20 @@ async function checkRows(
   );
   const existingSet = new Set(existing.map((e) => e.code));
 
-  // 查询有效型号
-  const models = await queryAll<{ model_code: string }>(
+  // 查询有效型号（同时按 model_code 和 display_name 匹配）
+  const allModels = await queryAll<{ model_code: string; display_name: string; id: string }>(
     db,
-    `SELECT model_code FROM product_models WHERE status = 'active' AND model_code IN (${modelCodes.map(() => '?').join(',')})`,
-    ...modelCodes,
+    `SELECT id, model_code, display_name FROM product_models WHERE status = 'active'`,
   );
-  const modelSet = new Set(models.map((m) => m.model_code));
+  // 构建匹配集合：型号编码和显示名称都能匹配
+  const modelCodeSet = new Set(allModels.map((m) => m.model_code));
+  const modelNameSet = new Set(allModels.map((m) => m.display_name));
+  // 用于查找：用户填的值→实际的 model_code
+  const nameToCode = new Map<string, string>();
+  allModels.forEach((m) => {
+    nameToCode.set(m.model_code, m.model_code);
+    nameToCode.set(m.display_name, m.model_code);
+  });
 
   // 逐行校验
   const codeDupCheck = new Set<string>();
@@ -77,8 +84,8 @@ async function checkRows(
       errors.push({ row: rowNum, code: row.code, reason: '质保码已存在' });
       return;
     }
-    if (!modelSet.has(row.model_code)) {
-      errors.push({ row: rowNum, code: row.code, reason: `型号编码 "${row.model_code}" 不存在或已停用` });
+    if (!modelCodeSet.has(row.model_code) && !modelNameSet.has(row.model_code)) {
+      errors.push({ row: rowNum, code: row.code, reason: `产品 "${row.model_code}" 不存在或已停用` });
       return;
     }
   });
@@ -138,15 +145,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         return error('数据校验未通过，请修复错误后重新导入', 400, { errors: checkResult.errors });
       }
 
-      // 查询型号 ID 映射
-      const modelCodes = [...new Set(rows.map((r) => r.model_code))];
-      const modelMap = new Map<string, string>();
-      const models = await queryAll<{ id: string; model_code: string }>(
+      // 查询型号 ID 映射（同时支持 model_code 和 display_name）
+      const allModels = await queryAll<{ id: string; model_code: string; display_name: string }>(
         context.env.DB,
-        `SELECT id, model_code FROM product_models WHERE model_code IN (${modelCodes.map(() => '?').join(',')})`,
-        ...modelCodes,
+        `SELECT id, model_code, display_name FROM product_models WHERE status = 'active'`,
       );
-      models.forEach((m) => modelMap.set(m.model_code, m.id));
+      const modelMap = new Map<string, string>();
+      allModels.forEach((m) => {
+        modelMap.set(m.model_code, m.id);
+        modelMap.set(m.display_name, m.id);
+      });
 
       // 事务写入
       const batchId = generateId();
