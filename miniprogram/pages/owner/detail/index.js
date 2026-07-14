@@ -30,7 +30,7 @@ Page({
   async loadData() {
     this.setData({ loading: true, error: '' });
 
-    const res = await api.get('/public/warranties', { code: this.data.recordId }, { loading: false });
+    const res = await api.get('/public/warranties', { id: this.data.recordId }, { loading: false });
 
     if (!res.ok) {
       this.setData({ loading: false, error: res.message || '加载失败' });

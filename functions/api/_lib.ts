@@ -90,6 +90,59 @@ export async function sha256(input: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+const PASSWORD_ITERATIONS = 100_000;
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  const binary = atob(value);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+async function derivePassword(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: salt.buffer as ArrayBuffer, iterations },
+    key,
+    256,
+  );
+  return new Uint8Array(bits);
+}
+
+/** Create a salted password hash while keeping the existing TEXT database column. */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const derived = await derivePassword(password, salt, PASSWORD_ITERATIONS);
+  return `pbkdf2$${PASSWORD_ITERATIONS}$${bytesToBase64(salt)}$${bytesToBase64(derived)}`;
+}
+
+/** Verify PBKDF2 hashes and legacy SHA-256 hashes during migration. */
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  if (!storedHash.startsWith('pbkdf2$')) return (await sha256(password)) === storedHash;
+
+  const [, iterationsValue, saltValue, hashValue] = storedHash.split('$');
+  const iterations = Number(iterationsValue);
+  if (!iterations || !saltValue || !hashValue) return false;
+
+  const actual = await derivePassword(password, base64ToBytes(saltValue), iterations);
+  const expected = base64ToBytes(hashValue);
+  if (actual.length !== expected.length) return false;
+
+  let difference = 0;
+  for (let i = 0; i < actual.length; i++) difference |= actual[i] ^ expected[i];
+  return difference === 0;
+}
+
 // ============================================================
 // 第二阶段新增：Session Token 管理
 // ============================================================
@@ -327,6 +380,46 @@ export async function getOrgPoints(
     organizationId,
   );
   return row ?? { available: 0, frozen: 0 };
+}
+
+/** Resolve an address owned by an organization, supporting the mini program's `default` alias. */
+export async function resolveOrganizationAddress(
+  db: D1Database,
+  organizationId: string,
+  requestedId: string,
+): Promise<{ id: string } | null> {
+  if (requestedId === 'default') {
+    return queryFirst<{ id: string }>(
+      db,
+      `SELECT id FROM addresses WHERE organization_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1`,
+      organizationId,
+    );
+  }
+  return queryFirst<{ id: string }>(
+    db,
+    `SELECT id FROM addresses WHERE id = ? AND organization_id = ?`,
+    requestedId,
+    organizationId,
+  );
+}
+
+/** Validate warranty photo ownership and existence before linking files to a record. */
+export async function validateWarrantyPhotoKeys(
+  bucket: R2Bucket,
+  organizationId: string,
+  keys: string[],
+): Promise<string | null> {
+  if (keys.length > 6) return '施工照片最多上传 6 张';
+  if (new Set(keys).size !== keys.length) return '施工照片不能重复';
+
+  const prefix = `warranty-photos/${organizationId}/`;
+  if (keys.some((key) => !key.startsWith(prefix) || key.includes('..'))) {
+    return '施工照片不属于当前门店';
+  }
+
+  const objects = await Promise.all(keys.map((key) => bucket.head(key)));
+  if (objects.some((object) => !object)) return '部分施工照片不存在，请重新上传';
+  return null;
 }
 
 // ============================================================

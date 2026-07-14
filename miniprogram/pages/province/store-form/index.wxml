@@ -54,6 +54,17 @@
           />
         </view>
         <view class="form-group">
+          <view class="form-label">详细地址</view>
+          <input
+            class="form-input"
+            placeholder="请输入门店详细地址"
+            placeholder-class="search-placeholder"
+            value="{{form.address}}"
+            bindinput="onInput"
+            data-field="address"
+          />
+        </view>
+        <view class="form-group">
           <view class="form-label">联系人</view>
           <input
             class="form-input"
@@ -77,6 +88,17 @@
             data-field="phone"
           />
         </view>
+
+        <block wx:if="{{!isEdit}}">
+          <view class="form-group">
+            <view class="form-label"><text class="required">*</text>登录账号</view>
+            <input class="form-input" placeholder="门店登录账号" value="{{form.username}}" bindinput="onInput" data-field="username" />
+          </view>
+          <view class="form-group">
+            <view class="form-label"><text class="required">*</text>登录密码</view>
+            <input class="form-input" password placeholder="至少 8 位" value="{{form.password}}" bindinput="onInput" data-field="password" />
+          </view>
+        </block>
 
         <view wx:if="{{isEdit}}" class="form-group">
           <view class="form-label">状态</view>

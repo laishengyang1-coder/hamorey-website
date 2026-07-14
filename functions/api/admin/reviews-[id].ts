@@ -7,6 +7,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, writePointsLedger , getAuthUser} from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
+import { createCertificatePdf } from '../_certificate';
 
 interface Env {
   DB: D1Database;
@@ -152,56 +153,20 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   // 生成 PDF 证书
   let certFileKey = '';
   try {
-    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4
-
-    const { width } = page.getSize();
-    let y = 780;
-
-    // 标题
-    page.drawText('和膜 HAMOREY', { x: 50, y, size: 24, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
-    y -= 35;
-    page.drawText('整车质保证书', { x: 50, y, size: 18, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-    y -= 40;
-
-    // 证书编号
-    page.drawText(`证书编号：${certNo}`, { x: 50, y, size: 11, font });
-    y -= 25;
-
-    // 分隔线
-    page.drawLine({ start: { x: 50, y }, end: { x: width - 50, y }, thickness: 1, color: rgb(0.8, 0.8, 0.8) });
-    y -= 30;
-
-    // 信息区域
-    const infoLines = [
-      ['车主姓名', record.customer_name_snapshot],
-      ['车牌号', record.plate_no_snapshot],
-      ['车架号(VIN)', record.vin_snapshot || '-'],
-      ['车辆品牌', record.vehicle_brand_snapshot],
-      ['车辆型号', record.vehicle_model_snapshot],
-      ['产品名称', record.product_name_snapshot],
-      ['产品型号', record.product_model_snapshot],
-      ['施工门店', record.store_name_snapshot],
-      ['施工日期', record.installation_date],
-      ['质保到期', expiryDateStr],
-      ['质保年限', `${record.warranty_years_snapshot} 年`],
-    ];
-
-    for (const [label, value] of infoLines) {
-      page.drawText(`${label}：`, { x: 50, y, size: 11, font: fontBold });
-      page.drawText(value, { x: 160, y, size: 11, font });
-      y -= 22;
-    }
-
-    y -= 30;
-    page.drawText('本证书由和膜 HAMOREY 官方签发，可通过官网 hemoppf.com 查询真伪。', {
-      x: 50, y, size: 9, font, color: rgb(0.5, 0.5, 0.5),
+    const pdfBytes = createCertificatePdf({
+      certificateNo: certNo,
+      customerName: record.customer_name_snapshot,
+      plateNo: record.plate_no_snapshot,
+      vin: record.vin_snapshot || '-',
+      vehicleBrand: record.vehicle_brand_snapshot,
+      vehicleModel: record.vehicle_model_snapshot,
+      productName: record.product_name_snapshot,
+      productModel: record.product_model_snapshot,
+      storeName: record.store_name_snapshot,
+      installationDate: record.installation_date,
+      expiryDate: expiryDateStr,
+      warrantyYears: record.warranty_years_snapshot,
     });
-
-    const pdfBytes = await pdfDoc.save();
     certFileKey = `certificates/${certNo}.pdf`;
     await env.R2.put(certFileKey, pdfBytes, {
       httpMetadata: { contentType: 'application/pdf' },

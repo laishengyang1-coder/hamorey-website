@@ -3,7 +3,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { sha256, generateId, createSession, queryFirst, execute } from '../_lib';
+import { verifyPassword, hashPassword, createSession, queryFirst, execute } from '../_lib';
 import { jsonResponse, ok, error, getClientIP } from '../_middleware';
 
 interface Env {
@@ -46,9 +46,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     // 验证密码
-    const hashed = await sha256(password);
-    if (hashed !== user.password_hash) {
+    if (!(await verifyPassword(password, user.password_hash))) {
       return error('用户名或密码错误', 401);
+    }
+
+    if (!user.password_hash.startsWith('pbkdf2$')) {
+      await execute(
+        env.DB,
+        `UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`,
+        await hashPassword(password),
+        user.id,
+      );
     }
 
     // 查询组织信息
@@ -58,14 +66,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       name: string;
       province: string | null;
       city: string | null;
+      status: string;
     }>(
       env.DB,
-      `SELECT id, type, name, province, city FROM organizations WHERE id = ?`,
+      `SELECT id, type, name, province, city, status FROM organizations WHERE id = ?`,
       user.organization_id,
     );
 
-    if (!org || org.type === 'HQ' ? false : org.type === 'PROVINCE' ? false : org.type === 'STORE' ? false : true) {
-      // 组织必须有效
+    const expectedRole = org?.type === 'HQ' ? 'HQ_ADMIN' : org?.type;
+    if (!org || org.status !== 'active' || expectedRole !== user.role) {
+      return error('账号所属组织无效，请联系管理员', 403);
     }
 
     // 创建 Session

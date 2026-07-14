@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, uploadWarrantyPhoto } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { StepWizard } from '../../shared/components/StepWizard';
 
@@ -23,6 +23,8 @@ export default function WarrantyRegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [photoNames, setPhotoNames] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     warranty_code: '',
@@ -53,6 +55,25 @@ export default function WarrantyRegistrationPage() {
     finally { setLoading(false); }
   };
 
+  const handlePhotoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []).slice(0, 6);
+    if (files.length === 0) return;
+
+    setUploadingPhotos(true);
+    setError('');
+    try {
+      const uploaded = await Promise.all(files.map(uploadWarrantyPhoto));
+      updateField('photo_keys', uploaded.map((item) => item.fileKey));
+      setPhotoNames(files.map((file) => file.name));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '照片上传失败');
+      updateField('photo_keys', []);
+      setPhotoNames([]);
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -63,7 +84,7 @@ export default function WarrantyRegistrationPage() {
         <p className="mt-2 text-gray-500">{success}</p>
         <div className="flex gap-3 mt-6">
           <button onClick={() => navigate('/store/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
-          <button onClick={() => { setSuccess(''); setStep(0); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
+          <button onClick={() => { setSuccess(''); setStep(0); setPhotoNames([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
             className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">继续登记</button>
         </div>
       </div>
@@ -138,8 +159,13 @@ export default function WarrantyRegistrationPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">施工照片</label>
               <input type="file" accept="image/*" multiple
+                onChange={handlePhotoSelect}
+                disabled={uploadingPhotos}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
-              <p className="mt-2 text-xs text-gray-400">上传施工过程照片（支持多张）</p>
+              <p className="mt-2 text-xs text-gray-400">{uploadingPhotos ? '照片上传中...' : '上传施工过程照片，最多 6 张，每张不超过 10MB'}</p>
+              {photoNames.length > 0 && (
+                <p className="mt-2 text-xs text-emerald-600">已上传 {photoNames.length} 张：{photoNames.join('、')}</p>
+              )}
             </div>
           )}
 
@@ -155,7 +181,7 @@ export default function WarrantyRegistrationPage() {
                   <div key={label}><span className="text-gray-500">{label}</span><p className="text-gray-900 font-medium">{val || '-'}</p></div>
                 ))}
               </div>
-              <button onClick={handleSubmit} disabled={loading}
+              <button onClick={handleSubmit} disabled={loading || uploadingPhotos}
                 className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 mt-4">
                 {loading ? '提交中...' : '确认提交'}
               </button>

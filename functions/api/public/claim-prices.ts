@@ -19,7 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       // 返回所有活跃报价（按型号+部位）
       const prices = await queryAll(
         context.env.DB,
-        `SELECT cp.id, pm.model_code, pm.display_name AS model_name,
+        `SELECT cprice.id, pm.model_code, pm.display_name AS model_name,
                 cpart.name AS part_name, cpart.category,
                 cprice.price_cents, cprice.effective_from, cprice.effective_to
          FROM claim_prices cprice
@@ -36,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // 按型号筛选
     const prices = await queryAll(
       context.env.DB,
-      `SELECT cp.id, pm.model_code, pm.display_name AS model_name,
+      `SELECT cprice.id, pm.model_code, pm.display_name AS model_name,
               cpart.name AS part_name, cpart.category,
               cprice.price_cents, cprice.effective_from, cprice.effective_to
        FROM claim_prices cprice

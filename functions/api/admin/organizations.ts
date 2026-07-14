@@ -6,7 +6,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies, sha256 } from '../_lib';
+import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies, hashPassword } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -103,7 +103,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       errors.push({ field: 'type', message: '组织类型必须为 PROVINCE 或 STORE' });
     if (!body.name) errors.push({ field: 'name', message: '组织名称不能为空' });
     if (!body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
-    if (!body.password) errors.push({ field: 'password', message: '登录密码不能为空' });
+    if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '登录密码至少 8 位' });
     if (errors.length > 0) return validationError(errors);
 
     // 检查编码唯一性
@@ -144,7 +144,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // 为新增组织创建登录账号（省代 → PROVINCE，门店 → STORE）
     const accountId = generateId();
-    const passwordHash = await sha256(body.password as string);
+    const passwordHash = await hashPassword(body.password as string);
     await execute(
       context.env.DB,
       `INSERT INTO users (id, organization_id, username, password_hash, role, status, created_at, updated_at)
@@ -180,13 +180,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }
     }
 
+    const { password: _password, ...logDetail } = body;
     await writeOperationLog(
       context.env.DB,
       user?.userId || null,
       'create_organization',
       'organization',
       id,
-      body,
+      logDetail,
       getClientIP(context.request),
     );
 

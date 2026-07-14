@@ -3,7 +3,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, sha256, parsePagination, writeOperationLog , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, hashPassword, parsePagination, writeOperationLog , getAuthUser} from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -73,7 +73,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const errors: Array<{ field: string; message: string }> = [];
     if (!body.username) errors.push({ field: 'username', message: '用户名不能为空' });
-    if (!body.password || body.password.length < 6) errors.push({ field: 'password', message: '密码至少 6 位' });
+    if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '密码至少 8 位' });
     if (!body.role || !['HQ_ADMIN', 'PROVINCE', 'STORE'].includes(body.role))
       errors.push({ field: 'role', message: '角色无效' });
     if (!body.organization_id) errors.push({ field: 'organization_id', message: '所属组织不能为空' });
@@ -96,7 +96,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!org) return error('指定组织不存在或已停用', 400);
 
     const id = generateId();
-    const passwordHash = await sha256(body.password!);
+    const passwordHash = await hashPassword(body.password!);
     const user = getAuthUser(context.data);
 
     await execute(
@@ -159,7 +159,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.organization_id !== undefined) { updates.push('organization_id = ?'); params.push(body.organization_id); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
     if (body.password) {
-      const hash = await sha256(body.password!);
+      const hash = await hashPassword(body.password!);
       updates.push('password_hash = ?');
       params.push(hash);
     }
@@ -176,13 +176,14 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     );
 
     const user = getAuthUser(context.data);
+    const { password: _password, ...logDetail } = body;
     await writeOperationLog(
       context.env.DB,
       user?.userId || null,
       'update_user',
       'user',
       userId,
-      body,
+      logDetail,
       getClientIP(context.request),
     );
 

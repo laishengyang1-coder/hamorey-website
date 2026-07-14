@@ -3,7 +3,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, writeOperationLog, writePointsLedger, getOrgPoints , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, writeOperationLog, writePointsLedger, getOrgPoints, getAuthUser, resolveOrganizationAddress } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 
 interface Env { DB: D1Database; }
@@ -39,6 +39,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     };
     if (!body.address_id) return error('请选择收货地址', 400);
     if (!body.items || body.items.length === 0) return error('请选择兑换商品', 400);
+    if (body.items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99)) {
+      return error('兑换数量必须为 1 到 99 的整数', 400);
+    }
+
+    const address = await resolveOrganizationAddress(context.env.DB, user.orgId, body.address_id);
+    if (!address) return error('收货地址不存在，请先在网页后台维护收货地址', 400);
 
     let totalPoints = 0;
     const rewardIds = body.items.map((i) => i.reward_id);
@@ -64,7 +70,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await execute(context.env.DB,
       `INSERT INTO redemptions (id, organization_id, address_id, total_points, status, created_at, updated_at)
        VALUES (?, ?, ?, ?, 'pending', datetime('now'), datetime('now'))`,
-      redemptionId, user.orgId, body.address_id, totalPoints);
+      redemptionId, user.orgId, address.id, totalPoints);
 
     for (const item of body.items) {
       const reward = rewardMap.get(item.reward_id)!;

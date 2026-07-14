@@ -17,16 +17,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.fileName) return error('缺少文件名', 400);
 
     const user = getAuthUser(context.data);
+    if (!user || user.role !== 'STORE') return error('无权上传施工照片', 403);
+
     const ext = body.fileName.split('.').pop()?.toLowerCase() || 'jpg';
+    const allowedExtensions = new Set(['jpg', 'jpeg', 'png', 'webp']);
+    if (!allowedExtensions.has(ext)) return error('仅支持 JPG、PNG 或 WebP 图片', 400);
+
     const fileKey = `warranty-photos/${user?.orgId}/${generateId()}.${ext}`;
-    const contentType = body.contentType || `image/${ext === 'png' ? 'png' : 'jpeg'}`;
-
-    // R2 presigned URL（Cloudflare R2 支持通过 S3 兼容 API 生成）
-    // 这里使用简单的上传方式：直接上传到 R2，返回 key 供后续使用
-    // 实际生产环境应使用 presigned URL
-
-    // 生成上传 URL（模拟 presigned URL 模式）
-    const uploadUrl = `/api/r2-upload/${fileKey}`;
+    const uploadUrl = new URL(`/api/r2-upload/${fileKey}`, context.request.url).toString();
 
     return ok({
       uploadUrl,

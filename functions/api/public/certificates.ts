@@ -15,7 +15,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
     const parts = url.pathname.split('/');
-    const certNo = parts[parts.length - 2] === 'download' ? parts[parts.length - 3] : parts[parts.length - 1];
+    const certificatesIndex = parts.indexOf('certificates');
+    const certNo = parts[certificatesIndex + 1] || url.searchParams.get('cert_no') || '';
 
     if (!certNo) return error('缺少证书编号', 400);
 

@@ -16,6 +16,7 @@ interface Organization {
   name: string;
   province: string | null;
   city: string | null;
+  address: string | null;
   contact_name: string | null;
   phone: string | null;
   status: string;
@@ -49,7 +50,9 @@ export default function StoreListPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Organization | null>(null);
-  const [form, setForm] = useState({ code: '', name: '', city: '', contact_name: '', phone: '' });
+  const [form, setForm] = useState({
+    code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '',
+  });
   const [saving, setSaving] = useState(false);
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
@@ -74,7 +77,7 @@ export default function StoreListPage() {
 
   const openCreate = () => {
     setSelected(null);
-    setForm({ code: '', name: '', city: '', contact_name: '', phone: '' });
+    setForm({ code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '' });
     setDrawerOpen(true);
   };
 
@@ -82,7 +85,8 @@ export default function StoreListPage() {
     setSelected(org);
     setForm({
       code: org.code, name: org.name,
-      city: org.city || '', contact_name: org.contact_name || '', phone: org.phone || '',
+      province: org.province || '', city: org.city || '', address: org.address || '',
+      contact_name: org.contact_name || '', phone: org.phone || '', username: '', password: '',
     });
     setDrawerOpen(true);
   };
@@ -93,7 +97,10 @@ export default function StoreListPage() {
       if (selected) {
         await apiRequest(`/province/organizations/${selected.id}`, {
           method: 'PUT',
-          body: JSON.stringify({ name: form.name, city: form.city, contact_name: form.contact_name, phone: form.phone }),
+          body: JSON.stringify({
+            name: form.name, province: form.province, city: form.city, address: form.address,
+            contact_name: form.contact_name, phone: form.phone,
+          }),
         });
       } else {
         await apiRequest('/province/organizations', {
@@ -130,8 +137,18 @@ export default function StoreListPage() {
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">省份</label>
+            <input value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">城市</label>
             <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
+            <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -146,8 +163,22 @@ export default function StoreListPage() {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
             </div>
           </div>
+          {!selected && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">登录账号 *</label>
+                <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  autoComplete="off" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">登录密码 *</label>
+                <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  autoComplete="new-password" placeholder="至少 8 位" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+              </div>
+            </div>
+          )}
           <div className="pt-4 border-t border-gray-100">
-            <button onClick={handleSave} disabled={saving || !form.code || !form.name}
+            <button onClick={handleSave} disabled={saving || !form.code || !form.name || (!selected && (!form.username || form.password.length < 8))}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50">
               {saving ? '保存中...' : selected ? '保存修改' : '创建门店'}
             </button>

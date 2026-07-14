@@ -57,13 +57,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.to_store_id) return error('请选择目标门店', 400);
 
     const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
+
+    const targetStore = await queryFirst<{ id: string }>(
+      context.env.DB,
+      `SELECT id FROM organizations WHERE id = ? AND parent_id = ? AND type = 'STORE' AND status = 'active'`,
+      body.to_store_id, user.orgId,
+    );
+    if (!targetStore) return error('目标门店不存在、已停用或不属于当前省代', 403);
+
     const statements: Array<{ sql: string; params: unknown[] }> = [];
+    let allocated = 0;
 
     for (const codeId of body.code_ids) {
       const code = await queryFirst<{ owner_org_id: string }>(
         context.env.DB, `SELECT owner_org_id FROM warranty_codes WHERE id = ?`, codeId,
       );
       if (!code || code.owner_org_id !== user?.orgId) continue;
+      allocated += 1;
 
       const allocId = generateId();
       statements.push({
@@ -77,12 +88,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
+    if (allocated === 0) return error('没有可划拨的质保码', 400);
     await batch(context.env.DB, statements);
 
     await writeOperationLog(context.env.DB, user?.userId || null, 'province_allocate', 'warranty_codes', null,
       { code_ids: body.code_ids, to_store_id: body.to_store_id }, getClientIP(context.request));
 
-    return ok({ allocated: body.code_ids.length }, '划拨成功');
+    return ok({ allocated }, '划拨成功');
   } catch (err) {
     console.error('[province/allocate]', err);
     return error('划拨失败', 500);

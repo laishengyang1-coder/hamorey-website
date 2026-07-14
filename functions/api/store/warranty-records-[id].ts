@@ -4,11 +4,12 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, writeOperationLog , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, writeOperationLog, getAuthUser, validateWarrantyPhotoKeys } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 
 interface Env {
   DB: D1Database;
+  R2: R2Bucket;
 }
 
 function extractId(pathname: string): string {
@@ -21,6 +22,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const recordId = extractId(new URL(context.request.url).pathname);
     if (!recordId) return error('缺少记录 ID', 400);
+    const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
 
     const record = await queryFirst(
       context.env.DB,
@@ -28,8 +31,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
        FROM warranty_records wr
        JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
        JOIN product_models pm ON wr.product_model_id = pm.id
-       WHERE wr.id = ?`,
-      recordId,
+       WHERE wr.id = ? AND wr.store_id = ?`,
+      recordId, user.orgId,
     );
     if (!record) return error('质保记录不存在', 404);
 
@@ -80,6 +83,11 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       installation_date?: string;
       photo_keys?: string[];
     };
+
+    if (body.photo_keys?.length) {
+      const photoError = await validateWarrantyPhotoKeys(context.env.R2, user.orgId, body.photo_keys);
+      if (photoError) return error(photoError, 400);
+    }
 
     const updates: string[] = [];
     const params: unknown[] = [];

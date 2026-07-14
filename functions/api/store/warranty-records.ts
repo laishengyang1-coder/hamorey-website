@@ -4,17 +4,20 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, validateWarrantyPhotoKeys } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
   DB: D1Database;
+  R2: R2Bucket;
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
     const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
+
     const status = url.searchParams.get('status') || '';
     const keyword = url.searchParams.get('keyword') || '';
     const { page, pageSize, offset } = parsePagination(url);
@@ -77,6 +80,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (errors.length > 0) return validationError(errors);
 
     const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
+
+    if (body.photo_keys?.length) {
+      const photoError = await validateWarrantyPhotoKeys(context.env.R2, user.orgId, body.photo_keys);
+      if (photoError) return error(photoError, 400);
+    }
 
     // 查询质保码（必须属于本门店且状态可登记）
     const wc = await queryFirst<{

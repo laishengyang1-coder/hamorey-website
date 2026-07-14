@@ -133,7 +133,8 @@ async function request<T>(
   }
 
   try {
-    const response = await fetch(`${API_BASE}${path}`, {
+    const requestUrl = /^https?:\/\//.test(path) ? path : `${API_BASE}${path}`;
+    const response = await fetch(requestUrl, {
       ...options,
       signal: controller.signal,
       headers,
@@ -194,6 +195,26 @@ export async function logout(): Promise<void> {
   } finally {
     clearToken();
   }
+}
+
+export interface WarrantyPhotoUploadResult {
+  fileKey: string;
+  size: number;
+  contentType: string;
+}
+
+/** Upload a warranty photo to the same R2 bucket used by the mini program. */
+export async function uploadWarrantyPhoto(file: File): Promise<WarrantyPhotoUploadResult> {
+  const uploadTarget = await request<{ uploadUrl: string; fileKey: string }>('/store/upload-url', {
+    method: 'POST',
+    body: JSON.stringify({ fileName: file.name, contentType: file.type }),
+  });
+  const form = new FormData();
+  form.append('file', file, file.name);
+  return request<WarrantyPhotoUploadResult>(uploadTarget.uploadUrl, {
+    method: 'POST',
+    body: form,
+  });
 }
 
 // ============================================================

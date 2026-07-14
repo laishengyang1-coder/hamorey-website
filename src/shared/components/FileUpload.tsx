@@ -5,7 +5,6 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { cn } from '../../lib/cn';
-import * as XLSX from 'xlsx';
 
 interface FileUploadProps {
   accept?: string;
