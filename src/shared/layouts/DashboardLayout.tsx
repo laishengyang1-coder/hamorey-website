@@ -182,26 +182,42 @@ export function DashboardLayout({ menuItems, role, title = '和膜 HAMOREY' }: D
 
             // 叶子节点（无 children 的独立项）
             const leafActive = leafMap.get(item.key) && currentPath.startsWith(leafMap.get(item.key)!);
+            const isDashboard = item.key === 'dashboard';
             return (
-              <Link
-                key={item.key}
-                to={item.path}
-                className={cn(
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all mb-0.5',
-                  leafActive
-                    ? 'bg-[#5C1A1A]/8 text-[#5C1A1A] font-medium'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+              <React.Fragment key={item.key}>
+                <Link
+                  to={item.path}
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-lg px-3 py-2 transition-all mb-0.5',
+                    isDashboard
+                      ? 'text-sm font-semibold'
+                      : 'text-sm',
+                    leafActive
+                      ? isDashboard
+                        ? 'bg-[#5C1A1A] text-white'
+                        : 'bg-[#5C1A1A]/8 text-[#5C1A1A] font-medium'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+                  )}
+                  title={sidebarCollapsed ? item.label : undefined}
+                >
+                  {isDashboard ? (
+                    <svg className="shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={leafActive ? 2 : 1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                  ) : (
+                    <span className={cn('shrink-0 w-1 h-1 rounded-full', leafActive ? 'bg-[#5C1A1A]' : 'bg-transparent')} />
+                  )}
+                  {!sidebarCollapsed && (
+                    <span className="flex-1 truncate">{item.label}</span>
+                  )}
+                  {item.badge !== undefined && item.badge > 0 && !sidebarCollapsed && (
+                    <span className="rounded-full bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600">{item.badge}</span>
+                  )}
+                </Link>
+                {isDashboard && !sidebarCollapsed && (
+                  <div className="mx-2 mb-2 border-b border-gray-100" />
                 )}
-                title={sidebarCollapsed ? item.label : undefined}
-              >
-                <span className={cn('shrink-0 w-1 h-1 rounded-full', leafActive ? 'bg-[#5C1A1A]' : 'bg-transparent')} />
-                {!sidebarCollapsed && (
-                  <span className="flex-1 truncate">{item.label}</span>
-                )}
-                {item.badge !== undefined && item.badge > 0 && !sidebarCollapsed && (
-                  <span className="rounded-full bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600">{item.badge}</span>
-                )}
-              </Link>
+              </React.Fragment>
             );
           })}
         </nav>

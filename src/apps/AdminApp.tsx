@@ -38,14 +38,7 @@ const Loading = () => (
 );
 
 const ADMIN_MENU: MenuItem[] = [
-  {
-    key: 'group-dashboard',
-    label: '概览',
-    path: '/admin/dashboard',
-    children: [
-      { key: 'dashboard', label: '数据看板', path: '/admin/dashboard' },
-    ],
-  },
+  { key: 'dashboard', label: '数据看板', path: '/admin/dashboard', badge: undefined },
   {
     key: 'group-warranty',
     label: '质保管理',
