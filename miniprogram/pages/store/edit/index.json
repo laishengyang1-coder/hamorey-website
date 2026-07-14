@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "质保详情"
+  "navigationBarTitleText": "质保详情",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

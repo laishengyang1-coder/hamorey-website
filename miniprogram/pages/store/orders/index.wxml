@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="兑换记录" />
   <!-- 状态筛选 -->
   <view class="filter-tabs">
     <view

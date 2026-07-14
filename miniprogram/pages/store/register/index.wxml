@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="登记质保" />
   <!-- 步骤指示器 -->
   <view class="steps-bar">
     <view

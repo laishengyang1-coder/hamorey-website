@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "编辑门店"
+  "navigationBarTitleText": "编辑门店",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

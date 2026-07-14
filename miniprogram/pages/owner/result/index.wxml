@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="查询结果" />
   <!-- 搜索栏 -->
   <view class="search-bar">
     <input

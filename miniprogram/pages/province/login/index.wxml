@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="省代登录" />
   <view class="login-header">
     <view class="login-logo">HAMOREY</view>
     <view class="login-subtitle">省代管理系统</view>

@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="门店登录" />
   <!-- 品牌头部 -->
   <view class="login-header">
     <view class="login-logo">HAMOREY</view>

@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="积分商城" />
   <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
   <view wx:elif="{{error}}" class="error-container"><view class="error-text">{{error}}</view><view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadRewards">重试</view></view>
   <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-state"><view class="empty-state-icon">🎁</view><view class="empty-state-text">暂无兑换商品</view></view>

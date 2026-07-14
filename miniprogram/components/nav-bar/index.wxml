@@ -1,0 +1,8 @@
+<view class="nav-bar">
+  <view class="nav-back" bindtap="goBack">
+    <text class="nav-arrow">‹</text>
+    <text class="nav-label">返回</text>
+  </view>
+  <view class="nav-title">{{title}}</view>
+  <view class="nav-placeholder"></view>
+</view>

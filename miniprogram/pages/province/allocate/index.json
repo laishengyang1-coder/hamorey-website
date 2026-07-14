@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "划拨质保码"
+  "navigationBarTitleText": "划拨质保码",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

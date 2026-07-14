@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="划拨质保码" />
   <!-- 选择目标门店 -->
   <view class="section">
     <view class="section-header">
