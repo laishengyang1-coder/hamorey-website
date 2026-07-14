@@ -328,3 +328,91 @@ export async function getOrgPoints(
   );
   return row ?? { available: 0, frozen: 0 };
 }
+
+// ============================================================
+// 第三阶段新增：组织级联删除（清理门店/省代及其关联数据）
+// ============================================================
+
+/**
+ * 递归级联删除组织及其所有关联数据
+ * 适用于总部管理员清理门店/省代数据
+ * 注意：此操作会删除质保记录、积分、兑换、质保码划拨等，不可恢复
+ */
+export async function deleteOrganizationWithDependencies(
+  db: D1Database,
+  orgId: string,
+): Promise<void> {
+  const org = await queryFirst<{ id: string; type: string }>(
+    db,
+    `SELECT id, type FROM organizations WHERE id = ?`,
+    orgId,
+  );
+  if (!org) return;
+
+  // 1. 如果是省代，先递归删除其下所有门店
+  if (org.type === 'PROVINCE') {
+    const childStores = await queryAll<{ id: string }>(
+      db,
+      `SELECT id FROM organizations WHERE parent_id = ?`,
+      orgId,
+    );
+    for (const store of childStores) {
+      await deleteOrganizationWithDependencies(db, store.id);
+    }
+  }
+
+  // 2. 删除该组织的用户及其会话
+  const users = await queryAll<{ id: string }>(
+    db,
+    `SELECT id FROM users WHERE organization_id = ?`,
+    orgId,
+  );
+  const userIds = users.map((u) => u.id);
+  if (userIds.length > 0) {
+    const placeholders = userIds.map(() => '?').join(',');
+    await execute(db, `DELETE FROM sessions WHERE user_id IN (${placeholders})`, ...userIds);
+    await execute(db, `DELETE FROM users WHERE organization_id = ?`, orgId);
+  }
+
+  // 3. 删除门店质保记录及其子表（仅门店/省代都可能有记录，按字段过滤）
+  const recordIds = await queryAll<{ id: string }>(
+    db,
+    `SELECT id FROM warranty_records WHERE store_id = ? OR province_org_id = ?`,
+    orgId,
+    orgId,
+  );
+  const recordIdList = recordIds.map((r) => r.id);
+  if (recordIdList.length > 0) {
+    const placeholders = recordIdList.map(() => '?').join(',');
+    await execute(db, `DELETE FROM warranty_photos WHERE warranty_record_id IN (${placeholders})`, ...recordIdList);
+    await execute(db, `DELETE FROM warranty_audit_logs WHERE warranty_record_id IN (${placeholders})`, ...recordIdList);
+    await execute(db, `DELETE FROM certificate_files WHERE warranty_record_id IN (${placeholders})`, ...recordIdList);
+    await execute(db, `DELETE FROM warranty_records WHERE id IN (${placeholders})`, ...recordIdList);
+  }
+
+  // 4. 删除积分流水、兑换单及明细、收货地址
+  await execute(db, `DELETE FROM points_ledger WHERE organization_id = ?`, orgId);
+
+  const redemptionIds = await queryAll<{ id: string }>(
+    db,
+    `SELECT id FROM redemptions WHERE organization_id = ?`,
+    orgId,
+  );
+  const redemptionIdList = redemptionIds.map((r) => r.id);
+  if (redemptionIdList.length > 0) {
+    const placeholders = redemptionIdList.map(() => '?').join(',');
+    await execute(db, `DELETE FROM redemption_items WHERE redemption_id IN (${placeholders})`, ...redemptionIdList);
+    await execute(db, `DELETE FROM redemptions WHERE id IN (${placeholders})`, ...redemptionIdList);
+  }
+  await execute(db, `DELETE FROM addresses WHERE organization_id = ?`, orgId);
+
+  // 5. 删除质保码流转记录和质保码归属
+  await execute(db, `DELETE FROM code_allocations WHERE from_org_id = ? OR to_org_id = ?`, orgId, orgId);
+  await execute(db, `DELETE FROM warranty_codes WHERE owner_org_id = ?`, orgId);
+
+  // 6. 删除门店公开资料
+  await execute(db, `DELETE FROM store_public_profiles WHERE organization_id = ?`, orgId);
+
+  // 7. 最后删除组织本身
+  await execute(db, `DELETE FROM organizations WHERE id = ?`, orgId);
+}

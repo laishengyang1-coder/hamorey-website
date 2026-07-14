@@ -6,7 +6,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog , getAuthUser} from '../_lib';
+import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -209,7 +209,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   }
 };
 
-/** DELETE /api/admin/organizations/:id — 删除组织 */
+/** DELETE /api/admin/organizations/:id — 删除组织（级联删除关联数据） */
 export const onRequestDelete: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
@@ -217,23 +217,31 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     const orgId = parts[parts.length - 1];
     if (!orgId || orgId === 'organizations') return error('缺少组织 ID', 400);
 
-    const org = await queryFirst<{ id: string; type: string }>(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
+    const org = await queryFirst<{ id: string; type: string; name: string }>(
+      context.env.DB,
+      `SELECT id, type, name FROM organizations WHERE id = ?`,
+      orgId,
+    );
     if (!org) return error('组织不存在', 404);
+    if (org.type === 'HQ') return error('总部组织不可删除', 400);
 
-    // 如果有子组织（省代下有门店），不允许删除
-    if (org.type === 'PROVINCE') {
-      const children = await queryFirst<{ cnt: number }>(context.env.DB,
-        `SELECT COUNT(*) AS cnt FROM organizations WHERE parent_id = ?`, orgId);
-      if (children && children.cnt > 0) return error('该省代下还有门店，请先删除门店', 400);
-    }
+    // 级联删除组织及其关联数据
+    await deleteOrganizationWithDependencies(context.env.DB, orgId);
 
-    await execute(context.env.DB, `DELETE FROM organizations WHERE id = ?`, orgId);
     const user = getAuthUser(context.data);
-    await writeOperationLog(context.env.DB, user?.userId || null, 'delete_organization', 'organization', orgId, { deleted_type: org.type }, getClientIP(context.request));
+    await writeOperationLog(
+      context.env.DB,
+      user?.userId || null,
+      'delete_organization',
+      'organization',
+      orgId,
+      { deleted_type: org.type, deleted_name: org.name },
+      getClientIP(context.request),
+    );
 
     return ok(null, '删除成功');
   } catch (err) {
     console.error('[admin/organizations DELETE]', err);
-    return error('删除组织失败', 500);
+    return error('删除组织失败：' + (err instanceof Error ? err.message : '未知错误'), 500);
   }
 };

@@ -222,7 +222,7 @@ export default function StoreListPage() {
       </DetailDrawer>
 
       <ConfirmDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
-        title="确认删除" description={`确定要删除「${deleteTarget?.name}」吗？此操作不可撤销。`}
+        title="确认删除" description={`确定要删除门店「${deleteTarget?.name}」吗？该门店的账号、质保记录、积分、兑换、收货地址等关联数据将被一并删除，此操作不可撤销。`}
         onConfirm={confirmDelete} loading={deleting} confirmText="删除" variant="danger" />
     </div>
   );

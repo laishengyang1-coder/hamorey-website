@@ -258,7 +258,7 @@ export default function ProvinceListPage() {
       </DetailDrawer>
 
       <ConfirmDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
-        title="确认删除" description={`确定要删除「${deleteTarget?.name}」吗？此操作不可撤销。`}
+        title="确认删除" description={`确定要删除省代「${deleteTarget?.name}」吗？该省代及其下所有门店、账号、质保记录、积分、兑换、收货地址等关联数据将被一并删除，此操作不可撤销。`}
         onConfirm={confirmDelete} loading={deleting} confirmText="删除" variant="danger" />
     </div>
   );
