@@ -42,7 +42,7 @@
       <view class="search-hint">系统将自动识别查询类型</view>
     </view>
 
-    <!-- 底部黑色区域 -->
+    <!-- 底部区域 -->
     <view class="footer-section">
       <view class="store-entry" bindtap="goStoreLogin">
         <text class="store-entry-icon">🏪</text>
@@ -50,15 +50,15 @@
         <text class="store-entry-arrow">›</text>
       </view>
 
+      <view class="brand-footer">
+        <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
+      </view>
+
       <view class="disclaimer">
         <view class="disclaimer-title">1. 免责声明</view>
         <view class="disclaimer-text">
           ① 因不可抗力、外力撞击、强酸碱腐蚀、不当保养或人为损坏导致的车体及膜面损伤，和膜及施工单位不承担相关责任。
         </view>
-      </view>
-
-      <view class="brand-footer">
-        <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
       </view>
     </view>
   </view>
