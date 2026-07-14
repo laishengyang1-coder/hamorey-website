@@ -217,7 +217,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     const orgId = parts[parts.length - 1];
     if (!orgId || orgId === 'organizations') return error('缺少组织 ID', 400);
 
-    const org = await queryFirst(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
+    const org = await queryFirst<{ id: string; type: string }>(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
     if (!org) return error('组织不存在', 404);
 
     // 如果有子组织（省代下有门店），不允许删除
