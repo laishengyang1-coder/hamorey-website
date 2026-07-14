@@ -124,31 +124,18 @@ export default function WarrantyCodeInventoryPage() {
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage} />
 
       <ConfirmDialog open={allocateOpen} onOpenChange={setAllocateOpen} title="批量划拨质保码"
-        description={`确认将 ${selected.size} 个质保码划拨到以下组织？`}
         confirmText="确认划拨" onConfirm={handleAllocate} loading={operating}>
-        <span />
+        <p className="text-sm text-gray-500">请选择要把 <b>{selected.size}</b> 个质保码划拨到的组织：</p>
+        <select value={toOrgId} onChange={(e) => setToOrgId(e.target.value)}
+          className="mt-4 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-[#5C1A1A] focus:outline-none focus:ring-1 focus:ring-[#5C1A1A]">
+          <option value="">请选择接收方</option>
+          {orgs.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name} ({o.type === 'PROVINCE' ? '省代' : '门店'})
+            </option>
+          ))}
+        </select>
       </ConfirmDialog>
-      {allocateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold">批量划拨</h3>
-            <p className="text-sm text-gray-500 mt-1">选择接收方组织</p>
-            <select value={toOrgId} onChange={(e) => setToOrgId(e.target.value)}
-              className="mt-4 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
-              <option value="">请选择接收方</option>
-              {orgs.map((o) => <option key={o.id} value={o.id}>{o.name} ({o.type})</option>)}
-            </select>
-            <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setAllocateOpen(false)}
-                className="rounded-lg border px-4 py-2 text-sm">取消</button>
-              <button onClick={handleAllocate} disabled={operating || !toOrgId}
-                className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
-                {operating ? '处理中...' : `确认划拨 ${selected.size} 条`}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
