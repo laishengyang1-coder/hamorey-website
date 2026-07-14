@@ -8,3 +8,4 @@ dist
 !.env.example
 vite.config.js
 vite.config.js.timestamp-*
+dist.old

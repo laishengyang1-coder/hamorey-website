@@ -64,7 +64,7 @@ export default function WarrantyCodeImportPage() {
 
   const handleImport = async () => {
     if (!checkResult || checkResult.errors.length > 0) { setError('请先修复所有错误'); return; }
-    if (!batchName.trim()) { setError('请输入批次名称'); return; }
+    const finalBatchName = batchName.trim() || `导入_${new Date().toLocaleDateString('zh-CN')}`;
     setImporting(true);
     setError(null);
     try {
@@ -75,11 +75,12 @@ export default function WarrantyCodeImportPage() {
         product_name: String(r['产品名称'] || r['product_name'] || ''),
       }));
       const result = await apiRequest<{ batchId: string; total: number }>('/admin/warranty-codes/import', {
-        method: 'POST', body: JSON.stringify({ mode: 'import', batch_name: batchName, rows: importRows }),
+        method: 'POST', body: JSON.stringify({ mode: 'import', batch_name: finalBatchName, rows: importRows }),
       });
       setSuccess(`成功导入 ${result.total} 条质保码`);
       setRows([]);
       setCheckResult(null);
+      setBatchName('');
       setBatchName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : '导入失败');
@@ -147,7 +148,7 @@ export default function WarrantyCodeImportPage() {
                 {checking ? '预检中...' : '预检'}
               </button>
               {checkResult && checkResult.errors.length === 0 && (
-                <button onClick={handleImport} disabled={importing || !batchName.trim()}
+                <button onClick={handleImport} disabled={importing}
                   className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors disabled:opacity-50">
                   {importing ? '导入中...' : `确认导入 ${checkResult.valid} 条`}
                 </button>
