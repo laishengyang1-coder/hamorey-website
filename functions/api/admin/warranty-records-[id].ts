@@ -19,6 +19,10 @@ function extractId(pathname: string): string {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
+    const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
+    if (user.role !== 'HQ_ADMIN' && user.role !== 'PROVINCE') return error('无权限访问', 403);
+
     const recordId = extractId(new URL(context.request.url).pathname);
     if (!recordId) return error('缺少记录 ID', 400);
 

@@ -78,7 +78,9 @@ export default function WarrantyRecordListPage() {
       const res = await apiRequest<{ record: any; photos: PhotoItem[] }>(`/admin/warranty-records/${record.id}`);
       setDetail(res);
       setDetailOpen(true);
-    } catch { /* ignore */ }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载详情失败');
+    }
     finally { setDetailLoading(false); }
   };
 
