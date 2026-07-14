@@ -58,12 +58,12 @@ const STATUS_MAP: Record<string, { label: string; variant: StatusVariant }> = {
 };
 
 const VARIANT_CLASSES: Record<StatusVariant, string> = {
-  default: 'bg-gray-100 text-gray-700',
-  success: 'bg-emerald-50 text-emerald-700',
-  warning: 'bg-amber-50 text-amber-700',
-  danger: 'bg-red-50 text-red-700',
-  info: 'bg-blue-50 text-blue-700',
-  neutral: 'bg-slate-100 text-slate-600',
+  default: 'bg-[#F1ECE8] text-[#6B605A]',
+  success: 'bg-[#EAF3EC] text-[#2F7A47]',
+  warning: 'bg-[#FBF3E2] text-[#9A7212]',
+  danger: 'bg-[#FBEAEA] text-[#B23A3A]',
+  info: 'bg-[#EAF0F6] text-[#3C6893]',
+  neutral: 'bg-[#F1ECE8] text-[#6B605A]',
 };
 
 export function StatusBadge({ status, label, variant, className }: StatusBadgeProps) {
@@ -74,11 +74,12 @@ export function StatusBadge({ status, label, variant, className }: StatusBadgePr
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
         VARIANT_CLASSES[displayVariant],
         className,
       )}
     >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden />
       {displayLabel}
     </span>
   );

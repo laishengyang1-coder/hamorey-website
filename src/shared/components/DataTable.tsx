@@ -78,10 +78,10 @@ export function DataTable({
   // 渲染状态
   if (loading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="rounded-xl border border-[var(--paper-border)] bg-[var(--paper-raised)]">
         <div className="p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
-          <p className="mt-3 text-sm text-gray-500">加载中...</p>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--paper-border-strong)] border-t-[#5C1A1A]" />
+          <p className="mt-3 text-sm text-[var(--paper-muted)]">加载中...</p>
         </div>
       </div>
     );
@@ -89,24 +89,24 @@ export function DataTable({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-12 text-center">
-        <p className="text-sm text-red-600">{error}</p>
+      <div className="rounded-xl border border-[#F0D5D5] bg-[#FBEAEA] p-12 text-center">
+        <p className="text-sm text-[#B23A3A]">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className={cn('rounded-lg border border-gray-200 bg-white overflow-hidden', className)}>
+    <div className={cn('rounded-xl border border-[var(--paper-border)] bg-[var(--paper-raised)] overflow-hidden', className)}>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
+            <tr className="border-b border-[var(--paper-border)] bg-[#F6F1ED]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-                    col.sortable && 'cursor-pointer select-none hover:text-gray-700',
+                    'px-4 py-3 text-left text-xs font-semibold text-[var(--paper-muted)] uppercase tracking-wider',
+                    col.sortable && 'cursor-pointer select-none hover:text-[var(--paper-text)]',
                     col.className,
                   )}
                   style={col.width ? { width: col.width } : undefined}
@@ -115,17 +115,17 @@ export function DataTable({
                   <span className="inline-flex items-center gap-1">
                     {col.title}
                     {col.sortable && sortKey === col.key && (
-                      <span className="text-gray-400">{sortDir === 'asc' ? '↑' : '↓'}</span>
+                      <span className="text-[#5C1A1A]">{sortDir === 'asc' ? '↑' : '↓'}</span>
                     )}
                   </span>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-[var(--paper-border)]">
             {(!data || data.length === 0) ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-16 text-center text-gray-400">
+                <td colSpan={columns.length} className="px-4 py-16 text-center text-[var(--paper-muted)]">
                   {emptyText}
                 </td>
               </tr>
@@ -135,14 +135,14 @@ export function DataTable({
                   key={getRowKey(record, index)}
                   className={cn(
                     'transition-colors',
-                    onRowClick && 'cursor-pointer hover:bg-gray-50',
+                    onRowClick && 'cursor-pointer hover:bg-[var(--burgundy-tint)]',
                   )}
                   onClick={() => onRowClick?.(record)}
                 >
                   {columns.map((col) => {
                     const value = col.dataIndex ? record[col.dataIndex] : record[col.key];
                     return (
-                      <td key={col.key} className={cn('px-4 py-3 text-gray-700', col.className)}>
+                      <td key={col.key} className={cn('px-4 py-3 text-[var(--paper-text-soft)]', col.className)}>
                         {col.render ? col.render(value, record, index) : String(value ?? '')}
                       </td>
                     );
@@ -156,13 +156,13 @@ export function DataTable({
 
       {/* 分页 */}
       {total > 0 && (
-        <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
-          <span className="text-sm text-gray-500">
+        <div className="flex items-center justify-between border-t border-[var(--paper-border)] px-4 py-3">
+          <span className="text-sm text-[var(--paper-muted)]">
             共 {total} 条，第 {page}/{totalPages} 页
           </span>
           <div className="flex items-center gap-1">
             <button
-              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-md px-3 py-1.5 text-sm text-[var(--paper-text-soft)] hover:bg-[var(--burgundy-tint)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               disabled={page <= 1}
               onClick={() => handlePageChange?.(page - 1)}
             >
@@ -183,10 +183,10 @@ export function DataTable({
                 <button
                   key={pageNum}
                   className={cn(
-                    'rounded-md px-3 py-1.5 text-sm',
+                    'rounded-md px-3 py-1.5 text-sm transition-colors',
                     pageNum === page
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-600 hover:bg-gray-100',
+                      ? 'bg-[#5C1A1A] text-white'
+                      : 'text-[var(--paper-text-soft)] hover:bg-[var(--burgundy-tint)]',
                   )}
                   onClick={() => handlePageChange?.(pageNum)}
                 >
@@ -195,7 +195,7 @@ export function DataTable({
               );
             })}
             <button
-              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-md px-3 py-1.5 text-sm text-[var(--paper-text-soft)] hover:bg-[var(--burgundy-tint)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               disabled={page >= totalPages}
               onClick={() => handlePageChange?.(page + 1)}
             >
