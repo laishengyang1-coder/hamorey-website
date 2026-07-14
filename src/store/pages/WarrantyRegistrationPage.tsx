@@ -88,13 +88,28 @@ export default function WarrantyRegistrationPage() {
   };
 
   const handleSubmit = async () => {
+    // 客户端校验
+    const required: Array<[keyof typeof form, string]> = [
+      ['warranty_code', '质保码'], ['customer_name', '车主姓名'], ['customer_phone', '联系电话'],
+      ['plate_no', '车牌号'], ['vehicle_brand', '车辆品牌'], ['vehicle_model', '车辆型号'],
+      ['installation_date', '施工日期'],
+    ];
+    for (const [field, label] of required) {
+      if (!form[field]) { setError(`请填写「${label}」`); return; }
+    }
+
     setLoading(true); setError('');
     try {
       await apiRequest('/store/warranty-records', {
         method: 'POST', body: JSON.stringify(form),
       });
       setSuccess('质保登记已提交，等待总部审核');
-    } catch (err) { setError(err instanceof Error ? err.message : '提交失败'); }
+    } catch (err) {
+      const msg = (err as any)?.data?.errors
+        ? (err as any).data.errors.map((e: { field: string; message: string }) => e.message).join('；')
+        : (err instanceof Error ? err.message : '提交失败');
+      setError(msg);
+    }
     finally { setLoading(false); }
   };
 
