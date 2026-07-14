@@ -35,6 +35,10 @@ const LoadingScreen = () => (
 // 品牌官网路由
 const brandRouter = createBrowserRouter([
   {
+    path: '/login',
+    element: <LoginHub />,
+  },
+  {
     path: '/',
     element: <RootLayout />,
     errorElement: <NotFoundPage />,
@@ -140,10 +144,6 @@ export default function App() {
 
   if (pathname.startsWith('/store')) {
     return <LazyStoreApp />
-  }
-
-  if (pathname === '/login') {
-    return <LoginHub />
   }
 
   return <RouterProvider router={brandRouter} />
