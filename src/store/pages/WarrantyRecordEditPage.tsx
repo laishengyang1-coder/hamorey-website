@@ -9,7 +9,7 @@ import { PageHeader } from '../../shared/components/PageHeader';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 
 function photoUrl(fileKey: string, token: string): string {
-  return `/api/public/photos/${encodeURIComponent(fileKey)}?token=${encodeURIComponent(token)}`;
+  return `/api/public/photos/${fileKey}?token=${encodeURIComponent(token)}`;
 }
 
 interface WarrantyPhoto { id: string; file_key: string; sort_order: number; }
