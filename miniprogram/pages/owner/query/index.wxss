@@ -3,17 +3,17 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-bottom: 0;
+  background: #000000;
   overflow: hidden;
 }
 
-/* 全屏背景图 */
+/* 上半屏背景图：参考图布局，图片占上半屏 */
 .page-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 72vh;
   z-index: 0;
 }
 
@@ -22,9 +22,15 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(54, 14, 14, 0.82) 0%, rgba(30, 5, 5, 0.65) 40%, rgba(12, 2, 2, 0.55) 100%);
+  height: 78vh;
   z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.15) 35%,
+    rgba(0, 0, 0, 0.55) 70%,
+    #000000 100%
+  );
 }
 
 /* 内容层 */
@@ -34,6 +40,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  padding-top: 48rpx;
 }
 
 /* 品牌头部 */
@@ -41,141 +48,184 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120rpx 48rpx 60rpx;
+  padding: 80rpx 48rpx 56rpx;
+}
+
+.brand-logo-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+.brand-logo-icon {
+  width: 64rpx;
+  height: 64rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.logo-shape {
+  width: 36rpx;
+  height: 36rpx;
+  background: var(--color-primary);
+  border-radius: 6rpx;
+  transform: rotate(45deg);
 }
 
 .brand-logo-text {
-  font-size: 64rpx;
+  font-size: 48rpx;
   font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: 10rpx;
+  letter-spacing: 8rpx;
+}
+
+.brand-slogan {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 6rpx;
   margin-bottom: 16rpx;
-  text-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
+  font-style: italic;
+  text-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.5);
 }
 
 .brand-subtitle {
-  font-size: var(--font-sm);
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.75);
   letter-spacing: 4rpx;
-  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.3);
 }
 
 /* 搜索区域 */
 .search-section {
-  flex: 1;
-  padding: 0 48rpx;
+  padding: 0 56rpx;
+  margin-bottom: auto;
 }
 
-.search-input-area {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.35);
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
+.search-card {
+  background: #FFFFFF;
+  border-radius: 999rpx;
+  padding: 12rpx 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.25);
 }
 
 .search-input {
-  flex: 1;
-  height: 100rpx;
-  padding: 0 32rpx;
-  font-size: var(--font-lg);
-  color: var(--color-text);
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: #2C2C2C;
+  text-align: center;
 }
 
 .search-placeholder {
-  color: var(--color-text-placeholder);
-  font-size: var(--font-md);
+  color: #AAAAAA;
+  font-size: 26rpx;
+  text-align: center;
 }
 
 .search-btn {
-  width: 160rpx;
-  height: 100rpx;
+  margin-top: 32rpx;
+  width: 100%;
+  height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-accent);
+  background: #1E5AF5;
+  border-radius: 999rpx;
+  box-shadow: 0 8rpx 24rpx rgba(30, 90, 245, 0.35);
+}
+
+.search-btn:active {
+  opacity: 0.9;
 }
 
 .search-btn-text {
-  font-size: var(--font-lg);
+  font-size: 34rpx;
   font-weight: 600;
-  color: #2C2C2C;
+  color: #FFFFFF;
+  letter-spacing: 6rpx;
 }
 
-/* 门店入口 */
+.search-hint {
+  text-align: center;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 24rpx;
+}
+
+/* 底部黑色区域 */
+.footer-section {
+  background: #000000;
+  padding: 32rpx 48rpx 48rpx;
+}
+
 .store-entry {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48rpx;
-  margin-top: auto;
+  padding: 24rpx 0;
+  margin-bottom: 32rpx;
   background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  backdrop-filter: blur(8rpx);
-  margin: 48rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
 }
 
 .store-entry-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   margin-right: 8rpx;
 }
 
 .store-entry-text {
-  font-size: var(--font-sm);
+  font-size: 26rpx;
   color: rgba(255, 255, 255, 0.85);
 }
 
 .store-entry-arrow {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: rgba(255, 255, 255, 0.5);
-  margin-left: 4rpx;
+  margin-left: 8rpx;
 }
 
-/* 底部 */
+.disclaimer {
+  margin-bottom: 32rpx;
+}
+
+.disclaimer-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 12rpx;
+}
+
+.disclaimer-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+  text-align: justify;
+}
+
 .brand-footer {
   display: flex;
   justify-content: center;
-  padding: 32rpx 48rpx 64rpx;
 }
 
 .brand-footer-text {
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 2rpx;
 }
 
-/* 搜索提示 */
-.search-hint {
-  text-align: center;
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.65);
-  margin-top: 16rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
-}
-
 /* 废弃的 tab 样式（保留兼容） */
-.search-tabs {
-  display: flex;
-  margin-bottom: 32rpx;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-round);
-  padding: 6rpx;
-}
-
+.search-tabs,
 .search-tab {
-  flex: 1;
-  text-align: center;
-  padding: 16rpx 0;
-  font-size: var(--font-sm);
-  color: rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-round);
-  transition: all 0.2s;
+  display: none;
 }
 
-.search-tab.active {
-  background: var(--color-accent);
-  color: #2C2C2C;
-  font-weight: 600;
+.search-input-area,
+.search-btn-inline {
+  display: none;
 }
