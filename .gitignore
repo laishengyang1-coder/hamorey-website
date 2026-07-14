@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.log
+.wrangler
+.env
+.env.*
+!.env.example
+vite.config.js
+vite.config.js.timestamp-*
