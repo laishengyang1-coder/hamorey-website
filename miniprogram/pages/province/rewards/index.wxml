@@ -1,0 +1,16 @@
+<view class="page-container">
+  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
+  <view wx:elif="{{error}}" class="error-container"><view class="error-text">{{error}}</view><view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadRewards">重试</view></view>
+  <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-state"><view class="empty-state-icon">🎁</view><view class="empty-state-text">暂无兑换商品</view></view>
+  <view wx:else class="rewards-grid">
+    <view wx:for="{{rewards}}" wx:key="id" class="reward-card" data-id="{{item.id}}" bindtap="goDetail">
+      <image wx:if="{{item.image_url}}" src="{{item.image_url}}" mode="aspectFill" class="reward-image"/>
+      <view wx:else class="reward-image-placeholder">🎁</view>
+      <view class="reward-info">
+        <view class="reward-name text-ellipsis">{{item.name || '--'}}</view>
+        <view class="reward-points">{{item.points_required || 0}} 积分</view>
+        <view wx:if="{{item.stock_status === 'out_of_stock'}}" class="tag tag-error" style="margin-top:8rpx">已售罄</view>
+      </view>
+    </view>
+  </view>
+</view>

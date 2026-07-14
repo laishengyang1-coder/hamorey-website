@@ -1,0 +1,59 @@
+<view class="page-container">
+  <!-- 门店信息 -->
+  <view class="store-header">
+    <view class="store-name">{{storeName}}</view>
+    <view class="store-meta">{{storeCity || ''}}</view>
+  </view>
+
+  <!-- 数据概览 -->
+  <view class="stats-row">
+    <view class="stat-card" bindtap="goRecords">
+      <view class="stat-value">{{stats.recordCount}}</view>
+      <view class="stat-label">质保记录</view>
+    </view>
+    <view class="stat-card" bindtap="goCodes">
+      <view class="stat-value">{{stats.codeCount}}</view>
+      <view class="stat-label">可用质保码</view>
+    </view>
+    <view class="stat-card" bindtap="goPoints">
+      <view class="stat-value">{{stats.points}}</view>
+      <view class="stat-label">可用积分</view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-actions">
+    <view class="section-title mb-24">快捷操作</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="goRegister">
+        <view class="action-icon">📝</view>
+        <view class="action-text">登记质保</view>
+      </view>
+      <view class="action-item" bindtap="goRecords">
+        <view class="action-icon">📋</view>
+        <view class="action-text">质保记录</view>
+      </view>
+      <view class="action-item" bindtap="goCodes">
+        <view class="action-icon">🎫</view>
+        <view class="action-text">质保码</view>
+      </view>
+      <view class="action-item" bindtap="goPoints">
+        <view class="action-icon">💰</view>
+        <view class="action-text">积分</view>
+      </view>
+      <view class="action-item" bindtap="goRewards">
+        <view class="action-icon">🎁</view>
+        <view class="action-text">积分商城</view>
+      </view>
+      <view class="action-item" bindtap="goOrders">
+        <view class="action-icon">📦</view>
+        <view class="action-text">兑换记录</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-btn" bindtap="handleLogout">
+    <text>退出登录</text>
+  </view>
+</view>

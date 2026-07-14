@@ -1,0 +1,46 @@
+<view class="page-container">
+  <!-- 状态筛选 -->
+  <view class="filter-tabs">
+    <view
+      wx:for="{{statusTabs}}"
+      wx:key="value"
+      class="filter-tab {{activeStatus === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="switchStatus"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <!-- 空 -->
+  <view wx:elif="{{!loading && orders.length === 0}}" class="empty-state">
+    <view class="empty-state-icon">📦</view>
+    <view class="empty-state-text">暂无兑换记录</view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view wx:else class="orders-list">
+    <view
+      wx:for="{{orders}}"
+      wx:key="id"
+      class="order-card card"
+    >
+      <view class="order-top">
+        <view class="order-total">-{{item.total_points || 0}}积分</view>
+        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+      </view>
+      <view
+        wx:for="{{item.items || []}}"
+        wx:for-item="oi"
+        wx:key="reward_id"
+        class="order-item"
+      >
+        <text>{{oi.reward_name || '--'}} x{{oi.quantity || 1}}</text>
+      </view>
+      <view class="order-time">{{item.created_at || ''}}</view>
+    </view>
+  </view>
+</view>

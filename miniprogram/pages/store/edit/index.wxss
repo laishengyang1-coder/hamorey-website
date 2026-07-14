@@ -1,0 +1,61 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 64rpx;
+}
+
+.status-bar {
+  padding: 24rpx 32rpx;
+  background: var(--color-bg-white);
+}
+
+.reject-reason {
+  display: block;
+  margin-top: 12rpx;
+  font-size: var(--font-sm);
+  color: var(--color-error);
+  line-height: 1.5;
+}
+
+.section-sub {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}
+
+.photos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.photo-item {
+  width: 210rpx;
+  height: 210rpx;
+  border-radius: var(--radius-sm);
+  background: var(--color-border-light);
+}
+
+.log-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-action {
+  font-size: var(--font-md);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.log-meta {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 4rpx;
+}
+
+.submit-area {
+  padding: 32rpx 24rpx;
+}

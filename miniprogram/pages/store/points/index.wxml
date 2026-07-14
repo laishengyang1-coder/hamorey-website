@@ -1,0 +1,59 @@
+<view class="page-container">
+  <!-- 积分余额卡片 -->
+  <view class="points-card">
+    <view class="points-balance">
+      <view class="points-label">可用积分</view>
+      <view class="points-value">{{points.available || 0}}</view>
+    </view>
+    <view class="points-row">
+      <view class="points-frozen">
+        <text class="points-frozen-label">冻结积分</text>
+        <text class="points-frozen-value">{{points.frozen || 0}}</text>
+      </view>
+      <view class="points-total">
+        <text class="points-total-label">累计获得</text>
+        <text class="points-total-value">{{points.available + points.frozen || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-row">
+    <view class="quick-btn" bindtap="goRewards">🎁 积分商城</view>
+    <view class="quick-btn" bindtap="goOrders">📦 兑换记录</view>
+  </view>
+
+  <!-- 积分流水 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">积分流水</view>
+    </view>
+
+    <!-- Loading -->
+    <view wx:if="{{loading}}" class="loading-container" style="padding:80rpx">
+      <view class="loading-spinner"></view>
+    </view>
+
+    <!-- 空 -->
+    <view wx:elif="{{!loading && ledger.length === 0}}" class="empty-state" style="padding:60rpx">
+      <view class="empty-state-text">暂无积分记录</view>
+    </view>
+
+    <!-- 流水列表 -->
+    <view wx:else class="section-body">
+      <view
+        wx:for="{{ledger}}"
+        wx:key="id"
+        class="ledger-item"
+      >
+        <view class="ledger-info">
+          <view class="ledger-desc">{{ledgerLabel(item.change_type, item.description)}}</view>
+          <view class="ledger-time">{{item.created_at || ''}}</view>
+        </view>
+        <view class="ledger-amount {{item.points_change > 0 ? 'text-success' : ''}}">
+          {{item.points_change > 0 ? '+' : ''}}{{item.points_change || 0}}
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

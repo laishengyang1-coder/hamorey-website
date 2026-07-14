@@ -1,0 +1,36 @@
+.page-container { min-height: 100vh; background: var(--color-bg); padding-bottom: 160rpx; }
+
+.picker-display {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24rpx 32rpx; background: var(--color-bg-card); border-radius: var(--radius-sm);
+  font-size: var(--font-md); color: var(--color-text);
+}
+
+.search-placeholder { color: var(--color-text-placeholder); }
+.picker-arrow { font-size: 32rpx; color: var(--color-text-light); }
+.select-all { font-size: var(--font-sm); color: var(--color-primary); }
+
+.code-select-row {
+  display: flex; align-items: center; padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+.code-select-row:last-child { border-bottom: none; }
+
+.checkbox-box {
+  width: 44rpx; height: 44rpx; display: flex; align-items: center; justify-content: center;
+  border: 2rpx solid var(--color-border); border-radius: var(--radius-sm); margin-right: 20rpx;
+}
+.checkbox-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.checkbox-icon { color: #FFFFFF; font-size: 28rpx; font-weight: 700; }
+
+.code-select-info { flex: 1; }
+.code-select-value { font-size: var(--font-md); font-weight: 600; color: var(--color-primary); }
+.code-select-model { font-size: var(--font-xs); color: var(--color-text-light); margin-top: 4rpx; }
+
+.summary-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24rpx 32rpx; background: var(--color-bg-white);
+  box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.1);
+}
+.summary-info { font-size: var(--font-md); color: var(--color-text); }

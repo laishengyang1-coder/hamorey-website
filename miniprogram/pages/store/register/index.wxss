@@ -1,0 +1,164 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 160rpx;
+}
+
+/* 步骤指示器 */
+.steps-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32rpx 48rpx;
+  background: var(--color-bg-white);
+  overflow-x: auto;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 100rpx;
+}
+
+.step-dot {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.step-item.active .step-dot {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.step-item.done .step-dot {
+  background: var(--color-success);
+  color: #FFFFFF;
+}
+
+.step-label {
+  font-size: 18rpx;
+  color: var(--color-text-light);
+  margin-top: 8rpx;
+  white-space: nowrap;
+}
+
+.step-item.active .step-label {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.step-line {
+  position: absolute;
+  top: 24rpx;
+  left: calc(50% + 32rpx);
+  width: calc(100% - 64rpx);
+  height: 2rpx;
+  background: var(--color-border);
+}
+
+.step-item.done .step-line {
+  background: var(--color-success);
+}
+
+.step-content {
+  padding-bottom: 24rpx;
+}
+
+.form-tip {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: -8rpx;
+}
+
+/* 照片上传 */
+.photo-upload-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.photo-preview {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-preview-img {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44rpx;
+  height: 44rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 0 var(--radius-sm);
+}
+
+.photo-add {
+  width: 200rpx;
+  height: 200rpx;
+  border: 2rpx dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-add-icon {
+  font-size: 56rpx;
+  color: var(--color-text-light);
+  line-height: 1;
+}
+
+.photo-add-text {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 8rpx;
+}
+
+/* 提交区 */
+.submit-area {
+  padding: 32rpx 24rpx;
+}
+
+/* 步骤底部 */
+.step-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  background: var(--color-bg-white);
+  border-top: 1rpx solid var(--color-border-light);
+  z-index: 100;
+}
+
+.search-placeholder {
+  color: var(--color-text-placeholder);
+  font-size: var(--font-md);
+}

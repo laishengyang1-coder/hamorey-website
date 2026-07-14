@@ -1,0 +1,68 @@
+<view class="page-container">
+  <!-- 选择目标门店 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">目标门店</view>
+    </view>
+    <view class="section-body">
+      <picker mode="selector" range="{{storeNames}}" value="{{selectedStoreIndex}}" bindchange="onStoreChange">
+        <view class="picker-display">
+          <text class="{{selectedStoreIndex >= 0 ? '' : 'search-placeholder'}}">
+            {{selectedStoreIndex >= 0 ? storeNames[selectedStoreIndex] : '请选择目标门店'}}
+          </text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loadingCodes}}" class="loading-container"><view class="loading-spinner"></view><view class="loading-text">加载质保码...</view></view>
+
+  <!-- 质保码列表（多选） -->
+  <view wx:else class="section">
+    <view class="section-header">
+      <view class="section-title">选择质保码</view>
+      <view class="select-all" bindtap="toggleAllCodes">
+        {{allCodesSelected ? '取消全选' : '全选可用'}}
+      </view>
+    </view>
+    <view class="section-body">
+      <view wx:if="{{availableCodes.length === 0}}" class="empty-state" style="padding:40rpx">
+        <view class="empty-state-text">暂无可分配的质保码</view>
+      </view>
+
+      <view wx:else>
+        <view
+          wx:for="{{availableCodes}}"
+          wx:key="id"
+          class="code-select-row"
+          data-index="{{index}}"
+          bindtap="toggleCode"
+        >
+          <view class="checkbox-box {{item.checked ? 'checked' : ''}}">
+            <text wx:if="{{item.checked}}" class="checkbox-icon">✓</text>
+          </view>
+          <view class="code-select-info">
+            <view class="code-select-value">{{item.code}}</view>
+            <view class="code-select-model">{{item.model_name || item.display_name || '--'}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已选汇总 -->
+  <view wx:if="{{selectedCodes.length > 0}}" class="summary-bar safe-bottom">
+    <view class="summary-info">
+      <text>已选 {{selectedCodes.length}} 个质保码</text>
+    </view>
+    <button
+      class="btn-primary"
+      style="width:240rpx;height:72rpx;font-size:28rpx"
+      loading="{{submitting}}"
+      disabled="{{submitting || selectedStoreIndex < 0}}"
+      bindtap="handleAllocate"
+    >确认划拨</button>
+  </view>
+</view>

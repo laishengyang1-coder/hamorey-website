@@ -1,0 +1,77 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">加载报价中...</view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-icon">😞</view>
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadPrices">重试</view>
+  </view>
+
+  <!-- 报价列表 -->
+  <block wx:else>
+    <!-- 型号信息 -->
+    <view class="quote-header card">
+      <view class="quote-model-label">产品型号</view>
+      <view class="quote-model-name">{{modelName || modelCode || '--'}}</view>
+      <view class="quote-model-tip">以下是各部位理赔参考报价（元）</view>
+    </view>
+
+    <!-- 部位复选框列表 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">选择部位</view>
+        <view class="select-all" bindtap="toggleAll">
+          {{allSelected ? '取消全选' : '全选'}}
+        </view>
+      </view>
+      <view class="section-body">
+        <view
+          wx:for="{{prices}}"
+          wx:key="id"
+          class="part-row"
+        >
+          <view class="part-checkbox" data-index="{{index}}" bindtap="togglePart">
+            <view class="checkbox-box {{item.checked ? 'checked' : ''}}">
+              <text wx:if="{{item.checked}}" class="checkbox-icon">✓</text>
+            </view>
+          </view>
+          <view class="part-info">
+            <view class="part-name">{{item.part_name}}</view>
+            <view class="part-category">{{item.category || '--'}}</view>
+          </view>
+          <view class="part-price">¥{{item.price_fmt}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 汇总 -->
+    <view wx:if="{{selectedParts.length > 0}}" class="summary-section card">
+      <view class="summary-title">报价汇总</view>
+      <view
+        wx:for="{{selectedParts}}"
+        wx:key="id"
+        class="summary-row"
+      >
+        <view class="summary-name">{{item.part_name}}</view>
+        <view class="summary-price">¥{{item.price_fmt}}</view>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-total">
+        <view class="summary-total-label">预估总额</view>
+        <view class="summary-total-price">¥{{totalPrice}}</view>
+      </view>
+      <view class="summary-note">*以上价格为参考报价，实际理赔金额以门店核定为准</view>
+    </view>
+
+    <!-- 空选择提示 -->
+    <view wx:else class="empty-state">
+      <view class="empty-state-icon">📊</view>
+      <view class="empty-state-text">请勾选需要报价的部位</view>
+    </view>
+  </block>
+</view>

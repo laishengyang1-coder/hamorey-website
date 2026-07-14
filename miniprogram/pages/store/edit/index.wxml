@@ -1,0 +1,220 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadRecord">重试</view>
+  </view>
+
+  <block wx:else>
+    <!-- 状态标签 -->
+    <view class="status-bar">
+      <view class="tag {{statusTagClass(record.status)}}">{{statusLabel(record.status)}}</view>
+      <text wx:if="{{record.status === 'rejected' && record.current_reject_reason}}" class="reject-reason">
+        驳回原因：{{record.current_reject_reason}}
+      </text>
+    </view>
+
+    <!-- 质保信息 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">质保信息</view>
+      </view>
+      <view class="section-body">
+        <view class="info-row">
+          <view class="info-row-label">质保码</view>
+          <view class="info-row-value">{{record.warranty_code || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">产品</view>
+          <view class="info-row-value">{{record.product_name_snapshot || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">型号</view>
+          <view class="info-row-value">{{record.product_model_snapshot || record.model_name || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">质保年限</view>
+          <view class="info-row-value">{{record.warranty_years_snapshot || '--'}}年</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 可编辑信息（仅驳回状态） -->
+    <view wx:if="{{isRejected}}" class="section">
+      <view class="section-header">
+        <view class="section-title">修改信息</view>
+        <view class="section-sub">修改后重新提交</view>
+      </view>
+      <view class="section-body">
+        <view class="form-group">
+          <view class="form-label">车主姓名</view>
+          <input
+            class="form-input"
+            value="{{editForm.customer_name}}"
+            bindinput="onEditInput"
+            data-field="customer_name"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">联系电话</view>
+          <input
+            class="form-input"
+            type="number"
+            maxlength="11"
+            value="{{editForm.customer_phone}}"
+            bindinput="onEditInput"
+            data-field="customer_phone"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">车牌号</view>
+          <input
+            class="form-input"
+            value="{{editForm.plate_no}}"
+            bindinput="onEditInput"
+            data-field="plate_no"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">车架号</view>
+          <input
+            class="form-input"
+            value="{{editForm.vin}}"
+            bindinput="onEditInput"
+            data-field="vin"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">车辆品牌</view>
+          <input
+            class="form-input"
+            value="{{editForm.vehicle_brand}}"
+            bindinput="onEditInput"
+            data-field="vehicle_brand"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">车辆型号</view>
+          <input
+            class="form-input"
+            value="{{editForm.vehicle_model}}"
+            bindinput="onEditInput"
+            data-field="vehicle_model"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">施工日期</view>
+          <picker mode="date" value="{{editForm.installation_date}}" bindchange="onEditDateChange">
+            <view class="form-input flex-row" style="align-items:center">
+              <text>{{editForm.installation_date || '请选择施工日期'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <!-- 只读信息（非驳回状态） -->
+    <view wx:else>
+      <view class="section">
+        <view class="section-header">
+          <view class="section-title">车主信息</view>
+        </view>
+        <view class="section-body">
+          <view class="info-row">
+            <view class="info-row-label">姓名</view>
+            <view class="info-row-value">{{record.customer_name_snapshot || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">电话</view>
+            <view class="info-row-value">{{record.customer_phone_snapshot || '--'}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section-header">
+          <view class="section-title">车辆信息</view>
+        </view>
+        <view class="section-body">
+          <view class="info-row">
+            <view class="info-row-label">车牌号</view>
+            <view class="info-row-value">{{record.plate_no_snapshot || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">车架号</view>
+            <view class="info-row-value">{{record.vin_snapshot || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">品牌</view>
+            <view class="info-row-value">{{record.vehicle_brand_snapshot || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">型号</view>
+            <view class="info-row-value">{{record.vehicle_model_snapshot || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">施工日期</view>
+            <view class="info-row-value">{{record.installation_date || '--'}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-row-label">到期日期</view>
+            <view class="info-row-value text-primary text-bold">{{record.warranty_expiry_date || '--'}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 施工照片 -->
+      <view wx:if="{{photos.length > 0}}" class="section">
+        <view class="section-header">
+          <view class="section-title">施工照片</view>
+        </view>
+        <view class="section-body">
+          <view class="photos-grid">
+            <image
+              wx:for="{{photos}}"
+              wx:key="id"
+              src="{{item.url || item.file_key}}"
+              mode="aspectFill"
+              class="photo-item"
+              data-url="{{item.url || item.file_key}}"
+              bindtap="previewPhoto"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- 审核日志 -->
+      <view wx:if="{{auditLogs.length > 0}}" class="section">
+        <view class="section-header">
+          <view class="section-title">审核日志</view>
+        </view>
+        <view class="section-body">
+          <view
+            wx:for="{{auditLogs}}"
+            wx:key="id"
+            class="log-item"
+          >
+            <view class="log-action">{{logActionLabel(item.action)}}</view>
+            <view class="log-meta">{{item.operator_name || '系统'}} · {{item.created_at}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交按钮（仅驳回状态） -->
+    <view wx:if="{{isRejected}}" class="submit-area safe-bottom">
+      <button
+        class="btn-primary"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bindtap="handleResubmit"
+      >重新提交</button>
+    </view>
+  </block>
+</view>

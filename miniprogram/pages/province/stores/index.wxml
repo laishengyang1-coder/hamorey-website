@@ -1,0 +1,48 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadStores">重试</view>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:else>
+    <view wx:if="{{stores.length === 0}}" class="empty-state">
+      <view class="empty-state-icon">🏪</view>
+      <view class="empty-state-text">暂无下属门店</view>
+    </view>
+
+    <view wx:else>
+      <view
+        wx:for="{{stores}}"
+        wx:key="id"
+        class="store-card card"
+        data-id="{{item.id}}"
+        bindtap="goEdit"
+      >
+        <view class="store-name">{{item.name || '--'}}</view>
+        <view class="store-meta">
+          <text>编码：{{item.code || '--'}}</text>
+          <text>{{item.city || ''}}{{item.province ? ' · ' + item.province : ''}}</text>
+        </view>
+        <view class="store-contact" wx:if="{{item.contact_name}}">
+          <text>{{item.contact_name}}</text>
+          <text wx:if="{{item.phone}}">{{item.phone}}</text>
+        </view>
+        <view class="store-status">
+          <view class="tag {{item.status === 'active' ? 'tag-success' : 'tag-error'}}">
+            {{item.status === 'active' ? '运营中' : '已停用'}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增按钮 -->
+  <view class="float-btn safe-bottom" bindtap="goCreate">
+    <text class="float-btn-text">+ 新增门店</text>
+  </view>
+</view>

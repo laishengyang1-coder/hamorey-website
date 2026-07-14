@@ -1,0 +1,126 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-icon">😞</view>
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadData">重试</view>
+  </view>
+
+  <!-- 质保卡详情 -->
+  <block wx:else>
+    <!-- 质保卡头部 -->
+    <view class="certificate-header">
+      <view class="certificate-badge">
+        <text class="certificate-badge-icon">🛡️</text>
+        <text class="certificate-badge-text">电子质保卡</text>
+      </view>
+      <view class="certificate-no">编号：{{record.certificate_no || record.id}}</view>
+      <view class="certificate-status">
+        <view class="tag tag-success">保障中</view>
+      </view>
+    </view>
+
+    <!-- 质保卡信息 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">质保信息</view>
+      </view>
+      <view class="section-body">
+        <view class="info-row">
+          <view class="info-row-label">产品名称</view>
+          <view class="info-row-value text-bold">{{record.product_name_snapshot || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">产品型号</view>
+          <view class="info-row-value">{{record.product_model_snapshot || record.model_name || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">质保年限</view>
+          <view class="info-row-value">{{record.warranty_years_snapshot || '--'}}年</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">质保码</view>
+          <view class="info-row-value">{{record.warranty_code || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">施工日期</view>
+          <view class="info-row-value">{{record.installation_date || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">到期日期</view>
+          <view class="info-row-value text-primary text-bold">{{record.warranty_expiry_date || '--'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 车辆信息 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">车辆信息</view>
+      </view>
+      <view class="section-body">
+        <view class="info-row">
+          <view class="info-row-label">车牌号</view>
+          <view class="info-row-value">{{record.plate_no_snapshot || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车架号</view>
+          <view class="info-row-value">{{record.vin_snapshot || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车辆品牌</view>
+          <view class="info-row-value">{{record.vehicle_brand_snapshot || '--'}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车辆型号</view>
+          <view class="info-row-value">{{record.vehicle_model_snapshot || '--'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 施工门店 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">施工门店</view>
+      </view>
+      <view class="section-body">
+        <view class="info-row">
+          <view class="info-row-label">门店名称</view>
+          <view class="info-row-value">{{record.store_name_snapshot || '--'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 施工照片 -->
+    <view wx:if="{{recordPhotos.length > 0}}" class="section">
+      <view class="section-header">
+        <view class="section-title">施工照片</view>
+      </view>
+      <view class="section-body">
+        <view class="photos-grid">
+          <image
+            wx:for="{{recordPhotos}}"
+            wx:key="id"
+            src="{{item.url || item.file_key}}"
+            mode="aspectFill"
+            class="photo-item"
+            data-url="{{item.url || item.file_key}}"
+            bindtap="previewPhoto"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 部位报价入口 -->
+    <view class="quote-entry" bindtap="goQuote">
+      <text>📊 查看部位理赔报价</text>
+      <text class="warranty-arrow">›</text>
+    </view>
+  </block>
+</view>

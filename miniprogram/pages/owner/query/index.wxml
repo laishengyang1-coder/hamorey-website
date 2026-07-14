@@ -1,0 +1,40 @@
+<view class="page-container">
+  <!-- 品牌头部 -->
+  <view class="brand-header">
+    <view class="brand-logo-text">HAMOREY</view>
+    <view class="brand-subtitle">和膜 · 质保查询系统</view>
+  </view>
+
+  <!-- 搜索区域 -->
+  <view class="search-section">
+    <view class="search-input-area">
+      <input
+        class="search-input"
+        type="text"
+        maxlength="50"
+        placeholder="输入手机号 / 车牌 / 车架号 / 质保码"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onKeywordInput"
+        bindconfirm="doSearch"
+        focus="{{true}}"
+      />
+      <view class="search-btn" bindtap="doSearch">
+        <text class="search-btn-text">查询</text>
+      </view>
+    </view>
+    <view class="search-hint">系统将自动识别查询类型</view>
+  </view>
+
+  <!-- 门店端入口 -->
+  <view class="store-entry" bindtap="goStoreLogin">
+    <text class="store-entry-icon">🏪</text>
+    <text class="store-entry-text">门店/省代登录</text>
+    <text class="store-entry-arrow">›</text>
+  </view>
+
+  <!-- 底部品牌信息 -->
+  <view class="brand-footer">
+    <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
+  </view>
+</view>

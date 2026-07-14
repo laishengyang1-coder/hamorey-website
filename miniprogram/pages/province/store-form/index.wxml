@@ -1,0 +1,102 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
+
+  <block wx:else>
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">{{isEdit ? '编辑门店' : '新增门店'}}</view>
+      </view>
+      <view class="section-body">
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>门店编码</view>
+          <input
+            class="form-input"
+            placeholder="请输入门店编码"
+            placeholder-class="search-placeholder"
+            value="{{form.code}}"
+            bindinput="onInput"
+            data-field="code"
+            disabled="{{isEdit}}"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>门店名称</view>
+          <input
+            class="form-input"
+            placeholder="请输入门店名称"
+            placeholder-class="search-placeholder"
+            value="{{form.name}}"
+            bindinput="onInput"
+            data-field="name"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">省份</view>
+          <input
+            class="form-input"
+            placeholder="例如：广东省"
+            placeholder-class="search-placeholder"
+            value="{{form.province}}"
+            bindinput="onInput"
+            data-field="province"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">城市</view>
+          <input
+            class="form-input"
+            placeholder="例如：深圳市"
+            placeholder-class="search-placeholder"
+            value="{{form.city}}"
+            bindinput="onInput"
+            data-field="city"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">联系人</view>
+          <input
+            class="form-input"
+            placeholder="请输入联系人姓名"
+            placeholder-class="search-placeholder"
+            value="{{form.contact_name}}"
+            bindinput="onInput"
+            data-field="contact_name"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">联系电话</view>
+          <input
+            class="form-input"
+            type="number"
+            maxlength="11"
+            placeholder="请输入联系电话"
+            placeholder-class="search-placeholder"
+            value="{{form.phone}}"
+            bindinput="onInput"
+            data-field="phone"
+          />
+        </view>
+
+        <view wx:if="{{isEdit}}" class="form-group">
+          <view class="form-label">状态</view>
+          <picker mode="selector" range="{{statusOptions}}" value="{{statusIndex}}" bindchange="onStatusChange">
+            <view class="form-input flex-row" style="align-items:center">
+              <text>{{statusOptions[statusIndex]}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交 -->
+    <view class="submit-area safe-bottom">
+      <button
+        class="btn-primary"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bindtap="handleSubmit"
+      >{{isEdit ? '保存修改' : '创建门店'}}</button>
+    </view>
+  </block>
+</view>

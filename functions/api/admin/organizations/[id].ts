@@ -1,1 +1,1 @@
-export { onRequestPut } from '../organizations';
+export { onRequestPut, onRequestDelete } from '../organizations';

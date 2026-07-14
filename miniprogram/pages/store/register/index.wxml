@@ -1,0 +1,237 @@
+<view class="page-container">
+  <!-- 步骤指示器 -->
+  <view class="steps-bar">
+    <view
+      wx:for="{{steps}}"
+      wx:key="index"
+      class="step-item {{currentStep > index ? 'done' : ''}} {{currentStep === index ? 'active' : ''}}"
+    >
+      <view class="step-dot">
+        <text wx:if="{{currentStep > index}}">✓</text>
+        <text wx:else>{{index + 1}}</text>
+      </view>
+      <view class="step-label">{{item}}</view>
+      <view wx:if="{{index < steps.length - 1}}" class="step-line"></view>
+    </view>
+  </view>
+
+  <!-- Step 1: 输入质保码 -->
+  <view wx:if="{{currentStep === 0}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">输入质保码</view>
+      </view>
+      <view class="section-body">
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>质保码</view>
+          <input
+            class="form-input"
+            placeholder="请输入质保码"
+            placeholder-class="search-placeholder"
+            value="{{form.warranty_code}}"
+            bindinput="onFieldInput"
+            data-field="warranty_code"
+          />
+        </view>
+        <view class="form-tip">请输入施工质保码，系统将自动校验产品型号</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 2: 填写车主信息 -->
+  <view wx:if="{{currentStep === 1}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">车主信息</view>
+      </view>
+      <view class="section-body">
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>车主姓名</view>
+          <input
+            class="form-input"
+            placeholder="请输入车主姓名"
+            placeholder-class="search-placeholder"
+            value="{{form.customer_name}}"
+            bindinput="onFieldInput"
+            data-field="customer_name"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>联系电话</view>
+          <input
+            class="form-input"
+            type="number"
+            maxlength="11"
+            placeholder="请输入车主手机号"
+            placeholder-class="search-placeholder"
+            value="{{form.customer_phone}}"
+            bindinput="onFieldInput"
+            data-field="customer_phone"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 3: 填写车辆信息 -->
+  <view wx:if="{{currentStep === 2}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">车辆信息</view>
+      </view>
+      <view class="section-body">
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>车牌号</view>
+          <input
+            class="form-input"
+            placeholder="例如：京A12345"
+            placeholder-class="search-placeholder"
+            value="{{form.plate_no}}"
+            bindinput="onFieldInput"
+            data-field="plate_no"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">车架号（VIN）</view>
+          <input
+            class="form-input"
+            placeholder="请输入车架号（选填）"
+            placeholder-class="search-placeholder"
+            value="{{form.vin}}"
+            bindinput="onFieldInput"
+            data-field="vin"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>车辆品牌</view>
+          <input
+            class="form-input"
+            placeholder="例如：宝马"
+            placeholder-class="search-placeholder"
+            value="{{form.vehicle_brand}}"
+            bindinput="onFieldInput"
+            data-field="vehicle_brand"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>车辆型号</view>
+          <input
+            class="form-input"
+            placeholder="例如：X5 xDrive40i"
+            placeholder-class="search-placeholder"
+            value="{{form.vehicle_model}}"
+            bindinput="onFieldInput"
+            data-field="vehicle_model"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">年款</view>
+          <input
+            class="form-input"
+            placeholder="例如：2024（选填）"
+            placeholder-class="search-placeholder"
+            value="{{form.vehicle_year}}"
+            bindinput="onFieldInput"
+            data-field="vehicle_year"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required">*</text>施工日期</view>
+          <picker mode="date" value="{{form.installation_date}}" bindchange="onDateChange">
+            <view class="form-input flex-row" style="align-items:center">
+              <text class="{{form.installation_date ? '' : 'search-placeholder'}}">
+                {{form.installation_date || '请选择施工日期'}}
+              </text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 4: 拍照 -->
+  <view wx:if="{{currentStep === 3}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">施工照片（选填）</view>
+      </view>
+      <view class="section-body">
+        <view class="photo-upload-area">
+          <view
+            wx:for="{{photos}}"
+            wx:key="index"
+            class="photo-preview"
+            data-index="{{index}}"
+          >
+            <image src="{{item}}" mode="aspectFill" class="photo-preview-img" />
+            <view class="photo-delete" data-index="{{index}}" bindtap="deletePhoto">✕</view>
+          </view>
+          <view wx:if="{{photos.length < 6}}" class="photo-add" bindtap="takePhoto">
+            <view class="photo-add-icon">+</view>
+            <view class="photo-add-text">拍照</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 5: 确认提交 -->
+  <view wx:if="{{currentStep === 4}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">确认信息</view>
+      </view>
+      <view class="section-body">
+        <view class="info-row">
+          <view class="info-row-label">质保码</view>
+          <view class="info-row-value">{{form.warranty_code}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车主姓名</view>
+          <view class="info-row-value">{{form.customer_name}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">联系电话</view>
+          <view class="info-row-value">{{form.customer_phone}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车牌号</view>
+          <view class="info-row-value">{{form.plate_no}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车辆品牌</view>
+          <view class="info-row-value">{{form.vehicle_brand}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">车辆型号</view>
+          <view class="info-row-value">{{form.vehicle_model}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-row-label">施工日期</view>
+          <view class="info-row-value">{{form.installation_date}}</view>
+        </view>
+        <view wx:if="{{photos.length > 0}}" class="info-row">
+          <view class="info-row-label">施工照片</view>
+          <view class="info-row-value">{{photos.length}}张</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="submit-area">
+      <button
+        class="btn-primary"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bindtap="handleSubmit"
+      >{{submitting ? '提交中...' : '确认提交'}}</button>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="step-footer safe-bottom">
+    <view wx:if="{{currentStep > 0}}" class="btn-outline" style="width:200rpx" bindtap="prevStep">上一步</view>
+    <view wx:if="{{currentStep < 4}}" class="btn-primary" style="flex:1;margin-left:24rpx" bindtap="nextStep">
+      {{currentStep === 3 ? '确认信息' : '下一步'}}
+    </view>
+  </view>
+</view>

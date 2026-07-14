@@ -1,0 +1,73 @@
+<view class="page-container">
+  <!-- 省代信息 -->
+  <view class="header">
+    <view class="header-name">{{provinceName}}</view>
+    <view class="header-role">省级代理商</view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <!-- 数据概览卡片 -->
+  <view wx:else class="stats-grid">
+    <view class="stat-card" bindtap="goStores">
+      <view class="stat-icon">🏪</view>
+      <view class="stat-value">{{dashboard.storeCount}}</view>
+      <view class="stat-label">下属门店</view>
+    </view>
+    <view class="stat-card" bindtap="goCodes">
+      <view class="stat-icon">🎫</view>
+      <view class="stat-value">{{dashboard.codeCount}}</view>
+      <view class="stat-label">可用质保码</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-icon">📋</view>
+      <view class="stat-value">{{dashboard.recordCount}}</view>
+      <view class="stat-label">质保记录</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-icon">⏳</view>
+      <view class="stat-value {{dashboard.pendingCount > 0 ? 'text-warning' : ''}}">{{dashboard.pendingCount}}</view>
+      <view class="stat-label">待审核</view>
+    </view>
+    <view class="stat-card" bindtap="goPoints">
+      <view class="stat-icon">💰</view>
+      <view class="stat-value">{{dashboard.availablePoints}}</view>
+      <view class="stat-label">可用积分</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-icon">🔒</view>
+      <view class="stat-value">{{dashboard.frozenPoints}}</view>
+      <view class="stat-label">冻结积分</view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">快捷操作</view>
+    </view>
+    <view class="section-body">
+      <view class="menu-item" bindtap="goStores">
+        <text>🏪 下属门店管理</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goCodes">
+        <text>🎫 质保码库存</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goAllocate">
+        <text>📤 划拨质保码</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goPoints">
+        <text>💰 积分管理</text><text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goRewards">
+        <text>🎁 积分商城</text><text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出 -->
+  <view class="logout-btn" bindtap="handleLogout"><text>退出登录</text></view>
+</view>

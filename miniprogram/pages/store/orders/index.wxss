@@ -1,0 +1,62 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 40rpx;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  background: var(--color-bg-white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.filter-tab {
+  padding: 8rpx 24rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-round);
+}
+
+.filter-tab.active {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.order-card {
+  margin-bottom: 8rpx;
+}
+
+.order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.order-total {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.order-item {
+  padding: 8rpx 0;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 1rpx dashed var(--color-border-light);
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-time {
+  margin-top: 12rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}

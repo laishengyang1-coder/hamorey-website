@@ -1,0 +1,76 @@
+<view class="page-container">
+  <!-- 搜索 + 筛选 -->
+  <view class="filter-bar">
+    <view class="filter-search">
+      <input
+        class="filter-input"
+        placeholder="搜索姓名/车牌/质保码"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onKeywordInput"
+        bindconfirm="onSearch"
+      />
+    </view>
+    <view class="filter-tabs">
+      <view
+        wx:for="{{statusTabs}}"
+        wx:key="value"
+        class="filter-tab {{activeStatus === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="switchStatus"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadRecords">重试</view>
+  </view>
+
+  <!-- 空 -->
+  <view wx:elif="{{!loading && records.length === 0}}" class="empty-state">
+    <view class="empty-state-icon">📋</view>
+    <view class="empty-state-text">暂无质保记录</view>
+    <view class="empty-state-sub">点击下方按钮登记新质保</view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view wx:else class="records-list">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="record-card card"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="record-top">
+        <view class="record-info">
+          <view class="record-name">{{item.customer_name_snapshot || '--'}}</view>
+          <view class="record-plate">{{item.plate_no_snapshot || '--'}}</view>
+        </view>
+        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+      </view>
+      <view class="record-meta">
+        <text>{{item.product_name_snapshot || '--'}}</text>
+        <text>{{item.installation_date || '--'}}</text>
+      </view>
+      <view class="record-code">质保码：{{item.warranty_code || '--'}}</view>
+    </view>
+  </view>
+
+  <!-- 登记按钮 -->
+  <view class="float-btn safe-bottom" bindtap="goRegister">
+    <text class="float-btn-text">+ 登记质保</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && records.length > 0}}" class="load-more" bindtap="loadMore">
+    <text class="load-more-text">{{loadingMore ? '加载中...' : '加载更多'}}</text>
+  </view>
+</view>

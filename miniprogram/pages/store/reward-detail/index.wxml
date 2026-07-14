@@ -1,0 +1,53 @@
+<view class="page-container">
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+  </view>
+
+  <block wx:else>
+    <!-- 商品头图 -->
+    <image
+      wx:if="{{reward.image_url}}"
+      src="{{reward.image_url}}"
+      mode="aspectFill"
+      class="detail-image"
+    />
+    <view wx:else class="detail-image-placeholder">🎁</view>
+
+    <!-- 商品信息 -->
+    <view class="section">
+      <view class="section-body">
+        <view class="detail-name">{{reward.name || '--'}}</view>
+        <view class="detail-points">{{reward.points_required || 0}} 积分</view>
+        <view wx:if="{{reward.stock_status === 'out_of_stock'}}" class="tag tag-error mt-16">已售罄</view>
+        <view wx:elif="{{reward.stock_quantity !== null}}" class="detail-stock mt-16">库存：{{reward.stock_quantity}}件</view>
+      </view>
+    </view>
+
+    <!-- 描述 -->
+    <view wx:if="{{reward.description}}" class="section">
+      <view class="section-header">
+        <view class="section-title">商品描述</view>
+      </view>
+      <view class="section-body">
+        <view class="detail-desc">{{reward.description}}</view>
+      </view>
+    </view>
+
+    <!-- 兑换按钮 -->
+    <view class="submit-area safe-bottom">
+      <button
+        class="btn-primary"
+        loading="{{submitting}}"
+        disabled="{{submitting || reward.stock_status === 'out_of_stock'}}"
+        bindtap="handleRedeem"
+      >
+        {{reward.stock_status === 'out_of_stock' ? '已售罄' : submitting ? '兑换中...' : '立即兑换（' + (reward.points_required || 0) + '积分）'}}
+      </button>
+    </view>
+  </block>
+</view>

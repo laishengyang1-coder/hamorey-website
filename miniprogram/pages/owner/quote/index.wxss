@@ -1,0 +1,154 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 64rpx;
+}
+
+.quote-header {
+  text-align: center;
+  padding: 40rpx 32rpx;
+}
+
+.quote-model-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-bottom: 8rpx;
+}
+
+.quote-model-name {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 12rpx;
+}
+
+.quote-model-tip {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}
+
+/* 部位行 */
+.part-row {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.part-row:last-child {
+  border-bottom: none;
+}
+
+.part-checkbox {
+  margin-right: 20rpx;
+}
+
+.checkbox-box {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.checkbox-box.checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkbox-icon {
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.part-info {
+  flex: 1;
+}
+
+.part-name {
+  font-size: var(--font-md);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.part-category {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 4rpx;
+}
+
+.part-price {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.select-all {
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+}
+
+/* 汇总 */
+.summary-section {
+  margin: 24rpx;
+}
+
+.summary-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 20rpx;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.summary-name {
+  font-size: var(--font-md);
+  color: var(--color-text-secondary);
+}
+
+.summary-price {
+  font-size: var(--font-md);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.summary-divider {
+  height: 1rpx;
+  background: var(--color-border-light);
+  margin: 16rpx 0;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-total-label {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.summary-total-price {
+  font-size: var(--font-xxl);
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.summary-note {
+  margin-top: 16rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  text-align: center;
+}

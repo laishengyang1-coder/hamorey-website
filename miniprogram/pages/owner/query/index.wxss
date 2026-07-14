@@ -1,0 +1,142 @@
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #5C1A1A 0%, #3D0F0F 100%);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+/* 品牌头部 */
+.brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 48rpx 60rpx;
+}
+
+.brand-logo-text {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.brand-subtitle {
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 4rpx;
+}
+
+/* 搜索区域 */
+.search-section {
+  flex: 1;
+  padding: 0 48rpx;
+}
+
+.search-tabs {
+  display: flex;
+  margin-bottom: 32rpx;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-round);
+  padding: 6rpx;
+}
+
+.search-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-round);
+  transition: all 0.2s;
+}
+
+.search-tab.active {
+  background: var(--color-accent);
+  color: #2C2C2C;
+  font-weight: 600;
+}
+
+.search-input-area {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.search-input {
+  flex: 1;
+  height: 100rpx;
+  padding: 0 32rpx;
+  font-size: var(--font-lg);
+  color: var(--color-text);
+}
+
+.search-placeholder {
+  color: var(--color-text-placeholder);
+  font-size: var(--font-md);
+}
+
+.search-btn {
+  width: 160rpx;
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+}
+
+.search-btn-text {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: #2C2C2C;
+}
+
+/* 门店入口 */
+.store-entry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  margin-top: auto;
+}
+
+.store-entry-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.store-entry-text {
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.store-entry-arrow {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 4rpx;
+}
+
+/* 底部 */
+.brand-footer {
+  display: flex;
+  justify-content: center;
+  padding: 32rpx 48rpx 64rpx;
+}
+
+.brand-footer-text {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 2rpx;
+}
+
+/* 搜索提示 */
+.search-hint {
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 16rpx;
+}

@@ -1,0 +1,79 @@
+{
+  "pages": [
+    "pages/owner/query/index",
+    "pages/owner/result/index",
+    "pages/owner/detail/index",
+    "pages/owner/quote/index",
+    "pages/store/login/index",
+    "pages/store/index/index",
+    "pages/store/register/index",
+    "pages/store/records/index",
+    "pages/store/edit/index",
+    "pages/store/codes/index",
+    "pages/store/points/index",
+    "pages/store/rewards/index",
+    "pages/store/reward-detail/index",
+    "pages/store/orders/index",
+    "pages/province/login/index",
+    "pages/province/index/index",
+    "pages/province/stores/index",
+    "pages/province/store-form/index",
+    "pages/province/codes/index",
+    "pages/province/allocate/index",
+    "pages/province/points/index",
+    "pages/province/rewards/index",
+    "pages/province/reward-detail/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#5C1A1A",
+    "navigationBarTitleText": "和膜 HAMOREY",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F0EB",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#5C1A1A",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/store/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/store/records/index",
+        "text": "质保记录"
+      },
+      {
+        "pagePath": "pages/store/codes/index",
+        "text": "质保码"
+      },
+      {
+        "pagePath": "pages/store/points/index",
+        "text": "积分"
+      },
+      {
+        "pagePath": "pages/province/index/index",
+        "text": "省代首页"
+      },
+      {
+        "pagePath": "pages/province/stores/index",
+        "text": "门店"
+      },
+      {
+        "pagePath": "pages/province/codes/index",
+        "text": "省码"
+      },
+      {
+        "pagePath": "pages/province/points/index",
+        "text": "省分"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

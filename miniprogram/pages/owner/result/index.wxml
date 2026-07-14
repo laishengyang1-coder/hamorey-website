@@ -1,0 +1,79 @@
+<view class="page-container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input
+      class="search-bar-input"
+      type="text"
+      placeholder="输入手机号 / 车牌 / 车架号 / 质保码"
+      placeholder-class="search-placeholder"
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="onSearch"
+    />
+    <view class="search-bar-btn" bindtap="onSearch">搜索</view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">查询中...</view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-icon">😞</view>
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="onSearch">重试</view>
+  </view>
+
+  <!-- 无结果 -->
+  <view wx:elif="{{!loading && vehicles.length === 0}}" class="empty-state">
+    <view class="empty-state-icon">📋</view>
+    <view class="empty-state-text">未找到质保记录</view>
+    <view class="empty-state-sub">请联系施工门店</view>
+  </view>
+
+  <!-- 结果：按车辆聚合 -->
+  <view wx:else class="results-list">
+    <view
+      wx:for="{{vehicles}}"
+      wx:key="vehicleKey"
+      class="vehicle-card card"
+    >
+      <!-- 车辆信息 -->
+      <view class="vehicle-header">
+        <view class="vehicle-plate">{{item.plate_no_snapshot || '未登记车牌'}}</view>
+        <view class="vehicle-model">{{item.vehicle_brand_snapshot}} {{item.vehicle_model_snapshot}}</view>
+      </view>
+
+      <!-- 质保卡列表 -->
+      <view
+        wx:for="{{item.warranties}}"
+        wx:for-item="w"
+        wx:key="id"
+        class="warranty-item"
+        data-id="{{w.id}}"
+        bindtap="goDetail"
+      >
+        <view class="warranty-row">
+          <view class="warranty-info">
+            <view class="warranty-product">{{w.product_name_snapshot || '漆面保护膜'}}</view>
+            <view class="warranty-model">{{w.product_model_snapshot || w.model_name || ''}}</view>
+          </view>
+          <view class="warranty-status">
+            <view class="tag tag-success">保障中</view>
+          </view>
+        </view>
+        <view class="warranty-meta">
+          <text class="warranty-date">施工日期：{{w.installation_date || '--'}}</text>
+          <text class="warranty-store">{{w.store_name_snapshot || '--'}}</text>
+        </view>
+        <view class="warranty-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="result-tip">
+      <text>共 {{totalCount}} 条质保记录</text>
+    </view>
+  </view>
+</view>

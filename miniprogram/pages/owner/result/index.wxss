@@ -1,0 +1,119 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 32rpx;
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  background: var(--color-bg-white);
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.search-bar-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 24rpx;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--color-text);
+}
+
+.search-placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.search-bar-btn {
+  margin-left: 16rpx;
+  padding: 16rpx 32rpx;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  border-radius: var(--radius-round);
+}
+
+/* 车辆卡片 */
+.vehicle-card {
+  margin-bottom: 8rpx;
+}
+
+.vehicle-header {
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid var(--color-border-light);
+  margin-bottom: 16rpx;
+}
+
+.vehicle-plate {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4rpx;
+}
+
+.vehicle-model {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+/* 质保条目 */
+.warranty-item {
+  position: relative;
+  padding: 20rpx 0;
+  border-bottom: 1rpx dashed var(--color-border-light);
+}
+
+.warranty-item:last-child {
+  border-bottom: none;
+}
+
+.warranty-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.warranty-info {
+  flex: 1;
+}
+
+.warranty-product {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.warranty-model {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  margin-top: 4rpx;
+}
+
+.warranty-meta {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  gap: 4rpx;
+}
+
+.warranty-arrow {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32rpx;
+  color: var(--color-text-light);
+}
+
+.result-tip {
+  text-align: center;
+  padding: 32rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}

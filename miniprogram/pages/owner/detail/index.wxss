@@ -1,0 +1,82 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 64rpx;
+}
+
+/* 质保卡头部 */
+.certificate-header {
+  background: linear-gradient(135deg, #5C1A1A 0%, #7A2E2E 100%);
+  padding: 48rpx 32rpx 40rpx;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+.certificate-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12rpx;
+}
+
+.certificate-badge-icon {
+  font-size: 40rpx;
+  margin-right: 12rpx;
+}
+
+.certificate-badge-text {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  letter-spacing: 4rpx;
+}
+
+.certificate-no {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20rpx;
+}
+
+.certificate-status {
+  display: flex;
+  justify-content: center;
+}
+
+.certificate-status .tag-success {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81C784;
+  font-size: var(--font-sm);
+  padding: 6rpx 24rpx;
+}
+
+/* 照片网格 */
+.photos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.photo-item {
+  width: 210rpx;
+  height: 210rpx;
+  border-radius: var(--radius-sm);
+  background: var(--color-border-light);
+}
+
+/* 报价入口 */
+.quote-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24rpx;
+  padding: 32rpx;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-md);
+  color: var(--color-text);
+}
+
+.quote-entry .warranty-arrow {
+  font-size: 32rpx;
+  color: var(--color-text-light);
+}

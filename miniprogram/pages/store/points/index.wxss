@@ -1,0 +1,106 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 40rpx;
+}
+
+/* 积分卡片 */
+.points-card {
+  margin: 24rpx;
+  padding: 48rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #5C1A1A 0%, #7A2E2E 100%);
+  border-radius: var(--radius-lg);
+  color: #FFFFFF;
+}
+
+.points-balance {
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.points-label {
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8rpx;
+}
+
+.points-value {
+  font-size: 80rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.points-row {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+}
+
+.points-frozen, .points-total {
+  text-align: center;
+}
+
+.points-frozen-label, .points-total-label {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.6);
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.points-frozen-value, .points-total-value {
+  font-size: var(--font-lg);
+  font-weight: 600;
+}
+
+/* 快捷入口 */
+.quick-row {
+  display: flex;
+  margin: 0 24rpx 24rpx;
+  gap: 16rpx;
+}
+
+.quick-btn {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 流水 */
+.ledger-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.ledger-item:last-child {
+  border-bottom: none;
+}
+
+.ledger-info {
+  flex: 1;
+}
+
+.ledger-desc {
+  font-size: var(--font-md);
+  color: var(--color-text);
+}
+
+.ledger-time {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 4rpx;
+}
+
+.ledger-amount {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
