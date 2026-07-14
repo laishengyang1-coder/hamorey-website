@@ -65,7 +65,7 @@ export const footerNavGroups = [
       { label: '质保条款', href: '/warranty/terms' },
       { label: '隐私政策', href: '/privacy' },
       { label: '合作咨询', href: '/contact' },
-      { label: '合作伙伴登录', href: '/admin' },
+      { label: '后台登录', href: '/login' },
     ],
   },
 ] as const;

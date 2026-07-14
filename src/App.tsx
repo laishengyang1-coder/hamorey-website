@@ -19,6 +19,7 @@ import ContactPage from './pages/ContactPage'
 import PrivacyPage from './pages/PrivacyPage'
 import WarrantyTermsPage from './pages/WarrantyTermsPage'
 import NotFoundPage from './pages/NotFoundPage'
+import LoginHub from './pages/LoginHub'
 
 const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -139,6 +140,10 @@ export default function App() {
 
   if (pathname.startsWith('/store')) {
     return <LazyStoreApp />
+  }
+
+  if (pathname === '/login') {
+    return <LoginHub />
   }
 
   return <RouterProvider router={brandRouter} />
