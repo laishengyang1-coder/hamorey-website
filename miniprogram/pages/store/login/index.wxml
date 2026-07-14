@@ -23,7 +23,7 @@
       <view class="form-label">密码</view>
       <input
         class="form-input"
-        type="password"
+        password="{{true}}"
         placeholder="请输入密码"
         placeholder-class="search-placeholder"
         value="{{password}}"

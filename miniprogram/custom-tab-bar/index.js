@@ -91,10 +91,10 @@ Component({
         ];
       }
 
-      // 确定当前选中的索引
+      // 确定当前选中的索引（匹配不到任何 tab 时设为 -1，不高亮任何项）
       const pages = getCurrentPages();
       const currentPage = pages.length > 0 ? '/' + pages[pages.length - 1].route : '';
-      let current = 0;
+      let current = -1;
       tabs.forEach((tab, i) => {
         if (currentPage === tab.pagePath) {
           current = i;
@@ -108,8 +108,14 @@ Component({
      * 切换 Tab
      */
     switchTab(e) {
-      const { index, path } = e.currentTarget.dataset;
-      if (this.data.current === index) return;
+      const { path } = e.currentTarget.dataset;
+
+      // 用「当前页面真实路由」判断是否在目标 tab 上，而不是用 current 索引。
+      // 否则从子页面（非 tab 页，route 匹配不到任何 tab，current 回落为 0）点首页时，
+      // 会被误判成「已在首页」而直接 return，导致跳不回去。
+      const pages = getCurrentPages();
+      const curRoute = pages.length > 0 ? '/' + pages[pages.length - 1].route : '';
+      if (curRoute === path) return;
 
       wx.switchTab({
         url: path,
