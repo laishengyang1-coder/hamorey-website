@@ -26,6 +26,7 @@ SELECT
   'user-hq-admin-001',
   datetime('now')
 FROM product_models pm
-WHERE NOT EXISTS (
+WHERE pm.status = 'active'
+  AND NOT EXISTS (
   SELECT 1 FROM points_rules pr WHERE pr.product_model_id = pm.id
 );

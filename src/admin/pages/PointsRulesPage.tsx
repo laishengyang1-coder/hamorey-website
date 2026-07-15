@@ -33,7 +33,7 @@ export default function PointsRulesPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
-    apiRequest<{ items: Array<{ id: string; model_code: string; display_name: string }> }>('/admin/product-models').then((r) => setModels(r.items)).catch(() => {});
+    apiRequest<{ items: Array<{ id: string; model_code: string; display_name: string }> }>('/admin/product-models?status=active').then((r) => setModels(r.items)).catch(() => {});
   }, []);
 
   const openCreate = () => { setSelected(null); setForm({ product_model_id: '', points: 0, effective_from: '', effective_to: '' }); setPermanent(false); setDrawerOpen(true); };

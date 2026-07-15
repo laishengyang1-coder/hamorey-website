@@ -30,7 +30,7 @@ export default function RebateRulesPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
-    apiRequest<{ items: Array<{ id: string; display_name: string }> }>('/admin/product-models').then((r) => setModels(r.items)).catch(() => {});
+    apiRequest<{ items: Array<{ id: string; display_name: string }> }>('/admin/product-models?status=active').then((r) => setModels(r.items)).catch(() => {});
   }, []);
 
   const openCreate = () => { setSelected(null); setForm({ product_model_id: '', rebate_ratio: 0.1, is_global: false, effective_from: '', effective_to: '' }); setDrawerOpen(true); };

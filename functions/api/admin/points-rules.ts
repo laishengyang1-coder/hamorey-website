@@ -13,6 +13,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const items = await queryAll(context.env.DB,
       `SELECT pr.*, pm.model_code, pm.display_name AS model_name
        FROM points_rules pr JOIN product_models pm ON pr.product_model_id = pm.id
+       WHERE pm.status = 'active'
        ORDER BY pr.updated_at DESC`);
     return ok({ items });
   } catch (err) { console.error('[points-rules GET]', err); return error('获取积分规则失败', 500); }
@@ -22,6 +23,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const body = (await context.request.json()) as { product_model_id?: string; points?: number; effective_from?: string; effective_to?: string };
     if (!body.product_model_id || body.points == null || !body.effective_from) return error('缺少必填字段', 400);
+
+    const model = await queryFirst<{ id: string }>(
+      context.env.DB,
+      `SELECT id FROM product_models WHERE id = ? AND status = 'active'`,
+      body.product_model_id,
+    );
+    if (!model) return error('请选择产品管理中启用的产品型号', 400);
 
     const id = generateId();
     const user = getAuthUser(context.data);

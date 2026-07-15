@@ -31,7 +31,7 @@ export default function ClaimPartsPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
     apiRequest<{ items: ClaimPart[] }>('/admin/claim-parts').then((r) => setParts(r.items)).catch(() => {});
-    apiRequest<{ items: ProductModel[] }>('/admin/product-models').then((r) => setModels(r.items)).catch(() => {});
+    apiRequest<{ items: ProductModel[] }>('/admin/product-models?status=active').then((r) => setModels(r.items)).catch(() => {});
   }, []);
 
   const openCreate = () => { setForm({ product_model_id: '', claim_part_id: '', price_cents: 0, effective_from: '', effective_to: '' }); setDrawerOpen(true); };

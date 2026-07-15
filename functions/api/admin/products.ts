@@ -24,14 +24,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     if (isModelRoute(url.pathname)) {
       const productId = url.searchParams.get('product_id') || '';
+      const status = url.searchParams.get('status') || '';
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+      if (productId) { conditions.push('pm.product_id = ?'); params.push(productId); }
+      if (status) { conditions.push('pm.status = ?'); params.push(status); }
+      const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
       const sql = productId
         ? `SELECT pm.*, p.name_cn AS product_name, p.category AS product_category
            FROM product_models pm JOIN products p ON pm.product_id = p.id
-           WHERE pm.product_id = ? ORDER BY pm.sort_order`
+           ${where} ORDER BY pm.sort_order`
         : `SELECT pm.*, p.name_cn AS product_name, p.category AS product_category
            FROM product_models pm JOIN products p ON pm.product_id = p.id
+           ${where}
            ORDER BY p.sort_order, pm.sort_order`;
-      const params = productId ? [productId] : [];
       const items = await queryAll(context.env.DB, sql, ...params);
       return ok({ items });
     }
