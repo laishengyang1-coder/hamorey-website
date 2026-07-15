@@ -12,8 +12,8 @@
   <block wx:else>
     <!-- 商品头图 -->
     <image
-      wx:if="{{reward.image_url}}"
-      src="{{reward.image_url}}"
+      wx:if="{{reward.coverPath}}"
+      src="{{reward.coverPath}}"
       mode="aspectFill"
       class="detail-image"
     />

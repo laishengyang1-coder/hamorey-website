@@ -6,8 +6,9 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { ProtectedImage } from '../../shared/components/ProtectedImage';
 
-interface Reward { id: string; category: string; name: string; points_required: number; stock_quantity: number | null; stock_status: string; description: string; }
+interface Reward { id: string; category: string; name: string; points_required: number; stock_quantity: number | null; stock_status: string; description: string; cover_file_key: string | null; }
 interface Address { id: string; recipient_name: string; phone: string; province: string; city: string; detail_address: string; is_default: number; }
 
 export default function RewardsPage() {
@@ -65,7 +66,13 @@ export default function RewardsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {rewards.map((r) => (
           <div key={r.id} className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-shadow">
-            <div className="h-32 bg-gray-50 rounded-lg mb-3 flex items-center justify-center text-gray-300 text-sm">暂无图片</div>
+            <div className="aspect-square rounded-lg mb-3 overflow-hidden bg-gray-50">
+              {r.cover_file_key ? (
+                <ProtectedImage fileKey={r.cover_file_key} alt={r.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">暂无图片</div>
+              )}
+            </div>
             <h3 className="text-sm font-medium text-gray-900">{r.name}</h3>
             {r.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.description}</p>}
             <div className="flex items-center justify-between mt-3">

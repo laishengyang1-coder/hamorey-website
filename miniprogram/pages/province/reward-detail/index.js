@@ -15,8 +15,14 @@ Page({
     const res = await api.get('/province/rewards', {}, { loading: false });
     if (res.ok && res.data.items) {
       const reward = res.data.items.find(r => r.id === this.data.rewardId);
-      if (reward) { this.setData({ loading: false, reward }); }
-      else { this.setData({ loading: false, error: '商品不存在' }); }
+      if (reward) {
+        this.setData({ loading: false, reward });
+        // 下载封面图
+        if (reward.cover_file_key) {
+          const img = await api.downloadProtectedPhoto(reward.cover_file_key);
+          if (img.ok) this.setData({ 'reward.coverPath': img.data.tempFilePath });
+        }
+      } else { this.setData({ loading: false, error: '商品不存在' }); }
     } else { this.setData({ loading: false, error: '加载失败' }); }
   },
 

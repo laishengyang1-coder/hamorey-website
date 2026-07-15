@@ -32,6 +32,10 @@ Page({
       const reward = res.data.items.find(r => r.id === this.data.rewardId);
       if (reward) {
         this.setData({ loading: false, reward });
+        if (reward.cover_file_key) {
+          const img = await api.downloadProtectedPhoto(reward.cover_file_key);
+          if (img.ok) this.setData({ 'reward.coverPath': img.data.tempFilePath });
+        }
       } else {
         this.setData({ loading: false, error: '商品不存在' });
       }

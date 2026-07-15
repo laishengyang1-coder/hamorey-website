@@ -27,8 +27,8 @@
       bindtap="goDetail"
     >
       <image
-        wx:if="{{item.image_url}}"
-        src="{{item.image_url}}"
+        wx:if="{{item.coverPath}}"
+        src="{{item.coverPath}}"
         mode="aspectFill"
         class="reward-image"
       />

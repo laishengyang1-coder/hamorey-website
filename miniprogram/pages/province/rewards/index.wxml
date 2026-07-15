@@ -5,7 +5,7 @@
   <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-state"><view class="empty-state-icon"></view><view class="empty-state-text">暂无兑换商品</view></view>
   <view wx:else class="rewards-grid">
     <view wx:for="{{rewards}}" wx:key="id" class="reward-card" data-id="{{item.id}}" bindtap="goDetail">
-      <image wx:if="{{item.image_url}}" src="{{item.image_url}}" mode="aspectFill" class="reward-image"/>
+      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-image"/>
       <view wx:else class="reward-image-placeholder"></view>
       <view class="reward-info">
         <view class="reward-name text-ellipsis">{{item.name || '--'}}</view>

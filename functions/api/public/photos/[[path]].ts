@@ -24,6 +24,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const object = await context.env.R2.get(fileKey);
     if (!object) return error('图片不存在', 404);
 
+    // reward-covers 是公共商品封面，所有已登录用户可读
+    if (fileKey.startsWith('reward-covers/')) {
+      return new Response(object.body, {
+        headers: {
+          'Content-Type': object.httpMetadata?.contentType || 'image/jpeg',
+          'Cache-Control': 'public, max-age=3600',
+          'Content-Length': String(object.size),
+          'X-Content-Type-Options': 'nosniff',
+        },
+        status: 200,
+      });
+    }
+
     const ownerOrgId = object.customMetadata?.organizationId
       || fileKey.match(/^warranty-photos\/([^/]+)\//)?.[1]
       || '';

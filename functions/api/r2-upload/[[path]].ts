@@ -22,15 +22,23 @@ interface UploadedFile {
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = getAuthUser(context.data);
-    if (!user || user.role !== 'STORE') return error('无权上传施工照片', 403);
+    if (!user) return error('请先登录', 401);
 
     const pathname = new URL(context.request.url).pathname;
     const encodedKey = pathname.replace(/^\/api\/r2-upload\//, '');
     const fileKey = decodeURIComponent(encodedKey);
-    const expectedPrefix = `warranty-photos/${user.orgId}/`;
 
-    if (!fileKey.startsWith(expectedPrefix) || fileKey.includes('..')) {
-      return error('上传路径无效', 403);
+    // 路径安全校验
+    if (fileKey.includes('..')) return error('上传路径无效', 403);
+
+    // 角色 + 路径前缀校验
+    if (user.role === 'STORE') {
+      const expectedPrefix = `warranty-photos/${user.orgId}/`;
+      if (!fileKey.startsWith(expectedPrefix)) return error('上传路径无效', 403);
+    } else if (user.role === 'HQ_ADMIN') {
+      if (!fileKey.startsWith('reward-covers/')) return error('上传路径无效', 403);
+    } else {
+      return error('无权上传', 403);
     }
 
     const form = await context.request.formData();
