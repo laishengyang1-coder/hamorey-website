@@ -54,6 +54,7 @@ export default function WarrantyRecordListPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<{ record: any; photos: PhotoItem[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
@@ -105,12 +106,35 @@ export default function WarrantyRecordListPage() {
     finally { setSaving(false); }
   };
 
+  const handleDelete = async (record: WarrantyRecord) => {
+    const ok = window.confirm(
+      `确定要删除该质保记录吗？\n\n车主：${record.customer_name_snapshot}　车牌：${record.plate_no_snapshot}\n质保码：${record.warranty_code}\n\n删除后将同时清除：施工照片、质保证书、审核记录及本条质保发放的积分，且门店、代理商、小程序等所有端都将不再显示。此操作不可恢复！`
+    );
+    if (!ok) return;
+    setDeletingId(record.id);
+    try {
+      await apiRequest(`/admin/warranty-records/${record.id}`, { method: 'DELETE' });
+      // 若当前页删空且非第一页，回退一页
+      if (data.length === 1 && page > 1) setPage(page - 1);
+      else fetchData(page, filters);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '删除失败');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div>
       <PageHeader title="质保记录" description="查看所有质保登记记录" />
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} className="mb-4" />
       <DataTable
-        columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (<button onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(record); }} className='text-sm text-[#5C1A1A] hover:text-[#7A2828] font-medium'>编辑</button>) }]}
+        columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (
+          <div className="flex items-center gap-3">
+            <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(record); }} className='text-sm text-[#5C1A1A] hover:text-[#7A2828] font-medium'>编辑</button>
+            <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDelete(record); }} disabled={deletingId === record.id} className='text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50'>{deletingId === record.id ? '删除中...' : '删除'}</button>
+          </div>
+        ) }]}
         data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage}
         onRowClick={(record: any) => openDetail(record)}
         emptyText="暂无质保记录" />

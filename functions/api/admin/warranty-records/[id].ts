@@ -1,1 +1,1 @@
-export { onRequestGet, onRequestPut } from '../warranty-records-[id]';
+export { onRequestGet, onRequestPut, onRequestDelete } from '../warranty-records-[id]';
