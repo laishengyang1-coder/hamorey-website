@@ -46,10 +46,10 @@ export default function ColorPPFPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-content-primary">
+            <h2 className="text-2xl font-bold text-white">
               改色 · 保护 · 个性
             </h2>
-            <p className="mt-2 text-sm text-content-secondary max-w-xl">
+            <p className="mt-2 text-sm text-white/70 max-w-xl">
               TPU材质改色车衣，既有个性表达，又有车漆保护。
             </p>
           </div>

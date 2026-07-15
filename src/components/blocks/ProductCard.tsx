@@ -32,10 +32,10 @@ export function ProductCard({ category, size = 'default' }: ProductCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/80 via-[#3D0A0A]/20 to-transparent" />
           {/* 文字覆盖 */}
           <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
-            <p className="text-xs font-medium text-content-brand tracking-wider uppercase mb-1">
+            <p className="text-xs font-medium text-white/80 tracking-wider uppercase mb-1">
               {category.nameEn}
             </p>
-            <h3 className={`font-bold text-content-primary ${size === 'large' ? 'text-xl md:text-2xl' : 'text-lg'}`}>
+            <h3 className={`font-bold text-white ${size === 'large' ? 'text-xl md:text-2xl' : 'text-lg'}`}>
               {category.nameCn}
             </h3>
           </div>

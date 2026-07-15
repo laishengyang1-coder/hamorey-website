@@ -37,10 +37,10 @@ export default function PPFPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-content-primary">
+            <h2 className="text-2xl font-bold text-white">
               高光 · 修复 · 抗污 · 疏水
             </h2>
-            <p className="mt-2 text-sm text-content-secondary max-w-xl">
+            <p className="mt-2 text-sm text-white/70 max-w-xl">
               TPU 材质基膜，自修复涂层，守护原厂车漆与车辆残值。
             </p>
           </div>

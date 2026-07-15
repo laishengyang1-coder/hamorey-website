@@ -20,21 +20,21 @@ export function Hero() {
           loading="eager"
           fetchPriority="high"
         />
-        {/* 勃艮第红渐变遮罩 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#3D0A0A]/95 via-[#5C1A1A]/65 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FEFAF8] via-transparent to-[#3D0A0A]/20" />
+        {/* 深色遮罩：左侧加强以保证文字可读，右侧渐隐露出原图 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FEFAF8] via-transparent to-transparent" />
       </div>
 
       {/* 内容 */}
       <Container className="relative z-10 py-20">
         <div className="max-w-2xl">
-          <p className="hero-enter hero-enter-delay-1 text-sm md:text-base font-medium text-content-brand tracking-widest uppercase mb-4">
+          <p className="hero-enter hero-enter-delay-1 text-sm md:text-base font-medium text-white/80 tracking-widest uppercase mb-4">
             {siteConfig.brandNameEn} · 全车资产管家
           </p>
-          <h1 className="hero-enter hero-enter-delay-2 text-4xl md:text-5xl lg:text-6xl font-bold text-content-primary leading-tight text-balance">
+          <h1 className="hero-enter hero-enter-delay-2 text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight text-balance">
             {siteConfig.slogan}
           </h1>
-          <p className="hero-enter hero-enter-delay-3 mt-6 text-base md:text-lg text-content-secondary leading-relaxed max-w-xl text-balance">
+          <p className="hero-enter hero-enter-delay-3 mt-6 text-base md:text-lg text-white/70 leading-relaxed max-w-xl text-balance">
             {siteConfig.description}
           </p>
           <div className="hero-enter hero-enter-delay-3 mt-8 flex flex-col sm:flex-row gap-4">
@@ -44,7 +44,7 @@ export function Hero() {
               </Button>
             </Link>
             <Link to="/warranty">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:border-white hover:text-white">
                 查询质保
               </Button>
             </Link>
