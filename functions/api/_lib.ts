@@ -454,7 +454,7 @@ export async function deleteOrganizationWithDependencies(
     }
   }
 
-  // 2. 删除该组织的用户及其会话
+  // 2. 清理引用该组织用户的外部记录，然后删除用户及其会话
   const users = await queryAll<{ id: string }>(
     db,
     `SELECT id FROM users WHERE organization_id = ?`,
@@ -463,7 +463,11 @@ export async function deleteOrganizationWithDependencies(
   const userIds = users.map((u) => u.id);
   if (userIds.length > 0) {
     const placeholders = userIds.map(() => '?').join(',');
+    // 先删引用 users 的子记录（避免外键约束挡住用户删除）
+    await execute(db, `DELETE FROM operation_logs WHERE user_id IN (${placeholders})`, ...userIds);
     await execute(db, `DELETE FROM sessions WHERE user_id IN (${placeholders})`, ...userIds);
+    // partner_leads.assigned_to → users(id) FK
+    await execute(db, `DELETE FROM partner_leads WHERE assigned_to IN (${placeholders})`, ...userIds);
     await execute(db, `DELETE FROM users WHERE organization_id = ?`, orgId);
   }
 
@@ -506,6 +510,9 @@ export async function deleteOrganizationWithDependencies(
   // 6. 删除门店公开资料
   await execute(db, `DELETE FROM store_public_profiles WHERE organization_id = ?`, orgId);
 
-  // 7. 最后删除组织本身
+  // 7. 清理与该组织相关的操作日志（target_id 无外键约束，但残留无意义）
+  await execute(db, `DELETE FROM operation_logs WHERE target_id = ?`, orgId);
+
+  // 8. 最后删除组织本身
   await execute(db, `DELETE FROM organizations WHERE id = ?`, orgId);
 }
