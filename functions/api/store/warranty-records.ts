@@ -114,7 +114,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
        WHERE warranty_code_id = ? AND status IN ('pending', 'active', 'expired')`,
       wc.id,
     );
-    const usedCount = Math.max(Number(wc.used_count) || 0, actualUsage?.cnt ?? 0);
+    const usedCount = actualUsage?.cnt ?? 0;
     if (usedCount >= wc.usage_limit) {
       return error('该质保码可使用次数已用完', 400);
     }

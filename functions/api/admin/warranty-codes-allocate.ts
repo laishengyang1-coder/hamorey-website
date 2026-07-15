@@ -48,7 +48,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }>(
         context.env.DB,
         `SELECT wc.owner_org_id, wc.status,
-                MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+                MIN(COALESCE(wu.actual_used_count, 0), wc.usage_limit) AS used_count,
                 wc.usage_limit
          FROM warranty_codes wc
          LEFT JOIN (

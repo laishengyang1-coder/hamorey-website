@@ -36,7 +36,6 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const conditions: string[] = [];
     const params: unknown[] = [];
 
-    if (status) { conditions.push('wc.status = ?'); params.push(status); }
     if (batchNo) { conditions.push('wc.batch_no = ?'); params.push(batchNo); }
     if (modelId) { conditions.push('wc.product_model_id = ?'); params.push(modelId); }
     if (ownerId) { conditions.push('wc.owner_org_id = ?'); params.push(ownerId); }
@@ -47,6 +46,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     const baseWhere = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const resultConditions: string[] = [];
+    const resultParams: unknown[] = [];
+    if (status) { resultConditions.push('status = ?'); resultParams.push(status); }
+    const resultWhere = resultConditions.length > 0 ? `WHERE ${resultConditions.join(' AND ')}` : '';
     const usageSql = `SELECT warranty_code_id, COUNT(*) AS actual_used_count
                       FROM warranty_records
                       WHERE status IN ('pending', 'active', 'expired')
@@ -54,11 +57,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const listSql = `FROM (
         SELECT wc.id, wc.code, wc.product_model_id, wc.imported_product_name, wc.batch_no,
                wc.import_batch_id, wc.owner_org_id, wc.usage_limit,
-               MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+               MIN(COALESCE(wu.actual_used_count, 0), wc.usage_limit) AS used_count,
                CASE
                  WHEN wc.status IN ('frozen', 'voided') THEN wc.status
-                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) >= wc.usage_limit THEN 'exhausted'
-                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) > 0 THEN 'partial_used'
+                 WHEN COALESCE(wu.actual_used_count, 0) >= wc.usage_limit THEN 'exhausted'
+                 WHEN COALESCE(wu.actual_used_count, 0) > 0 THEN 'partial_used'
                  WHEN wc.owner_org_id IS NULL THEN 'unallocated'
                  ELSE 'in_stock'
                END AS status,
@@ -75,14 +78,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         context.env.DB,
         `SELECT *
          ${listSql}
+         ${resultWhere}
          ORDER BY ${orderBy} ${sortDir}, created_at DESC
          LIMIT ? OFFSET ?`,
-        ...params, pageSize, offset,
+        ...params, ...resultParams, pageSize, offset,
       ),
       queryFirst<{ cnt: number }>(
         context.env.DB,
-        `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${baseWhere}`,
-        ...params,
+        `SELECT COUNT(*) AS cnt ${listSql} ${resultWhere}`,
+        ...params, ...resultParams,
       ),
     ]);
 

@@ -54,11 +54,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const baseSql = `FROM (
         SELECT wc.id, wc.code, wc.product_model_id, wc.imported_product_name, wc.batch_no,
                wc.import_batch_id, wc.owner_org_id, wc.usage_limit,
-               MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+               MIN(COALESCE(wu.actual_used_count, 0), wc.usage_limit) AS used_count,
                CASE
                  WHEN wc.status IN ('frozen', 'voided') THEN wc.status
-                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) >= wc.usage_limit THEN 'exhausted'
-                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) > 0 THEN 'partial_used'
+                 WHEN COALESCE(wu.actual_used_count, 0) >= wc.usage_limit THEN 'exhausted'
+                 WHEN COALESCE(wu.actual_used_count, 0) > 0 THEN 'partial_used'
                  ELSE 'in_stock'
                END AS status,
                wc.created_at, pm.model_code, pm.display_name AS model_name
@@ -115,7 +115,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       const code = await queryFirst<{ owner_org_id: string; status: string; used_count: number; usage_limit: number }>(
         context.env.DB,
         `SELECT wc.owner_org_id, wc.status,
-                MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+                MIN(COALESCE(wu.actual_used_count, 0), wc.usage_limit) AS used_count,
                 wc.usage_limit
          FROM warranty_codes wc
          LEFT JOIN (
