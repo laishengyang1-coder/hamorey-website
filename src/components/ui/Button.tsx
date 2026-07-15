@@ -17,7 +17,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand text-white hover:bg-brand-hover active:bg-brand-active shadow-sm',
+    'bg-brand text-white hover:bg-brand-hover active:bg-brand-active shadow-sm hover:shadow-md hover:shadow-brand/20 active:scale-[0.98] transition-transform',
   secondary:
     'bg-elevated text-content-primary border border-border-default hover:border-border-brand hover:text-content-brand',
   outline:
@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded font-medium transition-normal',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-carbon',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           variantStyles[variant],
           variant !== 'link' && sizeStyles[size],

@@ -11,8 +11,8 @@ export function CTASection() {
   return (
     <section className="relative py-20 md:py-28 overflow-hidden">
       {/* 背景渐变 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-graphite via-carbon to-graphite" />
-      <div className="absolute inset-0 bg-gradient-to-r from-brand/10 via-transparent to-brand/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-carbon via-[#FDF9F7] to-carbon" />
+      <div className="absolute inset-0 bg-gradient-to-r from-brand/6 via-brand/3 to-brand/6" />
 
       <Container className="relative z-10">
         <div className="flex flex-col items-center gap-6 text-center">

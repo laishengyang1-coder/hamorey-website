@@ -40,7 +40,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             'border border-border-default transition-fast appearance-none',
             'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2012%208%22%3E%3Cpath%20fill%3D%22%23A0A0A0%22%20d%3D%22M6%208L0%200h12z%22/%3E%3C/svg%3E")] bg-no-repeat bg-[right_1rem_center]',
+            'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2012%208%22%3E%3Cpath%20fill%3D%22%236B5E58%22%20d%3D%22M6%208L0%200h12z%22/%3E%3C/svg%3E")] bg-no-repeat bg-[right_1rem_center]',
             error && 'border-status-error',
             className,
           )}

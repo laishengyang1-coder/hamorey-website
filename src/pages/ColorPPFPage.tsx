@@ -44,7 +44,7 @@ export default function ColorPPFPage() {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
             <h2 className="text-2xl font-bold text-content-primary">
               改色 · 保护 · 个性

@@ -49,7 +49,7 @@ export function BrandStory() {
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-carbon/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#3D0A0A]/30 via-transparent to-transparent" />
             </div>
           </ScrollReveal>
         </div>

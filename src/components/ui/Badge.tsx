@@ -13,7 +13,7 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-elevated text-content-secondary border-border-default',
-  brand: 'bg-brand/15 text-content-brand border-brand/30',
+  brand: 'bg-brand/12 text-brand border-brand/25',
   success: 'bg-status-success/15 text-status-success border-status-success/30',
   warning: 'bg-status-warning/15 text-status-warning border-status-warning/30',
   error: 'bg-status-error/15 text-status-error border-status-error/30',

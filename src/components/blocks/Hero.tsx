@@ -20,9 +20,9 @@ export function Hero() {
           loading="eager"
           fetchPriority="high"
         />
-        {/* 暗色渐变遮罩 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-carbon via-carbon/80 to-carbon/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-carbon via-transparent to-carbon/30" />
+        {/* 勃艮第红渐变遮罩 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#3D0A0A]/95 via-[#5C1A1A]/65 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FEFAF8] via-transparent to-[#3D0A0A]/20" />
       </div>
 
       {/* 内容 */}

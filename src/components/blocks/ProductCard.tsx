@@ -29,7 +29,7 @@ export function ProductCard({ category, size = 'default' }: ProductCardProps) {
             className="w-full h-full object-cover transition-slow group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-carbon/90 via-carbon/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/80 via-[#3D0A0A]/20 to-transparent" />
           {/* 文字覆盖 */}
           <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
             <p className="text-xs font-medium text-content-brand tracking-wider uppercase mb-1">

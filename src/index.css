@@ -4,7 +4,7 @@
 
 /* ============================================================
    和膜 HAMOREY — 全局样式 + CSS 变量
-   品牌色：勃艮第深红
+   品牌色：勃艮第深红 · 红色暖白主题
    ============================================================ */
 
 :root {
@@ -14,35 +14,41 @@
   --brand-light: #7A2828;
   --brand-hover: #6B2020;
   --brand-active: #3D0A0A;
+  --brand-glow: rgba(92, 26, 26, 0.12);
+  --brand-glow-strong: rgba(92, 26, 26, 0.20);
 
-  /* === 背景色 === */
-  --bg-carbon: #0A0A0A;
-  --bg-graphite: #1A1A1A;
-  --bg-dark-gray: #2A2A2A;
-  --bg-metal: #3A3A3A;
-  --bg-elevated: #1E1E1E;
+  /* === 背景色：红色暖白体系 === */
+  --bg-carbon: #FEFAF8;      /* 主画布 暖奶油白 */
+  --bg-graphite: #F5EDE9;    /* 交替区块 微暖灰 */
+  --bg-dark-gray: #EDE2DC;   /* 三级背景 暖灰 */
+  --bg-metal: #E0D4CC;       /* 禁用态/骨架 浅暖灰 */
+  --bg-elevated: #FFFFFF;    /* 卡片/浮层 纯白 */
+
+  /* === 深色覆盖色（图片遮罩等需要深色对比的场景）=== */
+  --overlay-dark: #2D1212;   /* 极深勃艮第，用于图片渐变遮罩 */
+  --overlay-soft: #3D0A0A;   /* 深勃艮第，中等遮罩 */
 
   /* === 文字色 === */
-  --text-primary: #F5F5F5;
-  --text-secondary: #A0A0A0;
-  --text-muted: #6A6A6A;
-  --text-brand: #C84444;
+  --text-primary: #1A1412;   /* 主文字 暖炭黑 */
+  --text-secondary: #6B5E58; /* 次文字 暖灰 */
+  --text-muted: #9B8E88;     /* 弱化文字 浅暖灰 */
+  --text-brand: #5C1A1A;     /* 品牌强调 勃艮第深红 */
 
-  /* === 状态色 === */
-  --status-success: #4A8C5F;
-  --status-warning: #C89B3C;
+  /* === 状态色（浅色背景优化）=== */
+  --status-success: #3A7D4F;
+  --status-warning: #B8860B;
   --status-error: #A02828;
   --status-info: #4A6A8C;
 
   /* === 边框色 === */
-  --border-subtle: #2A2A2A;
-  --border-default: #3A3A3A;
+  --border-subtle: #E8DED9;
+  --border-default: #D4C6BE;
   --border-brand: #5C1A1A;
 
   /* === 圆角 === */
   --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 
   /* === 布局 === */
   --content-max-width: 1340px;
@@ -52,15 +58,13 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 500ms ease;
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* === 后台设计系统（Atelier Burgundy）===
-     仅作用于后台子树，不影响公众品牌站（公众站沿用上方深色令牌） */
-  /* 衬线展示字体：中文宋体栈 + 拉丁衬线回退，营造编辑式高级感 */
+     仅作用于后台子树，不影响公众品牌站 */
   --font-display: 'Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', Georgia, 'Times New Roman', serif;
-  /* 香槟金点缀（克制使用：分隔线 / 排名标记 / 焦点） */
   --accent-gold: #B8924A;
   --accent-gold-soft: #C9A86A;
-  /* 暖纸画布与发丝边 —— 比纯白更耐看、降低长时间录入疲劳 */
   --paper: #FAF8F6;
   --paper-raised: #FFFFFF;
   --paper-border: #ECE6E1;
@@ -68,7 +72,6 @@
   --paper-muted: #8A7F78;
   --paper-text: #2B2422;
   --paper-text-soft: #6B605A;
-  /* 勃艮第侧栏渐变端点 */
   --burgundy-top: #5C1A1A;
   --burgundy-bottom: #3D0A0A;
   --burgundy-tint: rgba(92, 26, 26, 0.06);
@@ -114,7 +117,7 @@ button {
   cursor: pointer;
 }
 
-/* === 滚动条 === */
+/* === 滚动条（暖调）=== */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -126,24 +129,26 @@ button {
 
 ::-webkit-scrollbar-thumb {
   background: var(--bg-metal);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--brand-primary);
+  opacity: 0.8;
 }
 
 /* === 选中文本 === */
 ::selection {
   background-color: var(--brand-primary);
-  color: var(--text-primary);
+  color: #FFFFFF;
 }
 
-/* === 动效入场辅助类 === */
+/* === 滚动入场动效 === */
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .reveal.reveal-visible {
@@ -151,33 +156,94 @@ button {
   transform: translateY(0);
 }
 
+/* 左滑入场 */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.reveal-left.reveal-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 右滑入场 */
+.reveal-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.reveal-right.reveal-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 缩放入场 */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.reveal-scale.reveal-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* === 首屏分层入场 === */
 .hero-enter {
   opacity: 0;
-  animation: fade-in-up 0.6s ease-out forwards;
+  animation: fade-in-up 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 .hero-enter-delay-1 {
-  animation-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 
 .hero-enter-delay-2 {
-  animation-delay: 0.3s;
+  animation-delay: 0.28s;
 }
 
 .hero-enter-delay-3 {
-  animation-delay: 0.45s;
+  animation-delay: 0.44s;
 }
 
 @keyframes fade-in-up {
   0% {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(28px);
   }
   100% {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* === 浮动呼吸动效 === */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* === 渐变流动（CTA 区用）=== */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
 }
 
 /* === 减少动效偏好 === */
@@ -191,7 +257,10 @@ button {
     scroll-behavior: auto !important;
   }
 
-  .reveal {
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
     opacity: 1;
     transform: none;
   }

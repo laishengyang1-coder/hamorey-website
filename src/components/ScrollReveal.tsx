@@ -6,19 +6,32 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
+/** 入场方式 */
+type RevealDirection = 'up' | 'left' | 'right' | 'scale';
+
 export interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
   /** 延迟动画（毫秒） */
   delay?: number;
+  /** 入场方向 */
+  direction?: RevealDirection;
   /** 标签 */
   as?: 'div' | 'section' | 'article' | 'li';
 }
+
+const revealClass: Record<RevealDirection, string> = {
+  up: 'reveal',
+  left: 'reveal-left',
+  right: 'reveal-right',
+  scale: 'reveal-scale',
+};
 
 export function ScrollReveal({
   children,
   className,
   delay = 0,
+  direction = 'up',
   as: Tag = 'div',
 }: ScrollRevealProps) {
   const ref = useRef<HTMLElement>(null);
@@ -64,7 +77,7 @@ export function ScrollReveal({
     <Tag
       ref={ref as never}
       className={cn(
-        'reveal',
+        revealClass[direction],
         visible && 'reveal-visible',
         className,
       )}

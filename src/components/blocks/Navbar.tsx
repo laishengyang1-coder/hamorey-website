@@ -33,7 +33,7 @@ export function Navbar() {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 h-nav flex items-center transition-normal',
           scrolled
-            ? 'bg-carbon/95 backdrop-blur-md border-b border-border-subtle'
+            ? 'bg-carbon/95 backdrop-blur-lg border-b border-border-subtle shadow-sm'
             : 'bg-transparent',
         )}
       >
@@ -70,7 +70,7 @@ export function Navbar() {
                 {/* 产品体系下拉菜单 */}
                 {item.children && (
                   <div className="absolute top-full left-0 mt-1 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-normal">
-                    <div className="rounded-lg bg-elevated border border-border-subtle shadow-xl shadow-black/40 p-2">
+                    <div className="rounded-lg bg-elevated border border-border-subtle shadow-xl shadow-brand/10 p-2">
                       {item.children.map((child) => (
                         <Link
                           key={child.href}
@@ -110,7 +110,7 @@ export function Navbar() {
       {/* 移动端菜单 */}
       <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in" />
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-[#3D0A0A]/50 backdrop-blur-sm data-[state=open]:animate-fade-in" />
           <Dialog.Content className="fixed top-0 right-0 bottom-0 z-50 w-80 max-w-[85vw] bg-carbon border-l border-border-subtle p-6 overflow-y-auto data-[state=open]:animate-scale-in">
             <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
             <div className="flex items-center justify-between mb-8">
