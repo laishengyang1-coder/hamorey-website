@@ -20,8 +20,9 @@ export function Hero() {
           loading="eager"
           fetchPriority="high"
         />
-        {/* 深色遮罩：左侧加强以保证文字可读，右侧渐隐露出原图 */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+        {/* 深色氛围遮罩：左侧加深保证白字可读，右侧渐隐露出原图细节 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-transparent" />
+        {/* 底部柔过渡：深色 Hero 自然融入下方浅色内容区 */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FEFAF8] via-transparent to-transparent" />
       </div>
 
