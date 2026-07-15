@@ -9,12 +9,15 @@ import { PageHeader } from '../../shared/components/PageHeader';
 interface DashboardData {
   provinces: number; stores: number; totalCodes: number;
   totalRecords: number; pendingReviews: number; todayRecords: number;
+  totalPointsEarned: number;
 }
 
 interface RankingItem {
   name: string;
   count: number;
   type?: string;
+  province?: string;
+  city?: string;
 }
 
 const STAT_CARDS: Array<{
@@ -26,8 +29,9 @@ const STAT_CARDS: Array<{
   { key: 'stores', label: '门店数量' },
   { key: 'totalCodes', label: '质保码总数' },
   { key: 'totalRecords', label: '质保记录' },
+  { key: 'totalPointsEarned', label: '累计发放积分', accent: '#5C1A1A' },
   { key: 'pendingReviews', label: '待审核', accent: 'var(--accent-gold)' },
-  { key: 'todayRecords', label: '今日新增', accent: '#5C1A1A' },
+  { key: 'todayRecords', label: '今日新增', accent: '#B8924A' },
 ];
 
 export default function DashboardPage() {
@@ -37,6 +41,7 @@ export default function DashboardPage() {
   const [provinceRanking, setProvinceRanking] = useState<RankingItem[]>([]);
   const [storeRanking, setStoreRanking] = useState<RankingItem[]>([]);
   const [productRanking, setProductRanking] = useState<RankingItem[]>([]);
+  const [pointsRanking, setPointsRanking] = useState<RankingItem[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -50,6 +55,7 @@ export default function DashboardPage() {
     apiRequest<RankingItem[]>('/admin/dashboard?type=province-ranking').then(setProvinceRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
+    apiRequest<RankingItem[]>('/admin/dashboard?type=points-ranking').then(setPointsRanking).catch(() => {});
   }, []);
 
   if (loading) return (
@@ -70,7 +76,7 @@ export default function DashboardPage() {
       <PageHeader title="数据看板" description="核心业务数据概览" />
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         {STAT_CARDS.map((c) => (
           <div key={c.key} className="admin-card p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -87,22 +93,25 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
         <RankingSection title="省级质保排行" items={provinceRanking} />
         <RankingSection title="门店质保排行" items={storeRanking} />
         <RankingSection title="产品质保排行" items={productRanking} />
+        <RankingSection title="全国积分排行" items={pointsRanking} subtitle="2026年度累计获得" valueLabel="积分" />
       </div>
     </div>
   );
 }
 
-function RankingSection({ title, items }: { title: string; items: RankingItem[] }) {
+function RankingSection({ title, subtitle, valueLabel, items }: { title: string; subtitle?: string; valueLabel?: string; items: RankingItem[] }) {
+  const label = valueLabel || '条';
   return (
     <div className="admin-card p-5">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-1">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
         <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">{title}</h3>
       </div>
+      {subtitle && <p className="text-[11px] text-[var(--paper-muted)] mb-3">{subtitle}</p>}
       {items.length === 0 ? (
         <p className="text-sm text-[var(--paper-muted)] text-center py-6">暂无数据</p>
       ) : (
@@ -121,10 +130,15 @@ function RankingSection({ title, items }: { title: string; items: RankingItem[] 
                 >
                   {i + 1}
                 </span>
-                <span className="text-sm text-[var(--paper-text)] truncate">{item.name}</span>
+                <div className="min-w-0">
+                  <span className="text-sm text-[var(--paper-text)] truncate block">{item.name}</span>
+                  {item.province && (
+                    <span className="text-[10px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
+                  )}
+                </div>
               </div>
               <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-3">
-                {item.count}
+                {item.count} <span className="text-[10px] font-normal text-[var(--paper-muted)]">{label}</span>
               </span>
             </div>
           ))}

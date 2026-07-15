@@ -40,7 +40,23 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows.results || []);
     }
 
-    const [totalOrgs, totalStores, totalCodes, totalRecords, pendingReviews, todayRecords] =
+    // 积分排行榜（2026年度累计获得，不扣除兑换消耗）
+    if (type === 'points-ranking') {
+      const rows = await db.prepare(
+        `SELECT o.name, o.province, o.city,
+                COALESCE(SUM(pl.points_change), 0) AS count
+         FROM points_ledger pl
+         JOIN organizations o ON o.id = pl.organization_id
+         WHERE pl.change_type IN ('award', 'adjust')
+           AND strftime('%Y', pl.created_at) = '2026'
+           AND o.type = 'STORE'
+         GROUP BY o.id
+         ORDER BY count DESC
+         LIMIT 20`
+      ).all();
+      return ok(rows.results || []);
+    }
+    const [totalOrgs, totalStores, totalCodes, totalRecords, pendingReviews, todayRecords, totalPointsEarned] =
       await Promise.all([
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM organizations WHERE type = 'PROVINCE'`),
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM organizations WHERE type = 'STORE'`),
@@ -48,6 +64,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE status NOT IN ('draft')`),
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE status = 'pending'`),
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE date(created_at) = date('now')`),
+        queryFirst<{ cnt: number }>(db, `SELECT COALESCE(SUM(points_change), 0) AS cnt FROM points_ledger WHERE change_type IN ('award', 'adjust') AND strftime('%Y', created_at) = '2026'`),
       ]);
 
     return ok({
@@ -57,6 +74,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       totalRecords: totalRecords?.cnt ?? 0,
       pendingReviews: pendingReviews?.cnt ?? 0,
       todayRecords: todayRecords?.cnt ?? 0,
+      totalPointsEarned: totalPointsEarned?.cnt ?? 0,
     });
   } catch (err) {
     console.error('[admin/dashboard GET]', err);
