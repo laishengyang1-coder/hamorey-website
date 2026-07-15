@@ -24,7 +24,7 @@ export function ProductGrid() {
         {/* 统一网格：桌面 3 列 / 平板 2 列 / 手机 1 列 */}
         <div className="mt-10 md:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {productCategories.map((cat, i) => (
-            <ScrollReveal key={cat.code} delay={i * 80}>
+            <ScrollReveal key={cat.category} delay={i * 80}>
               <ProductCard category={cat} size={i === 0 ? 'large' : 'default'} />
             </ScrollReveal>
           ))}
