@@ -47,8 +47,8 @@ const EXPORT_TYPES: Record<string, { table: string; columns: string[]; headers: 
   },
   organizations: {
     table: 'organizations',
-    columns: ['code', 'type', 'name', 'province', 'city', 'contact_name', 'phone', 'status', 'created_at'],
-    headers: ['编码', '类型', '名称', '省份', '城市', '联系人', '电话', '状态', '创建时间'],
+    columns: ['code', 'type', 'name', 'province', 'city', 'contact_name', 'phone', 'address', 'social_credit_code', 'legal_person', 'status', 'created_at'],
+    headers: ['编码', '类型', '名称', '省份', '城市', '联系人', '电话', '地址', '社会统一信用代码', '法人', '状态', '创建时间'],
   },
 };
 

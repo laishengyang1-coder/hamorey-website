@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS organizations (
     address     TEXT,
     contact_name TEXT,
     phone       TEXT,
+    social_credit_code TEXT,
+    legal_person TEXT,
     status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'disabled')),
     created_by  TEXT,
     created_at  TEXT NOT NULL DEFAULT (datetime('now')),

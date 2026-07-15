@@ -44,9 +44,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     if (keyword) {
-      conditions.push(`(o.name LIKE ? OR o.code LIKE ? OR o.contact_name LIKE ?)`);
+      conditions.push(`(o.name LIKE ? OR o.code LIKE ? OR o.contact_name LIKE ? OR o.phone LIKE ? OR o.social_credit_code LIKE ?)`);
       const kw = `%${keyword}%`;
-      params.push(kw, kw, kw);
+      params.push(kw, kw, kw, kw, kw);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -92,6 +92,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       address?: string;
       contact_name?: string;
       phone?: string;
+      social_credit_code?: string;
+      legal_person?: string;
       username?: string;
       password?: string;
     };
@@ -101,8 +103,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.type || !['PROVINCE', 'STORE'].includes(body.type))
       errors.push({ field: 'type', message: '组织类型必须为 PROVINCE 或 STORE' });
     if (!body.name) errors.push({ field: 'name', message: '组织名称不能为空' });
-    if (!body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
-    if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '登录密码至少 8 位' });
+    const wantsAccount = Boolean(body.username || body.password);
+    const requiresAccount = body.type === 'STORE' || wantsAccount;
+    if (requiresAccount && !body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
+    if (requiresAccount && (!body.password || body.password.length < 8)) errors.push({ field: 'password', message: '登录密码至少 8 位' });
     if (errors.length > 0) return validationError(errors);
 
     // 自动生成编码（如未提供）
@@ -129,21 +133,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     );
     if (existing) return error('组织编码已存在', 409);
 
-    // 检查登录账号唯一性（前置校验，避免创建组织后账号冲突产生孤儿组织）
-    const existingUser = await queryFirst(
-      context.env.DB,
-      `SELECT id FROM users WHERE username = ?`,
-      body.username,
-    );
-    if (existingUser) return error('登录账号已存在', 409);
+    if (body.username) {
+      // 检查登录账号唯一性（前置校验，避免创建组织后账号冲突产生孤儿组织）
+      const existingUser = await queryFirst(
+        context.env.DB,
+        `SELECT id FROM users WHERE username = ?`,
+        body.username,
+      );
+      if (existingUser) return error('登录账号已存在', 409);
+    }
 
     const id = generateId();
     const user = getAuthUser(context.data);
 
     await execute(
       context.env.DB,
-      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, created_by, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
+      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, social_credit_code, legal_person, status, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
       id,
       code,
       body.type,
@@ -154,22 +160,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       body.address || null,
       body.contact_name || null,
       body.phone || null,
+      body.social_credit_code || null,
+      body.legal_person || null,
       user?.userId || null,
     );
 
-    // 为新增组织创建登录账号（省代 → PROVINCE，门店 → STORE）
-    const accountId = generateId();
-    const passwordHash = await hashPassword(body.password as string);
-    await execute(
-      context.env.DB,
-      `INSERT INTO users (id, organization_id, username, password_hash, role, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
-      accountId,
-      id,
-      body.username,
-      passwordHash,
-      body.type,
-    );
+    if (body.username && body.password) {
+      // 为新增组织创建登录账号（省代 → PROVINCE，门店 → STORE）
+      const accountId = generateId();
+      const passwordHash = await hashPassword(body.password);
+      await execute(
+        context.env.DB,
+        `INSERT INTO users (id, organization_id, username, password_hash, role, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+        accountId,
+        id,
+        body.username,
+        passwordHash,
+        body.type,
+      );
+    }
 
     // 为新增门店自动创建官网公开资料（默认服务点、立即公开）
     if (body.type === 'STORE') {
@@ -232,6 +242,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       address?: string;
       contact_name?: string;
       phone?: string;
+      social_credit_code?: string;
+      legal_person?: string;
       status?: string;
       parent_id?: string | null;
     };
@@ -248,6 +260,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.address !== undefined) { updates.push('address = ?'); params.push(body.address); }
     if (body.contact_name !== undefined) { updates.push('contact_name = ?'); params.push(body.contact_name); }
     if (body.phone !== undefined) { updates.push('phone = ?'); params.push(body.phone); }
+    if (body.social_credit_code !== undefined) { updates.push('social_credit_code = ?'); params.push(body.social_credit_code); }
+    if (body.legal_person !== undefined) { updates.push('legal_person = ?'); params.push(body.legal_person); }
     if (body.parent_id !== undefined) { updates.push('parent_id = ?'); params.push(body.parent_id); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
 

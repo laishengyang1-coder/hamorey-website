@@ -37,6 +37,8 @@ export interface Organization {
   address: string | null;
   contact_name: string | null;
   phone: string | null;
+  social_credit_code: string | null;
+  legal_person: string | null;
   status: OrgStatus;
   created_by: string | null;
   created_at: string;

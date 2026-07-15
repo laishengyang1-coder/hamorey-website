@@ -18,8 +18,11 @@ interface Organization {
   type: string;
   province: string | null;
   city: string | null;
+  address: string | null;
   contact_name: string | null;
   phone: string | null;
+  social_credit_code: string | null;
+  legal_person: string | null;
   status: string;
   child_count: number;
   created_at: string;
@@ -36,11 +39,12 @@ const FILTER_FIELDS: FilterField[] = [
 ];
 
 const COLUMNS: Column[] = [
-  { key: 'code', title: '编码', dataIndex: 'code', width: '120px' },
   { key: 'name', title: '名称', dataIndex: 'name' },
   { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-' },
+  { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
   { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
   { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
+  { key: 'legal_person', title: '法人', dataIndex: 'legal_person', render: (v) => (v as string) || '-' },
   { key: 'child_count', title: '下属门店', dataIndex: 'child_count' },
   {
     key: 'status', title: '状态', dataIndex: 'status',
@@ -58,8 +62,8 @@ export default function ProvinceListPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Organization | null>(null);
   const [form, setForm] = useState({
-    code: '', name: '', province: '', city: '', contact_name: '', phone: '',
-    username: '', password: '',
+    name: '', province: '', city: '', contact_name: '', phone: '', address: '',
+    social_credit_code: '', legal_person: '',
   });
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
@@ -89,21 +93,21 @@ export default function ProvinceListPage() {
 
   const openCreate = () => {
     setSelected(null);
-    setForm({ code: '', name: '', province: '', city: '', contact_name: '', phone: '', username: '', password: '' });
+    setForm({ name: '', province: '', city: '', contact_name: '', phone: '', address: '', social_credit_code: '', legal_person: '' });
     setDrawerOpen(true);
   };
 
   const openEdit = (org: Organization) => {
     setSelected(org);
     setForm({
-      code: org.code,
       name: org.name,
       province: org.province || '',
       city: org.city || '',
       contact_name: org.contact_name || '',
       phone: org.phone || '',
-      username: '',
-      password: '',
+      address: org.address || '',
+      social_credit_code: org.social_credit_code || '',
+      legal_person: org.legal_person || '',
     });
     setDrawerOpen(true);
   };
@@ -116,13 +120,14 @@ export default function ProvinceListPage() {
           method: 'PUT',
           body: JSON.stringify({
             name: form.name, province: form.province, city: form.city,
-            contact_name: form.contact_name, phone: form.phone,
+            contact_name: form.contact_name, phone: form.phone, address: form.address,
+            social_credit_code: form.social_credit_code, legal_person: form.legal_person,
           }),
         });
       } else {
         await apiRequest('/admin/organizations', {
           method: 'POST',
-          body: JSON.stringify({ ...form, code: undefined, type: 'PROVINCE' }),
+          body: JSON.stringify({ ...form, type: 'PROVINCE' }),
         });
       }
       setDrawerOpen(false);
@@ -176,14 +181,7 @@ export default function ProvinceListPage() {
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑省代' : '新增省代'}>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">编码</label>
-            <input
-              value={form.code || '（自动生成）'}
-              disabled={true}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm bg-gray-50 text-gray-400" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">名称 *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">名称（公司名称） *</label>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -208,6 +206,14 @@ export default function ProvinceListPage() {
               />
             </div>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">地址</label>
+            <input
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">联系人</label>
@@ -226,27 +232,28 @@ export default function ProvinceListPage() {
               />
             </div>
           </div>
-          {!selected && (
-            <div className="border-t border-gray-100 pt-4">
-              <p className="text-sm font-medium text-gray-500 mb-3">登录账号设置</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">账号 *</label>
-                  <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录用户名" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">密码 *</label>
-                  <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录密码" />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">社会统一信用代码</label>
+              <input
+                value={form.social_credit_code}
+                onChange={(e) => setForm({ ...form, social_credit_code: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">法人</label>
+              <input
+                value={form.legal_person}
+                onChange={(e) => setForm({ ...form, legal_person: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+            </div>
+          </div>
           <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
-              disabled={saving || !form.name || (!selected && (!form.username || form.password.length < 8))}
+              disabled={saving || !form.name}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50"
             >
               {saving ? '保存中...' : selected ? '保存修改' : '创建省代'}
