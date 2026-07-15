@@ -26,6 +26,7 @@
       </view>
       <view class="code-meta">
         <text>型号：{{item.model_name || item.display_name || '--'}}</text>
+        <text>已用：{{item.used_count || 0}}/{{item.usage_limit || 1}}</text>
       </view>
     </view>
   </view>

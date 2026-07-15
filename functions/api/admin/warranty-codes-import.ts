@@ -146,14 +146,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }
 
       // 查询型号 ID 映射（同时支持 model_code 和 display_name）
-      const allModels = await queryAll<{ id: string; model_code: string; display_name: string }>(
+      const allModels = await queryAll<{ id: string; model_code: string; display_name: string; usage_limit: number | null }>(
         context.env.DB,
-        `SELECT id, model_code, display_name FROM product_models WHERE status = 'active'`,
+        `SELECT id, model_code, display_name, usage_limit FROM product_models WHERE status = 'active'`,
       );
-      const modelMap = new Map<string, string>();
+      const modelMap = new Map<string, { id: string; usage_limit: number }>();
       allModels.forEach((m) => {
-        modelMap.set(m.model_code, m.id);
-        modelMap.set(m.display_name, m.id);
+        const item = { id: m.id, usage_limit: Math.max(1, Number(m.usage_limit) || 1) };
+        modelMap.set(m.model_code, item);
+        modelMap.set(m.display_name, item);
       });
 
       // 事务写入
@@ -171,11 +172,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       // 2. 批量插入质保码
       for (const row of rows) {
         const codeId = generateId();
-        const modelId = modelMap.get(row.model_code);
+        const model = modelMap.get(row.model_code);
         statements.push({
           sql: `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, NULL, 1, 0, 'unallocated', datetime('now'))`,
-          params: [codeId, row.code, modelId, row.product_name || null, row.batch_no, importBatchId],
+                VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 0, 'unallocated', datetime('now'))`,
+          params: [codeId, row.code, model?.id, row.product_name || null, row.batch_no, importBatchId, model?.usage_limit || 1],
         });
       }
 

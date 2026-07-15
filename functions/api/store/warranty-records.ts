@@ -107,6 +107,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (wc.status === 'exhausted' || wc.status === 'voided' || wc.status === 'frozen')
       return error(`质保码状态为 ${wc.status}，无法登记`, 400);
 
+    const actualUsage = await queryFirst<{ cnt: number }>(
+      context.env.DB,
+      `SELECT COUNT(*) AS cnt
+       FROM warranty_records
+       WHERE warranty_code_id = ? AND status IN ('pending', 'active', 'expired')`,
+      wc.id,
+    );
+    const usedCount = Math.max(Number(wc.used_count) || 0, actualUsage?.cnt ?? 0);
+    if (usedCount >= wc.usage_limit) {
+      return error('该质保码可使用次数已用完', 400);
+    }
+
     // 查询产品型号
     const model = await queryFirst<{
       display_name: string;

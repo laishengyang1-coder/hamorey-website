@@ -54,7 +54,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot,
               wr.product_name_snapshot, wr.product_model_snapshot,
-              pm.model_code,
+              pm.model_code, pm.warranty_price_cents,
               wr.warranty_years_snapshot, wr.installation_date,
               wr.warranty_expiry_date, wr.store_name_snapshot, wr.status
        FROM warranty_records wr

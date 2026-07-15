@@ -22,14 +22,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const sortDir = url.searchParams.get('sort_dir') === 'asc' ? 'ASC' : 'DESC';
     const { page, pageSize, offset } = parsePagination(url);
     const sortColumns: Record<string, string> = {
-      code: 'wc.code',
-      model_name: 'pm.display_name',
-      batch_no: 'wc.batch_no',
-      owner_name: 'o.name',
-      used_count: 'wc.used_count',
-      usage_limit: 'wc.usage_limit',
-      status: 'wc.status',
-      created_at: 'wc.created_at',
+      code: 'code',
+      model_name: 'model_name',
+      batch_no: 'batch_no',
+      owner_name: 'owner_name',
+      used_count: 'used_count',
+      usage_limit: 'usage_limit',
+      status: 'status',
+      created_at: 'created_at',
     };
     const orderBy = sortColumns[sortBy] || sortColumns.created_at;
 
@@ -46,24 +46,42 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       params.push(kw, kw);
     }
 
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const baseWhere = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const usageSql = `SELECT warranty_code_id, COUNT(*) AS actual_used_count
+                      FROM warranty_records
+                      WHERE status IN ('pending', 'active', 'expired')
+                      GROUP BY warranty_code_id`;
+    const listSql = `FROM (
+        SELECT wc.id, wc.code, wc.product_model_id, wc.imported_product_name, wc.batch_no,
+               wc.import_batch_id, wc.owner_org_id, wc.usage_limit,
+               MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+               CASE
+                 WHEN wc.status IN ('frozen', 'voided') THEN wc.status
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) >= wc.usage_limit THEN 'exhausted'
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) > 0 THEN 'partial_used'
+                 WHEN wc.owner_org_id IS NULL THEN 'unallocated'
+                 ELSE 'in_stock'
+               END AS status,
+               wc.created_at, pm.model_code, pm.display_name AS model_name, o.name AS owner_name
+        FROM warranty_codes wc
+        JOIN product_models pm ON wc.product_model_id = pm.id
+        LEFT JOIN organizations o ON wc.owner_org_id = o.id
+        LEFT JOIN (${usageSql}) wu ON wu.warranty_code_id = wc.id
+        ${baseWhere}
+      ) codes`;
 
     const [items, totalRow] = await Promise.all([
       queryAll(
         context.env.DB,
-        `SELECT wc.*, pm.model_code, pm.display_name AS model_name,
-                o.name AS owner_name
-         FROM warranty_codes wc
-         JOIN product_models pm ON wc.product_model_id = pm.id
-         LEFT JOIN organizations o ON wc.owner_org_id = o.id
-         ${where}
-         ORDER BY ${orderBy} ${sortDir}, wc.created_at DESC
+        `SELECT *
+         ${listSql}
+         ORDER BY ${orderBy} ${sortDir}, created_at DESC
          LIMIT ? OFFSET ?`,
         ...params, pageSize, offset,
       ),
       queryFirst<{ cnt: number }>(
         context.env.DB,
-        `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${where}`,
+        `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${baseWhere}`,
         ...params,
       ),
     ]);

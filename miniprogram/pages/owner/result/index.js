@@ -5,6 +5,12 @@
 
 const api = require('../../../utils/api');
 
+function formatWarrantyPrice(cents) {
+  if (cents === null || cents === undefined || cents === '') return '--';
+  const yuan = Math.round(Number(cents) / 100);
+  return `¥${yuan}`;
+}
+
 Page({
   data: {
     keyword: '',
@@ -54,7 +60,10 @@ Page({
       return;
     }
 
-    const records = res.data.records || [];
+    const records = (res.data.records || []).map((record) => ({
+      ...record,
+      warranty_price_text: formatWarrantyPrice(record.warranty_price_cents)
+    }));
 
     if (records.length === 0) {
       this.setData({

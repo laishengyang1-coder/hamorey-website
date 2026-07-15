@@ -22,6 +22,10 @@ import type { WarrantyQueryResult } from '../types/api';
 
 type QueryState = 'idle' | 'loading' | 'success' | 'error' | 'empty';
 
+function formatWarrantyPrice(cents?: number | null): string {
+  return cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+}
+
 export default function WarrantyPage() {
   useSEO('warranty');
 
@@ -263,6 +267,10 @@ export default function WarrantyPage() {
                             <div className="flex justify-between">
                               <span className="text-content-muted">质保年限：</span>
                               <span>{record.warranty_years} 年</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-content-muted">质保价格：</span>
+                              <span>{formatWarrantyPrice(record.warranty_price_cents)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-content-muted">施工门店：</span>

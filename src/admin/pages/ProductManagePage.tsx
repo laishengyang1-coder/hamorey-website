@@ -11,7 +11,6 @@ import { DetailDrawer } from '../../shared/components/DetailDrawer';
 import {
   WINDOW_FILM_MODELS,
   WINDOW_FILM_POSITION_LABELS,
-  formatWindowFilmPrice,
   type WindowFilmModelSpec,
 } from '../../config/windowFilm';
 
@@ -24,6 +23,8 @@ interface ProductModel {
   model_code: string;
   display_name: string;
   warranty_years: number;
+  warranty_price_cents: number | null;
+  usage_limit: number | null;
   status: string;
 }
 
@@ -37,8 +38,25 @@ export default function ProductManagePage() {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<ProductModel | null>(null);
-  const [form, setForm] = useState({ product_id: '', model_code: '', display_name: '', warranty_years: 5 });
+  const [form, setForm] = useState({
+    product_id: '',
+    model_code: '',
+    display_name: '',
+    warranty_years: 5,
+    warranty_price_yuan: '',
+    usage_limit: 1,
+  });
   const [saving, setSaving] = useState(false);
+
+  const formatMoney = (cents?: number | null) => (
+    cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`
+  );
+
+  const toCents = (value: string) => {
+    if (!value.trim()) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -55,13 +73,21 @@ export default function ProductManagePage() {
 
   const handleSave = async () => {
     if (!form.model_code || !form.display_name) { alert('请填写必填字段'); return; }
+    const payload = {
+      product_id: form.product_id,
+      model_code: form.model_code,
+      display_name: form.display_name,
+      warranty_years: form.warranty_years,
+      warranty_price_cents: toCents(form.warranty_price_yuan),
+      usage_limit: Math.max(1, Number(form.usage_limit) || 1),
+    };
     setSaving(true);
     try {
       if (editing) {
-        await apiRequest(`/admin/product-models/${editing.id}`, { method: 'PUT', body: JSON.stringify(form) });
+        await apiRequest(`/admin/product-models/${editing.id}`, { method: 'PUT', body: JSON.stringify(payload) });
       } else {
         if (!form.product_id) { alert('请选择产品分类'); setSaving(false); return; }
-        await apiRequest('/admin/product-models', { method: 'POST', body: JSON.stringify(form) });
+        await apiRequest('/admin/product-models', { method: 'POST', body: JSON.stringify(payload) });
       }
       setDrawerOpen(false);
       setEditing(null);
@@ -77,13 +103,15 @@ export default function ProductManagePage() {
       model_code: model.model_code,
       display_name: model.display_name,
       warranty_years: model.warranty_years || 5,
+      warranty_price_yuan: model.warranty_price_cents == null ? '' : String(model.warranty_price_cents / 100),
+      usage_limit: model.usage_limit || 1,
     });
     setDrawerOpen(true);
   };
 
   const openNew = () => {
     setEditing(null);
-    setForm({ product_id: '', model_code: '', display_name: '', warranty_years: 5 });
+    setForm({ product_id: '', model_code: '', display_name: '', warranty_years: 5, warranty_price_yuan: '', usage_limit: 1 });
     setDrawerOpen(true);
   };
 
@@ -92,6 +120,8 @@ export default function ProductManagePage() {
     { key: 'model_code', title: '型号编码', dataIndex: 'model_code' },
     { key: 'product_name', title: '所属分类', dataIndex: 'product_name' },
     { key: 'warranty_years', title: '质保年限', dataIndex: 'warranty_years', render: (v) => `${v}年` },
+    { key: 'warranty_price_cents', title: '质保价格', dataIndex: 'warranty_price_cents', render: (v) => formatMoney(v as number | null) },
+    { key: 'usage_limit', title: '可使用次数', dataIndex: 'usage_limit', render: (v) => `${v || 1}次` },
     { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
     { key: 'actions', title: '操作', dataIndex: 'id', render: (_v, record) => (
       <button onClick={() => openEdit(record as unknown as ProductModel)} className="text-sm text-gray-500 hover:text-gray-900 underline">编辑</button>
@@ -132,8 +162,16 @@ export default function ProductManagePage() {
       </div>
     ) },
     { key: 'warrantyYears', title: '质保', dataIndex: 'warrantyYears', render: (v) => `${v}年` },
-    { key: 'storeSuggestedPrice', title: '门店建议价', dataIndex: 'storeSuggestedPrice', render: (v) => formatWindowFilmPrice(v as number) },
-    { key: 'retailSuggestedPrice', title: '零售建议价', dataIndex: 'retailSuggestedPrice', render: (v) => formatWindowFilmPrice(v as number | undefined) },
+    { key: 'warrantyPrice', title: '质保价格', render: (_v, record) => {
+      const dbModel = record.dbModel as ProductModel | undefined;
+      const fallback = Number(record.warrantyPrice || 0) * 100;
+      return formatMoney(dbModel?.warranty_price_cents ?? fallback);
+    } },
+    { key: 'usageLimit', title: '可使用次数', render: (_v, record) => {
+      const dbModel = record.dbModel as ProductModel | undefined;
+      const fallback = record.glassPosition === 'front' ? 36 : 18;
+      return `${dbModel?.usage_limit || fallback}次`;
+    } },
     { key: 'status', title: '状态', render: (_v, record) => (
       record.dbModel
         ? <StatusBadge status={(record.dbModel as ProductModel).status} />
@@ -155,7 +193,7 @@ export default function ProductManagePage() {
       <div className="mb-6">
         <div className="mb-3">
           <h2 className="text-base font-semibold text-[var(--paper-text)]">窗膜型号</h2>
-          <p className="mt-1 text-sm text-[var(--paper-muted)]">按价格表拆分前挡和侧挡，并展示对应技术参数与建议价。</p>
+          <p className="mt-1 text-sm text-[var(--paper-muted)]">按价格表拆分前挡和侧挡，并维护质保价格与质保码可使用次数。</p>
         </div>
         <DataTable columns={WINDOW_COLS} data={windowRows as any} loading={loading} emptyText="暂无窗膜型号" />
       </div>
@@ -189,6 +227,14 @@ export default function ProductManagePage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">质保年限 *</label>
             <input type="number" min={1} max={15} value={form.warranty_years} onChange={(e) => setForm({ ...form, warranty_years: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">质保价格（元）</label>
+            <input type="number" min={0} step={1} value={form.warranty_price_yuan} onChange={(e) => setForm({ ...form, warranty_price_yuan: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="如: 16800" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">可使用次数 *</label>
+            <input type="number" min={1} value={form.usage_limit} onChange={(e) => setForm({ ...form, usage_limit: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
           </div>
           <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : editing ? '保存修改' : '创建产品'}

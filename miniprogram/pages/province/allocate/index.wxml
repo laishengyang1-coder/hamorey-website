@@ -46,7 +46,7 @@
           </view>
           <view class="code-select-info">
             <view class="code-select-value">{{item.code}}</view>
-            <view class="code-select-model">{{item.model_name || item.display_name || '--'}}</view>
+            <view class="code-select-model">{{item.model_name || item.display_name || '--'}} · 已用 {{item.used_count || 0}}/{{item.usage_limit || 1}}</view>
           </view>
         </view>
       </view>

@@ -13,6 +13,12 @@ function isModelRoute(pathname: string): boolean {
   return pathname.includes('/product-models');
 }
 
+function numberOrNull(value: unknown): number | null {
+  if (value === '' || value == null) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
@@ -43,10 +49,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (isModelRoute(url.pathname)) {
       if (!body.product_id || !body.model_code || !body.display_name) return error('缺少必填字段', 400);
       const id = generateId();
+      const usageLimit = numberOrNull(body.usage_limit) ?? 1;
+      const warrantyPriceCents = numberOrNull(body.warranty_price_cents);
       await execute(context.env.DB,
-        `INSERT INTO product_models (id, product_id, model_code, display_name, warranty_years, status, sort_order)
-         VALUES (?, ?, ?, ?, ?, 'active', ?)`,
-        id, body.product_id, body.model_code, body.display_name, body.warranty_years || 5, body.sort_order || 0);
+        `INSERT INTO product_models (id, product_id, model_code, display_name, warranty_years, warranty_price_cents, usage_limit, status, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
+        id, body.product_id, body.model_code, body.display_name, body.warranty_years || 5, warrantyPriceCents, usageLimit, body.sort_order || 0);
       return ok({ id }, '创建成功');
     }
 
@@ -77,6 +85,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       if (body.display_name) { updates.push('display_name = ?'); params.push(body.display_name); }
       if (body.model_code) { updates.push('model_code = ?'); params.push(body.model_code); }
       if (body.warranty_years != null) { updates.push('warranty_years = ?'); params.push(body.warranty_years); }
+      if (body.warranty_price_cents !== undefined) { updates.push('warranty_price_cents = ?'); params.push(numberOrNull(body.warranty_price_cents)); }
+      if (body.usage_limit != null) { updates.push('usage_limit = ?'); params.push(Math.max(1, Number(body.usage_limit) || 1)); }
       if (body.sort_order != null) { updates.push('sort_order = ?'); params.push(body.sort_order); }
       if (body.status) { updates.push('status = ?'); params.push(body.status); }
     } else {

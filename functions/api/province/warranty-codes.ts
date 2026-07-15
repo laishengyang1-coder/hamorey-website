@@ -22,39 +22,62 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const sortDir = url.searchParams.get('sort_dir') === 'asc' ? 'ASC' : 'DESC';
     const { page, pageSize, offset } = parsePagination(url);
     const sortColumns: Record<string, string> = {
-      code: 'wc.code',
-      model_name: 'pm.display_name',
-      batch_no: 'wc.batch_no',
-      used_count: 'wc.used_count',
-      usage_limit: 'wc.usage_limit',
-      status: 'wc.status',
-      created_at: 'wc.created_at',
+      code: 'code',
+      model_name: 'model_name',
+      batch_no: 'batch_no',
+      used_count: 'used_count',
+      usage_limit: 'usage_limit',
+      status: 'status',
+      created_at: 'created_at',
     };
     const orderBy = sortColumns[sortBy] || sortColumns.created_at;
 
-    const conditions: string[] = ['wc.owner_org_id = ?'];
+    const conditions: string[] = [];
     const params: unknown[] = [user?.orgId];
 
-    if (status) { conditions.push('wc.status = ?'); params.push(status); }
+    if (status) { conditions.push('status = ?'); params.push(status); }
     if (transferable) {
-      conditions.push("wc.status IN ('in_stock', 'partial_used')");
-      conditions.push('wc.used_count < wc.usage_limit');
+      conditions.push("status IN ('in_stock', 'partial_used')");
+      conditions.push('used_count < usage_limit');
     }
-    if (keyword) { conditions.push('wc.code LIKE ?'); params.push(`%${keyword}%`); }
+    if (keyword) {
+      conditions.push('(code LIKE ? OR model_name LIKE ? OR model_code LIKE ?)');
+      const kw = `%${keyword}%`;
+      params.push(kw, kw, kw);
+    }
 
-    const where = `WHERE ${conditions.join(' AND ')}`;
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const usageSql = `SELECT warranty_code_id, COUNT(*) AS actual_used_count
+                      FROM warranty_records
+                      WHERE status IN ('pending', 'active', 'expired')
+                      GROUP BY warranty_code_id`;
+    const baseSql = `FROM (
+        SELECT wc.id, wc.code, wc.product_model_id, wc.imported_product_name, wc.batch_no,
+               wc.import_batch_id, wc.owner_org_id, wc.usage_limit,
+               MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+               CASE
+                 WHEN wc.status IN ('frozen', 'voided') THEN wc.status
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) >= wc.usage_limit THEN 'exhausted'
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) > 0 THEN 'partial_used'
+                 ELSE 'in_stock'
+               END AS status,
+               wc.created_at, pm.model_code, pm.display_name AS model_name
+        FROM warranty_codes wc
+        JOIN product_models pm ON wc.product_model_id = pm.id
+        LEFT JOIN (${usageSql}) wu ON wu.warranty_code_id = wc.id
+        WHERE wc.owner_org_id = ?
+      ) codes`;
 
     const [items, totalRow] = await Promise.all([
       queryAll(
         context.env.DB,
-        `SELECT wc.*, pm.model_code, pm.display_name AS model_name
-         FROM warranty_codes wc
-         JOIN product_models pm ON wc.product_model_id = pm.id
+        `SELECT *
+         ${baseSql}
          ${where}
-         ORDER BY ${orderBy} ${sortDir}, wc.created_at DESC LIMIT ? OFFSET ?`,
+         ORDER BY ${orderBy} ${sortDir}, created_at DESC LIMIT ? OFFSET ?`,
         ...params, pageSize, offset,
       ),
-      queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${where}`, ...params),
+      queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt ${baseSql} ${where}`, ...params),
     ]);
 
     return ok({ items, total: totalRow?.cnt ?? 0, page, pageSize });
@@ -91,7 +114,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     for (const codeId of [...new Set(body.code_ids)]) {
       const code = await queryFirst<{ owner_org_id: string; status: string; used_count: number; usage_limit: number }>(
         context.env.DB,
-        `SELECT owner_org_id, status, used_count, usage_limit FROM warranty_codes WHERE id = ?`,
+        `SELECT wc.owner_org_id, wc.status,
+                MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+                wc.usage_limit
+         FROM warranty_codes wc
+         LEFT JOIN (
+           SELECT warranty_code_id, COUNT(*) AS actual_used_count
+           FROM warranty_records
+           WHERE status IN ('pending', 'active', 'expired')
+           GROUP BY warranty_code_id
+         ) wu ON wu.warranty_code_id = wc.id
+         WHERE wc.id = ?`,
         codeId,
       );
       if (!code || code.owner_org_id !== user?.orgId) continue;

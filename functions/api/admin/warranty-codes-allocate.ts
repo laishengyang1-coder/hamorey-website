@@ -47,8 +47,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         usage_limit: number;
       }>(
         context.env.DB,
-        `SELECT owner_org_id, status, used_count, usage_limit
-         FROM warranty_codes WHERE id = ?`,
+        `SELECT wc.owner_org_id, wc.status,
+                MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+                wc.usage_limit
+         FROM warranty_codes wc
+         LEFT JOIN (
+           SELECT warranty_code_id, COUNT(*) AS actual_used_count
+           FROM warranty_records
+           WHERE status IN ('pending', 'active', 'expired')
+           GROUP BY warranty_code_id
+         ) wu ON wu.warranty_code_id = wc.id
+         WHERE wc.id = ?`,
         codeId,
       );
       if (!code || code.owner_org_id === body.to_org_id) continue;

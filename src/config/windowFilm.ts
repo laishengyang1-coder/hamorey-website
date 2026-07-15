@@ -14,6 +14,7 @@ export interface WindowFilmModelSpec {
   solarRejection: string;
   thickness: string;
   warrantyYears: number;
+  warrantyPrice: number;
   storeSuggestedPrice: number;
   retailSuggestedPrice?: number;
 }
@@ -31,6 +32,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '58%',
     thickness: '3mil',
     warrantyYears: 10,
+    warrantyPrice: 16800,
     storeSuggestedPrice: 16800,
     retailSuggestedPrice: 6880,
   },
@@ -46,6 +48,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '58%',
     thickness: '3mil',
     warrantyYears: 10,
+    warrantyPrice: 15800,
     storeSuggestedPrice: 15800,
   },
   {
@@ -60,6 +63,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '55%',
     thickness: '4mil',
     warrantyYears: 10,
+    warrantyPrice: 4980,
     storeSuggestedPrice: 4980,
     retailSuggestedPrice: 3980,
   },
@@ -75,6 +79,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '65%',
     thickness: '4mil',
     warrantyYears: 10,
+    warrantyPrice: 4980,
     storeSuggestedPrice: 4980,
   },
   {
@@ -89,6 +94,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '59%',
     thickness: '4mil',
     warrantyYears: 10,
+    warrantyPrice: 4980,
     storeSuggestedPrice: 4980,
   },
   {
@@ -103,6 +109,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '50%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 3680,
     storeSuggestedPrice: 3680,
     retailSuggestedPrice: 2680,
   },
@@ -118,6 +125,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '58%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 3680,
     storeSuggestedPrice: 3680,
   },
   {
@@ -132,6 +140,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '56%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 3680,
     storeSuggestedPrice: 3680,
   },
   {
@@ -146,6 +155,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '48%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 2280,
     storeSuggestedPrice: 2280,
     retailSuggestedPrice: 1980,
   },
@@ -161,6 +171,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '63%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 2280,
     storeSuggestedPrice: 2280,
   },
   {
@@ -175,6 +186,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '56%',
     thickness: '2mil',
     warrantyYears: 8,
+    warrantyPrice: 2280,
     storeSuggestedPrice: 2280,
   },
   {
@@ -189,6 +201,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '38%',
     thickness: '1.8mil',
     warrantyYears: 5,
+    warrantyPrice: 1350,
     storeSuggestedPrice: 1350,
     retailSuggestedPrice: 1280,
   },
@@ -204,6 +217,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '55%',
     thickness: '1.8mil',
     warrantyYears: 5,
+    warrantyPrice: 1350,
     storeSuggestedPrice: 1350,
   },
   {
@@ -218,6 +232,7 @@ export const WINDOW_FILM_MODELS: WindowFilmModelSpec[] = [
     solarRejection: '40%',
     thickness: '1.8mil',
     warrantyYears: 5,
+    warrantyPrice: 1350,
     storeSuggestedPrice: 1350,
   },
 ];

@@ -35,30 +35,30 @@ INSERT INTO products (id, category, name_cn, name_en, default_warranty_years, de
 -- ============================================================
 -- 产品型号（窗膜按前挡/侧挡具体型号 + 车衣系列 + 天窗T系列）
 -- ============================================================
-INSERT INTO product_models (id, product_id, model_code, display_name, warranty_years, usage_limit, status, sort_order) VALUES
-  ('pm-wf-hg70', 'prod-wf', 'WF-HG70', '和光70', 10, 24, 'active', 0),
-  ('pm-wf-hg25', 'prod-wf', 'WF-HG25', '和光25', 10, 24, 'active', 1),
-  ('pm-wf-hd70', 'prod-wf', 'WF-HD70', '和盾70', 10, 24, 'active', 2),
-  ('pm-wf-hd10', 'prod-wf', 'WF-HD10', '和盾10', 10, 24, 'active', 3),
-  ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 24, 'active', 4),
-  ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 24, 'active', 5),
-  ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 24, 'active', 6),
-  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 24, 'active', 7),
-  ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 24, 'active', 8),
-  ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 24, 'active', 9),
-  ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 24, 'active', 10),
-  ('pm-wf-hy75', 'prod-wf', 'WF-HY75', '和原75', 5, 24, 'active', 11),
-  ('pm-wf-hy10', 'prod-wf', 'WF-HY10', '和原10', 5, 24, 'active', 12),
-  ('pm-wf-hy35', 'prod-wf', 'WF-HY35', '和原35', 5, 24, 'active', 13),
-  ('pm-ppf-hy8', 'prod-ppf', 'HY8', '和御 HY8', 10, 1, 'active', 0),
-  ('pm-ppf-hw8', 'prod-ppf', 'HW8', '和旺 HW8', 10, 1, 'active', 1),
-  ('pm-ppf-hw9', 'prod-ppf', 'HW9', '和旺 HW9', 10, 1, 'active', 2),
-  ('pm-ppf-hx8', 'prod-ppf', 'HX8', '和兴 HX8', 10, 1, 'active', 3),
-  ('pm-ppf-hx9', 'prod-ppf', 'HX9', '和兴 HX9', 10, 1, 'active', 4),
-  ('pm-ppf-hym', 'prod-ppf', 'HYM-MAT', '和雅 HYM 哑光', 7, 1, 'active', 5),
-  ('pm-cppf-hcui', 'prod-cppf', 'HCUI', '和粹改色车衣', 10, 1, 'active', 0),
-  ('pm-sf-t1', 'prod-sf', 'T1', '天窗冰甲 T1', 5, 1, 'active', 0),
-  ('pm-sf-t2', 'prod-sf', 'T2', '天窗冰甲 T2', 5, 1, 'active', 1);
+INSERT INTO product_models (id, product_id, model_code, display_name, warranty_years, warranty_price_cents, usage_limit, status, sort_order) VALUES
+  ('pm-wf-hg70', 'prod-wf', 'WF-HG70', '和光70', 10, 1680000, 36, 'active', 0),
+  ('pm-wf-hg25', 'prod-wf', 'WF-HG25', '和光25', 10, 1580000, 18, 'active', 1),
+  ('pm-wf-hd70', 'prod-wf', 'WF-HD70', '和盾70', 10, 498000, 36, 'active', 2),
+  ('pm-wf-hd10', 'prod-wf', 'WF-HD10', '和盾10', 10, 498000, 18, 'active', 3),
+  ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 498000, 18, 'active', 4),
+  ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 368000, 36, 'active', 5),
+  ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 368000, 18, 'active', 6),
+  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 368000, 18, 'active', 7),
+  ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 228000, 36, 'active', 8),
+  ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 228000, 18, 'active', 9),
+  ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 228000, 18, 'active', 10),
+  ('pm-wf-hy75', 'prod-wf', 'WF-HY75', '和原75', 5, 135000, 36, 'active', 11),
+  ('pm-wf-hy10', 'prod-wf', 'WF-HY10', '和原10', 5, 135000, 18, 'active', 12),
+  ('pm-wf-hy35', 'prod-wf', 'WF-HY35', '和原35', 5, 135000, 18, 'active', 13),
+  ('pm-ppf-hy8', 'prod-ppf', 'HY8', '和御 HY8', 10, 1480000, 1, 'active', 0),
+  ('pm-ppf-hw8', 'prod-ppf', 'HW8', '和旺 HW8', 10, 880000, 1, 'active', 1),
+  ('pm-ppf-hw9', 'prod-ppf', 'HW9', '和旺 HW9', 10, 980000, 1, 'active', 2),
+  ('pm-ppf-hx8', 'prod-ppf', 'HX8', '和兴 HX8', 10, 580000, 1, 'active', 3),
+  ('pm-ppf-hx9', 'prod-ppf', 'HX9', '和兴 HX9', 10, 680000, 1, 'active', 4),
+  ('pm-ppf-hym', 'prod-ppf', 'HYM-MAT', '和雅 HYM 哑光', 7, 1280000, 1, 'active', 5),
+  ('pm-cppf-hcui', 'prod-cppf', 'HCUI', '和粹改色车衣', 10, 1280000, 1, 'active', 0),
+  ('pm-sf-t1', 'prod-sf', 'T1', '天窗冰甲 T1', 5, 500000, 1, 'active', 0),
+  ('pm-sf-t2', 'prod-sf', 'T2', '天窗冰甲 T2', 5, 500000, 1, 'active', 1);
 
 -- ============================================================
 -- 报价部位（车衣/改色13部位 + 窗膜2部位 + 天窗1部位）
@@ -89,5 +89,5 @@ INSERT INTO system_settings (id, key, value, value_type, description) VALUES
   ('ss-002', 'site_url', 'https://hemoppf.com', 'string', '站点正式域名'),
   ('ss-003', 'contact_phone', '400-888-0000', 'string', '官方客服电话'),
   ('ss-004', 'contact_email', 'service@hemoppf.com', 'string', '官方客服邮箱'),
-  ('ss-005', 'window_film_usage_limit', '24', 'integer', '窗膜质保码默认使用次数上限'),
+  ('ss-005', 'window_film_usage_limit', '36', 'integer', '窗膜前挡质保码默认使用次数上限'),
   ('ss-006', 'warranty_query_enabled', 'true', 'boolean', '是否开启公开质保查询');

@@ -33,9 +33,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
     if (type === 'product-ranking') {
       const rows = await db.prepare(
-        `SELECT wr.product_name_snapshot AS name, COUNT(wr.id) AS count FROM warranty_records wr
-         WHERE wr.status = 'active' AND wr.product_name_snapshot IS NOT NULL
-         GROUP BY wr.product_name_snapshot ORDER BY count DESC LIMIT 10`
+        `SELECT COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品') AS name,
+                COUNT(wr.id) AS count
+         FROM warranty_records wr
+         LEFT JOIN product_models pm ON pm.id = wr.product_model_id
+         WHERE wr.status = 'active'
+         GROUP BY COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品')
+         ORDER BY count DESC, name ASC
+         LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }

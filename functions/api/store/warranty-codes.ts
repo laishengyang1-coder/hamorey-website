@@ -17,42 +17,70 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const url = new URL(context.request.url);
     const q = (url.searchParams.get('q') || '').trim();
+    const keyword = (url.searchParams.get('keyword') || q).trim();
+    const status = url.searchParams.get('status') || '';
     const isLookup = url.searchParams.has('limit');
     const lookupLimit = Math.min(20, Math.max(1, Number(url.searchParams.get('limit') || 10)));
     const { page, pageSize, offset } = parsePagination(url);
     const sortBy = url.searchParams.get('sort_by') || 'code';
     const sortDir = url.searchParams.get('sort_dir') === 'desc' ? 'DESC' : 'ASC';
     const sortColumns: Record<string, string> = {
-      code: 'wc.code',
-      model_name: 'pm.display_name',
-      batch_no: 'wc.batch_no',
-      used_count: 'wc.used_count',
-      usage_limit: 'wc.usage_limit',
-      status: 'wc.status',
-      created_at: 'wc.created_at',
+      code: 'code',
+      model_name: 'model_name',
+      batch_no: 'batch_no',
+      used_count: 'used_count',
+      usage_limit: 'usage_limit',
+      status: 'status',
+      created_at: 'created_at',
     };
     const orderBy = sortColumns[sortBy] || sortColumns.code;
 
-    const conditions = [
-      'wc.owner_org_id = ?',
-      "wc.status IN ('in_stock', 'partial_used')",
-      'wc.used_count < wc.usage_limit',
-    ];
+    const usageSql = `SELECT warranty_code_id, COUNT(*) AS actual_used_count
+                      FROM warranty_records
+                      WHERE status IN ('pending', 'active', 'expired')
+                      GROUP BY warranty_code_id`;
+    const baseSql = `FROM (
+        SELECT wc.id, wc.code, wc.product_model_id, wc.imported_product_name, wc.batch_no,
+               wc.import_batch_id, wc.owner_org_id, wc.usage_limit,
+               MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) AS used_count,
+               CASE
+                 WHEN wc.status IN ('frozen', 'voided') THEN wc.status
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) >= wc.usage_limit THEN 'exhausted'
+                 WHEN MAX(wc.used_count, COALESCE(wu.actual_used_count, 0)) > 0 THEN 'partial_used'
+                 ELSE 'in_stock'
+               END AS status,
+               wc.created_at, pm.display_name AS model_name, pm.model_code
+        FROM warranty_codes wc
+        JOIN product_models pm ON wc.product_model_id = pm.id
+        LEFT JOIN (${usageSql}) wu ON wu.warranty_code_id = wc.id
+        WHERE wc.owner_org_id = ?
+      ) codes`;
+
+    const conditions = [];
     const params: unknown[] = [user.orgId];
 
-    if (q) {
-      conditions.push('wc.code LIKE ?');
-      params.push(`%${q}%`);
+    if (isLookup) {
+      conditions.push("status IN ('in_stock', 'partial_used')");
+      conditions.push('used_count < usage_limit');
+    } else if (status) {
+      conditions.push('status = ?');
+      params.push(status);
     }
+
+    if (keyword) {
+      conditions.push('(code LIKE ? OR model_name LIKE ? OR model_code LIKE ?)');
+      const kw = `%${keyword}%`;
+      params.push(kw, kw, kw);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const items = await queryAll(
       context.env.DB,
-      `SELECT wc.id, wc.code, wc.status, wc.batch_no, wc.used_count, wc.usage_limit,
-              pm.display_name AS model_name, pm.model_code
-       FROM warranty_codes wc
-       JOIN product_models pm ON wc.product_model_id = pm.id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY ${orderBy} ${sortDir}, wc.created_at DESC
+      `SELECT *
+       ${baseSql}
+       ${where}
+       ORDER BY ${orderBy} ${sortDir}, created_at DESC
        LIMIT ?${isLookup ? '' : ' OFFSET ?'}`,
       ...params,
       isLookup ? lookupLimit : pageSize,
@@ -62,7 +90,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       ? { cnt: items.length }
       : await queryFirst<{ cnt: number }>(
         context.env.DB,
-        `SELECT COUNT(*) AS cnt FROM warranty_codes wc WHERE ${conditions.join(' AND ')}`,
+        `SELECT COUNT(*) AS cnt ${baseSql} ${where}`,
         ...params,
       );
 

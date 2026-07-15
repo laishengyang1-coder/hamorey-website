@@ -7,20 +7,20 @@
 INSERT OR IGNORE INTO product_models (
   id, product_id, model_code, display_name, warranty_years, usage_limit, status, sort_order
 ) VALUES
-  ('pm-wf-hg70', 'prod-wf', 'WF-HG70', '和光70', 10, 24, 'active', 0),
-  ('pm-wf-hg25', 'prod-wf', 'WF-HG25', '和光25', 10, 24, 'active', 1),
-  ('pm-wf-hd70', 'prod-wf', 'WF-HD70', '和盾70', 10, 24, 'active', 2),
-  ('pm-wf-hd10', 'prod-wf', 'WF-HD10', '和盾10', 10, 24, 'active', 3),
-  ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 24, 'active', 4),
-  ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 24, 'active', 5),
-  ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 24, 'active', 6),
-  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 24, 'active', 7),
-  ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 24, 'active', 8),
-  ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 24, 'active', 9),
-  ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 24, 'active', 10),
-  ('pm-wf-hy75', 'prod-wf', 'WF-HY75', '和原75', 5, 24, 'active', 11),
-  ('pm-wf-hy10', 'prod-wf', 'WF-HY10', '和原10', 5, 24, 'active', 12),
-  ('pm-wf-hy35', 'prod-wf', 'WF-HY35', '和原35', 5, 24, 'active', 13);
+  ('pm-wf-hg70', 'prod-wf', 'WF-HG70', '和光70', 10, 36, 'active', 0),
+  ('pm-wf-hg25', 'prod-wf', 'WF-HG25', '和光25', 10, 18, 'active', 1),
+  ('pm-wf-hd70', 'prod-wf', 'WF-HD70', '和盾70', 10, 36, 'active', 2),
+  ('pm-wf-hd10', 'prod-wf', 'WF-HD10', '和盾10', 10, 18, 'active', 3),
+  ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 18, 'active', 4),
+  ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 36, 'active', 5),
+  ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 18, 'active', 6),
+  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 18, 'active', 7),
+  ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 36, 'active', 8),
+  ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 18, 'active', 9),
+  ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 18, 'active', 10),
+  ('pm-wf-hy75', 'prod-wf', 'WF-HY75', '和原75', 5, 36, 'active', 11),
+  ('pm-wf-hy10', 'prod-wf', 'WF-HY10', '和原10', 5, 18, 'active', 12),
+  ('pm-wf-hy35', 'prod-wf', 'WF-HY35', '和原35', 5, 18, 'active', 13);
 
 UPDATE product_models
 SET status = 'active',

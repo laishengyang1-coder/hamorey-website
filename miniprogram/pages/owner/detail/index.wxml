@@ -46,6 +46,10 @@
           <view class="info-row-value">{{record.warranty_years_snapshot || '--'}}年</view>
         </view>
         <view class="info-row">
+          <view class="info-row-label">质保价格</view>
+          <view class="info-row-value text-primary text-bold">{{record.warranty_price_text || '--'}}</view>
+        </view>
+        <view class="info-row">
           <view class="info-row-label">质保码</view>
           <view class="info-row-value">{{record.warranty_code || '--'}}</view>
         </view>

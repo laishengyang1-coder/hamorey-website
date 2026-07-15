@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS product_models (
     model_code      TEXT NOT NULL UNIQUE,
     display_name    TEXT NOT NULL,
     warranty_years  INTEGER,
+    warranty_price_cents INTEGER,
     usage_limit     INTEGER,
     status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
     sort_order      INTEGER NOT NULL DEFAULT 0,

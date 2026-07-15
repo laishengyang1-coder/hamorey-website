@@ -52,33 +52,35 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     vin_snapshot: string | null; vehicle_brand_snapshot: string;
     vehicle_model_snapshot: string; product_name_snapshot: string;
     product_model_snapshot: string; warranty_years_snapshot: number;
+    warranty_price_cents: number | null;
     installation_date: string; warranty_expiry_date: string | null;
     store_name_snapshot: string; status: string;
   }
 
+  const selectSql = `SELECT wr.*, wc.code AS warranty_code, pm.warranty_price_cents
+       FROM warranty_records wr
+       JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+       LEFT JOIN product_models pm ON wr.product_model_id = pm.id`;
+
   let records: RecordRow[] = [];
   if (type === 'vin') {
     records = await queryAll<RecordRow>(db,
-      `SELECT wr.*, wc.code AS warranty_code
-       FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+      `${selectSql}
        WHERE wr.vin_snapshot = ? AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   } else if (type === 'plate') {
     records = await queryAll<RecordRow>(db,
-      `SELECT wr.*, wc.code AS warranty_code
-       FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+      `${selectSql}
        WHERE wr.plate_no_snapshot = ? AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   } else if (type === 'phone') {
     records = await queryAll<RecordRow>(db,
-      `SELECT wr.*, wc.code AS warranty_code
-       FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+      `${selectSql}
        WHERE wr.customer_phone_snapshot = ? AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   } else {
     records = await queryAll<RecordRow>(db,
-      `SELECT wr.*, wc.code AS warranty_code
-       FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
+      `${selectSql}
        WHERE wc.code = ? COLLATE NOCASE AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   }
@@ -110,6 +112,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     warranty_code: r.warranty_code,
     product_name: r.product_name_snapshot,
     product_model: r.product_model_snapshot,
+    warranty_price_cents: r.warranty_price_cents,
     installation_date: r.installation_date,
     warranty_expiry_date: r.warranty_expiry_date,
     warranty_years: r.warranty_years_snapshot,

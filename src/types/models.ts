@@ -88,6 +88,7 @@ export interface ProductModel {
   model_code: string;
   display_name: string;
   warranty_years: number | null;
+  warranty_price_cents: number | null;
   usage_limit: number | null;
   status: ProductStatus;
   sort_order: number;

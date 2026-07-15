@@ -8,6 +8,10 @@ import { searchWarrantyByQuery } from '../lib/api';
 import { StatusBadge } from '../shared/components/StatusBadge';
 import type { WarrantyCardData, WarrantyVehicleGroup } from '../types/api';
 
+function formatWarrantyPrice(cents?: number | null): string {
+  return cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+}
+
 export default function WarrantyResultPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -93,6 +97,7 @@ export default function WarrantyResultPage() {
                           <div><span className="text-gray-400">施工日期</span><p className="text-gray-700">{record.installation_date}</p></div>
                           <div><span className="text-gray-400">到期日期</span><p className="text-gray-700">{record.warranty_expiry_date || '-'}</p></div>
                           <div><span className="text-gray-400">质保年限</span><p className="text-gray-700">{record.warranty_years} 年</p></div>
+                          <div><span className="text-gray-400">质保价格</span><p className="text-gray-700">{formatWarrantyPrice(record.warranty_price_cents)}</p></div>
                           <div><span className="text-gray-400">施工门店</span><p className="text-gray-700">{record.store_name}</p></div>
                         </div>
                         {record.certificate_no && (

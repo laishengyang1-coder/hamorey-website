@@ -10,5 +10,6 @@ vite.config.js
 vite.config.js.timestamp-*
 dist.old
 dist.bak
+exports/
 *.tsbuildinfo
 miniprogram/project.private.config.json

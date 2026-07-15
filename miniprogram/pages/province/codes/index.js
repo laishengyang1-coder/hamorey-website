@@ -10,7 +10,12 @@ const STATUS_TAG = { in_stock: 'tag-success', partial_used: 'tag-warning', exhau
 
 Page({
   data: {
-    statusTabs: [{ label: '全部', value: '' }, { label: '可用', value: 'in_stock' }, { label: '已用完', value: 'exhausted' }],
+    statusTabs: [
+      { label: '全部', value: '' },
+      { label: '可用', value: 'in_stock' },
+      { label: '部分使用', value: 'partial_used' },
+      { label: '已用完', value: 'exhausted' }
+    ],
     activeStatus: '', keyword: '', loading: true, loadingMore: false, error: '', codes: [],
     page: 1, pageSize: 20, hasMore: false
   },
