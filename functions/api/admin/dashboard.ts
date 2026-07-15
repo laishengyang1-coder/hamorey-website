@@ -45,18 +45,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows.results || []);
     }
 
-    // 积分排行榜（2026年度累计获得，不扣除兑换消耗）
+    // 登记方质保积分排行榜（累计获得，不含兑换、人工调整、省代返利）
     if (type === 'points-ranking') {
       const rows = await db.prepare(
         `SELECT o.name, o.province, o.city,
                 COALESCE(SUM(pl.points_change), 0) AS count
          FROM points_ledger pl
          JOIN organizations o ON o.id = pl.organization_id
-         WHERE pl.change_type IN ('award', 'adjust')
-           AND strftime('%Y', pl.created_at) = '2026'
-           AND o.type = 'STORE'
+         JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
+         WHERE pl.change_type = 'award'
+           AND pl.related_type = 'warranty'
+           AND wr.status = 'active'
          GROUP BY o.id
-         ORDER BY count DESC
+         ORDER BY count DESC, o.name ASC
          LIMIT 20`
       ).all();
       return ok(rows.results || []);
@@ -69,7 +70,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE status NOT IN ('draft')`),
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE status = 'pending'`),
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE date(created_at) = date('now')`),
-        queryFirst<{ cnt: number }>(db, `SELECT COALESCE(SUM(points_change), 0) AS cnt FROM points_ledger WHERE change_type IN ('award', 'adjust') AND strftime('%Y', created_at) = '2026'`),
+        queryFirst<{ cnt: number }>(
+          db,
+          `SELECT COALESCE(SUM(pl.points_change), 0) AS cnt
+           FROM points_ledger pl
+           JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
+           WHERE pl.change_type = 'award'
+             AND pl.related_type = 'warranty'
+             AND wr.status = 'active'`
+        ),
       ]);
 
     return ok({

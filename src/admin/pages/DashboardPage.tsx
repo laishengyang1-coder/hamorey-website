@@ -97,7 +97,7 @@ export default function DashboardPage() {
         <RankingSection title="省级质保排行" items={provinceRanking} />
         <RankingSection title="门店质保排行" items={storeRanking} />
         <RankingSection title="产品质保排行" items={productRanking} />
-        <RankingSection title="全国积分排行" items={pointsRanking} subtitle="2026年度累计获得" valueLabel="积分" />
+        <RankingSection title="全国积分排行" items={pointsRanking} subtitle="按质保登记方累计，不含兑换与代理商返利" valueLabel="积分" />
       </div>
     </div>
   );
