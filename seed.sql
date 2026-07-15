@@ -47,6 +47,7 @@ INSERT INTO product_models (id, product_id, model_code, display_name, warranty_y
   ('pm-ppf-hx8', 'prod-ppf', 'HX8', '和兴 HX8', 10, 1, 'active', 3),
   ('pm-ppf-hx9', 'prod-ppf', 'HX9', '和兴 HX9', 10, 1, 'active', 4),
   ('pm-ppf-hym', 'prod-ppf', 'HYM-MAT', '和雅 HYM 哑光', 7, 1, 'active', 5),
+  ('pm-cppf-hcui', 'prod-cppf', 'HCUI', '和粹改色车衣', 10, 1, 'active', 0),
   ('pm-sf-t1', 'prod-sf', 'T1', '天窗冰甲 T1', 5, 1, 'active', 0),
   ('pm-sf-t2', 'prod-sf', 'T2', '天窗冰甲 T2', 5, 1, 'active', 1);
 

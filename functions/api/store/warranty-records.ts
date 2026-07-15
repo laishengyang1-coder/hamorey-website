@@ -98,7 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       used_count: number;
     }>(
       context.env.DB,
-      `SELECT * FROM warranty_codes WHERE code = ?`,
+      `SELECT * FROM warranty_codes WHERE code = ? COLLATE NOCASE`,
       body.warranty_code,
     );
 

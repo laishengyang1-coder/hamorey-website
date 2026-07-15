@@ -57,8 +57,6 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
   }
 
   let records: RecordRow[] = [];
-  let queryParams: unknown[] = [];
-
   if (type === 'vin') {
     records = await queryAll<RecordRow>(db,
       `SELECT wr.*, wc.code AS warranty_code
@@ -81,7 +79,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     records = await queryAll<RecordRow>(db,
       `SELECT wr.*, wc.code AS warranty_code
        FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
-       WHERE wc.code = ? AND wr.status = 'active'
+       WHERE wc.code = ? COLLATE NOCASE AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   }
 

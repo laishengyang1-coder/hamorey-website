@@ -7,7 +7,7 @@ import { cn } from '../../lib/cn';
 
 export interface Column {
   key: string;
-  title: string;
+  title: React.ReactNode;
   dataIndex?: string;
   width?: string;
   sortable?: boolean;

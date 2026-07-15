@@ -4,7 +4,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryAll, queryFirst, execute, batch, parsePagination, writeOperationLog , getAuthUser} from '../_lib';
+import { generateId, queryAll, queryFirst, batch, parsePagination, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 
 interface Env {
@@ -17,12 +17,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const user = getAuthUser(context.data);
     const status = url.searchParams.get('status') || '';
     const keyword = url.searchParams.get('keyword') || '';
+    const transferable = url.searchParams.get('transferable') === '1';
     const { page, pageSize, offset } = parsePagination(url);
 
     const conditions: string[] = ['wc.owner_org_id = ?'];
     const params: unknown[] = [user?.orgId];
 
     if (status) { conditions.push('wc.status = ?'); params.push(status); }
+    if (transferable) {
+      conditions.push("wc.status IN ('in_stock', 'partial_used')");
+      conditions.push('wc.used_count < wc.usage_limit');
+    }
     if (keyword) { conditions.push('wc.code LIKE ?'); params.push(`%${keyword}%`); }
 
     const where = `WHERE ${conditions.join(' AND ')}`;
@@ -69,12 +74,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const statements: Array<{ sql: string; params: unknown[] }> = [];
     let allocated = 0;
 
-    for (const codeId of body.code_ids) {
-      const code = await queryFirst<{ owner_org_id: string }>(
-        context.env.DB, `SELECT owner_org_id FROM warranty_codes WHERE id = ?`, codeId,
+    const allocatedIds: string[] = [];
+
+    for (const codeId of [...new Set(body.code_ids)]) {
+      const code = await queryFirst<{ owner_org_id: string; status: string; used_count: number; usage_limit: number }>(
+        context.env.DB,
+        `SELECT owner_org_id, status, used_count, usage_limit FROM warranty_codes WHERE id = ?`,
+        codeId,
       );
       if (!code || code.owner_org_id !== user?.orgId) continue;
+      if (!['in_stock', 'partial_used'].includes(code.status) || code.used_count >= code.usage_limit) continue;
       allocated += 1;
+      allocatedIds.push(codeId);
 
       const allocId = generateId();
       statements.push({
@@ -83,7 +94,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         params: [allocId, codeId, user?.orgId, body.to_store_id, user?.userId],
       });
       statements.push({
-        sql: `UPDATE warranty_codes SET owner_org_id = ?, status = 'in_stock' WHERE id = ?`,
+        sql: `UPDATE warranty_codes
+              SET owner_org_id = ?,
+                  status = CASE WHEN used_count > 0 THEN 'partial_used' ELSE 'in_stock' END
+              WHERE id = ?`,
         params: [body.to_store_id, codeId],
       });
     }
@@ -92,7 +106,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await batch(context.env.DB, statements);
 
     await writeOperationLog(context.env.DB, user?.userId || null, 'province_allocate', 'warranty_codes', null,
-      { code_ids: body.code_ids, to_store_id: body.to_store_id }, getClientIP(context.request));
+      { code_ids: allocatedIds, to_store_id: body.to_store_id }, getClientIP(context.request));
 
     return ok({ allocated }, '划拨成功');
   } catch (err) {
