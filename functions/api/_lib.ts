@@ -69,7 +69,7 @@ export function escapeLike(input: string): string {
  */
 export function parsePagination(url: URL): { page: number; pageSize: number; offset: number } {
   const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-  const pageSize = Math.min(50, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
+  const pageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
   const offset = (page - 1) * pageSize;
   return { page, pageSize, offset };
 }

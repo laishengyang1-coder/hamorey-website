@@ -31,23 +31,24 @@ export default function RejectedListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const fetchData = useCallback(async (p: number) => {
+  const fetchData = useCallback(async (p: number, size: number) => {
     setLoading(true); setError(null);
     try {
-      const res = await apiRequest<{ items: WarrantyRecord[]; total: number }>(`/store/warranty-records?status=rejected&page=${p}&pageSize=20`);
+      const res = await apiRequest<{ items: WarrantyRecord[]; total: number }>(`/store/warranty-records?status=rejected&page=${p}&pageSize=${size}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page); }, [page, fetchData]);
+  useEffect(() => { fetchData(page, pageSize); }, [page, pageSize, fetchData]);
 
   return (
     <div>
       <PageHeader title="驳回待修改" description="查看审核驳回的记录，修改后可重新提交" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total}
-        onPageChange={setPage} onRowClick={(r) => navigate(`/store/records/${r.id}/edit`)} emptyText="暂无驳回记录" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} pageSize={pageSize} total={total}
+        onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(r) => navigate(`/store/records/${r.id}/edit`)} emptyText="暂无驳回记录" />
     </div>
   );
 }

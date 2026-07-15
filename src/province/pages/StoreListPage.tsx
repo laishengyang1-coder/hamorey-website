@@ -47,6 +47,7 @@ export default function StoreListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Organization | null>(null);
@@ -55,11 +56,11 @@ export default function StoreListPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: Organization[]; total: number }>(`/province/organizations?${params}`);
       setData(res.items);
       setTotal(res.total);
@@ -68,7 +69,7 @@ export default function StoreListPage() {
     } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   const handleFilter = (values: Record<string, string>) => {
     setFilters(values);
@@ -109,7 +110,7 @@ export default function StoreListPage() {
         });
       }
       setDrawerOpen(false);
-      fetchData(page, filters);
+      fetchData(page, filters, pageSize);
     } catch (err) {
       alert(err instanceof Error ? err.message : '保存失败');
     } finally { setSaving(false); }
@@ -122,7 +123,7 @@ export default function StoreListPage() {
       />
       <FilterBar fields={FILTER_FIELDS} onFilter={handleFilter} className="mb-4" />
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error}
-        page={page} total={total} onPageChange={setPage} onRowClick={openEdit} emptyText="暂无门店数据" />
+        page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={openEdit} emptyText="暂无门店数据" />
 
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑门店' : '新增门店'}>
         <div className="space-y-4">

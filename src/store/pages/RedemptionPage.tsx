@@ -16,16 +16,23 @@ export default function RedemptionPage() {
   const [data, setData] = useState<RedemptionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      try { const res = await apiRequest<{ items: RedemptionItem[] }>('/store/redemptions'); setData(res.items); }
+      try {
+        const res = await apiRequest<{ items: RedemptionItem[]; total: number }>(`/store/redemptions?page=${page}&pageSize=${pageSize}`);
+        setData(res.items);
+        setTotal(res.total);
+      }
       catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
       finally { setLoading(false); }
     }
     fetchData();
-  }, []);
+  }, [page, pageSize]);
 
   const COLUMNS: Column[] = [
     { key: 'created_at', title: '申请时间', dataIndex: 'created_at', render: (v) => (v as string)?.slice(0, 16) },
@@ -42,7 +49,8 @@ export default function RedemptionPage() {
   return (
     <div>
       <PageHeader title="兑换记录" description="查看积分兑换历史" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无兑换记录" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无兑换记录"
+        page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ import { ProtectedImage } from '../../shared/components/ProtectedImage';
 
 interface PhotoItem { id: string; file_key: string; sort_order: number; }
 
-interface WarrantyRecord { id: string; certificate_no: string | null; warranty_code: string; customer_name_snapshot: string; customer_phone_snapshot: string; plate_no_snapshot: string; vin_snapshot: string | null; vehicle_brand_snapshot: string; vehicle_model_snapshot: string; product_name_snapshot: string; store_name_snapshot: string; installation_date: string; status: string; warranty_expiry_date?: string; warranty_years_snapshot?: number; }
+interface WarrantyRecord { id: string; warranty_code: string; customer_name_snapshot: string; customer_phone_snapshot: string; plate_no_snapshot: string; vin_snapshot: string | null; vehicle_brand_snapshot: string; vehicle_model_snapshot: string; product_name_snapshot: string; store_name_snapshot: string; installation_date: string; status: string; warranty_expiry_date?: string; warranty_years_snapshot?: number; }
 
 const STATUS_MAP: Record<string, string> = {
   draft: '草稿', pending: '待审核', rejected: '已驳回', active: '已生效', expired: '已过期', voided: '已作废',
@@ -23,6 +23,9 @@ export default function SubRecordListPage() {
   const [data, setData] = useState<WarrantyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [statusFilter, setStatusFilter] = useState('');
   const [editOpen, setEditOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<WarrantyRecord | null>(null);
@@ -35,12 +38,13 @@ export default function SubRecordListPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const qs = new URLSearchParams(); if (statusFilter) qs.set('status', statusFilter);
-      const res = await apiRequest<{ items: WarrantyRecord[] }>(`/province/warranty-records?${qs}`);
+      const qs = new URLSearchParams({ page: String(page), pageSize: String(pageSize) }); if (statusFilter) qs.set('status', statusFilter);
+      const res = await apiRequest<{ items: WarrantyRecord[]; total: number }>(`/province/warranty-records?${qs}`);
       setData(res.items);
+      setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
-  }, [statusFilter]);
+  }, [page, pageSize, statusFilter]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -82,7 +86,6 @@ export default function SubRecordListPage() {
   };
 
   const COLUMNS: Column[] = [
-    { key: 'certificate_no', title: '证书编号', dataIndex: 'certificate_no' },
     { key: 'customer_name_snapshot', title: '车主', dataIndex: 'customer_name_snapshot' },
     { key: 'plate_no_snapshot', title: '车牌号', dataIndex: 'plate_no_snapshot' },
     { key: 'product_name_snapshot', title: '产品', dataIndex: 'product_name_snapshot' },
@@ -95,7 +98,7 @@ export default function SubRecordListPage() {
     <div>
       <PageHeader title="下属质保记录" description="查看并编辑下属门店提交的所有质保记录" />
       <FilterBar onSearch={fetchData}>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
           <option value="">全部状态</option>
           {Object.entries(STATUS_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
@@ -103,6 +106,7 @@ export default function SubRecordListPage() {
       <DataTable
         columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (<button onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(record); }} className='text-sm text-[#5C1A1A] hover:text-[#7A2828] font-medium'>编辑</button>) }]}
         data={data as any} loading={loading} error={error}
+        page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize}
         onRowClick={(record: any) => openDetail(record)}
         emptyText="暂无质保记录" />
 
@@ -114,7 +118,6 @@ export default function SubRecordListPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <StatusBadge status={STATUS_MAP[detail.record.status] || detail.record.status} />
-              <span>证书: {detail.record.certificate_no || '-'}</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[

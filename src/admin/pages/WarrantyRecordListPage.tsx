@@ -14,7 +14,7 @@ import { ProtectedImage } from '../../shared/components/ProtectedImage';
 interface PhotoItem { id: string; file_key: string; sort_order: number; }
 
 interface WarrantyRecord {
-  id: string; warranty_code: string; certificate_no: string | null;
+  id: string; warranty_code: string;
   customer_name_snapshot: string; customer_phone_snapshot: string; plate_no_snapshot: string;
   vin_snapshot: string | null; vehicle_brand_snapshot: string; vehicle_model_snapshot: string;
   model_name: string; store_name: string; status: string;
@@ -30,7 +30,6 @@ const FILTER_FIELDS: FilterField[] = [
 ];
 
 const COLUMNS: Column[] = [
-  { key: 'certificate_no', title: '证书编号', dataIndex: 'certificate_no', render: (v) => (v as string) || '-' },
   { key: 'warranty_code', title: '质保码', dataIndex: 'warranty_code' },
   { key: 'customer_name_snapshot', title: '车主', dataIndex: 'customer_name_snapshot' },
   { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot' },
@@ -46,6 +45,7 @@ export default function WarrantyRecordListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [editOpen, setEditOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<WarrantyRecord | null>(null);
@@ -57,17 +57,17 @@ export default function WarrantyRecordListPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: WarrantyRecord[]; total: number }>(`/admin/warranty-records?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   const openDetail = async (record: WarrantyRecord) => {
     setDetailLoading(true);
@@ -101,7 +101,7 @@ export default function WarrantyRecordListPage() {
     try {
       await apiRequest(`/admin/warranty-records/${editRecord.id}`, { method: 'PUT', body: JSON.stringify(editForm) });
       setEditOpen(false);
-      fetchData(page, filters);
+      fetchData(page, filters, pageSize);
     } catch (err) { alert(err instanceof Error ? err.message : '保存失败'); }
     finally { setSaving(false); }
   };
@@ -116,7 +116,7 @@ export default function WarrantyRecordListPage() {
       await apiRequest(`/admin/warranty-records/${record.id}`, { method: 'DELETE' });
       // 若当前页删空且非第一页，回退一页
       if (data.length === 1 && page > 1) setPage(page - 1);
-      else fetchData(page, filters);
+      else fetchData(page, filters, pageSize);
     } catch (err) {
       alert(err instanceof Error ? err.message : '删除失败');
     } finally {
@@ -135,7 +135,7 @@ export default function WarrantyRecordListPage() {
             <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleDelete(record); }} disabled={deletingId === record.id} className='text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50'>{deletingId === record.id ? '删除中...' : '删除'}</button>
           </div>
         ) }]}
-        data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage}
+        data={data as any} loading={loading} error={error} page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize}
         onRowClick={(record: any) => openDetail(record)}
         emptyText="暂无质保记录" />
 
@@ -146,7 +146,6 @@ export default function WarrantyRecordListPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <StatusBadge status={detail.record.status} />
-              <span>证书: {detail.record.certificate_no || '-'}</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[

@@ -24,29 +24,30 @@ export default function PointsLedgerPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustForm, setAdjustForm] = useState({ organization_id: '', points: 0, reason: '' });
   const [saving, setSaving] = useState(false);
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: LedgerItem[]; total: number }>(`/admin/points-ledger?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   const handleAdjust = async () => {
     if (!adjustForm.points || !adjustForm.reason) { alert('请填写完整信息'); return; }
     setSaving(true);
     try {
       await apiRequest('/admin/points-ledger/adjust', { method: 'POST', body: JSON.stringify(adjustForm) });
-      setAdjustOpen(false); fetchData(page, filters);
+      setAdjustOpen(false); fetchData(page, filters, pageSize);
     } catch (err) { alert(err instanceof Error ? err.message : '调整失败'); }
     finally { setSaving(false); }
   };
@@ -70,7 +71,7 @@ export default function PointsLedgerPage() {
     <div>
       <PageHeader title="积分流水" description="查看所有组织的积分变动记录" actions={<button onClick={() => setAdjustOpen(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700">人工调整</button>} />
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} className="mb-4" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage} />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
       <DetailDrawer open={adjustOpen} onOpenChange={setAdjustOpen} title="人工调整积分">
         <div className="space-y-4">
           <div>

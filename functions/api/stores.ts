@@ -98,7 +98,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const keyword = url.searchParams.get('keyword') || '';
   const level = url.searchParams.get('level') || '';
   const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-  const pageSize = Math.min(50, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
+  const pageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
 
   let stores: StoreRow[] = [];
 

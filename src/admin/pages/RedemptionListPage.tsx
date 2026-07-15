@@ -20,7 +20,9 @@ export default function RedemptionListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
-  const [page] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Redemption | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
@@ -29,12 +31,13 @@ export default function RedemptionListPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const qs = new URLSearchParams(); if (statusFilter) qs.set('status', statusFilter); qs.set('page', String(page));
+      const qs = new URLSearchParams(); if (statusFilter) qs.set('status', statusFilter); qs.set('page', String(page)); qs.set('pageSize', String(pageSize));
       const res = await apiRequest<{ items: Redemption[]; total: number }>(`/admin/redemptions?${qs}`);
       setData(res.items);
+      setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
-  }, [statusFilter, page]);
+  }, [statusFilter, page, pageSize]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -67,12 +70,13 @@ export default function RedemptionListPage() {
     <div>
       <PageHeader title="兑换审核" description="审核门店/省代的积分兑换申请" />
       <FilterBar onSearch={fetchData}>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
           <option value="">全部状态</option>
           <option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="shipped">已发货</option>
         </select>
       </FilterBar>
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无兑换记录" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无兑换记录"
+        page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
 
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title="兑换详情">
         {selected && (

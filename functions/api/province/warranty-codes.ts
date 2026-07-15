@@ -18,7 +18,19 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const status = url.searchParams.get('status') || '';
     const keyword = url.searchParams.get('keyword') || '';
     const transferable = url.searchParams.get('transferable') === '1';
+    const sortBy = url.searchParams.get('sort_by') || 'created_at';
+    const sortDir = url.searchParams.get('sort_dir') === 'asc' ? 'ASC' : 'DESC';
     const { page, pageSize, offset } = parsePagination(url);
+    const sortColumns: Record<string, string> = {
+      code: 'wc.code',
+      model_name: 'pm.display_name',
+      batch_no: 'wc.batch_no',
+      used_count: 'wc.used_count',
+      usage_limit: 'wc.usage_limit',
+      status: 'wc.status',
+      created_at: 'wc.created_at',
+    };
+    const orderBy = sortColumns[sortBy] || sortColumns.created_at;
 
     const conditions: string[] = ['wc.owner_org_id = ?'];
     const params: unknown[] = [user?.orgId];
@@ -39,7 +51,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          FROM warranty_codes wc
          JOIN product_models pm ON wc.product_model_id = pm.id
          ${where}
-         ORDER BY wc.created_at DESC LIMIT ? OFFSET ?`,
+         ORDER BY ${orderBy} ${sortDir}, wc.created_at DESC LIMIT ? OFFSET ?`,
         ...params, pageSize, offset,
       ),
       queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM warranty_codes wc ${where}`, ...params),

@@ -11,7 +11,7 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 
 interface WarrantyRecord {
-  id: string; warranty_code: string; certificate_no: string | null;
+  id: string; warranty_code: string;
   customer_name_snapshot: string; plate_no_snapshot: string;
   model_name: string; status: string; installation_date: string; created_at: string;
 }
@@ -40,26 +40,27 @@ export default function WarrantyRecordListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: WarrantyRecord[]; total: number }>(`/store/warranty-records?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   return (
     <div>
       <PageHeader title="我的质保记录" description="查看本店提交的所有质保登记" />
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} className="mb-4" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total}
-        onPageChange={setPage} onRowClick={(r) => navigate(`/store/records/${r.id}/edit`)} emptyText="暂无质保记录" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} pageSize={pageSize} total={total}
+        onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(r) => navigate(`/store/records/${r.id}/edit`)} emptyText="暂无质保记录" />
     </div>
   );
 }

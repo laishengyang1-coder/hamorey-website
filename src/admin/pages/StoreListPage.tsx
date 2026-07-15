@@ -56,6 +56,7 @@ export default function StoreListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<Organization | null>(null);
@@ -82,11 +83,11 @@ export default function StoreListPage() {
     { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
   ];
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ ...f, type: 'STORE', page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, type: 'STORE', page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: Organization[]; total: number }>(`/admin/organizations?${params}`);
       setData(res.items);
       setTotal(res.total);
@@ -97,7 +98,7 @@ export default function StoreListPage() {
     }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   // 获取省代列表供下拉选择
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function StoreListPage() {
       }
       setDrawerOpen(false);
       alert(selected ? '门店已更新' : '门店已创建');
-      fetchData(page, filters);
+      fetchData(page, filters, pageSize);
     } catch (err) {
       alert(err instanceof Error ? err.message : '保存失败');
     } finally {
@@ -165,7 +166,7 @@ export default function StoreListPage() {
     try {
       await apiRequest(`/admin/organizations/${deleteTarget.id}`, { method: 'DELETE' });
       setDeleteTarget(null);
-      fetchData(page, filters);
+      fetchData(page, filters, pageSize);
     } catch (err) { alert(err instanceof Error ? err.message : '删除失败'); }
     finally { setDeleting(false); }
   };
@@ -191,8 +192,10 @@ export default function StoreListPage() {
         loading={loading}
         error={error}
         page={page}
+        pageSize={pageSize}
         total={total}
         onPageChange={setPage}
+        onPageSizeChange={setPageSize}
         onRowClick={openEdit}
         emptyText="暂无门店数据"
       />

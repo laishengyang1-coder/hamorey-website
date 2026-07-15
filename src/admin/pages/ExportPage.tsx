@@ -7,7 +7,7 @@ import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 
 const EXPORT_OPTIONS = [
-  { value: 'warranty_records', label: '质保记录', description: '导出所有质保记录的证书编号、车主、车辆、产品等字段' },
+  { value: 'warranty_records', label: '质保记录', description: '导出所有质保记录的车主、车辆、产品等字段' },
   { value: 'warranty_codes', label: '质保码', description: '导出所有质保码及使用状态' },
   { value: 'partner_leads', label: '合作线索', description: '导出所有合作申请线索' },
   { value: 'points_ledger', label: '积分流水', description: '导出所有积分变更记录' },

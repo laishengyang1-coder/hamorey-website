@@ -86,7 +86,6 @@ export default function WarrantyResultPage() {
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="text-sm font-medium text-gray-900">{record.product_name} - {record.product_model}</p>
-                            <p className="text-xs text-gray-500 mt-1">证书编号: {record.certificate_no || '-'}</p>
                           </div>
                           <StatusBadge status={record.status} />
                         </div>

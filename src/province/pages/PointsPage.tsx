@@ -9,22 +9,24 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 
 interface PointsLedgerItem { id: string; change_type: string; points_change: number; frozen_change: number; related_type: string | null; reason: string | null; created_at: string; }
-interface PointsSummary { available: number; frozen: number; ledger: PointsLedgerItem[]; }
+interface PointsSummary { available: number; frozen: number; ledger: PointsLedgerItem[]; total: number; }
 
 export default function PointsPage() {
   const [data, setData] = useState<PointsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      try { setData(await apiRequest<PointsSummary>('/province/points')); }
+      try { setData(await apiRequest<PointsSummary>(`/province/points?page=${page}&pageSize=${pageSize}`)); }
       catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
       finally { setLoading(false); }
     }
     fetchData();
-  }, []);
+  }, [page, pageSize]);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" /></div>;
   if (error) return <div className="text-center py-16 text-gray-500"><p>{error}</p><button onClick={() => window.location.reload()} className="mt-2 text-sm text-gray-900 underline">重试</button></div>;
@@ -47,7 +49,17 @@ export default function PointsPage() {
         <div className="rounded-lg bg-[#5C1A1A]/10 p-4"><p className="text-xs text-[#5C1A1A]/70">可用积分</p><p className="text-2xl font-bold text-[#5C1A1A]">{data?.available ?? 0}</p></div>
         <div className="rounded-xl bg-gray-50 p-4"><p className="text-xs text-gray-500">冻结积分</p><p className="text-2xl font-bold text-gray-600">{data?.frozen ?? 0}</p></div>
       </div>
-      <DataTable columns={COLUMNS} data={data?.ledger ?? [] as any} loading={false} emptyText="暂无积分流水" />
+      <DataTable
+        columns={COLUMNS}
+        data={data?.ledger ?? [] as any}
+        loading={false}
+        emptyText="暂无积分流水"
+        page={page}
+        pageSize={pageSize}
+        total={data?.total ?? 0}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 }

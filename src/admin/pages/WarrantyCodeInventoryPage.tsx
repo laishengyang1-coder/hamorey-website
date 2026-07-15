@@ -31,6 +31,9 @@ export default function WarrantyCodeInventoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortKey, setSortKey] = useState<string | null>('created_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [allocateOpen, setAllocateOpen] = useState(false);
@@ -52,17 +55,21 @@ export default function WarrantyCodeInventoryPage() {
     { key: 'keyword', label: '关键词', type: 'text', placeholder: '质保码/产品名称' },
   ];
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number, sortBy: string | null, direction: 'asc' | 'desc') => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
+      if (sortBy) {
+        params.set('sort_by', sortBy);
+        params.set('sort_dir', direction);
+      }
       const res = await apiRequest<{ items: WarrantyCode[]; total: number }>(`/admin/warranty-codes?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize, sortKey, sortDir); }, [page, filters, pageSize, sortKey, sortDir, fetchData]);
 
   const fetchOrgs = useCallback(async () => {
     try {
@@ -83,7 +90,7 @@ export default function WarrantyCodeInventoryPage() {
         method: 'POST', body: JSON.stringify({ code_ids: [...selected], to_org_id: toOrgId }),
       });
       setSelected(new Set()); setAllocateOpen(false); setToOrgId('');
-      fetchData(page, filters);
+      fetchData(page, filters, pageSize, sortKey, sortDir);
     } catch (err) { alert(err instanceof Error ? err.message : '划拨失败'); }
     finally { setOperating(false); }
   };
@@ -95,7 +102,7 @@ export default function WarrantyCodeInventoryPage() {
       await apiRequest('/admin/warranty-codes/revoke', {
         method: 'POST', body: JSON.stringify({ code_ids: [...selected] }),
       });
-      setSelected(new Set()); fetchData(page, filters);
+      setSelected(new Set()); fetchData(page, filters, pageSize, sortKey, sortDir);
     } catch (err) { alert(err instanceof Error ? err.message : '撤回失败'); }
     finally { setOperating(false); }
   };
@@ -124,12 +131,12 @@ export default function WarrantyCodeInventoryPage() {
         aria-label={`选择质保码 ${record.code as string}`}
         className="rounded border-gray-300 text-gray-900 focus:ring-gray-900 disabled:opacity-40" />
     )},
-    { key: 'code', title: '质保码', dataIndex: 'code' },
-    { key: 'model_name', title: '型号', dataIndex: 'model_name' },
-    { key: 'batch_no', title: '批次', dataIndex: 'batch_no' },
-    { key: 'owner_name', title: '归属', dataIndex: 'owner_name', render: (v) => (v as string) || '-' },
-    { key: 'used', title: '已用/总额', render: (_, r) => `${r.used_count}/${r.usage_limit}` },
-    { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
+    { key: 'code', title: '质保码', dataIndex: 'code', sortable: true },
+    { key: 'model_name', title: '型号', dataIndex: 'model_name', sortable: true },
+    { key: 'batch_no', title: '批次', dataIndex: 'batch_no', sortable: true },
+    { key: 'owner_name', title: '归属', dataIndex: 'owner_name', sortable: true, render: (v) => (v as string) || '-' },
+    { key: 'used_count', title: '已用/总额', sortable: true, render: (_, r) => `${r.used_count}/${r.usage_limit}` },
+    { key: 'status', title: '状态', dataIndex: 'status', sortable: true, render: (v) => <StatusBadge status={v as string} /> },
   ];
 
   return (
@@ -145,7 +152,20 @@ export default function WarrantyCodeInventoryPage() {
         )}
       />
       <FilterBar fields={filterFields} onFilter={(v) => { setFilters(v); setPage(1); setSelected(new Set()); }} className="mb-4" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage} />
+      <DataTable
+        columns={COLUMNS}
+        data={data as any}
+        loading={loading}
+        error={error}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        onSortChange={(key, direction) => { setSortKey(key); setSortDir(direction); setPage(1); setSelected(new Set()); }}
+      />
 
       <ConfirmDialog open={allocateOpen} onOpenChange={setAllocateOpen} title="批量划拨质保码"
         confirmText="确认划拨" onConfirm={handleAllocate} loading={operating}>

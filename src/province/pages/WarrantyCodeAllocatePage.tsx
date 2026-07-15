@@ -13,10 +13,10 @@ interface WarrantyCode { id: string; code: string; model_name: string; batch_no:
 interface Store { id: string; name: string; }
 
 const COLUMNS: Column[] = [
-  { key: 'code', title: '质保码', dataIndex: 'code' },
-  { key: 'model_name', title: '型号', dataIndex: 'model_name' },
-  { key: 'batch_no', title: '批次', dataIndex: 'batch_no' },
-  { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
+  { key: 'code', title: '质保码', dataIndex: 'code', sortable: true },
+  { key: 'model_name', title: '型号', dataIndex: 'model_name', sortable: true },
+  { key: 'batch_no', title: '批次', dataIndex: 'batch_no', sortable: true },
+  { key: 'status', title: '状态', dataIndex: 'status', sortable: true, render: (v) => <StatusBadge status={v as string} /> },
 ];
 
 export default function WarrantyCodeAllocatePage() {
@@ -26,6 +26,9 @@ export default function WarrantyCodeAllocatePage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortKey, setSortKey] = useState<string | null>('created_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [stores, setStores] = useState<Store[]>([]);
   const [toStoreId, setToStoreId] = useState('');
@@ -33,18 +36,22 @@ export default function WarrantyCodeAllocatePage() {
   const [keyword, setKeyword] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  const fetchData = useCallback(async (p: number, q: string) => {
+  const fetchData = useCallback(async (p: number, q: string, size: number, sortBy: string | null, direction: 'asc' | 'desc') => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ transferable: '1', page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ transferable: '1', page: String(p), pageSize: String(size) });
       if (q) params.set('keyword', q);
+      if (sortBy) {
+        params.set('sort_by', sortBy);
+        params.set('sort_dir', direction);
+      }
       const res = await apiRequest<{ items: WarrantyCode[]; total: number }>(`/province/warranty-codes?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, searchKeyword); }, [page, searchKeyword, fetchData]);
+  useEffect(() => { fetchData(page, searchKeyword, pageSize, sortKey, sortDir); }, [page, searchKeyword, pageSize, sortKey, sortDir, fetchData]);
   useEffect(() => {
     apiRequest<{ items: Store[] }>('/province/organizations?pageSize=200').then((r) => setStores(r.items)).catch(() => {});
   }, []);
@@ -60,7 +67,7 @@ export default function WarrantyCodeAllocatePage() {
       await apiRequest('/province/warranty-codes/allocate', {
         method: 'POST', body: JSON.stringify({ code_ids: [...selected], to_store_id: toStoreId }),
       });
-      setSelected(new Set()); setToStoreId(''); fetchData(page, searchKeyword);
+      setSelected(new Set()); setToStoreId(''); fetchData(page, searchKeyword, pageSize, sortKey, sortDir);
     } catch (err) { alert(err instanceof Error ? err.message : '划拨失败'); }
     finally { setOperating(false); }
   };
@@ -105,7 +112,21 @@ export default function WarrantyCodeAllocatePage() {
         <button type="button" onClick={() => { setKeyword(''); setSearchKeyword(''); setPage(1); setSelected(new Set()); }}
           className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">重置</button>
       </form>
-      <DataTable columns={COLS} data={data as any} loading={loading} error={error} page={page} total={total} onPageChange={setPage} emptyText="暂无库存质保码" />
+      <DataTable
+        columns={COLS}
+        data={data as any}
+        loading={loading}
+        error={error}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        onSortChange={(key, direction) => { setSortKey(key); setSortDir(direction); setPage(1); setSelected(new Set()); }}
+        emptyText="暂无库存质保码"
+      />
     </div>
   );
 }

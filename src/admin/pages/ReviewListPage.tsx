@@ -47,26 +47,27 @@ export default function ReviewListPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<Record<string, string>>({ status: 'pending' });
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: '20' });
+      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: ReviewItem[]; total: number }>(`/admin/reviews?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters); }, [page, filters, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
 
   return (
     <div>
       <PageHeader title="质保审核" description="审核门店提交的质保登记申请" />
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} initialValues={filters} className="mb-4" />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} total={total}
-        onPageChange={setPage} onRowClick={(r) => navigate(`/admin/reviews/${r.id}`)} emptyText="暂无待审核记录" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} page={page} pageSize={pageSize} total={total}
+        onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(r) => navigate(`/admin/reviews/${r.id}`)} emptyText="暂无待审核记录" />
     </div>
   );
 }

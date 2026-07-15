@@ -6,6 +6,7 @@ import {
   generateId,
   getAuthUser,
   getOrgPoints,
+  parsePagination,
   queryAll,
   queryFirst,
   resolveOrganizationAddress,
@@ -42,7 +43,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const user = getAuthUser(context.data);
     if (!user) return error('未登录', 401);
 
-    const status = new URL(context.request.url).searchParams.get('status') || '';
+    const url = new URL(context.request.url);
+    const status = url.searchParams.get('status') || '';
+    const { page, pageSize, offset } = parsePagination(url);
     const conditions = ['r.organization_id = ?'];
     const params: unknown[] = [user.orgId];
     if (status) {
@@ -50,22 +53,29 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       params.push(status);
     }
 
-    const items = await queryAll(
-      context.env.DB,
-      `SELECT r.*,
-        (SELECT json_group_array(json_object(
-          'reward_id', ri.reward_id,
-          'quantity', ri.quantity,
-          'points_per_item', ri.points_per_item,
-          'reward_name', ri.reward_name_snapshot
-        )) FROM redemption_items ri WHERE ri.redemption_id = r.id) AS items_json
-       FROM redemptions r
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY r.created_at DESC LIMIT 50`,
-      ...params,
-    );
+    const [items, totalRow] = await Promise.all([
+      queryAll(
+        context.env.DB,
+        `SELECT r.*,
+          (SELECT json_group_array(json_object(
+            'reward_id', ri.reward_id,
+            'quantity', ri.quantity,
+            'points_per_item', ri.points_per_item,
+            'reward_name', ri.reward_name_snapshot
+          )) FROM redemption_items ri WHERE ri.redemption_id = r.id) AS items_json
+         FROM redemptions r
+         WHERE ${conditions.join(' AND ')}
+         ORDER BY r.created_at DESC LIMIT ? OFFSET ?`,
+        ...params, pageSize, offset,
+      ),
+      queryFirst<{ cnt: number }>(
+        context.env.DB,
+        `SELECT COUNT(*) AS cnt FROM redemptions r WHERE ${conditions.join(' AND ')}`,
+        ...params,
+      ),
+    ]);
 
-    return ok({ items });
+    return ok({ items, total: totalRow?.cnt ?? 0, page, pageSize });
   } catch (err) {
     console.error('[redemptions GET]', err);
     return error('获取兑换记录失败', 500);

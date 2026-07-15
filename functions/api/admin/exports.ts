@@ -27,8 +27,8 @@ function toCSV(rows: Record<string, unknown>[], columns: string[], headers: stri
 const EXPORT_TYPES: Record<string, { table: string; columns: string[]; headers: string[] }> = {
   warranty_records: {
     table: 'warranty_records',
-    columns: ['certificate_no', 'customer_name_snapshot', 'customer_phone_snapshot', 'plate_no_snapshot', 'vin_snapshot', 'vehicle_brand_snapshot', 'vehicle_model_snapshot', 'product_name_snapshot', 'product_model_snapshot', 'installation_date', 'warranty_expiry_date', 'status', 'store_name_snapshot', 'created_at'],
-    headers: ['证书编号', '车主姓名', '车主电话', '车牌号', 'VIN', '品牌', '车型', '产品名称', '产品型号', '施工日期', '质保到期', '状态', '施工门店', '创建时间'],
+    columns: ['customer_name_snapshot', 'customer_phone_snapshot', 'plate_no_snapshot', 'vin_snapshot', 'vehicle_brand_snapshot', 'vehicle_model_snapshot', 'product_name_snapshot', 'product_model_snapshot', 'installation_date', 'warranty_expiry_date', 'status', 'store_name_snapshot', 'created_at'],
+    headers: ['车主姓名', '车主电话', '车牌号', 'VIN', '品牌', '车型', '产品名称', '产品型号', '施工日期', '质保到期', '状态', '施工门店', '创建时间'],
   },
   warranty_codes: {
     table: 'warranty_codes',

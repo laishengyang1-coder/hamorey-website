@@ -18,7 +18,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const modelId = url.searchParams.get('product_model_id') || '';
     const ownerId = url.searchParams.get('owner_org_id') || '';
     const keyword = url.searchParams.get('keyword') || '';
+    const sortBy = url.searchParams.get('sort_by') || 'created_at';
+    const sortDir = url.searchParams.get('sort_dir') === 'asc' ? 'ASC' : 'DESC';
     const { page, pageSize, offset } = parsePagination(url);
+    const sortColumns: Record<string, string> = {
+      code: 'wc.code',
+      model_name: 'pm.display_name',
+      batch_no: 'wc.batch_no',
+      owner_name: 'o.name',
+      used_count: 'wc.used_count',
+      usage_limit: 'wc.usage_limit',
+      status: 'wc.status',
+      created_at: 'wc.created_at',
+    };
+    const orderBy = sortColumns[sortBy] || sortColumns.created_at;
 
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -44,7 +57,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          JOIN product_models pm ON wc.product_model_id = pm.id
          LEFT JOIN organizations o ON wc.owner_org_id = o.id
          ${where}
-         ORDER BY wc.created_at DESC
+         ORDER BY ${orderBy} ${sortDir}, wc.created_at DESC
          LIMIT ? OFFSET ?`,
         ...params, pageSize, offset,
       ),

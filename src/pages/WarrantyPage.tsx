@@ -253,10 +253,6 @@ export default function WarrantyPage() {
                               <span className="font-mono">{record.warranty_code}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-content-muted">证书编号：</span>
-                              <span className="font-mono">{record.certificate_no}</span>
-                            </div>
-                            <div className="flex justify-between">
                               <span className="text-content-muted">施工日期：</span>
                               <span>{formatDate(record.installation_date)}</span>
                             </div>
