@@ -8,9 +8,28 @@ import { PageHeader } from '../../shared/components/PageHeader';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
+import {
+  WINDOW_FILM_MODELS,
+  WINDOW_FILM_POSITION_LABELS,
+  formatWindowFilmPrice,
+  type WindowFilmModelSpec,
+} from '../../config/windowFilm';
 
 interface Product { id: string; category: string; name_cn: string; }
-interface ProductModel { id: string; product_id?: string; product_name?: string; model_code: string; display_name: string; warranty_years: number; status: string; }
+interface ProductModel {
+  id: string;
+  product_id?: string;
+  product_name?: string;
+  product_category?: string;
+  model_code: string;
+  display_name: string;
+  warranty_years: number;
+  status: string;
+}
+
+interface WindowFilmRow extends WindowFilmModelSpec {
+  dbModel?: ProductModel;
+}
 
 export default function ProductManagePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -79,13 +98,74 @@ export default function ProductManagePage() {
     ) },
   ];
 
+  const modelByCode = new Map(models.map((model) => [model.model_code, model]));
+  const windowRows: WindowFilmRow[] = WINDOW_FILM_MODELS.map((item) => ({
+    ...item,
+    dbModel: modelByCode.get(item.modelCode),
+  }));
+  const otherModels = models.filter((model) => model.product_category !== 'window_film');
+
+  const WINDOW_COLS: Column[] = [
+    { key: 'seriesName', title: '产品名称', dataIndex: 'seriesName', render: (_v, record) => (
+      <div>
+        <p className="font-medium text-[var(--paper-text)]">{record.seriesName as string}</p>
+        <p className="mt-0.5 text-xs text-[var(--paper-muted)]">{record.seriesPositioning as string}</p>
+      </div>
+    ) },
+    { key: 'glassPosition', title: '适用玻璃', dataIndex: 'glassPosition', render: (v) => (
+      <span className="rounded-full bg-[#F6F1ED] px-2.5 py-1 text-xs text-[var(--paper-text-soft)]">
+        {WINDOW_FILM_POSITION_LABELS[v as WindowFilmModelSpec['glassPosition']]}
+      </span>
+    ) },
+    { key: 'modelName', title: '型号', dataIndex: 'modelName', render: (_v, record) => (
+      <div>
+        <p className="font-medium text-[var(--paper-text)]">{record.modelName as string}</p>
+        <p className="mt-0.5 font-mono text-xs text-[var(--paper-muted)]">{record.modelCode as string}</p>
+      </div>
+    ) },
+    { key: 'specs', title: '技术参数', render: (_v, record) => (
+      <div className="grid min-w-[280px] grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--paper-muted)]">
+        <span>透光 {record.visibleLightTransmittance as string}</span>
+        <span>紫外 {record.uvRejection as string}</span>
+        <span>总阻隔 {record.solarRejection as string}</span>
+        <span>厚度 {record.thickness as string}</span>
+      </div>
+    ) },
+    { key: 'warrantyYears', title: '质保', dataIndex: 'warrantyYears', render: (v) => `${v}年` },
+    { key: 'storeSuggestedPrice', title: '门店建议价', dataIndex: 'storeSuggestedPrice', render: (v) => formatWindowFilmPrice(v as number) },
+    { key: 'retailSuggestedPrice', title: '零售建议价', dataIndex: 'retailSuggestedPrice', render: (v) => formatWindowFilmPrice(v as number | undefined) },
+    { key: 'status', title: '状态', render: (_v, record) => (
+      record.dbModel
+        ? <StatusBadge status={(record.dbModel as ProductModel).status} />
+        : <StatusBadge status="inactive" label="待同步" />
+    ) },
+    { key: 'actions', title: '操作', render: (_v, record) => (
+      record.dbModel
+        ? <button onClick={() => openEdit(record.dbModel as ProductModel)} className="text-sm text-gray-500 hover:text-gray-900 underline">编辑</button>
+        : <span className="text-xs text-gray-400">待迁移</span>
+    ) },
+  ];
+
   return (
     <div>
       <PageHeader title="产品管理" description="管理产品型号与质保年限" actions={
         <button onClick={openNew} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增产品</button>
       } />
 
-      <DataTable columns={COLS} data={models as any} loading={loading} emptyText="暂无产品型号" />
+      <div className="mb-6">
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-[var(--paper-text)]">窗膜型号</h2>
+          <p className="mt-1 text-sm text-[var(--paper-muted)]">按价格表拆分前挡和侧挡，并展示对应技术参数与建议价。</p>
+        </div>
+        <DataTable columns={WINDOW_COLS} data={windowRows as any} loading={loading} emptyText="暂无窗膜型号" />
+      </div>
+
+      <div>
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-[var(--paper-text)]">其他产品型号</h2>
+        </div>
+        <DataTable columns={COLS} data={otherModels as any} loading={loading} emptyText="暂无产品型号" />
+      </div>
 
       <DetailDrawer open={drawerOpen} onOpenChange={(v) => { setDrawerOpen(v); if (!v) setEditing(null); }} title={editing ? '编辑产品' : '新增产品'}>
         <div className="space-y-4">

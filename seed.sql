@@ -33,14 +33,23 @@ INSERT INTO products (id, category, name_cn, name_en, default_warranty_years, de
   ('prod-af', 'architectural_film', '建筑家居膜', 'Architectural Film', 5, 1, 1, 0, 'active', 4);
 
 -- ============================================================
--- 产品型号（窗膜5系列 + 车衣4系列 + 天窗T系列）
+-- 产品型号（窗膜按前挡/侧挡具体型号 + 车衣系列 + 天窗T系列）
 -- ============================================================
 INSERT INTO product_models (id, product_id, model_code, display_name, warranty_years, usage_limit, status, sort_order) VALUES
-  ('pm-wf-auris', 'prod-wf', 'AURIS-DS', '和光 AURIS Dual-Silver', 5, 24, 'active', 0),
-  ('pm-wf-fortex', 'prod-wf', 'FORTEX-AR', '和盾 FORTEX Armor', 5, 24, 'active', 1),
-  ('pm-wf-lumis', 'prod-wf', 'LUMIS-UV', '和护 LUMIS UV400+', 5, 24, 'active', 2),
-  ('pm-wf-nex5', 'prod-wf', 'NEX5-CL', '和真 NEX5 Classic', 5, 24, 'active', 3),
-  ('pm-wf-purex', 'prod-wf', 'PUREX-OG', '和原 PUREX Origin', 5, 24, 'active', 4),
+  ('pm-wf-hg70', 'prod-wf', 'WF-HG70', '和光70', 10, 24, 'active', 0),
+  ('pm-wf-hg25', 'prod-wf', 'WF-HG25', '和光25', 10, 24, 'active', 1),
+  ('pm-wf-hd70', 'prod-wf', 'WF-HD70', '和盾70', 10, 24, 'active', 2),
+  ('pm-wf-hd10', 'prod-wf', 'WF-HD10', '和盾10', 10, 24, 'active', 3),
+  ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 24, 'active', 4),
+  ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 24, 'active', 5),
+  ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 24, 'active', 6),
+  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 24, 'active', 7),
+  ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 24, 'active', 8),
+  ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 24, 'active', 9),
+  ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 24, 'active', 10),
+  ('pm-wf-hy75', 'prod-wf', 'WF-HY75', '和原75', 5, 24, 'active', 11),
+  ('pm-wf-hy10', 'prod-wf', 'WF-HY10', '和原10', 5, 24, 'active', 12),
+  ('pm-wf-hy35', 'prod-wf', 'WF-HY35', '和原35', 5, 24, 'active', 13),
   ('pm-ppf-hy8', 'prod-ppf', 'HY8', '和御 HY8', 10, 1, 'active', 0),
   ('pm-ppf-hw8', 'prod-ppf', 'HW8', '和旺 HW8', 10, 1, 'active', 1),
   ('pm-ppf-hw9', 'prod-ppf', 'HW9', '和旺 HW9', 10, 1, 'active', 2),

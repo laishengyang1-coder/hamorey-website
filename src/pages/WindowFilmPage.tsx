@@ -11,6 +11,7 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
 import { getCategoryConfig } from '../config/products';
+import { WINDOW_FILM_MODELS, WINDOW_FILM_POSITION_LABELS, formatWindowFilmPrice } from '../config/windowFilm';
 import windowFilmImg from '../assets/window-film.jpeg';
 
 export default function WindowFilmPage() {
@@ -74,18 +75,22 @@ export default function WindowFilmPage() {
                   <div className="flex gap-6 text-sm">
                     <div>
                       <span className="text-content-muted">质保年限：</span>
-                      <span className="text-content-primary">{series.warrantyYears}年</span>
+                      <span className="text-content-primary">
+                        {Math.max(...WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.warrantyYears))}年
+                      </span>
                     </div>
                     <div>
-                      <span className="text-content-muted">型号代码：</span>
-                      <span className="text-content-primary">{series.modelCode}</span>
+                      <span className="text-content-muted">型号：</span>
+                      <span className="text-content-primary">
+                        {WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.modelName).join(' / ')}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="md:w-48 flex-shrink-0">
                   <div className="p-4 rounded bg-graphite border border-border-subtle text-center">
-                    <p className="text-xs text-content-muted">详细参数</p>
-                    <p className="text-sm text-status-warning mt-1">参数待补充</p>
+                    <p className="text-xs text-content-muted">玻璃部位</p>
+                    <p className="text-sm text-content-primary mt-1">前挡 / 侧挡</p>
                   </div>
                 </div>
               </div>
@@ -93,6 +98,50 @@ export default function WindowFilmPage() {
           </ScrollReveal>
         ))}
       </div>
+
+      <ScrollReveal className="mt-16">
+        <SectionHeading subtitle="Price Sheet" title="前挡与侧挡型号参数" />
+        <div className="mt-8 overflow-x-auto rounded-lg border border-border-subtle bg-elevated">
+          <table className="w-full min-w-[980px] text-sm">
+            <thead>
+              <tr className="border-b border-border-subtle bg-graphite text-left text-xs text-content-muted">
+                <th className="px-4 py-3 font-medium">系列</th>
+                <th className="px-4 py-3 font-medium">部位</th>
+                <th className="px-4 py-3 font-medium">型号</th>
+                <th className="px-4 py-3 font-medium">透光率</th>
+                <th className="px-4 py-3 font-medium">紫外阻隔</th>
+                <th className="px-4 py-3 font-medium">总阻隔</th>
+                <th className="px-4 py-3 font-medium">厚度</th>
+                <th className="px-4 py-3 font-medium">质保</th>
+                <th className="px-4 py-3 font-medium">门店建议价</th>
+                <th className="px-4 py-3 font-medium">零售建议价</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {WINDOW_FILM_MODELS.map((item) => (
+                <tr key={item.modelCode}>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-content-primary">{item.seriesName}</p>
+                    <p className="mt-0.5 text-xs text-content-muted">{item.seriesPositioning}</p>
+                  </td>
+                  <td className="px-4 py-3 text-content-secondary">{WINDOW_FILM_POSITION_LABELS[item.glassPosition]}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-content-primary">{item.modelName}</p>
+                    <p className="mt-0.5 font-mono text-xs text-content-muted">{item.modelCode}</p>
+                  </td>
+                  <td className="px-4 py-3 text-content-secondary">{item.visibleLightTransmittance}</td>
+                  <td className="px-4 py-3 text-content-secondary">{item.uvRejection}</td>
+                  <td className="px-4 py-3 text-content-secondary">{item.solarRejection}</td>
+                  <td className="px-4 py-3 text-content-secondary">{item.thickness}</td>
+                  <td className="px-4 py-3 text-content-secondary">{item.warrantyYears}年</td>
+                  <td className="px-4 py-3 text-content-primary">{formatWindowFilmPrice(item.storeSuggestedPrice)}</td>
+                  <td className="px-4 py-3 text-content-secondary">{formatWindowFilmPrice(item.retailSuggestedPrice)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ScrollReveal>
 
       {/* 前挡和侧挡选择建议 */}
       <ScrollReveal className="mt-16">
@@ -103,7 +152,7 @@ export default function WindowFilmPage() {
             <ul className="flex flex-col gap-2 text-sm text-content-secondary">
               <li>· 优先选择高透光率系列，确保驾驶视野清晰</li>
               <li>· 注意符合国标透光率要求（≥70%）</li>
-              <li>· 推荐和光 AURIS 或和真 NEX5 系列</li>
+              <li>· 推荐和光70、和盾70、和护70、和真75、和原75</li>
             </ul>
           </Card>
           <Card padding="lg">
@@ -111,7 +160,7 @@ export default function WindowFilmPage() {
             <ul className="flex flex-col gap-2 text-sm text-content-secondary">
               <li>· 可选择较低透光率，提升隐私与隔热</li>
               <li>· 注意信号通透性（ETC、GPS）</li>
-              <li>· 推荐和盾 FORTEX 或和护 LUMIS 系列</li>
+              <li>· 推荐和光25、和盾10/35、和护15/25、和真15/35、和原10/35</li>
             </ul>
           </Card>
         </div>

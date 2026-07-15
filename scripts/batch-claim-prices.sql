@@ -4,7 +4,7 @@
 -- 执行（务必 --remote，不要 --local）：
 --   wrangler d1 execute hamorey-db --remote -y --file=./scripts/batch-claim-prices.sql
 -- ============================================================
--- 规则（对每个 product_models × claim_parts 组合）：
+-- 规则（按产品分类匹配对应部位）：
 --   price_cents     = 100000  （= 1000 元，单位：分）
 --   effective_from  = '2026-07-14'
 --   effective_to    = NULL
@@ -28,7 +28,12 @@ SELECT
   'user-hq-admin-001',
   datetime('now')
 FROM product_models pm
-CROSS JOIN claim_parts cp
+JOIN products p ON p.id = pm.product_id
+JOIN claim_parts cp ON (
+  (p.category IN ('ppf', 'color_ppf') AND cp.category = 'ppf')
+  OR (p.category = 'window_film' AND cp.category = 'window_film')
+  OR (p.category = 'sunroof_film' AND cp.category = 'sunroof_film')
+)
 WHERE NOT EXISTS (
   SELECT 1 FROM claim_prices cpp
   WHERE cpp.product_model_id = pm.id AND cpp.claim_part_id = cp.id

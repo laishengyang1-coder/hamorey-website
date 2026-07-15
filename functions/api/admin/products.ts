@@ -19,8 +19,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (isModelRoute(url.pathname)) {
       const productId = url.searchParams.get('product_id') || '';
       const sql = productId
-        ? `SELECT * FROM product_models WHERE product_id = ? ORDER BY sort_order`
-        : `SELECT pm.*, p.name_cn AS product_name FROM product_models pm JOIN products p ON pm.product_id = p.id ORDER BY p.sort_order, pm.sort_order`;
+        ? `SELECT pm.*, p.name_cn AS product_name, p.category AS product_category
+           FROM product_models pm JOIN products p ON pm.product_id = p.id
+           WHERE pm.product_id = ? ORDER BY pm.sort_order`
+        : `SELECT pm.*, p.name_cn AS product_name, p.category AS product_category
+           FROM product_models pm JOIN products p ON pm.product_id = p.id
+           ORDER BY p.sort_order, pm.sort_order`;
       const params = productId ? [productId] : [];
       const items = await queryAll(context.env.DB, sql, ...params);
       return ok({ items });
