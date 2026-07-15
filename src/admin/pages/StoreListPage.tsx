@@ -22,6 +22,7 @@ interface Organization {
   address: string | null;
   contact_name: string | null;
   phone: string | null;
+  username: string | null;
   status: string;
   created_at: string;
 }
@@ -31,8 +32,16 @@ interface ProvinceOption {
   name: string;
 }
 
+const PROVINCE_OPTIONS = [
+  '北京市', '天津市', '河北省', '山西省', '内蒙古自治区', '辽宁省', '吉林省', '黑龙江省',
+  '上海市', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省',
+  '湖北省', '湖南省', '广东省', '广西壮族自治区', '海南省', '重庆市', '四川省',
+  '贵州省', '云南省', '西藏自治区', '陕西省', '甘肃省', '青海省', '宁夏回族自治区',
+  '新疆维吾尔自治区', '香港特别行政区', '澳门特别行政区', '台湾省',
+].map((name) => ({ value: name, label: name }));
+
 const FILTER_FIELDS: FilterField[] = [
-  { key: 'province', label: '省份', type: 'text', placeholder: '省份' },
+  { key: 'province', label: '省份', type: 'select', options: PROVINCE_OPTIONS },
   { key: 'status', label: '状态', type: 'select', options: [
     { value: 'active', label: '启用' },
     { value: 'suspended', label: '暂停' },
@@ -113,7 +122,7 @@ export default function StoreListPage() {
     setForm({
       code: org.code, name: org.name,
       province: org.province || '', city: org.city || '', address: org.address || '',
-      contact_name: org.contact_name || '', phone: org.phone || '', username: '', password: '',
+      contact_name: org.contact_name || '', phone: org.phone || '', username: org.username || '', password: '',
       parent_id: org.parent_id || '',
     });
     setDrawerOpen(true);
@@ -129,6 +138,8 @@ export default function StoreListPage() {
             name: form.name, province: form.province, city: form.city, address: form.address,
             contact_name: form.contact_name, phone: form.phone,
             parent_id: form.parent_id || null,
+            username: form.username.trim() || undefined,
+            password: form.password || undefined,
           }),
         });
       } else {
@@ -212,8 +223,13 @@ export default function StoreListPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">省份</label>
-              <input value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+              <select value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
+                <option value="">请选择省份</option>
+                {PROVINCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">城市</label>
@@ -238,19 +254,23 @@ export default function StoreListPage() {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
             </div>
           </div>
-          {!selected && (
-            <div className="border-t border-gray-100 pt-4">
-              <p className="text-sm font-medium text-gray-500 mb-3">登录账号设置</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">账号 *</label><input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录用户名" /></div>
-                <div><label className="block text-sm font-medium text-gray-700 mb-1">密码 *</label><input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录密码" /></div>
-              </div>
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-sm font-medium text-gray-500 mb-3">登录账号设置</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">账号 {!selected && '*'}</label><input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder="登录用户名" /></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">{selected ? '新密码' : '密码 *'}</label><input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" placeholder={selected ? '留空则不修改' : '登录密码'} /></div>
             </div>
-          )}
+          </div>
           <div className="pt-4 border-t border-gray-100">
             <button
               onClick={handleSave}
-              disabled={saving || !form.name || (!selected && (!form.username || form.password.length < 8))}
+              disabled={
+                saving ||
+                !form.name ||
+                (!selected && (!form.username || form.password.length < 8)) ||
+                (Boolean(selected) && form.password.length > 0 && form.password.length < 8) ||
+                (Boolean(selected) && !!form.username.trim() && !selected?.username && form.password.length < 8)
+              }
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50"
             >
               {saving ? '保存中...' : selected ? '保存修改' : '创建门店'}

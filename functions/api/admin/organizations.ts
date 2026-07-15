@@ -55,6 +55,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       queryAll(
         context.env.DB,
         `SELECT o.*,
+                (SELECT u.username FROM users u WHERE u.organization_id = o.id AND u.role = o.type LIMIT 1) AS username,
                 (SELECT COUNT(*) FROM organizations sub WHERE sub.parent_id = o.id) AS child_count
          FROM organizations o ${where}
          ORDER BY o.created_at DESC
@@ -244,6 +245,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       phone?: string;
       social_credit_code?: string;
       legal_person?: string;
+      username?: string;
+      password?: string;
       status?: string;
       parent_id?: string | null;
     };
@@ -265,16 +268,75 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.parent_id !== undefined) { updates.push('parent_id = ?'); params.push(body.parent_id); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
 
-    if (updates.length === 0) return error('没有需要更新的字段', 400);
+    const username = body.username?.trim();
+    const password = body.password ?? '';
+    const wantsAccountUpdate = username !== undefined || password.length > 0;
+    if (password && password.length < 8) return error('登录密码至少 8 位', 400);
 
-    updates.push("updated_at = datetime('now')");
-    params.push(orgId);
+    if (updates.length === 0 && !wantsAccountUpdate) return error('没有需要更新的字段', 400);
 
-    await execute(
-      context.env.DB,
-      `UPDATE organizations SET ${updates.join(', ')} WHERE id = ?`,
-      ...params,
-    );
+    if (updates.length > 0) {
+      updates.push("updated_at = datetime('now')");
+      params.push(orgId);
+
+      await execute(
+        context.env.DB,
+        `UPDATE organizations SET ${updates.join(', ')} WHERE id = ?`,
+        ...params,
+      );
+    }
+
+    if (wantsAccountUpdate) {
+      const existingAccount = await queryFirst<{ id: string; username: string }>(
+        context.env.DB,
+        `SELECT id, username FROM users WHERE organization_id = ? AND role = ? LIMIT 1`,
+        orgId,
+        existing.type,
+      );
+
+      if (username) {
+        const usernameOwner = await queryFirst<{ id: string; organization_id: string }>(
+          context.env.DB,
+          `SELECT id, organization_id FROM users WHERE username = ?`,
+          username,
+        );
+        if (usernameOwner && usernameOwner.organization_id !== orgId) return error('登录账号已存在', 409);
+      }
+
+      if (existingAccount) {
+        const accountUpdates: string[] = [];
+        const accountParams: unknown[] = [];
+        if (username && username !== existingAccount.username) {
+          accountUpdates.push('username = ?');
+          accountParams.push(username);
+        }
+        if (password) {
+          accountUpdates.push('password_hash = ?');
+          accountParams.push(await hashPassword(password));
+        }
+        if (accountUpdates.length > 0) {
+          accountUpdates.push("updated_at = datetime('now')");
+          accountParams.push(existingAccount.id);
+          await execute(
+            context.env.DB,
+            `UPDATE users SET ${accountUpdates.join(', ')} WHERE id = ?`,
+            ...accountParams,
+          );
+        }
+      } else {
+        if (!username || !password) return error('新建登录账号需要同时填写账号和密码', 400);
+        await execute(
+          context.env.DB,
+          `INSERT INTO users (id, organization_id, username, password_hash, role, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+          generateId(),
+          orgId,
+          username,
+          await hashPassword(password),
+          existing.type,
+        );
+      }
+    }
 
     // 同步更新门店的官网公开资料（只同步基础字段，不覆盖授权等级/营业时间等）
     if (existing.type === 'STORE') {
