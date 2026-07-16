@@ -79,16 +79,16 @@ export default function DashboardPage() {
       <PageHeader title="数据看板" description="省代业务概览" />
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {STAT_CARDS.map((c) => (
-          <div key={c.key} className="admin-card p-4 flex flex-col justify-between min-h-[88px]">
+          <div key={c.key} className="admin-card p-4 flex flex-col justify-between h-[100px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)] whitespace-nowrap">
                 {c.label}
               </span>
               {c.accent && <span className="h-2 w-2 rounded-full shrink-0 ml-1" style={{ background: c.accent }} aria-hidden />}
             </div>
-            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none mt-2">
+            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none">
               {data[c.key]}
             </span>
           </div>
@@ -96,9 +96,9 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <RankingSection title="门店质保排行" items={storeRanking} emptyText="下属门店暂无质保记录" />
-        <RankingSection title="产品质保排行" items={productRanking} emptyText="暂无产品质保记录" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 auto-rows-fr">
+        <div className="h-full"><RankingSection title="门店质保排行" items={storeRanking} emptyText="下属门店暂无质保记录" /></div>
+        <div className="h-full"><RankingSection title="产品质保排行" items={productRanking} emptyText="暂无产品质保记录" /></div>
       </div>
 
       {/* 全国积分排行（全宽） */}
@@ -125,7 +125,7 @@ function RankingSection({ title, subtitle, items, emptyText, valueLabel, showLoc
   showLocation?: boolean;
 }) {
   return (
-    <div className="admin-card p-5">
+    <div className="admin-card p-5 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-1">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
         <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">{title}</h3>

@@ -81,14 +81,14 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {STAT_CARDS.map((c) => (
-          <div key={c.key} className="admin-card p-4 flex flex-col justify-between min-h-[88px]">
+          <div key={c.key} className="admin-card p-4 flex flex-col justify-between h-[100px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)] whitespace-nowrap">
                 {c.label}
               </span>
               {c.accent && <span className="h-2 w-2 rounded-full shrink-0 ml-1" style={{ background: c.accent }} aria-hidden />}
             </div>
-            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none mt-2">
+            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none">
               {data[c.key]}
             </span>
           </div>

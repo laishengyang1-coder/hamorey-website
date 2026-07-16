@@ -76,16 +76,16 @@ export default function DashboardPage() {
       <PageHeader title="数据看板" description="核心业务数据概览" />
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAT_CARDS.map((c) => (
-          <div key={c.key} className="admin-card p-4 flex flex-col justify-between min-h-[88px]">
+          <div key={c.key} className="admin-card p-4 flex flex-col justify-between h-[100px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)] whitespace-nowrap">
                 {c.label}
               </span>
               {c.accent && <span className="h-2 w-2 rounded-full shrink-0 ml-1" style={{ background: c.accent }} aria-hidden />}
             </div>
-            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none mt-2">
+            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none">
               {data[c.key]}
             </span>
           </div>
@@ -93,11 +93,11 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
-        <RankingSection title="省级质保排行" items={provinceRanking} />
-        <RankingSection title="门店质保排行" items={storeRanking} />
-        <RankingSection title="产品质保排行" items={productRanking} />
-        <RankingSection title="全国积分排行" items={pointsRanking} subtitle="按质保登记方累计，不含兑换与代理商返利" valueLabel="积分" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 auto-rows-fr">
+        <div className="h-full"><RankingSection title="省级质保排行" items={provinceRanking} /></div>
+        <div className="h-full"><RankingSection title="门店质保排行" items={storeRanking} /></div>
+        <div className="h-full"><RankingSection title="产品质保排行" items={productRanking} /></div>
+        <div className="h-full"><RankingSection title="全国积分排行" items={pointsRanking} subtitle="按质保登记方累计，不含兑换与代理商返利" valueLabel="积分" /></div>
       </div>
     </div>
   );
@@ -106,16 +106,16 @@ export default function DashboardPage() {
 function RankingSection({ title, subtitle, valueLabel, items }: { title: string; subtitle?: string; valueLabel?: string; items: RankingItem[] }) {
   const label = valueLabel || '条';
   return (
-    <div className="admin-card p-5">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="admin-card p-5 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-1 shrink-0">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
         <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">{title}</h3>
       </div>
-      {subtitle && <p className="text-[11px] text-[var(--paper-muted)] mb-3">{subtitle}</p>}
+      {subtitle && <p className="text-[11px] text-[var(--paper-muted)] mb-3 shrink-0">{subtitle}</p>}
       {items.length === 0 ? (
-        <p className="text-sm text-[var(--paper-muted)] text-center py-6">暂无数据</p>
+        <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1 overflow-auto">
           {items.slice(0, 10).map((item, i) => (
             <div
               key={i}
