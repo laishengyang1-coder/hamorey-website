@@ -139,13 +139,12 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   title: string; subtitle?: string; valueLabel?: string; items: RankingItem[]; showProgress?: boolean;
 }) {
   const label = valueLabel || '条';
-  const top3 = items.slice(0, 3);
-  const rest = items.slice(3, 10);
+  const visibleItems = items.slice(0, 10);
   const maxCount = items.length > 0 ? items[0].count : 1;
   const totalCount = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="admin-card p-4 h-full flex flex-col">
+    <div className="admin-card p-4 h-full min-h-[620px] flex flex-col">
       {/* 标题 */}
       <div className="shrink-0 mb-3">
         <div className="flex items-center gap-2">
@@ -159,62 +158,75 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
         <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
         <>
-          {/* Top 3 高亮区 */}
-          <div className="shrink-0 space-y-1.5 mb-2">
-            {top3.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: MEDAL_BG[i] }}>
-                <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ background: MEDAL_COLORS[i] }}>
-                  {i + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <span className="text-xs font-medium text-[var(--paper-text)] truncate block">{item.name}</span>
-                  {item.province && (
-                    <span className="text-[9px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
-                  )}
-                </div>
-                <span className="metric-value text-xs font-bold text-[#5C1A1A] shrink-0">
-                  {item.count}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* 进度条（产品排行） */}
-          {showProgress && top3.map((item, i) => (
-            <div key={`bar-${i}`} className="shrink-0 mb-1 px-2">
-              <div className="h-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
-                <div className="h-full rounded-full bg-[#5C1A1A]" style={{ width: `${(item.count / maxCount) * 100}%` }} />
-              </div>
-            </div>
-          ))}
-
-          {/* 普通排名 */}
-          <div className="flex-1 space-y-0.5 overflow-auto">
-            {rest.map((item, i) => {
-              const idx = i + 3;
+          {/* 榜单主体：均匀撑满卡片高度，避免短榜单底部大片空白 */}
+          <div className="flex-1 flex flex-col justify-between gap-2 overflow-hidden">
+            {visibleItems.map((item, idx) => {
+              const isTop = idx < 3;
+              const pct = maxCount > 0 ? Math.round((item.count / maxCount) * 100) : 0;
               return (
-                <div key={idx} className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors">
-                  <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--paper-border)] text-[var(--paper-muted)]">
-                    {idx + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-[var(--paper-text)] truncate block">{item.name}</span>
-                    {item.province && (
-                      <span className="text-[9px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
-                    )}
+                <div
+                  key={idx}
+                  className="rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--burgundy-tint)]"
+                  style={isTop ? { background: MEDAL_BG[idx] } : undefined}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold"
+                      style={isTop
+                        ? { background: MEDAL_COLORS[idx], color: '#FFFFFF' }
+                        : { background: 'var(--paper-border)', color: 'var(--paper-muted)' }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className={`${isTop ? 'font-semibold' : 'font-medium'} text-sm text-[var(--paper-text)] truncate block`}>
+                        {item.name}
+                      </span>
+                      <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[var(--paper-muted)]">
+                        {item.province || item.city ? (
+                          <span className="truncate">{item.province || '-'}{item.city ? ` · ${item.city}` : ''}</span>
+                        ) : showProgress ? (
+                          <span>占榜首 {pct}%</span>
+                        ) : (
+                          <span>{title.replace('排行', '')}</span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-2">
+                      {item.count.toLocaleString()}
+                    </span>
                   </div>
                   {showProgress && (
-                    <div className="w-12 h-1 rounded-full bg-[var(--paper-border)] overflow-hidden shrink-0">
-                      <div className="h-full rounded-full bg-[#C8A96E]" style={{ width: `${(item.count / maxCount) * 100}%` }} />
+                    <div className="mt-2 ml-8 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${pct}%`, background: isTop ? MEDAL_COLORS[idx] : '#C8A96E' }}
+                        />
+                      </div>
+                      <span className="w-8 text-right text-[9px] text-[var(--paper-muted)]">{pct}%</span>
                     </div>
                   )}
-                  <span className="metric-value text-xs font-semibold text-[#5C1A1A] shrink-0">
-                    {item.count}
-                  </span>
                 </div>
               );
             })}
+            {visibleItems.length < 10 && Array.from({ length: 10 - visibleItems.length }).map((_, i) => (
+              <div key={`placeholder-${i}`} className="rounded-xl border border-dashed border-[var(--paper-border)] px-3 py-2.5 opacity-60">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 shrink-0 rounded-full bg-[var(--paper-border)] text-[10px] font-bold text-[var(--paper-muted)] flex items-center justify-center">
+                    {visibleItems.length + i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs text-[var(--paper-muted)] truncate block">
+                      等待更多数据
+                    </span>
+                    {showProgress && (
+                      <div className="mt-2 h-1.5 rounded-full bg-[var(--paper-border)]" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* 底部汇总 */}
@@ -226,11 +238,6 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
       )}
     </div>
   );
-}
-
-// 轻量 cn（避免额外引入）
-function cn(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(' ');
 }
 
 // ─── 趋势图（SVG 折线图） ───
