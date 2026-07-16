@@ -14,7 +14,8 @@ Page({
       pendingCount: 0, todayRecords: 0, availablePoints: 0, frozenPoints: 0
     },
     storeRanking: [],
-    productRanking: []
+    productRanking: [],
+    pointsRanking: []
   },
 
   onShow() {
@@ -31,14 +32,16 @@ Page({
   async loadDashboard() {
     this.setData({ loading: true });
     try {
-      const [summary, storeRank, productRank] = await Promise.all([
+      const [summary, storeRank, productRank, pointsRank] = await Promise.all([
         api.get('/province/dashboard', {}, { loading: false }),
         api.get('/province/dashboard', { type: 'store-ranking' }, { loading: false }),
         api.get('/province/dashboard', { type: 'product-ranking' }, { loading: false }),
+        api.get('/province/dashboard', { type: 'national-points-ranking' }, { loading: false }),
       ]);
       if (summary.ok) this.setData({ dashboard: summary.data });
       if (storeRank.ok) this.setData({ storeRanking: storeRank.data || [] });
       if (productRank.ok) this.setData({ productRanking: productRank.data || [] });
+      if (pointsRank.ok) this.setData({ pointsRanking: pointsRank.data || [] });
     } catch (e) {
       // 单点失败不阻塞整体展示
     } finally {

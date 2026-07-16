@@ -22,6 +22,29 @@
     </view>
   </view>
 
+  <!-- 全国积分排行 -->
+  <view class="rank-section" wx:if="{{nationalRanking.length > 0}}">
+    <view class="section-title">全国积分排行</view>
+
+    <!-- 自店排名 -->
+    <view class="my-rank-card" wx:if="{{myRank && myRank.points > 0}}">
+      <view class="my-rank-index">{{myRank.rank > 99 ? '99+' : myRank.rank}}</view>
+      <view class="my-rank-info">
+        <view class="my-rank-name">{{myRank.name}}</view>
+        <view class="my-rank-label">我的排名</view>
+      </view>
+      <view class="my-rank-points">{{myRank.points}}<text class="my-rank-unit">积分</text></view>
+    </view>
+
+    <view class="rank-card">
+      <view class="rank-item" wx:for="{{nationalRanking}}" wx:key="name" wx:if="{{index < 10}}">
+        <view class="rank-index {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</view>
+        <view class="rank-name">{{item.name}}<text wx:if="{{item.province}}" class="rank-sub-info"> {{item.province}} · {{item.city || ''}}</text></view>
+        <view class="rank-count">{{item.count}}<text class="rank-unit">积分</text></view>
+      </view>
+    </view>
+  </view>
+
   <!-- 快捷入口 -->
   <view class="quick-actions">
     <view class="section-title mb-24">快捷操作</view>

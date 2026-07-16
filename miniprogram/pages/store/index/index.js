@@ -14,7 +14,9 @@ Page({
       recordCount: 0,
       codeCount: 0,
       points: 0
-    }
+    },
+    nationalRanking: [],
+    myRank: null
   },
 
   onShow() {
@@ -44,14 +46,19 @@ Page({
       const codesRes = await api.get('/store/warranty-codes', { pageSize: 1, status: 'in_stock' }, { loading: false });
       // 获取积分
       const pointsRes = await api.get('/store/points', {}, { loading: false });
+      // 获取全国积分排行
+      const rankRes = await api.get('/store/dashboard', { type: 'national-points-ranking' }, { loading: false });
 
-      this.setData({
-        stats: {
-          recordCount: recordsRes.ok ? (recordsRes.data.total || 0) : 0,
-          codeCount: codesRes.ok ? (codesRes.data.total || 0) : 0,
-          points: pointsRes.ok ? (pointsRes.data.available || 0) : 0
-        }
-      });
+      const stats = {
+        recordCount: recordsRes.ok ? (recordsRes.data.total || 0) : 0,
+        codeCount: codesRes.ok ? (codesRes.data.total || 0) : 0,
+        points: pointsRes.ok ? (pointsRes.data.available || 0) : 0
+      };
+
+      const ranking = rankRes.ok ? (rankRes.data.ranking || []) : [];
+      const myRank = rankRes.ok ? (rankRes.data.myRank || null) : null;
+
+      this.setData({ stats, nationalRanking: ranking, myRank });
     } catch (e) {
       // 静默处理
     }

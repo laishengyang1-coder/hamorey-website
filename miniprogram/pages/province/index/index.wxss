@@ -189,6 +189,19 @@
   color: var(--color-primary);
 }
 
+.rank-sub-info {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-left: 8rpx;
+}
+
+.rank-unit {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  font-weight: 400;
+  margin-left: 4rpx;
+}
+
 .rank-empty {
   background: var(--color-bg-white);
   border-radius: var(--radius-md);

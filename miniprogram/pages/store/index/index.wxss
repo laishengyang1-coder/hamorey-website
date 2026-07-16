@@ -98,6 +98,132 @@
   color: var(--color-text);
 }
 
+/* 排行榜 */
+.rank-section {
+  margin: 24rpx;
+}
+
+.rank-card {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 8rpx 0;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 28rpx;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-index {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rank-index.rank-top {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.rank-name {
+  flex: 1;
+  margin: 0 20rpx;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-sub-info {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-left: 8rpx;
+}
+
+.rank-count {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.rank-unit {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  font-weight: 400;
+  margin-left: 4rpx;
+}
+
+/* 自店排名卡片 */
+.my-rank-card {
+  display: flex;
+  align-items: center;
+  background: #FBF5EC;
+  border: 2rpx solid #E8D5B7;
+  border-radius: var(--radius-md);
+  padding: 20rpx 28rpx;
+  margin-bottom: 16rpx;
+}
+
+.my-rank-index {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.my-rank-info {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+.my-rank-name {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.my-rank-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 4rpx;
+}
+
+.my-rank-points {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.my-rank-unit {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  font-weight: 400;
+  margin-left: 4rpx;
+}
+
 /* 退出按钮 */
 .logout-wrap {
   padding: 24rpx 48rpx 48rpx;
