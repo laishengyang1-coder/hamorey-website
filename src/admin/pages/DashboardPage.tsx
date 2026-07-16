@@ -119,7 +119,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-stretch auto-rows-fr">
         <div className="h-full"><RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} /></div>
         <div className="h-full"><RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} /></div>
         <div className="h-full"><RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress /></div>
@@ -144,14 +144,14 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   const totalCount = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="admin-card p-4 h-full flex flex-col">
+    <div className="admin-card p-3.5 h-full flex flex-col">
       {/* 标题 */}
-      <div className="shrink-0 mb-2.5">
+      <div className="shrink-0 mb-2">
         <div className="flex items-center gap-2">
           <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
           <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">{title}</h3>
         </div>
-        {subtitle && <p className="text-[10px] text-[var(--paper-muted)] mt-1 ml-[11px]">{subtitle}</p>}
+        {subtitle && <p className="text-[10px] text-[var(--paper-muted)] mt-0.5 ml-[11px]">{subtitle}</p>}
       </div>
 
       {items.length === 0 ? (
@@ -159,19 +159,19 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
       ) : (
         <>
           {/* 榜单主体：紧凑排列，避免被强行拉开 */}
-          <div className="flex-1 space-y-1.5 overflow-hidden">
+          <div className="flex-1 space-y-1 overflow-hidden">
             {visibleItems.map((item, idx) => {
               const isTop = idx < 3;
               const pct = maxCount > 0 ? Math.round((item.count / maxCount) * 100) : 0;
               return (
                 <div
                   key={idx}
-                  className="rounded-xl px-3 py-2 transition-colors hover:bg-[var(--burgundy-tint)]"
+                  className="rounded-lg px-2.5 py-1.5 transition-colors hover:bg-[var(--burgundy-tint)]"
                   style={isTop ? { background: MEDAL_BG[idx] } : undefined}
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold"
+                      className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold"
                       style={isTop
                         ? { background: MEDAL_COLORS[idx], color: '#FFFFFF' }
                         : { background: 'var(--paper-border)', color: 'var(--paper-muted)' }}
@@ -179,10 +179,10 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
                       {idx + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <span className={`${isTop ? 'font-semibold' : 'font-medium'} text-sm text-[var(--paper-text)] truncate block`}>
+                      <span className={`${isTop ? 'font-semibold' : 'font-medium'} text-xs text-[var(--paper-text)] truncate block`}>
                         {item.name}
                       </span>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[var(--paper-muted)]">
+                      <div className="mt-0.5 flex items-center gap-1.5 text-[9px] text-[var(--paper-muted)]">
                         {item.province || item.city ? (
                           <span className="truncate">{item.province || '-'}{item.city ? ` · ${item.city}` : ''}</span>
                         ) : showProgress ? (
@@ -192,19 +192,19 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
                         )}
                       </div>
                     </div>
-                    <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-2">
+                    <span className="metric-value text-xs font-semibold text-[#5C1A1A] shrink-0 ml-2">
                       {item.count.toLocaleString()}
                     </span>
                   </div>
                   {showProgress && (
-                    <div className="mt-1.5 ml-8 flex items-center gap-2">
+                    <div className="mt-1 ml-7 flex items-center gap-1.5">
                       <div className="h-1 flex-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${pct}%`, background: isTop ? MEDAL_COLORS[idx] : '#C8A96E' }}
                         />
                       </div>
-                      <span className="w-8 text-right text-[9px] text-[var(--paper-muted)]">{pct}%</span>
+                      <span className="w-7 text-right text-[9px] text-[var(--paper-muted)]">{pct}%</span>
                     </div>
                   )}
                 </div>
@@ -213,7 +213,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
           </div>
 
           {/* 底部汇总 */}
-          <div className="shrink-0 mt-2 pt-2 border-t border-[var(--paper-border)] flex items-center justify-between">
+          <div className="shrink-0 mt-2 pt-1.5 border-t border-[var(--paper-border)] flex items-center justify-between">
             <span className="text-[10px] text-[var(--paper-muted)]">共 {items.length} 名</span>
             <span className="text-[10px] text-[var(--paper-muted)]">合计 <span className="font-semibold text-[#5C1A1A]">{totalCount.toLocaleString()}</span> {label}</span>
           </div>
@@ -227,7 +227,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
 function TrendChart({ data }: { data: { date: string; count: number }[] }) {
   if (data.length === 0) return <p className="text-sm text-[var(--paper-muted)] text-center py-8">暂无趋势数据</p>;
 
-  const w = 600, h = 160, pad = 30;
+  const w = 600, h = 160, pad = 36;
   const maxCount = Math.max(...data.map(d => d.count), 1);
   const stepX = (w - pad * 2) / Math.max(1, data.length - 1);
   const points = data.map((d, i) => {
@@ -254,10 +254,19 @@ function TrendChart({ data }: { data: { date: string; count: number }[] }) {
           </linearGradient>
         </defs>
         {/* 网格线 */}
-        {[0, 0.25, 0.5, 0.75, 1].map(f => (
-          <line key={f} x1={pad} y1={pad + f * (h - pad * 2)} x2={w - pad} y2={pad + f * (h - pad * 2)}
-            stroke="var(--paper-border)" strokeWidth="0.5" strokeDasharray="3,3" />
-        ))}
+        {[0, 0.25, 0.5, 0.75, 1].map(f => {
+          const y = pad + f * (h - pad * 2);
+          const value = Math.round(maxCount * (1 - f));
+          return (
+            <g key={f}>
+              <text x={pad - 8} y={y + 3} textAnchor="end" fontSize="9" fill="var(--paper-muted)">
+                {value}
+              </text>
+              <line x1={pad} y1={y} x2={w - pad} y2={y}
+                stroke="var(--paper-border)" strokeWidth="0.5" strokeDasharray="3,3" />
+            </g>
+          );
+        })}
         <path d={areaD} fill="url(#trendGrad)" />
         <path d={pathD} fill="none" stroke="#5C1A1A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (
@@ -314,7 +323,13 @@ function LifecycleFunnel({ data }: { data: { total: number; hq: number; province
 // ─── 门店活跃度 ───
 function StoreActivitySection({ items }: { items: any[] }) {
   if (items.length === 0) return null;
-  const inactive = items.filter(s => s.is_inactive);
+  const inactive = items
+    .filter(s => s.is_inactive)
+    .sort((a, b) => {
+      const aDays = a.days_since ?? Number.MAX_SAFE_INTEGER;
+      const bDays = b.days_since ?? Number.MAX_SAFE_INTEGER;
+      return bDays - aDays;
+    });
   const active = items.length - inactive.length;
 
   return (

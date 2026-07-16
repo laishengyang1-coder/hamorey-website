@@ -106,7 +106,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          LEFT JOIN warranty_records wr ON wr.store_id = o.id AND wr.status NOT IN ('draft')
          WHERE o.type = 'STORE'
          GROUP BY o.id
-         ORDER BY last_active DESC NULLS LAST
+         ORDER BY
+           CASE WHEN last_active IS NULL THEN 0 ELSE 1 END ASC,
+           last_active ASC
          LIMIT 100`
       ).all();
       const now = Date.now();
