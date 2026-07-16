@@ -119,7 +119,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-stretch auto-rows-fr">
         <RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} />
         <RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} />
         <RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress />
@@ -144,7 +144,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   const totalCount = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="admin-card p-3.5">
+    <div className="admin-card p-3.5 h-full flex flex-col">
       {/* 标题 */}
       <div className="shrink-0 mb-2">
         <div className="flex items-center gap-2">
@@ -155,7 +155,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-[var(--paper-muted)] text-center py-6">暂无数据</p>
+        <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
         <>
           {/* 榜单主体：紧凑排列，避免被强行拉开 */}
@@ -166,7 +166,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
               return (
                 <div
                   key={idx}
-                  className="relative overflow-hidden rounded-lg px-2.5 py-1.5 transition-colors hover:bg-[var(--burgundy-tint)]"
+                  className="relative min-h-[46px] overflow-hidden rounded-lg px-2.5 py-1.5 transition-colors hover:bg-[var(--burgundy-tint)]"
                   style={isTop ? { background: MEDAL_BG[idx] } : undefined}
                 >
                   <div className="flex items-center gap-2">
@@ -208,19 +208,22 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
               );
             })}
             {visibleItems.length < 10 && Array.from({ length: 10 - visibleItems.length }).map((_, idx) => (
-              <div key={`placeholder-${idx}`} className="rounded-lg px-2.5 py-1.5 opacity-45">
+              <div key={`placeholder-${idx}`} className="min-h-[46px] rounded-lg px-2.5 py-1.5 opacity-45">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--paper-border)] text-[var(--paper-muted)]">
                     {visibleItems.length + idx + 1}
                   </span>
-                  <span className="text-xs text-[var(--paper-muted)]">等待更多数据</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs text-[var(--paper-muted)] truncate block">等待更多数据</span>
+                    <span className="mt-0.5 text-[9px] text-[var(--paper-muted)] block">暂无新增记录</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* 底部汇总 */}
-          <div className="shrink-0 mt-2 pt-1.5 border-t border-[var(--paper-border)] flex items-center justify-between">
+          <div className="shrink-0 mt-auto pt-1.5 border-t border-[var(--paper-border)] flex items-center justify-between">
             <span className="text-[10px] text-[var(--paper-muted)]">共 {items.length} 名</span>
             <span className="text-[10px] text-[var(--paper-muted)]">合计 <span className="font-semibold text-[#5C1A1A]">{totalCount.toLocaleString()}</span> {label}</span>
           </div>
