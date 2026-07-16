@@ -107,7 +107,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          WHERE o.type = 'STORE'
          GROUP BY o.id
          ORDER BY
-           CASE WHEN last_active IS NULL THEN 0 ELSE 1 END ASC,
+           CASE WHEN last_active IS NULL THEN 1 ELSE 0 END ASC,
            last_active ASC
          LIMIT 100`
       ).all();

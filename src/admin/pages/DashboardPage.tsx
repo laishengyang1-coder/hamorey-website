@@ -119,11 +119,11 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-stretch auto-rows-fr">
-        <div className="h-full"><RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} /></div>
-        <div className="h-full"><RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} /></div>
-        <div className="h-full"><RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress /></div>
-        <div className="h-full"><RankingSection title="全国积分排行" subtitle="不含兑换与返利" items={pointsRanking} valueLabel="积分" /></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-start">
+        <RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} />
+        <RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} />
+        <RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress />
+        <RankingSection title="全国积分排行" subtitle="不含兑换与返利" items={pointsRanking} valueLabel="积分" />
       </div>
 
       {/* 门店活跃度 */}
@@ -144,7 +144,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   const totalCount = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="admin-card p-3.5 h-full flex flex-col">
+    <div className="admin-card p-3.5">
       {/* 标题 */}
       <div className="shrink-0 mb-2">
         <div className="flex items-center gap-2">
@@ -155,18 +155,18 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
+        <p className="text-sm text-[var(--paper-muted)] text-center py-6">暂无数据</p>
       ) : (
         <>
           {/* 榜单主体：紧凑排列，避免被强行拉开 */}
-          <div className="flex-1 space-y-1 overflow-hidden">
+          <div className="space-y-1 overflow-hidden">
             {visibleItems.map((item, idx) => {
               const isTop = idx < 3;
               const pct = maxCount > 0 ? Math.round((item.count / maxCount) * 100) : 0;
               return (
                 <div
                   key={idx}
-                  className="rounded-lg px-2.5 py-1.5 transition-colors hover:bg-[var(--burgundy-tint)]"
+                  className="relative overflow-hidden rounded-lg px-2.5 py-1.5 transition-colors hover:bg-[var(--burgundy-tint)]"
                   style={isTop ? { background: MEDAL_BG[idx] } : undefined}
                 >
                   <div className="flex items-center gap-2">
@@ -197,19 +197,26 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
                     </span>
                   </div>
                   {showProgress && (
-                    <div className="mt-1 ml-7 flex items-center gap-1.5">
-                      <div className="h-1 flex-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{ width: `${pct}%`, background: isTop ? MEDAL_COLORS[idx] : '#C8A96E' }}
-                        />
-                      </div>
-                      <span className="w-7 text-right text-[9px] text-[var(--paper-muted)]">{pct}%</span>
+                    <div className="absolute bottom-0.5 left-9 right-2 h-0.5 rounded-full bg-[var(--paper-border)]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: isTop ? MEDAL_COLORS[idx] : '#C8A96E' }}
+                      />
                     </div>
                   )}
                 </div>
               );
             })}
+            {visibleItems.length < 10 && Array.from({ length: 10 - visibleItems.length }).map((_, idx) => (
+              <div key={`placeholder-${idx}`} className="rounded-lg px-2.5 py-1.5 opacity-45">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--paper-border)] text-[var(--paper-muted)]">
+                    {visibleItems.length + idx + 1}
+                  </span>
+                  <span className="text-xs text-[var(--paper-muted)]">等待更多数据</span>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* 底部汇总 */}
@@ -326,8 +333,8 @@ function StoreActivitySection({ items }: { items: any[] }) {
   const inactive = items
     .filter(s => s.is_inactive)
     .sort((a, b) => {
-      const aDays = a.days_since ?? Number.MAX_SAFE_INTEGER;
-      const bDays = b.days_since ?? Number.MAX_SAFE_INTEGER;
+      const aDays = a.days_since ?? -1;
+      const bDays = b.days_since ?? -1;
       return bDays - aDays;
     });
   const active = items.length - inactive.length;
@@ -355,7 +362,7 @@ function StoreActivitySection({ items }: { items: any[] }) {
                 </span>
               </div>
               <span className="text-[10px] text-red-500 font-medium shrink-0 ml-2">
-                {s.days_since !== null ? `${s.days_since}天前` : '—'}
+                {s.days_since !== null ? `${s.days_since}天前` : '从未登记'}
               </span>
             </div>
           ))}
