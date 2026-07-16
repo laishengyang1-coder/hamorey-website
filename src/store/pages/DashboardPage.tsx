@@ -15,6 +15,20 @@ interface StoreDashboard {
   frozenPoints: number;
 }
 
+interface RankingItem {
+  name: string;
+  count: number;
+  province?: string;
+  city?: string;
+  org_id?: string;
+}
+
+interface MyRank {
+  rank: number;
+  points: number;
+  name: string;
+}
+
 const STAT_CARDS: Array<{
   key: keyof StoreDashboard;
   label: string;
@@ -32,6 +46,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<StoreDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pointsRanking, setPointsRanking] = useState<RankingItem[]>([]);
+  const [myRank, setMyRank] = useState<MyRank | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -41,6 +57,9 @@ export default function DashboardPage() {
       finally { setLoading(false); }
     }
     fetchData();
+    apiRequest<{ ranking: RankingItem[]; myRank: MyRank }>('/store/dashboard?type=national-points-ranking')
+      .then((res) => { setPointsRanking(res.ranking); setMyRank(res.myRank); })
+      .catch(() => {});
   }, []);
 
   if (loading) return (
@@ -74,6 +93,67 @@ export default function DashboardPage() {
             </span>
           </div>
         ))}
+      </div>
+
+      {/* 全国积分排行 */}
+      <div className="mt-8 admin-card p-5">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
+            <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">全国积分排行</h3>
+          </div>
+        </div>
+        <p className="text-xs text-[var(--paper-muted)] mb-4">按质保登记方累计，不含兑换与代理商返利</p>
+
+        {/* 自店排名 */}
+        {myRank && myRank.points > 0 && (
+          <div className="mb-4 p-3 rounded-lg bg-[#FBF5EC] border border-[#E8D5B7] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-7 h-7 shrink-0 rounded-full bg-[#5C1A1A] text-white flex items-center justify-center text-xs font-bold">
+                {myRank.rank > 99 ? '99+' : myRank.rank}
+              </span>
+              <div>
+                <span className="text-sm font-semibold text-[#5C1A1A]">{myRank.name}</span>
+                <span className="text-xs text-[var(--paper-muted)] ml-2">我的排名</span>
+              </div>
+            </div>
+            <span className="metric-value text-sm font-semibold text-[#5C1A1A]">
+              {myRank.points}<span className="text-xs text-[var(--paper-muted)] ml-1">积分</span>
+            </span>
+          </div>
+        )}
+
+        {pointsRanking.length === 0 ? (
+          <p className="text-sm text-[var(--paper-muted)] text-center py-6">暂无积分数据</p>
+        ) : (
+          <div className="space-y-1">
+            {pointsRanking.slice(0, 10).map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+                      i < 3 ? 'bg-[#5C1A1A] text-white' : 'bg-[var(--paper-border)] text-[var(--paper-muted)]'
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="text-sm text-[var(--paper-text)] truncate">
+                    {item.name}
+                    {item.province && (
+                      <span className="text-[var(--paper-muted)] ml-1.5">{item.province} · {item.city || ''}</span>
+                    )}
+                  </span>
+                </div>
+                <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-3">
+                  {item.count}<span className="text-xs text-[var(--paper-muted)] ml-1">积分</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

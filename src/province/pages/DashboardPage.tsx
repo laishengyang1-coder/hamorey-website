@@ -19,6 +19,8 @@ interface ProvinceDashboard {
 interface RankingItem {
   name: string;
   count: number;
+  province?: string;
+  city?: string;
 }
 
 const STAT_CARDS: Array<{
@@ -40,6 +42,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [storeRanking, setStoreRanking] = useState<RankingItem[]>([]);
   const [productRanking, setProductRanking] = useState<RankingItem[]>([]);
+  const [pointsRanking, setPointsRanking] = useState<RankingItem[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -55,6 +58,7 @@ export default function DashboardPage() {
     fetchData();
     apiRequest<RankingItem[]>('/province/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
     apiRequest<RankingItem[]>('/province/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
+    apiRequest<RankingItem[]>('/province/dashboard?type=national-points-ranking').then(setPointsRanking).catch(() => {});
   }, []);
 
   if (loading) return (
@@ -96,17 +100,39 @@ export default function DashboardPage() {
         <RankingSection title="门店质保排行" items={storeRanking} emptyText="下属门店暂无质保记录" />
         <RankingSection title="产品质保排行" items={productRanking} emptyText="暂无产品质保记录" />
       </div>
+
+      {/* 全国积分排行（全宽） */}
+      <div className="mt-6">
+        <RankingSection
+          title="全国积分排行"
+          subtitle="按质保登记方累计，不含兑换与代理商返利"
+          items={pointsRanking}
+          emptyText="暂无积分数据"
+          valueLabel="积分"
+          showLocation
+        />
+      </div>
     </div>
   );
 }
 
-function RankingSection({ title, items, emptyText }: { title: string; items: RankingItem[]; emptyText: string }) {
+function RankingSection({ title, subtitle, items, emptyText, valueLabel, showLocation }: {
+  title: string;
+  subtitle?: string;
+  items: RankingItem[];
+  emptyText: string;
+  valueLabel?: string;
+  showLocation?: boolean;
+}) {
   return (
     <div className="admin-card p-5">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-1">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
         <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">{title}</h3>
       </div>
+      {subtitle && (
+        <p className="text-xs text-[var(--paper-muted)] mb-3">{subtitle}</p>
+      )}
       {items.length === 0 ? (
         <p className="text-sm text-[var(--paper-muted)] text-center py-6">{emptyText}</p>
       ) : (
@@ -125,10 +151,16 @@ function RankingSection({ title, items, emptyText }: { title: string; items: Ran
                 >
                   {i + 1}
                 </span>
-                <span className="text-sm text-[var(--paper-text)] truncate">{item.name}</span>
+                <span className="text-sm text-[var(--paper-text)] truncate">
+                  {item.name}
+                  {showLocation && item.province && (
+                    <span className="text-[var(--paper-muted)] ml-1.5">{item.province} · {item.city || ''}</span>
+                  )}
+                </span>
               </div>
               <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-3">
                 {item.count}
+                {valueLabel && <span className="text-xs text-[var(--paper-muted)] ml-1">{valueLabel}</span>}
               </span>
             </div>
           ))}

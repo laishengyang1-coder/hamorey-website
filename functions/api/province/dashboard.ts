@@ -1,8 +1,9 @@
 // ============================================================
 // GET /api/province/dashboard — 省代数据看板
 //   - 默认：返回省代业务概览汇总
-//   - type=store-ranking   ：该省代下属门店按质保数排行
-//   - type=product-ranking ：该省代下产品按质保数排行
+//   - type=store-ranking             ：该省代下属门店按质保数排行
+//   - type=product-ranking           ：该省代下产品按质保数排行
+//   - type=national-points-ranking   ：全国门店质保积分排行
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
@@ -42,6 +43,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          ORDER BY count DESC, name ASC
          LIMIT 10`,
         orgId
+      );
+      return ok(rows);
+    }
+    if (type === 'national-points-ranking') {
+      const rows = await queryAll<{ name: string; count: number; province: string; city: string }>(db,
+        `SELECT o.name, o.province, o.city,
+                COALESCE(SUM(pl.points_change), 0) AS count
+         FROM points_ledger pl
+         JOIN organizations o ON o.id = pl.organization_id
+         JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
+         WHERE pl.change_type = 'award'
+           AND pl.related_type = 'warranty'
+           AND wr.status = 'active'
+         GROUP BY o.id
+         ORDER BY count DESC, o.name ASC
+         LIMIT 20`,
       );
       return ok(rows);
     }
