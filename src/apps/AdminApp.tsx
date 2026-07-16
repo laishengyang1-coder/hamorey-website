@@ -11,6 +11,7 @@ import { lazyWithRetry } from '../shared/lib/lazyWithRetry';
 // 懒加载页面（带部署后 chunk 失配自愈）
 const LoginPage = lazyWithRetry(() => import('../admin/pages/LoginPage'));
 const DashboardPage = lazyWithRetry(() => import('../admin/pages/DashboardPage'));
+const ChinaStoreMapPage = lazyWithRetry(() => import('../admin/pages/ChinaStoreMapPage'));
 const ProvinceListPage = lazyWithRetry(() => import('../admin/pages/ProvinceListPage'));
 const StoreListPage = lazyWithRetry(() => import('../admin/pages/StoreListPage'));
 const ReviewListPage = lazyWithRetry(() => import('../admin/pages/ReviewListPage'));
@@ -133,6 +134,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <DashboardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'store-map',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <ChinaStoreMapPage />
           </Suspense>
         ),
       },

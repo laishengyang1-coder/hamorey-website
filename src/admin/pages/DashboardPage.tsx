@@ -3,6 +3,8 @@
 // ============================================================
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { MapPinned } from 'lucide-react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 
@@ -78,7 +80,19 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="数据看板" description="核心业务数据概览" />
+      <PageHeader
+        title="数据看板"
+        description="核心业务数据概览"
+        actions={(
+          <Link
+            to="/admin/store-map"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#7A2828] focus:outline-none focus:ring-2 focus:ring-[#5C1A1A]/25"
+          >
+            <MapPinned className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            全国门店地图
+          </Link>
+        )}
+      />
 
       {/* 指标卡 */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
