@@ -93,11 +93,11 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 auto-rows-fr">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 auto-rows-fr">
         <div className="h-full"><RankingSection title="省级质保排行" items={provinceRanking} /></div>
         <div className="h-full"><RankingSection title="门店质保排行" items={storeRanking} /></div>
         <div className="h-full"><RankingSection title="产品质保排行" items={productRanking} /></div>
-        <div className="h-full"><RankingSection title="全国积分排行" items={pointsRanking} subtitle="按质保登记方累计，不含兑换与代理商返利" valueLabel="积分" /></div>
+        <div className="h-full"><RankingSection title="全国积分排行" items={pointsRanking} subtitle="不含兑换与返利" valueLabel="积分" /></div>
       </div>
     </div>
   );
@@ -106,20 +106,20 @@ export default function DashboardPage() {
 function RankingSection({ title, subtitle, valueLabel, items }: { title: string; subtitle?: string; valueLabel?: string; items: RankingItem[] }) {
   const label = valueLabel || '条';
   return (
-    <div className="admin-card p-5 h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-1 shrink-0">
+    <div className="admin-card p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-2 shrink-0">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
-        <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">{title}</h3>
+        <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">{title}</h3>
       </div>
-      {subtitle && <p className="text-[11px] text-[var(--paper-muted)] mb-3 shrink-0">{subtitle}</p>}
+      {subtitle && <p className="text-[10px] text-[var(--paper-muted)] mb-2 shrink-0">{subtitle}</p>}
       {items.length === 0 ? (
         <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
-        <div className="space-y-1 flex-1 overflow-auto">
+        <div className="space-y-0.5 flex-1 overflow-auto">
           {items.slice(0, 10).map((item, i) => (
             <div
               key={i}
-              className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors"
+              className="flex items-center justify-between py-1.5 px-1.5 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span
