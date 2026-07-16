@@ -1,1 +1,1 @@
-{ "version": 1, "include": ["/*"], "exclude": ["/assets/*", "/favicon.ico", "/robots.txt"] }
+{ "version": 1, "include": ["/*"], "exclude": ["/assets/*", "/maps/*", "/favicon.ico", "/robots.txt"] }
