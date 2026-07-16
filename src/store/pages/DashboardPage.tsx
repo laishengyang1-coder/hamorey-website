@@ -79,16 +79,16 @@ export default function DashboardPage() {
     <div>
       <PageHeader title="数据看板" description="门店业务概览" />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {STAT_CARDS.map((c) => (
-          <div key={c.key} className="admin-card p-5 flex flex-col gap-3">
+          <div key={c.key} className="admin-card p-4 flex flex-col justify-between min-h-[88px]">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)] whitespace-nowrap">
                 {c.label}
               </span>
-              {c.accent && <span className="h-2 w-2 rounded-full" style={{ background: c.accent }} aria-hidden />}
+              {c.accent && <span className="h-2 w-2 rounded-full shrink-0 ml-1" style={{ background: c.accent }} aria-hidden />}
             </div>
-            <span className="metric-value text-3xl font-semibold text-[#5C1A1A] leading-none">
+            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none mt-2">
               {data[c.key]}
             </span>
           </div>

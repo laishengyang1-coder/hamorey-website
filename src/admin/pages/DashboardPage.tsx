@@ -25,11 +25,11 @@ const STAT_CARDS: Array<{
   label: string;
   accent?: string;
 }> = [
-  { key: 'provinces', label: '省代数量' },
-  { key: 'stores', label: '门店数量' },
-  { key: 'totalCodes', label: '质保码总数' },
+  { key: 'provinces', label: '省代' },
+  { key: 'stores', label: '门店' },
+  { key: 'totalCodes', label: '质保码' },
   { key: 'totalRecords', label: '质保记录' },
-  { key: 'totalPointsEarned', label: '累计发放积分', accent: '#5C1A1A' },
+  { key: 'totalPointsEarned', label: '发放积分', accent: '#5C1A1A' },
   { key: 'pendingReviews', label: '待审核', accent: 'var(--accent-gold)' },
   { key: 'todayRecords', label: '今日新增', accent: '#B8924A' },
 ];
@@ -76,16 +76,16 @@ export default function DashboardPage() {
       <PageHeader title="数据看板" description="核心业务数据概览" />
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {STAT_CARDS.map((c) => (
-          <div key={c.key} className="admin-card p-5 flex flex-col gap-3">
+          <div key={c.key} className="admin-card p-4 flex flex-col justify-between min-h-[88px]">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--paper-muted)] whitespace-nowrap">
                 {c.label}
               </span>
-              {c.accent && <span className="h-2 w-2 rounded-full" style={{ background: c.accent }} aria-hidden />}
+              {c.accent && <span className="h-2 w-2 rounded-full shrink-0 ml-1" style={{ background: c.accent }} aria-hidden />}
             </div>
-            <span className="metric-value text-3xl font-semibold text-[#5C1A1A] leading-none">
+            <span className="metric-value text-2xl md:text-3xl font-semibold text-[#5C1A1A] leading-none mt-2">
               {data[c.key]}
             </span>
           </div>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
         <RankingSection title="省级质保排行" items={provinceRanking} />
         <RankingSection title="门店质保排行" items={storeRanking} />
         <RankingSection title="产品质保排行" items={productRanking} />
