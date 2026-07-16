@@ -25,14 +25,15 @@ interface TreeData {
 }
 
 // ─── Layout constants ───
-const NODE_W = 152;
-const NODE_H = 60;
-const STORE_W = 132;
-const STORE_H = 46;
-const ROOT_X = 40;
-const PROV_X = ROOT_X + NODE_W + 120;
-const STORE_X = PROV_X + NODE_W + 100;
-const V_GAP = 16;
+const NODE_W = 170;
+const NODE_H = 72;
+const STORE_W = 148;
+const STORE_H = 52;
+const ROOT_X = 60;
+const PROV_X = ROOT_X + NODE_W + 160;
+const STORE_X = PROV_X + NODE_W + 140;
+const V_GAP = 20;
+const PROV_GAP = 36;
 const LINE_COLOR = '#D4C5B5';
 const HQ_COLOR = '#5C1A1A';
 const PROV_COLOR = '#7A2E2E';
@@ -50,19 +51,21 @@ function NodeBlock({ cx, cy, w, h, fill, label, sub, collapsed, hasChildren, onT
   label: string; sub: string; collapsed?: boolean; hasChildren?: boolean;
   onToggle?: () => void; color?: string;
 }) {
-  const fs = w >= NODE_W ? 13 : 11;
-  const subFs = w >= NODE_W ? 11 : 10;
-  const textColor = color || (fill === STORE_COLOR ? '#3A2A1A' : '#FFFFFF');
-  const btnSize = 20;
+  const isStore = w < NODE_W;
+  const fs = isStore ? 12 : 14;
+  const subFs = isStore ? 10 : 12;
+  const textColor = color || (isStore ? '#3A2A1A' : '#FFFFFF');
+  const btnSize = 22;
   const btnX = cx + w / 2 - btnSize / 2 + 4;
-  const btnY = cy + h - btnSize - 2;
+  const btnY = cy + h - btnSize - 4;
+  const maxChars = isStore ? 7 : 10;
 
   return (
     <g style={{ cursor: hasChildren ? 'pointer' : 'default' }} onClick={onToggle}>
       <rect x={cx - w / 2} y={cy} width={w} height={h} rx={8} fill={fill} filter="url(#shadow)" />
       <text x={cx} y={cy + h / 2 - subFs / 2} textAnchor="middle" fill={textColor}
         fontSize={fs} fontWeight={600} fontFamily="system-ui, sans-serif" className="select-none">
-        {label.length > (w >= NODE_W ? 9 : 7) ? label.slice(0, (w >= NODE_W ? 8 : 6)) + '…' : label}
+        {label.length > maxChars ? label.slice(0, maxChars) + '…' : label}
       </text>
       <text x={cx} y={cy + h / 2 + subFs / 2 + 2} textAnchor="middle" fill={textColor}
         fontSize={subFs} opacity={0.85} fontFamily="system-ui, sans-serif" className="select-none">
@@ -109,7 +112,7 @@ function useLayout(data: TreeData | null, collapsedIds: Set<string>): LayoutResu
     nodes.push(root);
 
     // Province level
-    let provY = 80;
+    let provY = 100;
     for (const p of data.provinces) {
       const collapsed = collapsedIds.has(p.id);
       const provNode: LayoutNode = {
@@ -140,7 +143,7 @@ function useLayout(data: TreeData | null, collapsedIds: Set<string>): LayoutResu
       const nodeHeight = provNode.children.length > 0
         ? provNode.children.length * (STORE_H + V_GAP) - V_GAP
         : NODE_H;
-      provY += nodeHeight + 24;
+      provY += nodeHeight + PROV_GAP;
 
       root.children.push(provNode);
       nodes.push(provNode);
@@ -152,8 +155,8 @@ function useLayout(data: TreeData | null, collapsedIds: Set<string>): LayoutResu
       root.cy = (visibleProvinces[0].cy + visibleProvinces[visibleProvinces.length - 1].cy) / 2;
     }
 
-    const svgW = STORE_X + STORE_W + 40;
-    const svgH = Math.max(400, provY + 40);
+    const svgW = STORE_X + STORE_W + 60;
+    const svgH = Math.max(500, provY + 60);
 
     return { nodes, svgW, svgH };
   }, [data, collapsedIds]);
