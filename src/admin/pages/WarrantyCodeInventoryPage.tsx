@@ -9,7 +9,6 @@ import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
-import { CodeInventoryTree } from '../components/CodeInventoryTree';
 
 interface WarrantyCode {
   id: string;
@@ -41,7 +40,6 @@ export default function WarrantyCodeInventoryPage() {
   const [toOrgId, setToOrgId] = useState('');
   const [operating, setOperating] = useState(false);
   const [orgs, setOrgs] = useState<Array<{ id: string; name: string; type: string }>>([]);
-  const [treeData, setTreeData] = useState<any>(null);
 
   const filterFields: FilterField[] = [
     { key: 'status', label: '状态', type: 'select', options: [
@@ -83,15 +81,6 @@ export default function WarrantyCodeInventoryPage() {
   }, []);
 
   useEffect(() => { fetchOrgs(); }, [fetchOrgs]);
-
-  const fetchTree = useCallback(async () => {
-    try {
-      const res = await apiRequest<any>('/admin/warranty-codes?type=tree');
-      setTreeData(res);
-    } catch {}
-  }, []);
-
-  useEffect(() => { fetchTree(); }, [fetchTree]);
 
   const handleAllocate = async () => {
     if (selected.size === 0 || !toOrgId) return;
@@ -162,8 +151,7 @@ export default function WarrantyCodeInventoryPage() {
           </div>
         )}
       />
-      <CodeInventoryTree data={treeData} />
-      <FilterBar fields={filterFields} onFilter={(v) => { setFilters(v); setPage(1); setSelected(new Set()); }} className="mb-4 mt-4" />
+      <FilterBar fields={filterFields} onFilter={(v) => { setFilters(v); setPage(1); setSelected(new Set()); }} className="mb-4" />
       <DataTable
         columns={COLUMNS}
         data={data as any}

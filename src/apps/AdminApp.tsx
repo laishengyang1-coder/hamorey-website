@@ -29,6 +29,7 @@ const StorePublicPage = lazyWithRetry(() => import('../admin/pages/StorePublicPa
 const PartnerLeadsPage = lazyWithRetry(() => import('../admin/pages/PartnerLeadsPage'));
 const ContentEntriesPage = lazyWithRetry(() => import('../admin/pages/ContentEntriesPage'));
 const ExportPage = lazyWithRetry(() => import('../admin/pages/ExportPage'));
+const CodeInventoryTreePage = lazyWithRetry(() => import('../admin/pages/CodeInventoryTreePage'));
 const OperationLogsPage = lazyWithRetry(() => import('../admin/pages/OperationLogsPage'));
 const SystemSettingsPage = lazyWithRetry(() => import('../admin/pages/SystemSettingsPage'));
 
@@ -49,6 +50,7 @@ const ADMIN_MENU: MenuItem[] = [
       { key: 'warranty-records', label: '质保记录', path: '/admin/warranty-records' },
       { key: 'warranty-codes', label: '质保码库存', path: '/admin/warranty-codes' },
       { key: 'warranty-import', label: '质保码导入', path: '/admin/warranty-import' },
+      { key: 'warranty-tree', label: '库存层级总览', path: '/admin/warranty-tree' },
     ],
   },
   {
@@ -179,6 +181,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <WarrantyCodeInventoryPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'warranty-tree',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <CodeInventoryTreePage />
           </Suspense>
         ),
       },

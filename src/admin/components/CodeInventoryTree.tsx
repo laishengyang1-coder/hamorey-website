@@ -1,192 +1,243 @@
 // ============================================================
-// CodeInventoryTree — 质保码库存层级可视化（思维导图风格）
+// CodeInventoryTree — 交互式库存层级思维导图
+// 水平树布局：HQ → 省代 → 门店，可点击 +/– 折叠展开
 // ============================================================
 
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
+// ─── Types ───
 interface TreeNode {
   name: string;
   total: number;
   available: number;
   province?: string | null;
 }
-
 interface ProvinceNode extends TreeNode {
-  id: string;
-  province: string | null;
-  stores: StoreNode[];
-  storeCount: number;
+  id: string; province: string | null;
+  stores: StoreNode[]; storeCount: number;
 }
-
 interface StoreNode extends TreeNode {
-  id: string;
-  parent_id: string;
-  city: string | null;
+  id: string; parent_id: string; city: string | null;
 }
-
 interface TreeData {
   hq: TreeNode;
   provinces: ProvinceNode[];
 }
 
 // ─── Layout constants ───
-const PADDING = 100;
-const NODE_W = 160;
-const NODE_H = 68;
-const HQ_Y = 20;
-const PROV_Y = 200;
-const STORE_Y = 420;
+const NODE_W = 152;
+const NODE_H = 60;
+const STORE_W = 132;
+const STORE_H = 46;
+const ROOT_X = 40;
+const PROV_X = ROOT_X + NODE_W + 120;
+const STORE_X = PROV_X + NODE_W + 100;
+const V_GAP = 16;
 const LINE_COLOR = '#D4C5B5';
 const HQ_COLOR = '#5C1A1A';
 const PROV_COLOR = '#7A2E2E';
 const STORE_COLOR = '#C8A96E';
-const STORE_SMALL_W = 130;
-const STORE_SMALL_H = 50;
 
-function useLayout(data: TreeData | null) {
+// ─── Curved path ───
+function pathD(x1: number, y1: number, x2: number, y2: number): string {
+  const mx = (x1 + x2) / 2;
+  return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+}
+
+// ─── Node rect sub-component ───
+function NodeBlock({ cx, cy, w, h, fill, label, sub, collapsed, hasChildren, onToggle, color }: {
+  cx: number; cy: number; w: number; h: number; fill: string;
+  label: string; sub: string; collapsed?: boolean; hasChildren?: boolean;
+  onToggle?: () => void; color?: string;
+}) {
+  const fs = w >= NODE_W ? 13 : 11;
+  const subFs = w >= NODE_W ? 11 : 10;
+  const textColor = color || (fill === STORE_COLOR ? '#3A2A1A' : '#FFFFFF');
+  const btnSize = 20;
+  const btnX = cx + w / 2 - btnSize / 2 + 4;
+  const btnY = cy + h - btnSize - 2;
+
+  return (
+    <g style={{ cursor: hasChildren ? 'pointer' : 'default' }} onClick={onToggle}>
+      <rect x={cx - w / 2} y={cy} width={w} height={h} rx={8} fill={fill} filter="url(#shadow)" />
+      <text x={cx} y={cy + h / 2 - subFs / 2} textAnchor="middle" fill={textColor}
+        fontSize={fs} fontWeight={600} fontFamily="system-ui, sans-serif" className="select-none">
+        {label.length > (w >= NODE_W ? 9 : 7) ? label.slice(0, (w >= NODE_W ? 8 : 6)) + '…' : label}
+      </text>
+      <text x={cx} y={cy + h / 2 + subFs / 2 + 2} textAnchor="middle" fill={textColor}
+        fontSize={subFs} opacity={0.85} fontFamily="system-ui, sans-serif" className="select-none">
+        {sub}
+      </text>
+      {hasChildren && (
+        <g>
+          <circle cx={btnX} cy={btnY} r={9} fill="#FFFFFF" stroke={fill} strokeWidth={1.5} />
+          <text x={btnX} y={btnY + 1} textAnchor="middle" dominantBaseline="central"
+            fill={fill} fontSize={14} fontWeight={700} fontFamily="system-ui, sans-serif"
+            style={{ pointerEvents: 'none', userSelect: 'none' }}>
+            {collapsed ? '+' : '−'}
+          </text>
+        </g>
+      )}
+    </g>
+  );
+}
+
+// ─── Layout engine ───
+interface LayoutNode {
+  id: string; name: string; total: number; available: number;
+  cx: number; cy: number; w: number; h: number; fill: string;
+  hasChildren: boolean; collapsed: boolean;
+  children: LayoutNode[];
+  isStore: boolean;
+}
+interface LayoutResult { nodes: LayoutNode[]; svgW: number; svgH: number; }
+
+function useLayout(data: TreeData | null, collapsedIds: Set<string>): LayoutResult {
   return useMemo(() => {
-    if (!data) return null;
+    if (!data) return { nodes: [], svgW: 800, svgH: 600 };
 
-    const { hq, provinces } = data;
-    const w = Math.max(800, PADDING * 2 + provinces.length * 200);
+    const nodes: LayoutNode[] = [];
+    const visibleProvinces: LayoutNode[] = [];
 
-    // HQ position
-    const hqX = w / 2;
-    const hqY = HQ_Y;
+    // Root (HQ) — fixed left-center
+    const rootCY = 200; // will adjust later
+    const root: LayoutNode = {
+      id: 'hq', name: data.hq.name, total: data.hq.total, available: data.hq.available,
+      cx: ROOT_X + NODE_W / 2, cy: rootCY, w: NODE_W, h: NODE_H, fill: HQ_COLOR,
+      hasChildren: true, collapsed: false, children: [], isStore: false,
+    };
+    nodes.push(root);
 
-    // Province positions — evenly spaced
-    const provSpacing = Math.min(200, (w - PADDING * 2) / Math.max(1, provinces.length));
-    const provStartX = PADDING + (w - PADDING * 2 - provSpacing * (provinces.length - 1)) / 2;
+    // Province level
+    let provY = 80;
+    for (const p of data.provinces) {
+      const collapsed = collapsedIds.has(p.id);
+      const provNode: LayoutNode = {
+        id: p.id, name: p.province || p.name, total: p.total, available: p.available,
+        cx: PROV_X + NODE_W / 2, cy: provY + NODE_H / 2, w: NODE_W, h: NODE_H, fill: PROV_COLOR,
+        hasChildren: p.stores.length > 0, collapsed, children: [], isStore: false,
+      };
 
-    return { w, hqX, hqY, provSpacing, provStartX, provinces: provinces.map((p, i) => {
-      const px = provStartX + i * provSpacing;
-      // Stores under this province — cluster them
-      const stores = p.stores.slice(0, 8); // max 8 shown directly
-      const storeSpacing = Math.min(150, 700 / Math.max(1, stores.length));
-      const storeStartX = px - (storeSpacing * (stores.length - 1)) / 2;
-      const overflow = p.stores.length - stores.length;
+      // Store level — only render if expanded
+      if (!collapsed && p.stores.length > 0) {
+        let storeY = provY;
+        const storeStartY = storeY;
+        for (const s of p.stores.slice(0, collapsed ? 0 : p.stores.length)) {
+          const sn: LayoutNode = {
+            id: s.id, name: s.name, total: s.total, available: s.available,
+            cx: STORE_X + STORE_W / 2, cy: storeY + STORE_H / 2, w: STORE_W, h: STORE_H,
+            fill: STORE_COLOR, hasChildren: false, collapsed: false,
+            children: [], isStore: true,
+          };
+          provNode.children.push(sn);
+          nodes.push(sn);
+          storeY += STORE_H + V_GAP;
+        }
+        // Ensure province is centered among its stores
+        provNode.cy = (storeStartY + storeY - V_GAP) / 2;
+      }
 
-      return { ...p, px, py: PROV_Y, stores: stores.map((s, si) => ({
-        ...s, sx: storeStartX + si * storeSpacing, sy: STORE_Y,
-      })), overflow, storeStartX, storeSpacing };
-    }) };
-  }, [data]);
+      const nodeHeight = provNode.children.length > 0
+        ? provNode.children.length * (STORE_H + V_GAP) - V_GAP
+        : NODE_H;
+      provY += nodeHeight + 24;
+
+      root.children.push(provNode);
+      nodes.push(provNode);
+      visibleProvinces.push(provNode);
+    }
+
+    // Center root vertically among provinces
+    if (visibleProvinces.length > 0) {
+      root.cy = (visibleProvinces[0].cy + visibleProvinces[visibleProvinces.length - 1].cy) / 2;
+    }
+
+    const svgW = STORE_X + STORE_W + 40;
+    const svgH = Math.max(400, provY + 40);
+
+    return { nodes, svgW, svgH };
+  }, [data, collapsedIds]);
 }
 
-// ─── Path helpers ───
-function curvedLine(x1: number, y1: number, x2: number, y2: number): string {
-  const cy = (y1 + y2) / 2;
-  return `M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}`;
-}
-
-function NodeRect({
-  x, y, w, h, fill, name, total, available,
-}: {
-  x: number; y: number; w: number; h: number; fill: string;
-  name: string; total: number; available: number;
-}) {
-  const cx = x;
-  const cy = y;
-  const textColor = fill === STORE_COLOR ? '#3A2A1A' : '#FFFFFF';
-
-  return (
-    <g>
-      <rect x={cx - w / 2} y={cy} width={w} height={h} rx={8} fill={fill} />
-      <text x={cx} y={cy + 20} textAnchor="middle" fill={textColor} fontSize={13} fontWeight={600}
-        fontFamily="system-ui, sans-serif" className="select-none">
-        {name.length > 10 ? name.slice(0, 9) + '…' : name}
-      </text>
-      <text x={cx} y={cy + 42} textAnchor="middle" fill={textColor} fontSize={11} opacity={0.85}
-        fontFamily="system-ui, sans-serif" className="select-none">
-        总{total} / 可{available}
-      </text>
-    </g>
-  );
-}
-
-function StoreNodeRect({
-  x, y, name, total, available,
-}: {
-  x: number; y: number; name: string; total: number; available: number;
-}) {
-  const w = STORE_SMALL_W;
-  const h = STORE_SMALL_H;
-  const cx = x;
-  const cy = y;
-
-  return (
-    <g>
-      <rect x={cx - w / 2} y={cy} width={w} height={h} rx={6} fill={STORE_COLOR} />
-      <text x={cx} y={cy + 16} textAnchor="middle" fill="#3A2A1A" fontSize={11} fontWeight={500}
-        fontFamily="system-ui, sans-serif" className="select-none">
-        {name.length > 8 ? name.slice(0, 7) + '…' : name}
-      </text>
-      <text x={cx} y={cy + 34} textAnchor="middle" fill="#6B5A4A" fontSize={10}
-        fontFamily="system-ui, sans-serif" className="select-none">
-        总{total} / 可{available}
-      </text>
-    </g>
-  );
-}
-
+// ─── Main Component ───
 export function CodeInventoryTree({ data }: { data: TreeData | null }) {
-  const layout = useLayout(data);
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => {
+    // Default: all provinces collapsed
+    if (!data) return new Set();
+    return new Set(data.provinces.map(p => p.id));
+  });
 
-  if (!layout || !data) return null;
+  const toggle = useCallback((id: string) => {
+    setCollapsedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
 
-  const { hq } = data;
-  const { w, hqX, hqY, provinces } = layout;
-  const h = STORE_Y + STORE_SMALL_H + 40;
-  const svgW = Math.max(w, 800);
+  const layout = useLayout(data, collapsedIds);
+  const { nodes, svgW, svgH } = layout;
+
+  if (!data) return null;
+
+  // Build a lookup for nodes
+  const nodeMap = new Map<string, LayoutNode>();
+  const roots: LayoutNode[] = [];
+  for (const n of nodes) {
+    nodeMap.set(n.id, n);
+    if (n.id === 'hq') roots.push(n);
+  }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--paper-border)] bg-[var(--paper-raised)] p-4 mt-4">
+    <div className="overflow-auto rounded-xl border border-[var(--paper-border)] bg-[var(--paper-raised)] p-4">
       <div className="flex items-center gap-2 mb-4 px-2">
         <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
         <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">库存层级总览</h3>
-        <span className="text-xs text-[var(--paper-muted)] ml-1">总 / 可用</span>
+        <span className="text-xs text-[var(--paper-muted)]">总 / 可用  ·  点击 + / − 展开收起</span>
       </div>
-      <svg viewBox={`0 0 ${svgW} ${h}`} width={svgW} height={h}
-        style={{ minWidth: '100%' }} className="font-sans">
-        {/* HQ root */}
-        <NodeRect x={hqX} y={hqY} w={NODE_W} h={NODE_H} fill={HQ_COLOR}
-          name={hq.name} total={hq.total} available={hq.available} />
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: svgW, minWidth: '100%', height: svgH }}
+        className="font-sans" shapeRendering="geometricPrecision">
+        <defs>
+          <filter id="shadow" x="-20%" y="-10%" width="140%" height="130%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#00000020" />
+          </filter>
+        </defs>
 
-        {/* Lines HQ → Provinces */}
-        {provinces.map((p, i) => (
-          <path key={`hq-p-${i}`} d={curvedLine(hqX, hqY + NODE_H, p.px, p.py)}
-            stroke={LINE_COLOR} strokeWidth={2} fill="none" />
-        ))}
-
-        {/* Province nodes + lines to stores */}
-        {provinces.map((p, pi) => (
-          <g key={`prov-${pi}`}>
-            <NodeRect x={p.px} y={p.py} w={NODE_W} h={NODE_H} fill={PROV_COLOR}
-              name={p.province || p.name} total={p.total} available={p.available} />
-
-            {/* Lines Province → Stores */}
-            {p.stores.map((s, si) => (
-              <path key={`p-s-${pi}-${si}`}
-                d={curvedLine(p.px, p.py + NODE_H, s.sx, s.sy)}
-                stroke={LINE_COLOR} strokeWidth={1.2} fill="none" opacity={0.6} />
-            ))}
-
-            {/* Store nodes */}
-            {p.stores.map((s, si) => (
-              <StoreNodeRect key={`s-${pi}-${si}`}
-                x={s.sx} y={s.sy} name={s.name} total={s.total} available={s.available} />
-            ))}
-
-            {/* Overflow marker */}
-            {p.overflow > 0 && (
-              <text x={p.px} y={STORE_Y + STORE_SMALL_H + 22}
-                textAnchor="middle" fill="#9B8B7B" fontSize={11} fontFamily="system-ui, sans-serif">
-                +{p.overflow} 家门店
-              </text>
-            )}
-          </g>
+        {/* Render HQ node + recursively render children */}
+        {roots.map(root => (
+          <TreeNodeGroup key={root.id} node={root} nodeMap={nodeMap} onToggle={toggle} />
         ))}
       </svg>
     </div>
+  );
+}
+
+// ─── Recursive tree renderer ───
+function TreeNodeGroup({ node, nodeMap, onToggle }: {
+  node: LayoutNode; nodeMap: Map<string, LayoutNode>; onToggle: (id: string) => void;
+}) {
+  const { cx, cy, w, h, fill, name, total, available, hasChildren, collapsed, children, isStore } = node;
+  const handleClick = hasChildren ? () => onToggle(node.id) : undefined;
+  const sub = `总${total}/可${available}`;
+
+  // Lines to children
+  const childLines = (!collapsed && children.length > 0)
+    ? children.map((ch, i) => (
+        <path key={`${node.id}-${ch.id}`}
+          d={pathD(cx + w / 2, cy, ch.cx - ch.w / 2, ch.cy)}
+          stroke={LINE_COLOR} strokeWidth={1.6} fill="none" opacity={0.5} />
+      ))
+    : null;
+
+  return (
+    <g>
+      {childLines}
+      <NodeBlock cx={cx} cy={cy - h / 2} w={w} h={h} fill={fill}
+        label={name} sub={sub} collapsed={collapsed} hasChildren={hasChildren}
+        onToggle={handleClick} color={isStore ? '#3A2A1A' : undefined} />
+      {!collapsed && children.map(ch => (
+        <TreeNodeGroup key={ch.id} node={ch} nodeMap={nodeMap} onToggle={onToggle} />
+      ))}
+    </g>
   );
 }
