@@ -94,55 +94,106 @@ export default function DashboardPage() {
 
       {/* 排行榜 */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 auto-rows-fr">
-        <div className="h-full"><RankingSection title="省级质保排行" items={provinceRanking} /></div>
-        <div className="h-full"><RankingSection title="门店质保排行" items={storeRanking} /></div>
-        <div className="h-full"><RankingSection title="产品质保排行" items={productRanking} /></div>
-        <div className="h-full"><RankingSection title="全国积分排行" items={pointsRanking} subtitle="不含兑换与返利" valueLabel="积分" /></div>
+        <div className="h-full"><RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} /></div>
+        <div className="h-full"><RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} /></div>
+        <div className="h-full"><RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress /></div>
+        <div className="h-full"><RankingSection title="全国积分排行" subtitle="不含兑换与返利" items={pointsRanking} valueLabel="积分" /></div>
       </div>
     </div>
   );
 }
 
-function RankingSection({ title, subtitle, valueLabel, items }: { title: string; subtitle?: string; valueLabel?: string; items: RankingItem[] }) {
+const MEDAL_COLORS = ['#C8A96E', '#B0B0B0', '#CD7F32'];
+const MEDAL_BG = ['rgba(200,169,110,0.12)', 'rgba(176,176,176,0.12)', 'rgba(205,127,50,0.12)'];
+
+function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
+  title: string; subtitle?: string; valueLabel?: string; items: RankingItem[]; showProgress?: boolean;
+}) {
   const label = valueLabel || '条';
+  const top3 = items.slice(0, 3);
+  const rest = items.slice(3, 10);
+  const maxCount = items.length > 0 ? items[0].count : 1;
+  const totalCount = items.reduce((s, i) => s + i.count, 0);
+
   return (
     <div className="admin-card p-4 h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-2 shrink-0">
-        <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
-        <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">{title}</h3>
+      {/* 标题 */}
+      <div className="shrink-0 mb-3">
+        <div className="flex items-center gap-2">
+          <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
+          <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">{title}</h3>
+        </div>
+        {subtitle && <p className="text-[10px] text-[var(--paper-muted)] mt-1 ml-[11px]">{subtitle}</p>}
       </div>
-      {subtitle && <p className="text-[10px] text-[var(--paper-muted)] mb-2 shrink-0">{subtitle}</p>}
+
       {items.length === 0 ? (
         <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
-        <div className="space-y-0.5 flex-1 overflow-auto">
-          {items.slice(0, 10).map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between py-1.5 px-1.5 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <span
-                  className={cn(
-                    'w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold',
-                    i < 3 ? 'bg-[#5C1A1A] text-white' : 'bg-[var(--paper-border)] text-[var(--paper-muted)]',
-                  )}
-                >
+        <>
+          {/* Top 3 高亮区 */}
+          <div className="shrink-0 space-y-1.5 mb-2">
+            {top3.map((item, i) => (
+              <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: MEDAL_BG[i] }}>
+                <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ background: MEDAL_COLORS[i] }}>
                   {i + 1}
                 </span>
-                <div className="min-w-0">
-                  <span className="text-sm text-[var(--paper-text)] truncate block">{item.name}</span>
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs font-medium text-[var(--paper-text)] truncate block">{item.name}</span>
                   {item.province && (
-                    <span className="text-[10px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
+                    <span className="text-[9px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
                   )}
                 </div>
+                <span className="metric-value text-xs font-bold text-[#5C1A1A] shrink-0">
+                  {item.count}
+                </span>
               </div>
-              <span className="metric-value text-sm font-semibold text-[#5C1A1A] shrink-0 ml-3">
-                {item.count} <span className="text-[10px] font-normal text-[var(--paper-muted)]">{label}</span>
-              </span>
+            ))}
+          </div>
+
+          {/* 进度条（产品排行） */}
+          {showProgress && top3.map((item, i) => (
+            <div key={`bar-${i}`} className="shrink-0 mb-1 px-2">
+              <div className="h-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
+                <div className="h-full rounded-full bg-[#5C1A1A]" style={{ width: `${(item.count / maxCount) * 100}%` }} />
+              </div>
             </div>
           ))}
-        </div>
+
+          {/* 普通排名 */}
+          <div className="flex-1 space-y-0.5 overflow-auto">
+            {rest.map((item, i) => {
+              const idx = i + 3;
+              return (
+                <div key={idx} className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-[var(--burgundy-tint)] transition-colors">
+                  <span className="w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--paper-border)] text-[var(--paper-muted)]">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs text-[var(--paper-text)] truncate block">{item.name}</span>
+                    {item.province && (
+                      <span className="text-[9px] text-[var(--paper-muted)]">{item.province}{item.city ? ` · ${item.city}` : ''}</span>
+                    )}
+                  </div>
+                  {showProgress && (
+                    <div className="w-12 h-1 rounded-full bg-[var(--paper-border)] overflow-hidden shrink-0">
+                      <div className="h-full rounded-full bg-[#C8A96E]" style={{ width: `${(item.count / maxCount) * 100}%` }} />
+                    </div>
+                  )}
+                  <span className="metric-value text-xs font-semibold text-[#5C1A1A] shrink-0">
+                    {item.count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 底部汇总 */}
+          <div className="shrink-0 mt-2 pt-2 border-t border-[var(--paper-border)] flex items-center justify-between">
+            <span className="text-[10px] text-[var(--paper-muted)]">共 {items.length} 名</span>
+            <span className="text-[10px] text-[var(--paper-muted)]">合计 <span className="font-semibold text-[#5C1A1A]">{totalCount.toLocaleString()}</span> {label}</span>
+          </div>
+        </>
       )}
     </div>
   );

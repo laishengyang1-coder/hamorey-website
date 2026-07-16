@@ -17,17 +17,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // 排行榜查询
     if (type === 'province-ranking') {
       const rows = await db.prepare(
-        `SELECT o.name, COUNT(wr.id) AS count FROM warranty_records wr
+        `SELECT o.name, o.province, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.province_org_id
-         WHERE wr.status = 'active' GROUP BY o.name ORDER BY count DESC LIMIT 10`
+         WHERE wr.status = 'active' GROUP BY o.id ORDER BY count DESC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
     if (type === 'store-ranking') {
       const rows = await db.prepare(
-        `SELECT o.name, COUNT(wr.id) AS count FROM warranty_records wr
+        `SELECT o.name, o.province, o.city, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.store_id
-         WHERE wr.status = 'active' GROUP BY o.name ORDER BY count DESC LIMIT 10`
+         WHERE wr.status = 'active' GROUP BY o.id ORDER BY count DESC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
