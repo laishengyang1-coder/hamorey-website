@@ -72,15 +72,15 @@ export default function StoreListPage() {
   const provinceMap = Object.fromEntries(provinces.map((p) => [p.id, p.name]));
 
   const COLUMNS: Column[] = [
-    { key: 'code', title: '编码', dataIndex: 'code', width: '120px' },
-    { key: 'name', title: '名称', dataIndex: 'name' },
-    { key: 'parent_name', title: '上级省代', dataIndex: 'parent_id', render: (v) => (v as string) ? (provinceMap[v as string] || (v as string)) : '-' },
-    { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-' },
-    { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
-    { key: 'address', title: '详细地址', dataIndex: 'address', render: (v) => (v as string) || '-' },
-    { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
-    { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
-    { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
+    { key: 'code', title: '编码', dataIndex: 'code', width: '90px', className: 'whitespace-nowrap' },
+    { key: 'name', title: '名称', dataIndex: 'name', className: 'max-w-[200px] truncate' },
+    { key: 'parent_name', title: '上级省代', dataIndex: 'parent_id', render: (v) => (v as string) ? (provinceMap[v as string] || (v as string)) : '-', className: 'max-w-[140px] truncate' },
+    { key: 'province', title: '省份', dataIndex: 'province', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+    { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+    { key: 'address', title: '详细地址', dataIndex: 'address', render: (v) => (v as string) || '-', className: 'max-w-[180px] truncate' },
+    { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+    { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+    { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} />, className: 'whitespace-nowrap' },
   ];
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {

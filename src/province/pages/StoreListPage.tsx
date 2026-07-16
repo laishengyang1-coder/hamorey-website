@@ -33,12 +33,12 @@ const FILTER_FIELDS: FilterField[] = [
 ];
 
 const COLUMNS: Column[] = [
-  { key: 'code', title: '编码', dataIndex: 'code', width: '120px' },
-  { key: 'name', title: '名称', dataIndex: 'name' },
-  { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-' },
-  { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-' },
-  { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-' },
-  { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
+  { key: 'code', title: '编码', dataIndex: 'code', width: '90px', className: 'whitespace-nowrap' },
+  { key: 'name', title: '名称', dataIndex: 'name', className: 'max-w-[220px] truncate' },
+  { key: 'city', title: '城市', dataIndex: 'city', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+  { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+  { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
+  { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} />, className: 'whitespace-nowrap' },
 ];
 
 export default function StoreListPage() {
