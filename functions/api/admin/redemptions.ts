@@ -29,7 +29,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const [items, totalRow] = await Promise.all([
       queryAll(context.env.DB,
-        `SELECT r.*, o.name AS org_name
+        `SELECT r.*, o.name AS org_name,
+                (SELECT json_group_array(json_object('reward_id',ri.reward_id,'quantity',ri.quantity,'points_per_item',ri.points_per_item,'reward_name_snapshot',ri.reward_name_snapshot))
+                 FROM redemption_items ri WHERE ri.redemption_id = r.id) AS items_json
          FROM redemptions r
          LEFT JOIN organizations o ON o.id = r.organization_id
          ${where} ORDER BY r.created_at DESC LIMIT ? OFFSET ?`,

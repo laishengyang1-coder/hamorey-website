@@ -42,6 +42,9 @@ export default function DashboardPage() {
   const [storeRanking, setStoreRanking] = useState<RankingItem[]>([]);
   const [productRanking, setProductRanking] = useState<RankingItem[]>([]);
   const [pointsRanking, setPointsRanking] = useState<RankingItem[]>([]);
+  const [trendData, setTrendData] = useState<{ date: string; count: number }[]>([]);
+  const [lifecycle, setLifecycle] = useState<{ total: number; hq: number; province: number; store: number; used: number; warranty: number } | null>(null);
+  const [storeActivity, setStoreActivity] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -51,11 +54,13 @@ export default function DashboardPage() {
       finally { setLoading(false); }
     }
     fetchData();
-    // 拉取排行榜
     apiRequest<RankingItem[]>('/admin/dashboard?type=province-ranking').then(setProvinceRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=points-ranking').then(setPointsRanking).catch(() => {});
+    apiRequest<{ date: string; count: number }[]>('/admin/dashboard?type=trend').then(setTrendData).catch(() => {});
+    apiRequest<any>('/admin/dashboard?type=code-lifecycle').then(setLifecycle).catch(() => {});
+    apiRequest<any[]>('/admin/dashboard?type=store-activity').then(setStoreActivity).catch(() => {});
   }, []);
 
   if (loading) return (
@@ -92,6 +97,27 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* 趋势图 + 漏斗 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+        {/* 质保登记趋势 */}
+        <div className="admin-card p-4 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
+            <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">质保登记趋势（近30天）</h3>
+          </div>
+          <TrendChart data={trendData} />
+        </div>
+
+        {/* 质保码生命周期漏斗 */}
+        <div className="admin-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
+            <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">质保码流转</h3>
+          </div>
+          {lifecycle && <LifecycleFunnel data={lifecycle} />}
+        </div>
+      </div>
+
       {/* 排行榜 */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 auto-rows-fr">
         <div className="h-full"><RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} /></div>
@@ -99,6 +125,9 @@ export default function DashboardPage() {
         <div className="h-full"><RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress /></div>
         <div className="h-full"><RankingSection title="全国积分排行" subtitle="不含兑换与返利" items={pointsRanking} valueLabel="积分" /></div>
       </div>
+
+      {/* 门店活跃度 */}
+      <StoreActivitySection items={storeActivity} />
     </div>
   );
 }
@@ -202,4 +231,136 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
 // 轻量 cn（避免额外引入）
 function cn(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(' ');
+}
+
+// ─── 趋势图（SVG 折线图） ───
+function TrendChart({ data }: { data: { date: string; count: number }[] }) {
+  if (data.length === 0) return <p className="text-sm text-[var(--paper-muted)] text-center py-8">暂无趋势数据</p>;
+
+  const w = 600, h = 160, pad = 30;
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  const stepX = (w - pad * 2) / Math.max(1, data.length - 1);
+  const points = data.map((d, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - (d.count / maxCount) * (h - pad * 2);
+    return { x, y, ...d };
+  });
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  const areaD = `${pathD} L${points[points.length - 1].x},${h - pad} L${pad},${h - pad} Z`;
+  const total = data.reduce((s, d) => s + d.count, 0);
+
+  return (
+    <div>
+      <div className="flex items-baseline gap-3 mb-2">
+        <span className="text-2xl font-bold text-[#5C1A1A]">{total}</span>
+        <span className="text-xs text-[var(--paper-muted)]">条 / 30天</span>
+        <span className="text-xs text-[var(--paper-muted)] ml-auto">峰值 {maxCount} 条/天</span>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: h }}>
+        <defs>
+          <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5C1A1A" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#5C1A1A" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* 网格线 */}
+        {[0, 0.25, 0.5, 0.75, 1].map(f => (
+          <line key={f} x1={pad} y1={pad + f * (h - pad * 2)} x2={w - pad} y2={pad + f * (h - pad * 2)}
+            stroke="var(--paper-border)" strokeWidth="0.5" strokeDasharray="3,3" />
+        ))}
+        <path d={areaD} fill="url(#trendGrad)" />
+        <path d={pathD} fill="none" stroke="#5C1A1A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          i % Math.ceil(data.length / 10) === 0 || i === data.length - 1 ? (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r="3" fill="#5C1A1A" />
+              <text x={p.x} y={h - pad + 14} textAnchor="middle" fontSize="9" fill="var(--paper-muted)">
+                {p.date.slice(5)}
+              </text>
+            </g>
+          ) : null
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// ─── 质保码生命周期漏斗 ───
+function LifecycleFunnel({ data }: { data: { total: number; hq: number; province: number; store: number; used: number; warranty: number } }) {
+  const stages = [
+    { label: '总导入', value: data.total, color: '#5C1A1A' },
+    { label: '总部库存', value: data.hq, color: '#7A2E2E' },
+    { label: '省代库存', value: data.province, color: '#9B5050' },
+    { label: '门店库存', value: data.store, color: '#C8A96E' },
+    { label: '已用完', value: data.used, color: '#B8924A' },
+    { label: '生成质保', value: data.warranty, color: '#A07840' },
+  ];
+  const maxVal = Math.max(...stages.map(s => s.value), 1);
+
+  return (
+    <div className="space-y-2">
+      {stages.map((s, i) => (
+        <div key={i}>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs text-[var(--paper-text)]">{s.label}</span>
+            <span className="text-xs font-bold text-[#5C1A1A]">{s.value.toLocaleString()}</span>
+          </div>
+          <div className="h-5 rounded bg-[var(--paper-border)] overflow-hidden">
+            <div className="h-full rounded flex items-center justify-end px-2 transition-all"
+              style={{ width: `${(s.value / maxVal) * 100}%`, background: s.color, minWidth: s.value > 0 ? '24px' : '0' }}>
+              {s.value > 0 && (
+                <span className="text-[9px] text-white font-medium">
+                  {((s.value / data.total) * 100).toFixed(0)}%
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── 门店活跃度 ───
+function StoreActivitySection({ items }: { items: any[] }) {
+  if (items.length === 0) return null;
+  const inactive = items.filter(s => s.is_inactive);
+  const active = items.length - inactive.length;
+
+  return (
+    <div className="admin-card p-4 mt-6">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
+        <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">门店活跃度</h3>
+        <span className="text-xs text-[var(--paper-muted)] ml-2">
+          活跃 {active} · 沉默 {inactive.length}（30天无登记）
+        </span>
+      </div>
+      {inactive.length === 0 ? (
+        <p className="text-sm text-[var(--paper-muted)] py-3">所有门店近30天均有质保登记</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {inactive.slice(0, 12).map((s) => (
+            <div key={s.id} className="flex items-center justify-between rounded-lg bg-[#FBEAEA] px-3 py-2">
+              <div className="min-w-0">
+                <span className="text-xs text-[var(--paper-text)] truncate block">{s.name}</span>
+                <span className="text-[9px] text-[var(--paper-muted)]">
+                  {s.last_active ? `最后登记: ${s.last_active.slice(0, 10)}` : '从未登记'}
+                  {s.province ? ` · ${s.province}` : ''}
+                </span>
+              </div>
+              <span className="text-[10px] text-red-500 font-medium shrink-0 ml-2">
+                {s.days_since !== null ? `${s.days_since}天前` : '—'}
+              </span>
+            </div>
+          ))}
+          {inactive.length > 12 && (
+            <div className="flex items-center justify-center rounded-lg bg-[var(--paper-border)] px-3 py-2">
+              <span className="text-xs text-[var(--paper-muted)]">+{inactive.length - 12} 家</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

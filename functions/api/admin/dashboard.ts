@@ -62,6 +62,62 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       ).all();
       return ok(rows.results || []);
     }
+
+    // 质保登记趋势（近30天每日量）
+    if (type === 'trend') {
+      const rows = await db.prepare(
+        `SELECT date(created_at) AS date, COUNT(*) AS count
+         FROM warranty_records
+         WHERE status NOT IN ('draft')
+           AND created_at >= datetime('now', '-30 days')
+         GROUP BY date(created_at)
+         ORDER BY date ASC`
+      ).all();
+      return ok(rows.results || []);
+    }
+
+    // 质保码生命周期漏斗
+    if (type === 'code-lifecycle') {
+      const [total, hq, province, store, used, warranty] = await Promise.all([
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes`),
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE owner_org_id IN (SELECT id FROM organizations WHERE type='HQ')`),
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE owner_org_id IN (SELECT id FROM organizations WHERE type='PROVINCE')`),
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE owner_org_id IN (SELECT id FROM organizations WHERE type='STORE')`),
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE status='exhausted'`),
+        queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE status='active'`),
+      ]);
+      return ok({
+        total: total?.cnt ?? 0,
+        hq: hq?.cnt ?? 0,
+        province: province?.cnt ?? 0,
+        store: store?.cnt ?? 0,
+        used: used?.cnt ?? 0,
+        warranty: warranty?.cnt ?? 0,
+      });
+    }
+
+    // 门店活跃度（近30天有无质保登记）
+    if (type === 'store-activity') {
+      const rows = await db.prepare(
+        `SELECT o.id, o.name, o.province, o.city, o.status,
+                MAX(wr.created_at) AS last_active,
+                COUNT(wr.id) AS record_count
+         FROM organizations o
+         LEFT JOIN warranty_records wr ON wr.store_id = o.id AND wr.status NOT IN ('draft')
+         WHERE o.type = 'STORE'
+         GROUP BY o.id
+         ORDER BY last_active DESC NULLS LAST
+         LIMIT 100`
+      ).all();
+      const now = Date.now();
+      const items = (rows.results || []).map((r: any) => ({
+        ...r,
+        days_since: r.last_active ? Math.floor((now - new Date(r.last_active + 'Z').getTime()) / 86400000) : null,
+        is_inactive: r.last_active ? (new Date(r.last_active + 'Z').getTime() < now - 30 * 86400000) : true,
+      }));
+      return ok(items);
+    }
+
     const [totalOrgs, totalStores, totalCodes, totalRecords, pendingReviews, todayRecords, totalPointsEarned] =
       await Promise.all([
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM organizations WHERE type = 'PROVINCE'`),
