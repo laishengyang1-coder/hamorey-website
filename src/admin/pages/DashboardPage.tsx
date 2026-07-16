@@ -119,7 +119,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 排行榜 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 auto-rows-fr">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6 items-start">
         <div className="h-full"><RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} /></div>
         <div className="h-full"><RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} /></div>
         <div className="h-full"><RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress /></div>
@@ -144,9 +144,9 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   const totalCount = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="admin-card p-4 h-full min-h-[620px] flex flex-col">
+    <div className="admin-card p-4 h-full flex flex-col">
       {/* 标题 */}
-      <div className="shrink-0 mb-3">
+      <div className="shrink-0 mb-2.5">
         <div className="flex items-center gap-2">
           <span className="h-4 w-[3px] rounded-full bg-[var(--accent-gold)]" aria-hidden />
           <h3 className="font-display text-sm font-semibold text-[var(--paper-text)]">{title}</h3>
@@ -158,15 +158,15 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
         <p className="text-sm text-[var(--paper-muted)] text-center py-6 flex-1 flex items-center justify-center">暂无数据</p>
       ) : (
         <>
-          {/* 榜单主体：均匀撑满卡片高度，避免短榜单底部大片空白 */}
-          <div className="flex-1 flex flex-col justify-between gap-2 overflow-hidden">
+          {/* 榜单主体：紧凑排列，避免被强行拉开 */}
+          <div className="flex-1 space-y-1.5 overflow-hidden">
             {visibleItems.map((item, idx) => {
               const isTop = idx < 3;
               const pct = maxCount > 0 ? Math.round((item.count / maxCount) * 100) : 0;
               return (
                 <div
                   key={idx}
-                  className="rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--burgundy-tint)]"
+                  className="rounded-xl px-3 py-2 transition-colors hover:bg-[var(--burgundy-tint)]"
                   style={isTop ? { background: MEDAL_BG[idx] } : undefined}
                 >
                   <div className="flex items-center gap-2">
@@ -197,8 +197,8 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
                     </span>
                   </div>
                   {showProgress && (
-                    <div className="mt-2 ml-8 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
+                    <div className="mt-1.5 ml-8 flex items-center gap-2">
+                      <div className="h-1 flex-1 rounded-full bg-[var(--paper-border)] overflow-hidden">
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${pct}%`, background: isTop ? MEDAL_COLORS[idx] : '#C8A96E' }}
@@ -210,23 +210,6 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
                 </div>
               );
             })}
-            {visibleItems.length < 10 && Array.from({ length: 10 - visibleItems.length }).map((_, i) => (
-              <div key={`placeholder-${i}`} className="rounded-xl border border-dashed border-[var(--paper-border)] px-3 py-2.5 opacity-60">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 shrink-0 rounded-full bg-[var(--paper-border)] text-[10px] font-bold text-[var(--paper-muted)] flex items-center justify-center">
-                    {visibleItems.length + i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-[var(--paper-muted)] truncate block">
-                      等待更多数据
-                    </span>
-                    {showProgress && (
-                      <div className="mt-2 h-1.5 rounded-full bg-[var(--paper-border)]" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* 底部汇总 */}
