@@ -13,6 +13,41 @@ interface Env {
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
+
+    // 质保码库存树形可视化
+    if (url.searchParams.get('type') === 'tree') {
+      const [hq, provinces, stores] = await Promise.all([
+        queryFirst<{ id: string; name: string; total: number; available: number }>(
+          context.env.DB,
+          `SELECT o.id, o.name, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='HQ' GROUP BY o.id`,
+        ),
+        queryAll<{ id: string; name: string; province: string; total: number; available: number }>(
+          context.env.DB,
+          `SELECT o.id, o.name, o.province, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='PROVINCE' GROUP BY o.id ORDER BY total DESC`,
+        ),
+        queryAll<{ id: string; name: string; parent_id: string; province: string; city: string; total: number; available: number }>(
+          context.env.DB,
+          `SELECT o.id, o.name, o.parent_id, o.province, o.city, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='STORE' GROUP BY o.id HAVING total > 0 ORDER BY total DESC`,
+        ),
+      ]);
+      // 按 parent_id 分组门店
+      const storeMap: Record<string, typeof stores> = {};
+      for (const s of stores) {
+        const pid = s.parent_id || '';
+        if (!storeMap[pid]) storeMap[pid] = [];
+        storeMap[pid].push(s);
+      }
+      const tree = {
+        hq: hq ? { name: hq.name, total: hq.total, available: hq.available } : { name: '总部', total: 0, available: 0 },
+        provinces: provinces.map((p) => ({
+          ...p,
+          stores: storeMap[p.id] || [],
+          storeCount: (storeMap[p.id] || []).length,
+        })),
+      };
+      return ok(tree);
+    }
+
     const status = url.searchParams.get('status') || '';
     const batchNo = url.searchParams.get('batch_no') || '';
     const modelId = url.searchParams.get('product_model_id') || '';
