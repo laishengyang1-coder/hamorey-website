@@ -3,7 +3,7 @@
 // ============================================================
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { apiRequest } from '../../lib/api';
+import { apiRequest, getToken } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
@@ -56,7 +56,12 @@ export default function RewardsPage() {
       // 2. 直传 R2
       const formData = new FormData();
       formData.append('file', file);
-      const uploadRes = await fetch(uploadUrl, { method: 'POST', body: formData });
+      const token = getToken();
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!uploadRes.ok) throw new Error('上传失败');
       // 3. 存入 form
       setForm((prev) => ({ ...prev, cover_file_key: fileKey }));
