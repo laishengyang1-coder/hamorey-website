@@ -89,9 +89,17 @@ function createTableSql(table, columns) {
   return `CREATE TABLE IF NOT EXISTS ${quoteIdent(table)} (\n${columnSql.join(',\n')}\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
 }
 
+function normalizeDateTime(value) {
+  if (typeof value !== 'string') return value;
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?Z?$/);
+  if (!match) return value;
+  return `${match[1]} ${match[2]}`;
+}
+
 function sqlLiteral(value, mysqlType) {
   if (value == null) return null;
   if (mysqlType === 'DATETIME' && value === '') return null;
+  if (mysqlType === 'DATETIME') return normalizeDateTime(value);
   if (typeof value === 'boolean') return value ? 1 : 0;
   return value;
 }

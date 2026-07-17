@@ -40,10 +40,17 @@ function normalizeSql(sql: string): string {
   return rewriteSystemSettingKey(rewriteInsertSyntax(rewriteJsonAggregates(rewriteDateFunctions(sql))));
 }
 
+function normalizeDateTimeParam(value: string): string {
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?Z?$/);
+  if (!match) return value;
+  return `${match[1]} ${match[2]}`;
+}
+
 function normalizeParams(params: unknown[]): unknown[] {
   return params.map((value) => {
     if (value === undefined) return null;
     if (typeof value === 'boolean') return value ? 1 : 0;
+    if (typeof value === 'string') return normalizeDateTimeParam(value);
     return value;
   });
 }
