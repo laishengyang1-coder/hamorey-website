@@ -31,7 +31,7 @@ fi
 
 cd "$REPO_DIR"
 npm config set registry https://registry.npmmirror.com
-npm ci
+npm ci --include=dev
 npm run build
 
 rm -rf "$APP_ROOT/current"
