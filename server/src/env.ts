@@ -5,6 +5,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
   CORS_ORIGIN: z.string().default(''),
+  SITE_URL: z.string().url().default('http://134.175.187.12'),
+  BRAND_NAME: z.string().default('HAMOREY'),
 
   MYSQL_HOST: z.string().min(1),
   MYSQL_PORT: z.coerce.number().int().positive().default(3306),
@@ -17,6 +19,7 @@ const envSchema = z.object({
   COS_SECRET_KEY: z.string().optional(),
   COS_BUCKET: z.string().optional(),
   COS_REGION: z.string().default('ap-guangzhou'),
+  R2_PUBLIC_BASE_URL: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 sudo apt-get update
-sudo apt-get install -y ca-certificates curl gnupg git unzip nginx build-essential
+sudo apt-get install -y ca-certificates curl gnupg git unzip nginx build-essential sqlite3
 
 if ! command -v node >/dev/null 2>&1 || ! node -v | grep -q '^v22\.'; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -

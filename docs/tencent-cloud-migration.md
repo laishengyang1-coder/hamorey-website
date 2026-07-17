@@ -70,7 +70,7 @@ COS_BUCKET=你的bucket名称
 COS_REGION=ap-guangzhou
 ```
 
-## 阶段 3：D1 数据迁移准备
+## 阶段 3：D1 数据迁移准备与导入
 
 导出 Cloudflare D1：
 
@@ -90,15 +90,39 @@ bash scripts/cloudflare-d1-backup.sh --yes
 bash scripts/cloudflare-d1-inventory.sh
 ```
 
-导出的 D1 SQL 不能直接当成最终生产库长期使用。正式迁移要转换为 MySQL 兼容格式，然后导入 TencentDB MySQL。
+导出的 D1 SQL 不能直接塞进 TencentDB MySQL。仓库现在提供了迁移脚本，会先把 D1 SQL 加载到临时 SQLite，再按 MySQL 兼容结构建表、导入数据、重建索引。
 
-转换重点：
+服务器先安装 SQLite 客户端：
 
-- `TEXT` 时间字段保留为 `DATETIME` 或 `VARCHAR(32)`
-- SQLite `datetime('now')` 改为 MySQL `CURRENT_TIMESTAMP`
-- `INTEGER CHECK (...)` 约束改为应用层校验或 MySQL `CHECK`
-- `PRAGMA`、D1 特有导出语句移除
-- 迁移后重建索引和唯一约束
+```bash
+sudo apt-get install -y sqlite3
+```
+
+把最新 D1 备份 SQL 上传到服务器，例如：
+
+```text
+/opt/hamorey/backups/hamorey-db-YYYYMMDD-HHMMSS.sql
+```
+
+在服务器仓库目录执行导入：
+
+```bash
+cd /opt/hamorey/source/hamorey-website/server
+HAMOREY_ENV_FILE=/etc/hamorey/api.env node scripts/import-d1-to-mysql.mjs /opt/hamorey/backups/hamorey-db-YYYYMMDD-HHMMSS.sql --reset
+```
+
+预期结果：
+
+```text
+HAMOREY_D1_MYSQL_IMPORT_DONE
+organizations: 80
+users: 72
+product_models: 28
+warranty_codes: 3073
+warranty_records: 539
+points_ledger: 539
+...
+```
 
 正式切换前必须校验核心表数量：
 
@@ -145,9 +169,9 @@ bash scripts/cloudflare-d1-inventory.sh
 
 ## 阶段 5：API 后端迁移
 
-Cloudflare Pages Functions 不能直接作为普通 Node 服务运行。需要把 `functions/api` 中的业务逻辑迁到 Node HTTP 服务。
+仓库现在有一个 Node 兼容层，会把 `functions/api` 中的 Cloudflare Pages Functions 自动映射成腾讯云 Node API 路由。
 
-建议目标结构：
+当前目标结构：
 
 ```text
 server/
@@ -155,24 +179,33 @@ server/
     index.ts
     db.ts
     cos.ts
+    cloudflare-env.ts
+    function-router.ts
+    adapters/
+      d1.ts
+      r2.ts
+    generated/
+      function-routes.ts
     routes/
-      admin/
-      province/
-      store/
-      public/
+      health.ts
 ```
 
-迁移优先级：
+已经完成：
 
-1. `/api/health`
-2. `/api/auth/login`
-3. `/api/auth/me`
-4. 门店端小程序接口：`/api/store/*`
-5. 总部后台接口：`/api/admin/*`
-6. 省代接口：`/api/province/*`
-7. 上传与文件读取：`/api/store/upload-url`、`/api/r2-upload/*`、`/api/public/photos/*`
+- `/api/health`：Node/MySQL/COS 健康检查
+- `/api/auth/*`：登录、退出、当前用户
+- `/api/admin/*`：总部后台
+- `/api/province/*`：省代后台
+- `/api/store/*`：门店/小程序业务接口
+- `/api/public/*`：公开查询、图片、证书入口
+- `/api/r2-upload/*`：文件上传兼容入口
 
-当前已经建立 `server/` 骨架，并提供 `/api/health` 用于检查 Node API、MySQL、COS 配置状态。
+兼容层说明：
+
+- D1 查询由 `server/src/adapters/d1.ts` 转成 MySQL 查询。
+- R2 对象存储由 `server/src/adapters/r2.ts` 转成 COS 调用。
+- Cloudflare 权限中间件仍然复用 `functions/api/_middleware.ts`。
+- 新增或删除 `functions/api` 文件后，`server/scripts/generate-node-function-routes.mjs` 会在构建前自动生成路由清单。
 
 生产部署脚本：
 
