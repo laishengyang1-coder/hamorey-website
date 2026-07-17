@@ -75,7 +75,19 @@ COS_REGION=ap-guangzhou
 导出 Cloudflare D1：
 
 ```bash
-npx wrangler d1 export hamorey-db --remote --output=exports/d1/hamorey-db-$(date +%Y%m%d-%H%M%S).sql
+bash scripts/cloudflare-d1-backup.sh
+```
+
+如果已经确认当前是低峰期，也可以跳过确认提示：
+
+```bash
+bash scripts/cloudflare-d1-backup.sh --yes
+```
+
+生成迁移核对清单：
+
+```bash
+bash scripts/cloudflare-d1-inventory.sh
 ```
 
 导出的 D1 SQL 不能直接当成最终生产库长期使用。正式迁移要转换为 MySQL 兼容格式，然后导入 TencentDB MySQL。
@@ -117,6 +129,19 @@ R2 内目前使用的关键目录：
 4. 后端读取文件时由 COS SDK 根据 `file_key` 取文件。
 
 这样前端和小程序不需要改图片字段结构。
+
+当前 Wrangler 版本不能直接列出 R2 对象，所以先从 D1 里提取业务记录引用过的 `file_key`：
+
+```bash
+bash scripts/cloudflare-d1-inventory.sh
+```
+
+输出文件：
+
+- `exports/cloudflare-d1/inventory-summary-*.csv`
+- `exports/cloudflare-d1/r2-referenced-file-keys-*.csv`
+
+这两个文件属于业务数据核对材料，不提交 GitHub。
 
 ## 阶段 5：API 后端迁移
 
