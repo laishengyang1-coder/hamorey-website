@@ -77,7 +77,7 @@ function createTableSql(table, columns) {
     const pieces = [
       quoteIdent(column.name),
       columnType(table, column),
-      column.notnull ? 'NOT NULL' : 'NULL',
+      column.notnull || column.pk ? 'NOT NULL' : 'NULL',
       defaultClause(column),
     ].filter(Boolean);
     return `  ${pieces.join(' ')}`;
