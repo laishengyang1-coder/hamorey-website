@@ -35,7 +35,7 @@ function quoteIdent(identifier) {
 }
 
 function isLongTextColumn(name) {
-  return /(address|reason|description|content|message|metadata|payload|snapshot|remark|note|json|url|file_key|thumbnail_key|error)/i.test(name);
+  return /(address|reason|description|content|message|metadata|payload|snapshot|remark|note|json|url|file_key|thumbnail_key|user_agent|error)/i.test(name);
 }
 
 function columnType(table, column) {
@@ -54,7 +54,7 @@ function columnType(table, column) {
   if (rawType.includes('real') || rawType.includes('double') || rawType.includes('float')) {
     return 'DOUBLE';
   }
-  if (isLongTextColumn(name)) {
+  if (rawType.includes('text') || isLongTextColumn(name)) {
     return 'TEXT';
   }
   return 'VARCHAR(255)';
