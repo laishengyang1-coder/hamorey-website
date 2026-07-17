@@ -58,7 +58,7 @@ function columnType(table, column) {
   if (rawType.includes('real') || rawType.includes('double') || rawType.includes('float')) {
     return 'DOUBLE';
   }
-  if (rawType.includes('text') || isLongTextColumn(name)) {
+  if (isLongTextColumn(name)) {
     return 'TEXT';
   }
   return 'VARCHAR(255)';
@@ -124,7 +124,14 @@ async function insertRows(connection, table, tableColumns, rows) {
   }
 }
 
-async function createIndexes(connection, sqlitePath, table) {
+function indexedColumnSql(table, tableColumns, name) {
+  const column = tableColumns.find((item) => item.name === name);
+  const type = column ? columnType(table, column) : '';
+  const suffix = type === 'TEXT' ? '(191)' : '';
+  return `${quoteIdent(name)}${suffix}`;
+}
+
+async function createIndexes(connection, sqlitePath, table, tableColumns) {
   const indexes = sqliteJson(sqlitePath, `PRAGMA index_list(${quoteIdent(table)});`);
   for (const index of indexes) {
     if (index.origin === 'pk') continue;
@@ -133,7 +140,7 @@ async function createIndexes(connection, sqlitePath, table) {
     const unique = index.unique ? 'UNIQUE ' : '';
     const indexName = `idx_${table}_${columns.map((column) => column.name).join('_')}`.slice(0, 60);
     await connection.query(
-      `CREATE ${unique}INDEX ${quoteIdent(indexName)} ON ${quoteIdent(table)} (${columns.map((column) => quoteIdent(column.name)).join(', ')})`,
+      `CREATE ${unique}INDEX ${quoteIdent(indexName)} ON ${quoteIdent(table)} (${columns.map((column) => indexedColumnSql(table, tableColumns, column.name)).join(', ')})`,
     ).catch((error) => {
       if (!/Duplicate key name/i.test(error.message)) throw error;
     });
@@ -184,7 +191,7 @@ async function main() {
       }
 
       for (const table of tables) {
-        await createIndexes(connection, sqlitePath, table);
+        await createIndexes(connection, sqlitePath, table, tableColumns.get(table) || []);
       }
       await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
