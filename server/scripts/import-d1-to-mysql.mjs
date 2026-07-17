@@ -26,7 +26,11 @@ if (missing.length) {
 }
 
 function sqliteJson(sqlitePath, sql) {
-  const output = execFileSync('sqlite3', ['-json', sqlitePath, sql], { encoding: 'utf8' }).trim();
+  // Warranty-code inventory can exceed Node's default 1 MB child-process buffer.
+  const output = execFileSync('sqlite3', ['-json', sqlitePath, sql], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  }).trim();
   return output ? JSON.parse(output) : [];
 }
 
