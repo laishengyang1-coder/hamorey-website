@@ -25,8 +25,11 @@ if [ ! -d "$REPO_DIR/.git" ]; then
   git clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
-  git fetch origin
-  git reset --hard origin/main
+  if git fetch origin; then
+    git reset --hard origin/main
+  else
+    echo "GitHub fetch failed; deploying the existing server checkout."
+  fi
 fi
 
 cd "$REPO_DIR"
@@ -47,7 +50,11 @@ find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
 
 cd "$API_ROOT"
-pm2 start dist/index.js --name hamorey-api --update-env --time --env production --node-args="" || pm2 restart hamorey-api --update-env
+if pm2 describe hamorey-api >/dev/null 2>&1; then
+  pm2 restart hamorey-api --update-env
+else
+  pm2 start dist/index.js --name hamorey-api --update-env --time --env production --node-args=""
+fi
 pm2 save --force
 
 cat >/tmp/hamorey-production.conf <<NGINX
