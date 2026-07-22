@@ -142,21 +142,21 @@ export async function handleFunctionRequest(req: ExpressRequest, res: ExpressRes
       return;
     }
 
-    const context = {
+    // Cloudflare Pages keeps `context.data` shared between middleware and the
+    // route reached through context.next(). Reuse the same object here so the
+    // authenticated user injected by _middleware is visible to protected APIs.
+    const contextData: Record<string, unknown> = {};
+    const routeContext = {
       request,
       env: apiEnv,
       params: matched.params,
-      data: {},
+      data: contextData,
       waitUntil() {},
       passThroughOnException() {},
-      next: () => routeHandler({
-        request,
-        env: apiEnv,
-        params: matched.params,
-        data: {},
-        waitUntil() {},
-        passThroughOnException() {},
-      }),
+    };
+    const context = {
+      ...routeContext,
+      next: () => routeHandler(routeContext),
     };
 
     const response = typeof apiMiddleware.onRequest === 'function'
