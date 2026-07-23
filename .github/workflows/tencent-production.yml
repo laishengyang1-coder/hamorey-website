@@ -1,0 +1,64 @@
+name: Deploy to Tencent Cloud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tencent-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Configure restricted SSH key
+        shell: bash
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "${{ secrets.TENCENT_SSH_PRIVATE_KEY }}" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "${{ secrets.TENCENT_SSH_KNOWN_HOSTS }}" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+      - name: Deploy exact main commit
+        shell: bash
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          output_file="$(mktemp)"
+          ssh \
+            -i "$HOME/.ssh/id_ed25519" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            ubuntu@134.175.187.12 deploy | tee "$output_file"
+          grep -F "HAMOREY_PRODUCTION_DEPLOYED $EXPECTED_COMMIT" "$output_file"
+
+      - name: Verify public health
+        shell: bash
+        run: |
+          response="$(curl --fail --silent --show-error --max-time 15 \
+            http://134.175.187.12/api/health)"
+          node -e '
+            const health = JSON.parse(process.argv[1]);
+            const checks = health.checks || {};
+            if (
+              health.ok !== true ||
+              checks.api !== "ok" ||
+              checks.mysql !== "ok" ||
+              checks.cos !== "ok"
+            ) {
+              console.error(health);
+              process.exit(1);
+            }
+            console.log("Tencent production health verified.");
+          ' "$response"
