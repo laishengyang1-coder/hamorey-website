@@ -24,6 +24,47 @@ function rewriteJsonAggregates(sql: string): string {
     .replace(/json_object\s*\(/gi, 'JSON_OBJECT(');
 }
 
+function rewriteScalarMinMax(sql: string): string {
+  const functionPattern = /\b(MIN|MAX)\s*\(/gi;
+  let result = '';
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = functionPattern.exec(sql)) !== null) {
+    const openParen = functionPattern.lastIndex - 1;
+    let depth = 1;
+    let quote = '';
+    let hasTopLevelComma = false;
+    let index = openParen + 1;
+
+    for (; index < sql.length && depth > 0; index += 1) {
+      const char = sql[index];
+      if (quote) {
+        if (char === quote && sql[index - 1] !== '\\') quote = '';
+        continue;
+      }
+      if (char === '\'' || char === '"' || char === '`') {
+        quote = char;
+      } else if (char === '(') {
+        depth += 1;
+      } else if (char === ')') {
+        depth -= 1;
+      } else if (char === ',' && depth === 1) {
+        hasTopLevelComma = true;
+      }
+    }
+
+    if (!hasTopLevelComma || depth !== 0) continue;
+    result += sql.slice(cursor, match.index);
+    result += match[1].toUpperCase() === 'MIN' ? 'LEAST(' : 'GREATEST(';
+    result += sql.slice(openParen + 1, index);
+    cursor = index;
+    functionPattern.lastIndex = index;
+  }
+
+  return result ? result + sql.slice(cursor) : sql;
+}
+
 function rewriteInsertSyntax(sql: string): string {
   return sql.replace(/INSERT\s+OR\s+IGNORE/gi, 'INSERT IGNORE');
 }
@@ -43,7 +84,9 @@ function rewriteSystemSettingKey(sql: string): string {
 
 function normalizeSql(sql: string): string {
   return rewriteSystemSettingKey(
-    rewriteCollations(rewriteInsertSyntax(rewriteJsonAggregates(rewriteDateFunctions(sql)))),
+    rewriteCollations(
+      rewriteInsertSyntax(rewriteScalarMinMax(rewriteJsonAggregates(rewriteDateFunctions(sql)))),
+    ),
   );
 }
 
