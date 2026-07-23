@@ -28,6 +28,11 @@ function rewriteInsertSyntax(sql: string): string {
   return sql.replace(/INSERT\s+OR\s+IGNORE/gi, 'INSERT IGNORE');
 }
 
+function rewriteCollations(sql: string): string {
+  // Imported TencentDB tables already use a case-insensitive utf8mb4 collation.
+  return sql.replace(/\s+COLLATE\s+NOCASE\b/gi, '');
+}
+
 function rewriteSystemSettingKey(sql: string): string {
   if (!/\bsystem_settings\b/i.test(sql)) return sql;
   return sql
@@ -37,7 +42,9 @@ function rewriteSystemSettingKey(sql: string): string {
 }
 
 function normalizeSql(sql: string): string {
-  return rewriteSystemSettingKey(rewriteInsertSyntax(rewriteJsonAggregates(rewriteDateFunctions(sql))));
+  return rewriteSystemSettingKey(
+    rewriteCollations(rewriteInsertSyntax(rewriteJsonAggregates(rewriteDateFunctions(sql)))),
+  );
 }
 
 function normalizeDateTimeParam(value: string): string {
