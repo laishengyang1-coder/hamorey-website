@@ -51,8 +51,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const myPoints = myPointsRow?.points ?? 0;
       let myRank = rows.length + 1; // 默认排在最末之后
       if (myPoints > 0) {
-        const rankRow = await queryFirst<{ rank: number }>(db,
-          `SELECT COUNT(*) + 1 AS rank FROM (
+        const rankRow = await queryFirst<{ ranking_position: number }>(db,
+          `SELECT COUNT(*) + 1 AS ranking_position FROM (
              SELECT o.id, COALESCE(SUM(pl.points_change), 0) AS pts
              FROM points_ledger pl
              JOIN organizations o ON o.id = pl.organization_id
@@ -62,10 +62,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
                AND wr.status = 'active'
              GROUP BY o.id
              HAVING pts > ?
-           )`,
+           ) AS ranked_stores`,
           myPoints,
         );
-        myRank = rankRow?.rank ?? 1;
+        myRank = rankRow?.ranking_position ?? 1;
       }
 
       // 获取自店名称
