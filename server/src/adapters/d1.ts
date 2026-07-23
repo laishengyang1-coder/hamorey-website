@@ -62,6 +62,42 @@ function normalizeParams(params: unknown[]): unknown[] {
   });
 }
 
+function inlinePaginationParams(sql: string, params: unknown[]): { sql: string; params: unknown[] } {
+  const placeholderPositions: number[] = [];
+  let quote = '';
+
+  for (let index = 0; index < sql.length; index += 1) {
+    const char = sql[index];
+    if (quote) {
+      if (char === quote && sql[index - 1] !== '\\') quote = '';
+      continue;
+    }
+    if (char === '\'' || char === '"' || char === '`') {
+      quote = char;
+      continue;
+    }
+    if (char === '?') placeholderPositions.push(index);
+  }
+
+  let nextSql = sql;
+  const nextParams = [...params];
+  for (let index = placeholderPositions.length - 1; index >= 0; index -= 1) {
+    const position = placeholderPositions[index];
+    const prefix = sql.slice(0, position);
+    if (!/\b(?:LIMIT|OFFSET)\s*$/i.test(prefix)) continue;
+
+    const value = Number(params[index]);
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new Error('Pagination parameters must be non-negative integers');
+    }
+
+    nextSql = `${nextSql.slice(0, position)}${value}${nextSql.slice(position + 1)}`;
+    nextParams.splice(index, 1);
+  }
+
+  return { sql: nextSql, params: nextParams };
+}
+
 export class MySqlD1PreparedStatement {
   private params: unknown[] = [];
 
@@ -84,18 +120,25 @@ export class MySqlD1PreparedStatement {
     return this.params;
   }
 
+  get execution(): { sql: string; params: unknown[] } {
+    return inlinePaginationParams(this.sql, this.params);
+  }
+
   async first<T = Record<string, unknown>>(): Promise<T | null> {
-    const [rows] = await this.executor.execute<RowDataPacket[]>(this.sql, this.params as ExecuteParams);
+    const { sql, params } = this.execution;
+    const [rows] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
     return (rows[0] as T | undefined) ?? null;
   }
 
   async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
-    const [rows] = await this.executor.execute<RowDataPacket[]>(this.sql, this.params as ExecuteParams);
+    const { sql, params } = this.execution;
+    const [rows] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
     return { results: rows as T[] };
   }
 
   async run(): Promise<D1RunResult> {
-    const [result] = await this.executor.execute<ResultSetHeader>(this.sql, this.params as ExecuteParams);
+    const { sql, params } = this.execution;
+    const [result] = await this.executor.execute<ResultSetHeader>(sql, params as ExecuteParams);
     return {
       success: true,
       meta: {
@@ -119,7 +162,8 @@ export class MySqlD1Database {
       await connection.beginTransaction();
       const results: D1RunResult[] = [];
       for (const statement of statements) {
-        const [result] = await connection.execute<ResultSetHeader>(statement.sql, statement.values as ExecuteParams);
+        const { sql, params } = statement.execution;
+        const [result] = await connection.execute<ResultSetHeader>(sql, params as ExecuteParams);
         results.push({
           success: true,
           meta: {
