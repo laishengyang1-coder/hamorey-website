@@ -4,14 +4,31 @@
 
 ## 当前状态
 
-- 线上正式站点仍在 Cloudflare Pages：`https://hemoppf.com`
-- 数据库为 Cloudflare D1：`hamorey-db`
-- 文件存储为 Cloudflare R2：`hamorey-assets`
-- 腾讯云轻量服务器已经安装 Node.js、pnpm、PM2、Nginx。
-- 腾讯云当前只部署静态前端预览，`/api` 暂时反向代理到 `https://hemoppf.com/api`。
-- 最终形态不再依赖 Cloudflare：前端由 Nginx 托管，API 由 Node.js/PM2 托管，数据进 TencentDB MySQL，文件进 COS。
+截至 2026-07-23，腾讯云生产环境已经独立运行：
 
-## 阶段 1：腾讯云静态预览
+- 内部预览地址：`http://134.175.187.12`
+- 前端：腾讯云轻量服务器 Nginx
+- API：腾讯云轻量服务器 Node.js + PM2（`hamorey-api`）
+- 数据库：TencentDB MySQL（`hamorey`）
+- 文件：腾讯云 COS（`hamorey-prod-1435246474`，`ap-guangzhou`）
+- `/api/health` 已确认 API、MySQL、COS 均为 `ok`
+- Nginx 与 `pm2-ubuntu` 均已配置开机自启
+- 腾讯云、GitHub `main` 与本地代码版本已完成一致性核对
+
+已经导入并核对的核心数据包括：
+
+- 组织 80 家、用户 72 个
+- 产品型号 28 个
+- 质保码 3073 个、质保记录 539 条
+- 质保码划拨记录 2506 条
+- 积分流水 539 条、积分商品 16 个
+- 门店公开资料 67 条
+
+Cloudflare Pages/D1/R2 目前只保留为临时回退副本，不再作为腾讯云系统的数据源。未完成正式域名和 HTTPS 切换前，不要删除 Cloudflare 数据。
+
+GitHub Actions 中的 `Deploy to Cloudflare Pages` 工作流已于 2026-07-23 人工停用，后续提交到 `main` 不会再自动发布到 Cloudflare。
+
+## 阶段 1：腾讯云静态预览（已完成）
 
 用途：备案期间提前验证腾讯云服务器能拉取 GitHub 最新前端代码、构建并通过 IP 打开页面。
 
@@ -27,7 +44,7 @@ bash scripts/tencent-static-preview-deploy.sh
 HAMOREY_STATIC_PREVIEW_DEPLOYED
 ```
 
-这个阶段不是最终迁移。后台数据仍然来自 Cloudflare。
+这是迁移过程中的历史验证阶段。当前腾讯云已经使用自己的 MySQL 和 COS，不再从 Cloudflare 读取业务数据。
 
 ## 阶段 2：正式腾讯云目标架构
 
@@ -143,7 +160,7 @@ R2 内目前使用的关键目录：
 - `warranty-photos/`：施工照片
 - `certificates/`：质保证书 PDF
 - `exports/`：后台导出文件
-- `rewards/`：积分商城奖品图片
+- `reward-covers/`：积分商城奖品图片
 
 迁移策略：
 
@@ -215,6 +232,23 @@ bash scripts/tencent-production-deploy.sh
 
 脚本会读取 `/etc/hamorey/api.env`，构建前端和 API，并用 PM2 启动 `hamorey-api`。
 
+脚本现在会：
+
+- GitHub 拉取失败时立即停止，禁止拿服务器旧代码继续发布
+- 固定部署 `origin/main`
+- 等待 API、MySQL、COS 健康检查恢复后再判定成功
+- 把成功部署的提交号写入 `/opt/hamorey/apps/DEPLOYED_COMMIT`
+
+日常发布与检查：
+
+```bash
+cd /opt/hamorey/source/hamorey-website
+bash scripts/tencent-production-deploy.sh
+cat /opt/hamorey/apps/DEPLOYED_COMMIT
+curl --fail http://127.0.0.1/api/health
+pm2 status
+```
+
 ## 阶段 6：备案通过后的正式切换
 
 备案通过后再做：
@@ -230,13 +264,15 @@ bash scripts/tencent-production-deploy.sh
    - uploadFile：`https://api.hemoppf.cn`
    - downloadFile：`https://api.hemoppf.cn`
 5. 小程序真机测试。
-6. 冻结 Cloudflare 写入，做最终增量数据迁移。
-7. 切正式流量。
+6. 把小程序 `apiBaseUrl` 改为 `https://api.hemoppf.cn/api` 并重新发布。
+7. 确认 GitHub 中 Cloudflare Pages 工作流保持停用。
+8. 先保留 Cloudflare 回退副本，腾讯云正式域名稳定运行 48 小时后再人工确认删除。
 
 ## 注意事项
 
 - 备案通过前不要把 `hemoppf.cn` 作为正式公开访问入口。
 - 当前 IP 预览只用于内部测试。
 - GitHub 自动部署需要单独配置服务器 SSH 密钥和 GitHub Secrets。
+- GitHub 的 Cloudflare Pages 工作流已经停用；不要重新启用。
 - 数据迁移前必须先备份 D1 和 R2。
 - 质保码、质保记录、积分流水属于核心业务数据，迁移后要做数量和抽样核对。
