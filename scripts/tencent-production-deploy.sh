@@ -25,14 +25,13 @@ if [ ! -d "$REPO_DIR/.git" ]; then
   git clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
-  if git fetch origin; then
-    git reset --hard origin/main
-  else
-    echo "GitHub fetch failed; deploying the existing server checkout."
-  fi
+  git fetch --all --prune
+  git reset --hard origin/main
 fi
 
 cd "$REPO_DIR"
+DEPLOY_COMMIT="$(git rev-parse HEAD)"
+echo "Deploying commit $DEPLOY_COMMIT"
 npm config set registry https://registry.npmmirror.com
 npm ci --include=dev
 npm run build
@@ -43,7 +42,7 @@ cp -R dist/. "$APP_ROOT/current"/
 
 cd "$REPO_DIR/server"
 npm config set registry https://registry.npmmirror.com
-npm install
+npm ci --include=dev
 npm run build
 
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
@@ -90,7 +89,18 @@ sudo rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/hamorey-web
 sudo nginx -t
 sudo systemctl reload nginx
 
-curl -I 127.0.0.1 | head -n 1
-curl -sS 127.0.0.1/api/health
+for attempt in $(seq 1 30); do
+  if curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health >/tmp/hamorey-health.json; then
+    break
+  fi
+  if [ "$attempt" -eq 30 ]; then
+    echo "API health check did not recover after deployment."
+    exit 1
+  fi
+  sleep 1
+done
+
+printf '%s\n' "$DEPLOY_COMMIT" >/opt/hamorey/apps/DEPLOYED_COMMIT
+curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health
 echo
-echo "HAMOREY_PRODUCTION_DEPLOYED"
+echo "HAMOREY_PRODUCTION_DEPLOYED $DEPLOY_COMMIT"
