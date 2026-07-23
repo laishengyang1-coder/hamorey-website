@@ -81,6 +81,8 @@ export function StoreFinder() {
     return result;
   }, [stores, province, city, keyword]);
 
+  const visibleStores = useMemo(() => filteredStores.slice(0, 6), [filteredStores]);
+
   const handleProvinceChange = useCallback((value: string) => {
     setProvince(value);
     setCity('');
@@ -144,9 +146,9 @@ export function StoreFinder() {
         {/* 门店列表 */}
         {!loading && !error && (
           <>
-            {filteredStores.length > 0 ? (
+            {visibleStores.length > 0 ? (
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {filteredStores.map((store, index) => (
+                {visibleStores.map((store, index) => (
                   <ScrollReveal key={store.id} delay={index * 100}>
                     <Card hover padding="md" className="h-full flex flex-col">
                       <div className="flex items-start justify-between mb-3">
