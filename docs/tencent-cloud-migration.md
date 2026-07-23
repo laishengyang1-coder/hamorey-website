@@ -14,6 +14,7 @@
 - `/api/health` 已确认 API、MySQL、COS 均为 `ok`
 - Nginx 与 `pm2-ubuntu` 均已配置开机自启
 - 腾讯云、GitHub `main` 与本地代码版本已完成一致性核对
+- GitHub `main` 更新后，由 `Deploy to Tencent Cloud` 自动部署腾讯云并检查线上健康状态
 
 已经导入并核对的核心数据包括：
 
@@ -27,6 +28,16 @@
 Cloudflare Pages/D1/R2 目前只保留为临时回退副本，不再作为腾讯云系统的数据源。未完成正式域名和 HTTPS 切换前，不要删除 Cloudflare 数据。
 
 GitHub Actions 中的 `Deploy to Cloudflare Pages` 工作流已于 2026-07-23 人工停用，后续提交到 `main` 不会再自动发布到 Cloudflare。
+
+腾讯云自动部署使用一把受限 SSH 密钥。该密钥只能执行
+`/opt/hamorey/bin/github-deploy`，不能打开普通 SSH shell、转发端口或执行其他命令。
+部署脚本会锁定并发发布、同步 GitHub `main`、完成构建、重启 API、更新 Nginx，
+最后验证部署提交号以及 API、MySQL、COS 健康状态。
+
+自动部署工作流所需的 GitHub Actions Secrets：
+
+- `TENCENT_SSH_PRIVATE_KEY`
+- `TENCENT_SSH_KNOWN_HOSTS`
 
 ## 阶段 1：腾讯云静态预览（已完成）
 
