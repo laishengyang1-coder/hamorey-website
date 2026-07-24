@@ -39,7 +39,6 @@ const HOME_CONFIG = {
       title: '质保查询',
       subtitle: 'Warranty Inquiry',
       icon: '/images/icon-warranty.png',
-      iconBg: 'var(--color-primary)',
       page: '/pages/owner/warranty/index'
     },
     {
@@ -47,23 +46,20 @@ const HOME_CONFIG = {
       title: '经销商登录',
       subtitle: 'Dealer Login',
       icon: '/images/icon-login.png',
-      iconBg: '#1A1412',
       page: '/pages/store/login/index'
     },
     {
       key: 'terms',
-      title: '质保范围查询',
+      title: '质保范围',
       subtitle: 'Warranty Coverage',
       icon: '/images/icon-terms.png',
-      iconBg: '#7A2E2E',
       page: '/pages/owner/warranty-terms/index'
     },
     {
       key: 'quote',
-      title: '产品体系 / 报价',
-      subtitle: 'Product & Quote',
+      title: '理赔报价',
+      subtitle: 'Claim Quote',
       icon: '/images/icon-quote.png',
-      iconBg: '#C8A96E',
       page: '/pages/owner/quote/index'
     }
   ],

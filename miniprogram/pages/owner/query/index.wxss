@@ -225,19 +225,17 @@
 }
 
 .function-icon {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 18rpx;
+  width: 88rpx;
+  height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
 }
 
 .function-icon-img {
-  width: 48rpx;
-  height: 48rpx;
+  width: 72rpx;
+  height: 72rpx;
 }
 
 /* 内容模块 */

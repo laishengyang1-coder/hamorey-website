@@ -38,7 +38,7 @@
         <view class="function-title">{{item.title}}</view>
         <view class="function-subtitle">{{item.subtitle}}</view>
       </view>
-      <view class="function-icon" style="background: {{item.iconBg}};">
+      <view class="function-icon">
         <image class="function-icon-img" src="{{item.icon}}" mode="aspectFit" />
       </view>
     </view>
