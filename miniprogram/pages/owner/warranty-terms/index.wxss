@@ -1,22 +1,15 @@
-/* 质保条款页 — H&H 有限质保条款 */
+/* 质保条款页 — 和膜 HAMOREY 有限质保条款 */
 
 .terms-page {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
   background: #FEFAF8;
-}
-
-.terms-scroll {
-  flex: 1;
-  height: 0;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 }
 
 /* 顶部标题区 */
 .terms-hero {
   background: linear-gradient(180deg, #5C1A1A 0%, #7A2E2E 100%);
-  padding: 40rpx 32rpx 36rpx;
+  padding: 44rpx 32rpx 36rpx;
   color: #FFFFFF;
 }
 
@@ -24,21 +17,21 @@
   font-size: 44rpx;
   font-weight: 700;
   letter-spacing: 4rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .terms-hero-subtitle {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 500;
   letter-spacing: 6rpx;
-  margin-bottom: 20rpx;
-  padding-bottom: 20rpx;
+  margin-bottom: 22rpx;
+  padding-bottom: 22rpx;
   border-bottom: 2rpx solid rgba(255,255,255,0.2);
 }
 
 .terms-hero-desc {
   font-size: 26rpx;
-  line-height: 40rpx;
+  line-height: 42rpx;
   color: rgba(255,255,255,0.85);
 }
 
@@ -46,15 +39,18 @@
 .terms-highlights {
   display: flex;
   justify-content: space-around;
-  padding: 24rpx 28rpx;
+  padding: 22rpx 16rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #F0EBE7;
+  flex-wrap: wrap;
+  gap: 8rpx;
 }
 
 .highlight-item {
   display: flex;
   align-items: center;
   gap: 8rpx;
+  padding: 4rpx 8rpx;
 }
 
 .highlight-dot {
@@ -62,25 +58,27 @@
   height: 12rpx;
   border-radius: 50%;
   background: #C8A96E;
+  flex-shrink: 0;
 }
 
 .highlight-text {
   font-size: 22rpx;
   color: #5C1A1A;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* 条款正文容器 */
 .terms-body {
-  padding: 0 28rpx;
+  padding: 0 28rpx 20rpx;
 }
 
 /* 每条条款 */
 .terms-section {
-  margin-top: 32rpx;
+  margin-top: 28rpx;
   background: #FFFFFF;
   border-radius: 16rpx;
-  padding: 32rpx 28rpx;
+  padding: 30rpx 28rpx;
   box-shadow: 0 2rpx 16rpx rgba(92,26,26,0.04);
 }
 
@@ -89,17 +87,17 @@
   align-items: center;
   gap: 16rpx;
   margin-bottom: 20rpx;
-  padding-bottom: 20rpx;
+  padding-bottom: 18rpx;
   border-bottom: 2rpx solid #F5EDE9;
 }
 
 .section-num {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 12rpx;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 10rpx;
   background: #5C1A1A;
   color: #FFFFFF;
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -130,14 +128,14 @@
 }
 
 .terms-list {
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .terms-list-item {
   font-size: 26rpx;
-  line-height: 40rpx;
+  line-height: 42rpx;
   color: #4A3A34;
-  padding: 10rpx 0 10rpx 32rpx;
+  padding: 8rpx 0 8rpx 30rpx;
   position: relative;
 }
 
@@ -145,7 +143,7 @@
   content: '';
   position: absolute;
   left: 10rpx;
-  top: 20rpx;
+  top: 18rpx;
   width: 8rpx;
   height: 8rpx;
   border-radius: 50%;
@@ -156,7 +154,7 @@
 .coverage-item {
   background: #FDF9F5;
   border-radius: 12rpx;
-  padding: 20rpx 24rpx;
+  padding: 18rpx 22rpx;
   margin-bottom: 12rpx;
   border-left: 6rpx solid #5C1A1A;
 }
@@ -165,7 +163,7 @@
   font-size: 26rpx;
   font-weight: 700;
   color: #5C1A1A;
-  margin-bottom: 6rpx;
+  margin-bottom: 4rpx;
 }
 
 .coverage-desc {
@@ -174,30 +172,38 @@
   color: #4A3A34;
 }
 
+/* 表格分类标题 */
+.table-category {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5C1A1A;
+  margin: 24rpx 0 12rpx;
+  padding-left: 8rpx;
+  border-left: 4rpx solid #C8A96E;
+}
+
 /* 表格 */
 .terms-table {
   border-radius: 12rpx;
   overflow: hidden;
   border: 1rpx solid #E8E0DA;
-  margin-bottom: 16rpx;
+  margin-bottom: 8rpx;
 }
 
 .table-header {
   display: flex;
   background: #5C1A1A;
-  color: #FFFFFF;
-  font-size: 24rpx;
-  font-weight: 600;
 }
 
 .table-header > view {
-  padding: 16rpx 12rpx;
-  text-align: center;
+  padding: 14rpx 16rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .table-row {
   display: flex;
-  font-size: 22rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #F5EDE9;
 }
@@ -211,23 +217,18 @@
 }
 
 .table-row > view {
-  padding: 14rpx 12rpx;
-  line-height: 34rpx;
+  padding: 13rpx 16rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
 }
 
-.table-col-cat {
-  flex: 4;
-  color: #5C1A1A;
-  font-weight: 600;
-}
-
-.table-col-series {
-  flex: 5;
+.table-col-name {
+  flex: 3;
   color: #2D221E;
 }
 
 .table-col-period {
-  flex: 2;
+  flex: 1;
   text-align: center;
   color: #C8A96E;
   font-weight: 700;
@@ -235,17 +236,12 @@
 
 .table-note {
   font-size: 22rpx;
-  line-height: 34rpx;
+  line-height: 36rpx;
   color: #9E8A82;
-  padding: 8rpx 4rpx;
+  padding: 12rpx 4rpx 0;
 }
 
-/* 底部间距 */
-.terms-footer-space {
-  height: 60rpx;
-}
-
-/* 安全区占位 */
+/* 底部占位 */
 .safe-bottom-placeholder {
-  height: calc(100rpx + env(safe-area-inset-bottom));
+  height: 20rpx;
 }
