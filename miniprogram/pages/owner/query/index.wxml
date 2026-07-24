@@ -6,7 +6,7 @@
       indicator-dots="{{true}}"
       autoplay="{{true}}"
       circular="{{true}}"
-      interval="{{5000}}"
+      interval="{{3000}}"
       duration="{{600}}"
       indicator-color="rgba(255,255,255,0.35)"
       indicator-active-color="#C8A96E"

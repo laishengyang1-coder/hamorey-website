@@ -1,0 +1,20 @@
+<view class="cases-page">
+  <view class="cases-hero">
+    <view class="cases-hero-title">和膜案例</view>
+    <view class="cases-hero-sub">SUPERFILM CASE GALLERY</view>
+  </view>
+
+  <view class="cases-grid">
+    <view class="case-card" wx:for="{{cases}}" wx:key="index">
+      <image class="case-img" src="{{item.image}}" mode="aspectFill" />
+      <view class="case-overlay"></view>
+      <view class="case-info">
+        <view class="case-title">{{item.title}}</view>
+        <view class="case-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="cases-tip">更多案例即将上线</view>
+  <view class="safe-bottom"></view>
+</view>

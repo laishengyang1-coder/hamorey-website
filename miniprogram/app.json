@@ -3,6 +3,7 @@
     "pages/owner/query/index",
     "pages/owner/warranty/index",
     "pages/owner/product/index",
+    "pages/owner/cases/index",
     "pages/owner/profile/index",
     "pages/owner/result/index",
     "pages/owner/detail/index",

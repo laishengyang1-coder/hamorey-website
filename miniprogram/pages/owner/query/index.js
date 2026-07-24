@@ -155,8 +155,7 @@ Page({
 
   /** 案例/产品卡片点击 */
   onCaseTap(e) {
-    const { index } = e.currentTarget.dataset;
-    wx.showToast({ title: '案例详情即将上线', icon: 'none' });
+    wx.navigateTo({ url: '/pages/owner/cases/index' });
   },
 
   onSeriesTap(e) {
