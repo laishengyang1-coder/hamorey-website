@@ -1,154 +1,262 @@
-.page-container {
+/* 部位报价页 — 紧凑版 */
+
+.quote-page {
   min-height: 100vh;
-  background: var(--color-bg);
-  padding-bottom: 64rpx;
+  background: #FEFAF8;
+  padding-bottom: 40rpx;
 }
 
-.quote-header {
-  text-align: center;
-  padding: 40rpx 32rpx;
+/* 加载/错误 */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 200rpx 32rpx;
 }
 
-.quote-model-label {
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
-  margin-bottom: 8rpx;
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #F0EBE7;
+  border-top-color: #5C1A1A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 20rpx;
 }
 
-.quote-model-name {
-  font-size: var(--font-xl);
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text { font-size: 28rpx; color: #9E8A82; }
+.error-text { font-size: 28rpx; color: #B85C5C; margin: 12rpx 0 24rpx; }
+.error-icon { font-size: 56rpx; }
+
+.retry-btn {
+  padding: 16rpx 48rpx;
+  background: #5C1A1A;
+  color: #FFFFFF;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+
+/* 型号选择栏 */
+.model-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 28rpx;
+  margin: 16rpx 28rpx;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  border: 1rpx solid #E8E0DA;
+}
+
+.model-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.model-bar-label {
+  font-size: 24rpx;
+  color: #9E8A82;
+}
+
+.model-bar-name {
+  font-size: 28rpx;
   font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: 12rpx;
+  color: #1A1412;
 }
 
-.quote-model-tip {
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
+.model-bar-arrow {
+  font-size: 20rpx;
+  color: #9E8A82;
+  transition: transform 0.2s;
+}
+
+.model-bar-arrow.up {
+  transform: rotate(180deg);
+}
+
+/* 型号下拉 */
+.model-dropdown {
+  position: relative;
+  z-index: 10;
+  margin: -8rpx 28rpx 12rpx;
+  background: #FFFFFF;
+  border-radius: 0 0 12rpx 12rpx;
+  border: 1rpx solid #E8E0DA;
+  border-top: none;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.08);
+  max-height: 360rpx;
+  overflow-y: auto;
+}
+
+.model-option {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 28rpx;
+  border-bottom: 1rpx solid #F5EDE9;
+}
+
+.model-option:last-child { border-bottom: none; }
+.model-option.active { background: #FDF9F5; }
+
+.model-option-code {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #5C1A1A;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+
+.model-option-name {
+  flex: 1;
+  font-size: 24rpx;
+  color: #2D221E;
+}
+
+.model-option-check {
+  font-size: 24rpx;
+  color: #C8A96E;
+  font-weight: 700;
+}
+
+.model-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.2);
+  z-index: 5;
+}
+
+/* 报价提示 */
+.quote-tip {
+  padding: 8rpx 32rpx 16rpx;
+  font-size: 22rpx;
+  color: #9E8A82;
+}
+
+/* 部位区域 */
+.parts-section {
+  padding: 0 28rpx;
+}
+
+.part-group {
+  margin-bottom: 16rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(92,26,26,0.04);
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 24rpx;
+  background: #FDF9F5;
+  border-bottom: 1rpx solid #F0EBE7;
+}
+
+.group-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5C1A1A;
+}
+
+.group-select {
+  font-size: 22rpx;
+  color: #C8A96E;
+  font-weight: 600;
 }
 
 /* 部位行 */
 .part-row {
   display: flex;
   align-items: center;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--color-border-light);
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #F5EDE9;
 }
 
-.part-row:last-child {
-  border-bottom: none;
-}
+.part-row:last-child { border-bottom: none; }
 
-.part-checkbox {
-  margin-right: 20rpx;
-}
-
-.checkbox-box {
-  width: 44rpx;
-  height: 44rpx;
+.part-left {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 2rpx solid var(--color-border);
-  border-radius: var(--radius-sm);
-  transition: all 0.2s;
-}
-
-.checkbox-box.checked {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-.checkbox-icon {
-  color: #FFFFFF;
-  font-size: 28rpx;
-  font-weight: 700;
-}
-
-.part-info {
+  gap: 16rpx;
   flex: 1;
 }
 
-.part-name {
-  font-size: var(--font-md);
-  color: var(--color-text);
-  font-weight: 500;
+.checkbox-box {
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid #D0C8C2;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  flex-shrink: 0;
 }
 
-.part-category {
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
-  margin-top: 4rpx;
+.checkbox-box.checked {
+  background: #5C1A1A;
+  border-color: #5C1A1A;
+  color: #FFFFFF;
+}
+
+.part-name {
+  font-size: 28rpx;
+  color: #2D221E;
 }
 
 .part-price {
-  font-size: var(--font-lg);
+  font-size: 28rpx;
   font-weight: 700;
-  color: var(--color-primary);
+  color: #5C1A1A;
+  flex-shrink: 0;
 }
 
-.select-all {
-  font-size: var(--font-sm);
-  color: var(--color-primary);
+/* 汇总栏 */
+.summary-bar {
+  margin: 20rpx 28rpx;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #5C1A1A, #7A2E2E);
+  border-radius: 16rpx;
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 20rpx rgba(92,26,26,0.3);
 }
 
-/* 汇总 */
-.summary-section {
-  margin: 24rpx;
-}
-
-.summary-title {
-  font-size: var(--font-lg);
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 20rpx;
-}
-
-.summary-row {
+.summary-info {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
-  padding: 12rpx 0;
+  margin-bottom: 8rpx;
 }
 
-.summary-name {
-  font-size: var(--font-md);
-  color: var(--color-text-secondary);
-}
-
-.summary-price {
-  font-size: var(--font-md);
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.summary-divider {
-  height: 1rpx;
-  background: var(--color-border-light);
-  margin: 16rpx 0;
+.summary-count {
+  font-size: 26rpx;
+  opacity: 0.8;
 }
 
 .summary-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summary-total-label {
-  font-size: var(--font-lg);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.summary-total-price {
-  font-size: var(--font-xxl);
+  font-size: 40rpx;
   font-weight: 700;
-  color: var(--color-error);
 }
 
 .summary-note {
-  margin-top: 16rpx;
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
+  font-size: 22rpx;
+  opacity: 0.6;
+}
+
+/* 空提示 */
+.empty-hint {
   text-align: center;
+  padding: 80rpx 32rpx;
+  font-size: 26rpx;
+  color: #9E8A82;
 }

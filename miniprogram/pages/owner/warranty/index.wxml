@@ -36,12 +36,6 @@
     </view>
 
     <view class="footer-section">
-      <view class="store-entry" bindtap="goStoreLogin">
-        <text class="store-entry-icon">🏪</text>
-        <text class="store-entry-text">门店 / 省代登录</text>
-        <text class="store-entry-arrow">›</text>
-      </view>
-
       <view class="brand-footer">
         <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
       </view>

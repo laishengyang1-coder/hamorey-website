@@ -1,5 +1,4 @@
-<view class="page-container">
-<nav-bar title="部位报价" />
+<view class="quote-page">
   <!-- Loading -->
   <view wx:if="{{loading}}" class="loading-container">
     <view class="loading-spinner"></view>
@@ -10,69 +9,82 @@
   <view wx:elif="{{error}}" class="error-container">
     <view class="error-icon">😞</view>
     <view class="error-text">{{error}}</view>
-    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadPrices">重试</view>
+    <view class="retry-btn" bindtap="loadAllPrices">重试</view>
   </view>
 
-  <!-- 报价列表 -->
+  <!-- 报价内容 -->
   <block wx:else>
-    <!-- 型号信息 -->
-    <view class="quote-header card">
-      <view class="quote-model-label">产品型号</view>
-      <view class="quote-model-name">{{modelName || modelCode || '--'}}</view>
-      <view class="quote-model-tip">以下是各部位理赔参考报价（元）</view>
+    <!-- 型号选择栏（紧凑） -->
+    <view class="model-bar" bindtap="toggleModelPicker">
+      <view class="model-bar-left">
+        <text class="model-bar-label">型号</text>
+        <text class="model-bar-name">{{activeModelName || activeModel || '选择型号'}}</text>
+      </view>
+      <view class="model-bar-arrow {{showModelPicker ? 'up' : ''}}">▼</view>
     </view>
 
-    <!-- 部位复选框列表 -->
-    <view class="section">
-      <view class="section-header">
-        <view class="section-title">选择部位</view>
-        <view class="select-all" bindtap="toggleAll">
-          {{allSelected ? '取消全选' : '全选'}}
-        </view>
+    <!-- 型号选择下拉 -->
+    <view class="model-dropdown" wx:if="{{showModelPicker}}">
+      <view
+        class="model-option {{activeModel === item.code ? 'active' : ''}}"
+        wx:for="{{models}}"
+        wx:key="code"
+        data-code="{{item.code}}"
+        bindtap="onPickModel"
+      >
+        <text class="model-option-code">{{item.code}}</text>
+        <text class="model-option-name">{{item.name}}</text>
+        <text class="model-option-check" wx:if="{{activeModel === item.code}}">✓</text>
       </view>
-      <view class="section-body">
-        <view
-          wx:for="{{prices}}"
-          wx:key="id"
-          class="part-row"
-        >
-          <view class="part-checkbox" data-index="{{index}}" bindtap="togglePart">
-            <view class="checkbox-box {{item.checked ? 'checked' : ''}}">
-              <text wx:if="{{item.checked}}" class="checkbox-icon">✓</text>
+    </view>
+
+    <!-- 遮罩 -->
+    <view class="model-overlay" wx:if="{{showModelPicker}}" bindtap="toggleModelPicker"></view>
+
+    <!-- 报价提示 -->
+    <view class="quote-tip">以下为参考理赔报价（元），勾选部位查看预估总额</view>
+
+    <!-- 部位列表（按区域分组） -->
+    <view class="parts-section">
+      <block wx:for="{{groupedParts}}" wx:key="group">
+        <view class="part-group">
+          <view class="group-header">
+            <view class="group-title">{{item.group}}</view>
+            <view class="group-select" data-gi="{{index}}" bindtap="toggleGroupAll">{{item.groupChecked ? '取消全选' : '全选'}}</view>
+          </view>
+          <view
+            class="part-row"
+            wx:for="{{item.parts}}"
+            wx:for-item="part"
+            wx:key="id"
+            data-gi="{{index}}"
+            data-pi="{{partIndex}}"
+            bindtap="togglePart"
+          >
+            <view class="part-left">
+              <view class="checkbox-box {{part.checked ? 'checked' : ''}}">
+                <text wx:if="{{part.checked}}">✓</text>
+              </view>
+              <view class="part-name">{{part.part_name}}</view>
             </view>
+            <view class="part-price">¥{{part.price_fmt}}</view>
           </view>
-          <view class="part-info">
-            <view class="part-name">{{item.part_name}}</view>
-            <view class="part-category">{{item.category || '--'}}</view>
-          </view>
-          <view class="part-price">¥{{item.price_fmt}}</view>
         </view>
-      </view>
+      </block>
     </view>
 
     <!-- 汇总 -->
-    <view wx:if="{{selectedParts.length > 0}}" class="summary-section card">
-      <view class="summary-title">报价汇总</view>
-      <view
-        wx:for="{{selectedParts}}"
-        wx:key="id"
-        class="summary-row"
-      >
-        <view class="summary-name">{{item.part_name}}</view>
-        <view class="summary-price">¥{{item.price_fmt}}</view>
+    <view class="summary-bar" wx:if="{{selectedParts.length > 0}}">
+      <view class="summary-info">
+        <text class="summary-count">{{selectedParts.length}} 项</text>
+        <text class="summary-total">¥{{totalPrice}}</text>
       </view>
-      <view class="summary-divider"></view>
-      <view class="summary-total">
-        <view class="summary-total-label">预估总额</view>
-        <view class="summary-total-price">¥{{totalPrice}}</view>
-      </view>
-      <view class="summary-note">*以上价格为参考报价，实际理赔金额以门店核定为准</view>
+      <view class="summary-note">*参考报价，以门店核定为准</view>
     </view>
 
     <!-- 空选择提示 -->
-    <view wx:else class="empty-state">
-      <view class="empty-state-icon">📊</view>
-      <view class="empty-state-text">请勾选需要报价的部位</view>
+    <view class="empty-hint" wx:else>
+      <text>👆 勾选上方部位即可查看报价汇总</text>
     </view>
   </block>
 </view>

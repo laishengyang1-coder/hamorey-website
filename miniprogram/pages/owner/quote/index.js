@@ -1,97 +1,164 @@
 /**
  * 车主端 — 部位报价页
- * 13部位复选框 + 汇总总价
+ * 选择产品型号 → 按车身区域分组展示部位 → 勾选汇总报价
  */
-
 const api = require('../../../utils/api');
+
+// 车身部位分组
+const PART_GROUPS = {
+  '前部': ['前保险杠', '前机盖', '前挡', '左前翼子板', '右前翼子板'],
+  '侧面': ['左前门', '右前门', '左后门', '右后门', '侧挡'],
+  '后部': ['后保险杠', '左后翼子板', '右后翼子板', '后备箱盖'],
+  '顶部': ['车顶', '天窗冰甲整体']
+};
 
 Page({
   data: {
-    modelCode: '',
-    modelName: '',
+    models: [],          // 可选型号列表
+    activeModel: '',     // 当前选中型号 code
+    activeModelName: '', // 当前选中型号名称
+    showModelPicker: false,
     loading: true,
     error: '',
-    prices: [],
-    allSelected: false,
+    allPrices: [],       // 全部价格原始数据
+    groupedParts: [],    // 按区域分组后的部位 [{group, parts: [...]}]
     selectedParts: [],
     totalPrice: 0
   },
 
-  /**
-   * 重新计算选中汇总
-   */
-  recomputeSelection() {
-    const prices = this.data.prices;
-    const selectedParts = prices.filter(p => p.checked);
-    const sum = selectedParts.reduce((acc, p) => acc + (p.price_cents || 0), 0);
-    const totalPrice = Math.round(sum / 100);
-    this.setData({ selectedParts, totalPrice });
-  },
-
   onLoad(options) {
-    const { model_code } = options;
-    this.setData({
-      modelCode: model_code ? decodeURIComponent(model_code) : ''
-    });
-    this.loadPrices();
+    const { model_code } = options || {};
+    this.loadAllPrices(model_code ? decodeURIComponent(model_code) : '');
   },
 
-  /**
-   * 加载报价数据
-   */
-  async loadPrices() {
+  /** 加载全部报价，提取可选型号列表 */
+  async loadAllPrices(preselect) {
     this.setData({ loading: true, error: '' });
 
-    const params = {};
-    if (this.data.modelCode) {
-      params.model_code = this.data.modelCode;
-    }
-
-    const res = await api.get('/public/claim-prices', params, { loading: false });
+    const res = await api.get('/public/claim-prices', {}, { auth: false, loading: false });
 
     if (!res.ok) {
-      this.setData({ loading: false, error: res.message || '加载报价失败' });
+      this.setData({ loading: false, error: res.message || '加载失败' });
       return;
     }
 
-    const prices = (res.data.prices || []).map(p => ({
-      ...p,
-      checked: false,
-      price_fmt: Math.round((p.price_cents || 0) / 100) + ''
-    }));
+    const raw = (res.data && res.data.prices) ? res.data.prices : [];
+    if (raw.length === 0) {
+      this.setData({ loading: false, error: '暂无报价数据' });
+      return;
+    }
 
-    const firstItem = prices.length > 0 ? prices[0] : {};
+    // 提取不重复的型号
+    const modelMap = {};
+    raw.forEach(p => {
+      if (p.model_code && !modelMap[p.model_code]) {
+        modelMap[p.model_code] = { code: p.model_code, name: p.model_name || p.model_code };
+      }
+    });
+    const models = Object.values(modelMap);
+
+    // 确定当前型号
+    let activeModel = models.length > 0 ? models[0].code : '';
+    if (preselect && modelMap[preselect]) activeModel = preselect;
+
+    this.setData({ models, allPrices: raw, loading: false });
+    this.switchModel(activeModel);
+  },
+
+  /** 切换型号 */
+  switchModel(code) {
+    const model = this.data.models.find(m => m.code === code);
+    if (!model) return;
+
+    // 筛选当前型号的价格
+    const modelPrices = this.data.allPrices
+      .filter(p => p.model_code === code)
+      .map(p => ({
+        ...p,
+        checked: false,
+        price_fmt: Math.round((p.price_cents || 0) / 100) + ''
+      }));
+
+    // 按区域分组
+    const groups = [];
+    const groupedNames = new Set();
+    Object.keys(PART_GROUPS).forEach(group => {
+      const parts = [];
+      PART_GROUPS[group].forEach(name => {
+        const found = modelPrices.find(p => p.part_name === name);
+        if (found) {
+          parts.push(found);
+          groupedNames.add(name);
+        }
+      });
+      if (parts.length > 0) groups.push({ group, parts });
+    });
+    // 未匹配的放"其他"
+    const others = modelPrices.filter(p => !groupedNames.has(p.part_name));
+    if (others.length > 0) groups.push({ group: '其他', parts: others });
 
     this.setData({
-      loading: false,
-      prices,
-      modelName: firstItem.model_name || '',
-      modelCode: firstItem.model_code || this.data.modelCode
+      groupedParts: groups,
+      activeModel: code,
+      activeModelName: model.name,
+      showModelPicker: false,
+      selectedParts: [],
+      totalPrice: 0
     });
   },
 
-  /**
-   * 切换部位选择
-   */
-  togglePart(e) {
-    const index = e.currentTarget.dataset.index;
-    const prices = this.data.prices;
-    prices[index].checked = !prices[index].checked;
-
-    const allSelected = prices.every(p => p.checked);
-
-    this.setData({ prices, allSelected });
-    this.recomputeSelection();
+  /** 打开/关闭型号选择器 */
+  toggleModelPicker() {
+    this.setData({ showModelPicker: !this.data.showModelPicker });
   },
 
-  toggleAll() {
-    const allSelected = !this.data.allSelected;
-    const prices = this.data.prices.map(p => ({
-      ...p,
-      checked: allSelected
-    }));
+  /** 点击选择型号 */
+  onPickModel(e) {
+    this.switchModel(e.currentTarget.dataset.code);
+  },
 
-    this.setData({ prices, allSelected });
-    this.recomputeSelection();
+  /** 切换部位 */
+  togglePart(e) {
+    const { gi, pi } = e.currentTarget.dataset;
+    const groups = this.data.groupedParts;
+    groups[gi].parts[pi].checked = !groups[gi].parts[pi].checked;
+    this.setData({ groupedParts: groups });
+    this.recompute();
+  },
+
+  /** 切换整组 */
+  toggleGroupAll(e) {
+    const gi = e.currentTarget.dataset.gi;
+    const groups = this.data.groupedParts;
+    const allChecked = groups[gi].parts.every(p => p.checked);
+    groups[gi].parts.forEach(p => p.checked = !allChecked);
+    this.setData({ groupedParts: groups });
+    this.recompute();
+  },
+
+  /** 全选/取消全选当前型号 */
+  toggleAll() {
+    const groups = this.data.groupedParts;
+    const anyChecked = groups.some(g => g.parts.some(p => p.checked));
+    groups.forEach(g => g.parts.forEach(p => p.checked = !anyChecked));
+    this.setData({ groupedParts: groups });
+    this.recompute();
+  },
+
+  /** 重新计算汇总（同时更新各组的 checked 状态） */
+  recompute() {
+    const selected = [];
+    let sum = 0;
+    this.data.groupedParts.forEach(g => {
+      const allChecked = g.parts.length > 0 && g.parts.every(p => p.checked);
+      g.groupChecked = allChecked;
+      g.parts.forEach(p => {
+        if (p.checked) {
+          selected.push(p);
+          sum += p.price_cents || 0;
+        }
+      });
+    });
+    this.setData({ selectedParts: selected, totalPrice: Math.round(sum / 100) });
   }
 });

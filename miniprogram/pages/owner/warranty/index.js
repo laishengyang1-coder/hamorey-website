@@ -51,9 +51,5 @@ Page({
     wx.navigateTo({
       url: `/pages/owner/result/index?q=${encodeURIComponent(kw)}`
     });
-  },
-
-  goStoreLogin() {
-    wx.navigateTo({ url: '/pages/store/login/index' });
   }
 });

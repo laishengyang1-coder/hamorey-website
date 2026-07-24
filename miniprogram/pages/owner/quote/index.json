@@ -1,6 +1,4 @@
 {
   "navigationBarTitleText": "部位报价",
-  "usingComponents": {
-    "nav-bar": "/components/nav-bar/index"
-  }
+  "usingComponents": {}
 }
