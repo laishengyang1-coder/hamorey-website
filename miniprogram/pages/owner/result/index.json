@@ -1,6 +1,4 @@
 {
   "navigationBarTitleText": "查询结果",
-  "usingComponents": {
-    "nav-bar": "/components/nav-bar/index"
-  }
+  "usingComponents": {}
 }

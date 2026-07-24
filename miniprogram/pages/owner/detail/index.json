@@ -1,6 +1,4 @@
 {
   "navigationBarTitleText": "质保卡详情",
-  "usingComponents": {
-    "nav-bar": "/components/nav-bar/index"
-  }
+  "usingComponents": {}
 }

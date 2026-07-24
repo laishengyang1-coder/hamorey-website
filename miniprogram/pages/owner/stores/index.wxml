@@ -48,7 +48,7 @@
 
       <view class="store-info">
         <view class="store-header">
-          <view class="store-name">{{item.public_name}}</view>
+          <view class="store-name">{{item.display_name}}</view>
           <view class="store-level">{{item.auth_level === 'HEBC' ? '品牌灯塔店' : item.auth_level === 'HSS' ? '标准服务中心' : item.auth_level === 'HSP' ? '优选施工点' : '授权服务点'}}</view>
         </view>
 
@@ -60,10 +60,6 @@
         </view>
 
         <view class="store-contact">
-          <view class="store-phone" wx:if="{{item.phone}}" bindtap="callStore" data-phone="{{item.phone}}">
-            <text class="phone-icon">📞</text>
-            <text class="phone-text">{{item.phone}}</text>
-          </view>
           <view class="store-hours" wx:if="{{item.business_hours}}">
             <text class="hours-icon">🕐</text>
             <text class="hours-text">{{item.business_hours}}</text>

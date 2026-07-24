@@ -1,131 +1,78 @@
-<view class="page-container">
-<nav-bar title="质保卡详情" />
-  <!-- Loading -->
-  <view wx:if="{{loading}}" class="loading-container">
-    <view class="loading-spinner"></view>
-    <view class="loading-text">加载中...</view>
-  </view>
+<view class="detail-page">
+  <!-- 背景图 -->
+  <image class="detail-bg" src="/images/home-bg.jpg" mode="aspectFill" />
+  <view class="detail-bg-overlay"></view>
 
-  <!-- Error -->
-  <view wx:elif="{{error}}" class="error-container">
-    <view class="error-icon">😞</view>
-    <view class="error-text">{{error}}</view>
-    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadData">重试</view>
-  </view>
-
-  <!-- 质保卡详情 -->
-  <block wx:else>
-    <!-- 质保卡头部 -->
-    <view class="certificate-header">
-      <view class="certificate-badge">
-        <text class="certificate-badge-icon">🛡️</text>
-        <text class="certificate-badge-text">电子质保卡</text>
-      </view>
-      <view class="certificate-no">编号：{{record.certificate_no || record.id}}</view>
-      <view class="certificate-status">
-        <view class="tag tag-success">保障中</view>
-      </view>
+  <!-- 内容层 -->
+  <scroll-view class="detail-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+    <!-- Loading -->
+    <view wx:if="{{loading}}" class="loading-container">
+      <view class="loading-spinner"></view>
+      <view class="loading-text">加载中...</view>
     </view>
 
-    <!-- 质保卡信息 -->
-    <view class="section">
-      <view class="section-header">
-        <view class="section-title">质保信息</view>
-      </view>
-      <view class="section-body">
-        <view class="info-row">
-          <view class="info-row-label">产品名称</view>
-          <view class="info-row-value text-bold">{{record.product_name_snapshot || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">产品型号</view>
-          <view class="info-row-value">{{record.product_model_snapshot || record.model_name || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">质保年限</view>
-          <view class="info-row-value">{{record.warranty_years_snapshot || '--'}}年</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">质保价格</view>
-          <view class="info-row-value text-primary text-bold">{{record.warranty_price_text || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">质保码</view>
-          <view class="info-row-value">{{record.warranty_code || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">施工日期</view>
-          <view class="info-row-value">{{record.installation_date || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">到期日期</view>
-          <view class="info-row-value text-primary text-bold">{{record.warranty_expiry_date || '--'}}</view>
-        </view>
-      </view>
+    <!-- Error -->
+    <view wx:elif="{{error}}" class="error-container">
+      <view class="error-text">{{error}}</view>
+      <view class="retry-btn" bindtap="loadData">重试</view>
     </view>
 
-    <!-- 车辆信息 -->
-    <view class="section">
-      <view class="section-header">
-        <view class="section-title">车辆信息</view>
+    <!-- 质保卡详情 -->
+    <block wx:else>
+      <!-- 质保卡头部 -->
+      <view class="cert-header">
+        <view class="cert-badge">🛡️</view>
+        <view class="cert-title">电子质保卡</view>
+        <view class="cert-no">NO. {{record.certificate_no || record.id}}</view>
+        <view class="cert-status tag-success">保障中</view>
       </view>
-      <view class="section-body">
-        <view class="info-row">
-          <view class="info-row-label">车牌号</view>
-          <view class="info-row-value">{{record.plate_no_snapshot || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">车架号</view>
-          <view class="info-row-value">{{record.vin_snapshot || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">车辆品牌</view>
-          <view class="info-row-value">{{record.vehicle_brand_snapshot || '--'}}</view>
-        </view>
-        <view class="info-row">
-          <view class="info-row-label">车辆型号</view>
-          <view class="info-row-value">{{record.vehicle_model_snapshot || '--'}}</view>
-        </view>
-      </view>
-    </view>
 
-    <!-- 施工门店 -->
-    <view class="section">
-      <view class="section-header">
-        <view class="section-title">施工门店</view>
+      <!-- 产品信息卡片 -->
+      <view class="info-card">
+        <view class="card-title">质保信息</view>
+        <view class="info-row"><text class="info-label">产品名称</text><text class="info-value strong">{{record.product_name_snapshot || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">产品型号</text><text class="info-value">{{record.product_model_snapshot || record.model_name || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">质保年限</text><text class="info-value">{{record.warranty_years_snapshot || '--'}} 年</text></view>
+        <view class="info-row"><text class="info-label">质保价格</text><text class="info-value accent">{{record.warranty_price_text || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">质保码</text><text class="info-value">{{record.warranty_code || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">施工日期</text><text class="info-value">{{record.installation_date || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">到期日期</text><text class="info-value accent">{{record.warranty_expiry_date || '--'}}</text></view>
       </view>
-      <view class="section-body">
-        <view class="info-row">
-          <view class="info-row-label">门店名称</view>
-          <view class="info-row-value">{{record.store_name_snapshot || '--'}}</view>
-        </view>
-      </view>
-    </view>
 
-    <!-- 施工照片 -->
-    <view wx:if="{{recordPhotos.length > 0}}" class="section">
-      <view class="section-header">
-        <view class="section-title">施工照片</view>
+      <!-- 车辆信息 -->
+      <view class="info-card">
+        <view class="card-title">车辆信息</view>
+        <view class="info-row"><text class="info-label">车牌号</text><text class="info-value">{{record.plate_no_snapshot || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">车架号</text><text class="info-value">{{record.vin_snapshot || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">品牌</text><text class="info-value">{{record.vehicle_brand_snapshot || '--'}}</text></view>
+        <view class="info-row"><text class="info-label">型号</text><text class="info-value">{{record.vehicle_model_snapshot || '--'}}</text></view>
       </view>
-      <view class="section-body">
+
+      <!-- 施工门店 -->
+      <view class="info-card">
+        <view class="card-title">施工门店</view>
+        <view class="info-row"><text class="info-label">门店名称</text><text class="info-value">{{record.store_name_snapshot || '--'}}</text></view>
+      </view>
+
+      <!-- 施工照片 -->
+      <view wx:if="{{recordPhotos.length > 0}}" class="info-card">
+        <view class="card-title">施工照片</view>
         <view class="photos-grid">
           <image
-            wx:for="{{recordPhotos}}"
-            wx:key="id"
-            src="{{item.url || item.file_key}}"
-            mode="aspectFill"
-            class="photo-item"
-            data-url="{{item.url || item.file_key}}"
-            bindtap="previewPhoto"
+            wx:for="{{recordPhotos}}" wx:key="id"
+            src="{{item.url || item.file_key}}" mode="aspectFill"
+            class="photo-item" data-url="{{item.url || item.file_key}}" bindtap="previewPhoto"
           />
         </view>
       </view>
-    </view>
 
-    <!-- 部位报价入口 -->
-    <view class="quote-entry" bindtap="goQuote">
-      <text>📊 查看部位理赔报价</text>
-      <text class="warranty-arrow">›</text>
-    </view>
-  </block>
+      <!-- 部位报价入口 -->
+      <view class="quote-btn" bindtap="goQuote">
+        <text>📊 查看部位理赔报价</text>
+        <text class="arrow">›</text>
+      </view>
+
+      <view class="safe-bottom"></view>
+    </block>
+  </scroll-view>
 </view>
