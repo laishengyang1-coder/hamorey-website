@@ -58,19 +58,19 @@
 
     <!-- 部位列表（按区域分组） -->
     <view class="parts-section" wx:if="{{groupedParts.length > 0}}">
-      <block wx:for="{{groupedParts}}" wx:key="group">
+      <block wx:for="{{groupedParts}}" wx:for-index="gi" wx:key="group">
         <view class="part-group">
           <view class="group-header">
             <view class="group-title">{{item.group}}</view>
-            <view class="group-select" data-gi="{{index}}" bindtap="toggleGroupAll">{{item.groupChecked ? '取消全选' : '全选'}}</view>
+            <view class="group-select" data-gi="{{gi}}" bindtap="toggleGroupAll">{{item.groupChecked ? '取消全选' : '全选'}}</view>
           </view>
           <view
             class="part-row"
             wx:for="{{item.parts}}"
             wx:for-item="part"
             wx:key="id"
-            data-gi="{{index}}"
-            data-pi="{{partIndex}}"
+            data-gi="{{gi}}"
+            data-pi="{{index}}"
             bindtap="togglePart"
           >
             <view class="part-left">
