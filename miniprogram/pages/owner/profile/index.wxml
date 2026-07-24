@@ -1,0 +1,55 @@
+<view class="profile-page">
+  <!-- 用户信息卡片 -->
+  <view class="profile-header">
+    <view class="profile-card">
+      <image class="profile-avatar" src="/images/logo.png" mode="aspectFit" />
+      <view class="profile-info">
+        <view class="profile-name">
+          {{isLoggedIn ? (userInfo.name || userInfo.username || roleText) : '车主 / 访客'}}
+        </view>
+        <view class="profile-desc">
+          {{isLoggedIn ? (userInfo.organization_name || '已登录') : '登录后可管理质保、门店等业务'}}
+        </view>
+      </view>
+      <view wx:if="{{isLoggedIn}}" class="profile-role">{{roleText}}</view>
+    </view>
+  </view>
+
+  <!-- 登录态切换 -->
+  <view class="profile-actions">
+    <view wx:if="{{!isLoggedIn}}" class="btn-primary action-btn" bindtap="goLogin">
+      <text class="btn-icon">🏪</text>
+      <text>门店 / 省代登录</text>
+    </view>
+    <view wx:else class="btn-outline action-btn" bindtap="doLogout">
+      <text>退出登录</text>
+    </view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="menu-list">
+    <view
+      class="menu-item"
+      wx:for="{{menuItems}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      data-page="{{item.page}}"
+      bindtap="onMenuTap"
+    >
+      <view class="menu-icon">{{item.icon}}</view>
+      <view class="menu-title">{{item.title}}</view>
+      <view class="menu-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 品牌信息 -->
+  <view class="brand-footer">
+    <image class="brand-footer-logo" src="/images/logo.png" mode="aspectFit" />
+    <view class="brand-footer-text">和膜 HAMOREY · 质保服务系统</view>
+    <view class="brand-footer-version">v1.0</view>
+  </view>
+
+  <!-- 底部安全区占位 -->
+  <view class="safe-bottom-placeholder"></view>
+<custom-tab-bar />
+</view>

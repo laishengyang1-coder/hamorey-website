@@ -1,5 +1,8 @@
 /**
  * 自定义 TabBar — 根据用户角色动态显示
+ * 公共访客：首页 / 产品 / 质保 / 我的
+ * 已登录门店：首页 / 质保记录 / 质保码 / 积分
+ * 已登录省代：首页 / 门店 / 质保码 / 积分
  */
 
 Component({
@@ -27,7 +30,7 @@ Component({
      */
     updateTabs() {
       const app = getApp();
-      // 后端 / globalData 中角色为大写：STORE / PROVINCE（与 DB、网页端一致）
+      // 后端 / globalData 中角色为大写：STORE / PROVINCE / HQ_ADMIN（与 DB、网页端一致）
       const role = ((app && app.globalData && app.globalData.role) || '').toUpperCase();
 
       let tabs = [];
@@ -87,6 +90,35 @@ Component({
             text: '积分',
             icon: '/images/tab-points.png',
             iconSelected: '/images/tab-points-active.png'
+          }
+        ];
+      } else {
+        // 公共访客 / 未登录：品牌首页、产品、质保、我的
+        visible = true;
+        tabs = [
+          {
+            pagePath: '/pages/owner/query/index',
+            text: '首页',
+            textIcon: '🏠',
+            activeColor: '#5C1A1A'
+          },
+          {
+            pagePath: '/pages/owner/product/index',
+            text: '产品',
+            textIcon: '💎',
+            activeColor: '#5C1A1A'
+          },
+          {
+            pagePath: '/pages/owner/warranty/index',
+            text: '质保',
+            textIcon: '🛡️',
+            activeColor: '#5C1A1A'
+          },
+          {
+            pagePath: '/pages/owner/profile/index',
+            text: '我的',
+            textIcon: '👤',
+            activeColor: '#5C1A1A'
           }
         ];
       }

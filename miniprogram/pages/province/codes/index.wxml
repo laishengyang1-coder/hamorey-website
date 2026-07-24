@@ -34,4 +34,5 @@
   <view wx:if="{{hasMore && codes.length > 0}}" class="load-more" bindtap="loadMore">
     <text class="load-more-text">{{loadingMore ? '加载中...' : '加载更多'}}</text>
   </view>
+<custom-tab-bar />
 </view>

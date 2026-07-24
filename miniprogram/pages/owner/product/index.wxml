@@ -1,0 +1,64 @@
+<view class="product-page">
+  <!-- 顶部横幅 -->
+  <view class="product-hero">
+    <image class="hero-image" src="{{activeSeriesData.image}}" mode="aspectFill" />
+    <view class="hero-overlay"></view>
+    <view class="hero-content">
+      <view class="hero-icon">{{activeSeriesData.icon}}</view>
+      <view class="hero-title">{{activeSeriesData.title}}</view>
+      <view class="hero-subtitle">{{activeSeriesData.subtitle}}</view>
+    </view>
+  </view>
+
+  <!-- 系列切换 -->
+  <view class="series-tabs">
+    <view
+      class="series-tab {{activeSeries === item.key ? 'active' : ''}}"
+      wx:for="{{series}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      bindtap="switchSeries"
+    >
+      <text class="tab-icon">{{item.icon}}</text>
+      <text class="tab-text">{{item.title}}</text>
+    </view>
+  </view>
+
+  <!-- 产品详情 -->
+  <view class="product-detail">
+    <view class="detail-card">
+      <view class="detail-title">{{activeSeriesData.title}}</view>
+      <view class="detail-subtitle">{{activeSeriesData.subtitle}}</view>
+      <view class="detail-desc">{{activeSeriesData.desc}}</view>
+    </view>
+
+    <view class="feature-list">
+      <view class="feature-item">
+        <view class="feature-dot" style="background: {{activeSeriesData.color}};"></view>
+        <view class="feature-text">原厂级材料品质</view>
+      </view>
+      <view class="feature-item">
+        <view class="feature-dot" style="background: {{activeSeriesData.color}};"></view>
+        <view class="feature-text">全国授权门店施工</view>
+      </view>
+      <view class="feature-item">
+        <view class="feature-dot" style="background: {{activeSeriesData.color}};"></view>
+        <view class="feature-text">电子质保可查可验</view>
+      </view>
+      <view class="feature-item">
+        <view class="feature-dot" style="background: {{activeSeriesData.color}};"></view>
+        <view class="feature-text">售后理赔快速响应</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <view class="btn-primary action-btn" bindtap="goQuote">查看部位报价</view>
+    <view class="btn-outline action-btn" bindtap="goStores">查找授权门店</view>
+  </view>
+
+  <!-- 底部安全区占位 -->
+  <view class="safe-bottom-placeholder"></view>
+<custom-tab-bar />
+</view>

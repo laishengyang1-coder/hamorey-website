@@ -8,18 +8,27 @@
     bindtap="switchTab"
   >
     <view class="tab-icon">
-      <image
-        wx:if="{{current === index && item.iconSelected}}"
-        src="{{item.iconSelected}}"
-        mode="aspectFit"
-        class="tab-icon-img"
-      />
-      <image
-        wx:else
-        src="{{item.icon}}"
-        mode="aspectFit"
-        class="tab-icon-img"
-      />
+      <!-- 图片图标（门店/省代） -->
+      <block wx:if="{{item.icon}}">
+        <image
+          wx:if="{{current === index && item.iconSelected}}"
+          src="{{item.iconSelected}}"
+          mode="aspectFit"
+          class="tab-icon-img"
+        />
+        <image
+          wx:else
+          src="{{item.icon}}"
+          mode="aspectFit"
+          class="tab-icon-img"
+        />
+      </block>
+      <!-- 文字图标（公共页） -->
+      <block wx:else>
+        <view class="tab-icon-text" style="color: {{current === index ? (item.activeColor || '#5C1A1A') : '#999999'}};">
+          {{item.textIcon}}
+        </view>
+      </block>
     </view>
     <view class="tab-text">{{item.text}}</view>
   </view>

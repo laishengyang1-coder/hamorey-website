@@ -1,60 +1,190 @@
-<view class="page-container">
-  <!-- 全屏背景图轮播：铺满屏幕，自动切换 -->
-  <swiper class="page-bg-swiper" indicator-dots="{{true}}" autoplay="{{true}}" circular="{{true}}" interval="{{5000}}" duration="{{800}}" indicator-color="rgba(255,255,255,0.3)" indicator-active-color="#FFFFFF">
-    <swiper-item wx:for="{{bgList}}" wx:key="*this">
-      <image class="page-bg" src="{{item}}" mode="aspectFill" />
-    </swiper-item>
-  </swiper>
-  <view class="page-bg-overlay"></view>
-
-  <!-- 内容层 -->
-  <view class="page-content">
-    <!-- 顶部品牌区 -->
-    <view class="brand-header">
-      <image class="brand-logo-img" src="/images/logo.png" mode="aspectFit" />
-      <view class="brand-slogan">和膜 不止于膜</view>
-      <view class="brand-subtitle">HAMOREY 质保查询系统</view>
+<view class="home-page">
+  <!-- 顶部品牌区 + 搜索 -->
+  <view class="home-header">
+    <view class="brand-row">
+      <image class="brand-logo" src="/images/logo.png" mode="aspectFit" />
+      <view class="brand-text">
+        <view class="brand-title">和膜 HAMOREY</view>
+        <view class="brand-slogan">不止于膜 · 更守护每一程</view>
+      </view>
     </view>
 
-    <!-- 搜索区域 -->
-    <view class="search-section">
-      <view class="search-card">
-        <input
-          class="search-input"
-          type="text"
-          maxlength="50"
-          placeholder="请输入完整的手机号码 / 车架号 / 车牌号"
-          placeholder-class="search-placeholder"
-          value="{{keyword}}"
-          bindinput="onKeywordInput"
-          bindconfirm="doSearch"
-          focus="{{true}}"
-        />
+    <view class="home-search-bar">
+      <view class="search-icon">🔍</view>
+      <input
+        class="search-input"
+        type="text"
+        maxlength="50"
+        placeholder="搜索质保码 / 车牌 / 手机号 / 产品"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onKeywordInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+      />
+      <view class="scan-icon" bindtap="onScan">
+        <text class="scan-icon-text">▣</text>
       </view>
-      <view class="search-btn" bindtap="doSearch">
-        <text class="search-btn-text">查询</text>
-      </view>
-      <view class="search-hint">系统将自动识别查询类型</view>
+      <view class="search-btn" bindtap="onSearch">查询</view>
     </view>
+  </view>
 
-    <!-- 底部区域 -->
-    <view class="footer-section">
-      <view class="store-entry" bindtap="goStoreLogin">
-        <text class="store-entry-icon">🏪</text>
-        <text class="store-entry-text">门店 / 省代登录</text>
-        <text class="store-entry-arrow">›</text>
+  <!-- Banner 轮播 -->
+  <view class="banner-section">
+    <swiper
+      class="banner-swiper"
+      indicator-dots="{{true}}"
+      autoplay="{{true}}"
+      circular="{{true}}"
+      interval="{{5000}}"
+      duration="{{600}}"
+      indicator-color="rgba(255,255,255,0.35)"
+      indicator-active-color="#C8A96E"
+    >
+      <swiper-item wx:for="{{banners}}" wx:key="index">
+        <view class="banner-item">
+          <image class="banner-image" src="{{item.image}}" mode="aspectFill" />
+          <view class="banner-overlay"></view>
+          <view class="banner-content">
+            <view class="banner-tag">{{item.tag}}</view>
+            <view class="banner-title">{{item.title}}</view>
+            <view class="banner-subtitle">{{item.subtitle}}</view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 2x2 核心功能入口 -->
+  <view class="function-grid">
+    <view
+      class="function-card"
+      wx:for="{{functions}}"
+      wx:key="key"
+      data-page="{{item.page}}"
+      bindtap="onFunctionTap"
+    >
+      <view class="function-info">
+        <view class="function-title">{{item.title}}</view>
+        <view class="function-subtitle">{{item.subtitle}}</view>
       </view>
-
-      <view class="brand-footer">
-        <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
+      <view class="function-icon" style="background: {{item.iconBg}};">
+        <text class="function-icon-text">{{item.icon}}</text>
       </view>
+    </view>
+  </view>
 
-      <view class="disclaimer">
-        <view class="disclaimer-title">1. 免责声明</view>
-        <view class="disclaimer-text">
-          ① 因不可抗力、外力撞击、强酸碱腐蚀、不当保养或人为损坏导致的车体及膜面损伤，和膜及施工单位不承担相关责任。
+  <!-- 施工案例 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="section-title-text">和膜案例</text>
+        <text class="section-title-en">SUPERFILM CASE</text>
+      </view>
+      <view class="section-more" bindtap="goBrandIntro">
+        <text>更多</text>
+        <text class="section-more-arrow">›</text>
+      </view>
+    </view>
+    <scroll-view class="case-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+      <view class="case-list">
+        <view
+          class="case-card"
+          wx:for="{{cases}}"
+          wx:key="index"
+          data-index="{{index}}"
+          bindtap="onCaseTap"
+        >
+          <image class="case-image" src="{{item.image}}" mode="aspectFill" />
+          <view class="case-overlay"></view>
+          <view class="case-content">
+            <view class="case-title">{{item.title}}</view>
+            <view class="case-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 产品系列 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="section-title-text">产品系列</text>
+        <text class="section-title-en">PRODUCT SERIES</text>
+      </view>
+      <view class="section-more" bindtap="goBrandIntro">
+        <text>全部</text>
+        <text class="section-more-arrow">›</text>
+      </view>
+    </view>
+    <view class="series-grid">
+      <view
+        class="series-card"
+        wx:for="{{productSeries}}"
+        wx:key="key"
+        data-key="{{item.key}}"
+        bindtap="onSeriesTap"
+      >
+        <image class="series-image" src="{{item.image}}" mode="aspectFill" />
+        <view class="series-overlay"></view>
+        <view class="series-content">
+          <view class="series-icon">{{item.icon}}</view>
+          <view class="series-title">{{item.title}}</view>
+          <view class="series-subtitle">{{item.subtitle}}</view>
+          <view class="series-desc">{{item.desc}}</view>
         </view>
       </view>
     </view>
   </view>
+
+  <!-- 品牌介绍 -->
+  <view class="section">
+    <view class="section-header center">
+      <view class="section-title">
+        <text class="section-title-text">品牌介绍</text>
+        <text class="section-title-en">BRAND INTRODUCTION</text>
+      </view>
+    </view>
+    <view class="brand-card" bindtap="goBrandIntro">
+      <view class="brand-content">
+        <view class="brand-name">{{brand.title}}</view>
+        <view wx:for="{{brand.paragraphs}}" wx:key="index" class="brand-paragraph">{{item}}</view>
+      </view>
+      <image class="brand-image" src="{{brand.image}}" mode="aspectFit" />
+    </view>
+  </view>
+
+  <!-- 授权门店 / 服务网络 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="section-title-text">授权门店</text>
+        <text class="section-title-en">AUTHORIZED STORES</text>
+      </view>
+      <view class="section-more" bindtap="goStores">
+        <text>查看网络</text>
+        <text class="section-more-arrow">›</text>
+      </view>
+    </view>
+    <view class="store-card" bindtap="goStores">
+      <view class="store-card-content">
+        <view class="store-card-title">全国授权服务网络</view>
+        <view class="store-card-desc">覆盖多省的优质门店，为您提供专业施工与售后服务。</view>
+      </view>
+      <view class="store-card-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 免责声明 -->
+  <view class="disclaimer-section">
+    <view class="disclaimer-title">免责声明</view>
+    <view class="disclaimer-text">
+      因不可抗力、外力撞击、强酸碱腐蚀、不当保养或人为损坏导致的车体及膜面损伤，和膜及施工单位不承担相关责任。
+    </view>
+  </view>
+
+  <!-- 底部安全区占位（配合自定义 tabBar） -->
+  <view class="safe-bottom-placeholder"></view>
+<custom-tab-bar />
 </view>

@@ -1,215 +1,541 @@
-.page-container {
-  position: relative;
+/* 和膜 HAMOREY 品牌首页样式 */
+.home-page {
   min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 顶部品牌区 + 搜索 */
+.home-header {
+  background: var(--color-primary);
+  padding: 32rpx 32rpx 48rpx;
+  border-radius: 0 0 32rpx 32rpx;
+  box-shadow: var(--shadow-md);
+}
+
+.brand-row {
   display: flex;
-  flex-direction: column;
-  background: #000000;
-  overflow: hidden;
-}
-
-/* 全屏背景轮播：铺满整个屏幕，无黑边 */
-.page-bg-swiper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 0;
-  background: #000000;
-}
-
-.page-bg-swiper .page-bg {
-  width: 100%;
-  height: 100%;
-  /* aspectFill 会等比缩放并裁剪溢出部分，保证不留黑边 */
-  /* 此组合写真壁纸比例与竖屏手机接近，裁切幅度小 */
-}
-
-.page-bg-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 1;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.45) 0%,
-    rgba(0, 0, 0, 0.2) 35%,
-    rgba(0, 0, 0, 0.65) 70%,
-    rgba(0, 0, 0, 0.85) 100%
-  );
-}
-
-/* 内容层 */
-.page-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding-top: 48rpx;
-}
-
-/* 品牌头部 */
-.brand-header {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 50rpx 48rpx 20rpx;
+  margin-bottom: 24rpx;
 }
 
-.brand-logo-img {
-  width: 360rpx;
-  height: 105rpx;
-  margin-bottom: 16rpx;
+.brand-logo {
+  width: 84rpx;
+  height: 84rpx;
+  margin-right: 20rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16rpx;
+  padding: 8rpx;
+}
+
+.brand-text {
+  flex: 1;
+}
+
+.brand-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 2rpx;
+  line-height: 1.2;
 }
 
 .brand-slogan {
-  font-size: 32rpx;
-  font-weight: 400;
-  color: #FFFFFF;
-  letter-spacing: 6rpx;
-  margin-bottom: 10rpx;
-  text-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.5);
-}
-
-.brand-subtitle {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 3rpx;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 6rpx;
 }
 
-/* 搜索区域 — 下 1/3 偏下位置 */
-.search-section {
-  padding: 0 72rpx;
-  margin-top: 40vh;
-}
-
-.search-card {
+.home-search-bar {
+  display: flex;
+  align-items: center;
   background: #FFFFFF;
   border-radius: 999rpx;
-  padding: 8rpx 20rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2);
+  padding: 8rpx 8rpx 8rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.search-icon {
+  font-size: 28rpx;
+  color: var(--color-text-light);
+  margin-right: 12rpx;
 }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   height: 64rpx;
-  padding: 0 20rpx;
   font-size: 26rpx;
-  color: #2C2C2C;
-  text-align: center;
+  color: var(--color-text);
 }
 
 .search-placeholder {
-  color: #AAAAAA;
-  font-size: 24rpx;
-  text-align: center;
+  color: var(--color-text-placeholder);
+  font-size: 26rpx;
+}
+
+.scan-icon {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+.scan-icon-text {
+  font-size: 32rpx;
+  color: var(--color-text-secondary);
 }
 
 .search-btn {
-  margin-top: 20rpx;
-  width: 100%;
-  height: 76rpx;
+  height: 64rpx;
+  padding: 0 32rpx;
+  background: var(--color-primary);
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1E5AF5;
-  border-radius: 999rpx;
-  box-shadow: 0 6rpx 18rpx rgba(30, 90, 245, 0.3);
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .search-btn:active {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
-.search-btn-text {
-  font-size: 28rpx;
-  font-weight: 600;
+/* Banner 轮播 */
+.banner-section {
+  margin: 28rpx 32rpx 0;
+}
+
+.banner-swiper {
+  height: 340rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.banner-item {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(44, 20, 18, 0.72) 0%,
+    rgba(44, 20, 18, 0.28) 45%,
+    rgba(44, 20, 18, 0.55) 100%
+  );
+}
+
+.banner-content {
+  position: absolute;
+  left: 28rpx;
+  bottom: 28rpx;
+  right: 28rpx;
+}
+
+.banner-tag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  background: var(--color-accent);
   color: #FFFFFF;
-  letter-spacing: 4rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  border-radius: 8rpx;
+  margin-bottom: 14rpx;
 }
 
-.search-hint {
-  text-align: center;
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 16rpx;
+.banner-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 2rpx;
+  margin-bottom: 8rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
 }
 
-/* 底部区域 — 降低透明度，避免明显黑块 */
-.footer-section {
-  background: rgba(0, 0, 0, 0.38);
-  padding: 36rpx 48rpx 36rpx;
-  margin-top: auto;
+.banner-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
 }
 
-.store-entry {
+/* 2x2 功能入口 */
+.function-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin: 28rpx 32rpx 0;
+}
+
+.function-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 28rpx 24rpx;
+  box-shadow: var(--shadow-sm);
+  border: 1rpx solid var(--color-border-light);
+}
+
+.function-card:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.function-info {
+  flex: 1;
+  min-width: 0;
+  margin-right: 16rpx;
+}
+
+.function-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.function-subtitle {
+  font-size: 20rpx;
+  color: var(--color-text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.function-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14rpx 0;
-  margin-top: 24rpx;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+
+.function-icon-text {
+  font-size: 36rpx;
+  color: #FFFFFF;
+}
+
+/* 内容模块 */
+.section {
+  margin: 36rpx 32rpx 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   margin-bottom: 20rpx;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
-.store-entry-icon {
+.section-header.center {
+  justify-content: center;
+  text-align: center;
+}
+
+.section-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.section-title-en {
+  font-size: 20rpx;
+  color: var(--color-text-light);
+  letter-spacing: 2rpx;
+  margin-top: 4rpx;
+}
+
+.section-more {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: var(--color-primary);
+  font-weight: 500;
+  padding: 6rpx 0;
+}
+
+.section-more-arrow {
+  font-size: 30rpx;
+  margin-left: 4rpx;
+  line-height: 1;
+}
+
+/* 施工案例横向滚动 */
+.case-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.case-list {
+  display: inline-flex;
+  padding: 4rpx 0 8rpx;
+}
+
+.case-card {
+  position: relative;
+  width: 480rpx;
+  height: 280rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.case-card:last-child {
+  margin-right: 0;
+}
+
+.case-image {
+  width: 100%;
+  height: 100%;
+}
+
+.case-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+.case-content {
+  position: absolute;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 24rpx;
+}
+
+.case-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
+}
+
+.case-desc {
   font-size: 22rpx;
-  margin-right: 6rpx;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
 }
 
-.store-entry-text {
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.7);
+/* 产品系列 2x2 */
+.series-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
 }
 
-.store-entry-arrow {
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.4);
-  margin-left: 6rpx;
+.series-card {
+  position: relative;
+  height: 260rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
-/* 免责声明：极小字，置于最底一行 */
-.disclaimer {
-  margin-bottom: 12rpx;
+.series-image {
+  width: 100%;
+  height: 100%;
 }
 
-.disclaimer-title {
-  font-size: 18rpx;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.35);
+.series-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(44, 20, 18, 0.55) 0%,
+    rgba(44, 20, 18, 0.78) 100%
+  );
+}
+
+.series-content {
+  position: absolute;
+  left: 20rpx;
+  right: 20rpx;
+  bottom: 20rpx;
+}
+
+.series-icon {
+  font-size: 36rpx;
+  margin-bottom: 8rpx;
+}
+
+.series-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #FFFFFF;
   margin-bottom: 4rpx;
 }
 
-.disclaimer-text {
+.series-subtitle {
   font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.32);
-  line-height: 1.5;
-  text-align: justify;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 1rpx;
+  margin-bottom: 8rpx;
 }
 
-.brand-footer {
+.series-desc {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* 品牌介绍 */
+.brand-card {
   display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  box-shadow: var(--shadow-sm);
+  border: 1rpx solid var(--color-border-light);
+}
+
+.brand-content {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.brand-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 14rpx;
+}
+
+.brand-paragraph {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 10rpx;
+}
+
+.brand-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.brand-image {
+  width: 160rpx;
+  height: 160rpx;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* 授权门店 */
+.store-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: var(--shadow-md);
+}
+
+.store-card-content {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.store-card-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 10rpx;
+}
+
+.store-card-desc {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.store-card-arrow {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  font-size: 32rpx;
+  color: #FFFFFF;
 }
 
-.brand-footer-text {
-  font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.28);
-  letter-spacing: 2rpx;
+/* 免责声明 */
+.disclaimer-section {
+  margin: 36rpx 32rpx 0;
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16rpx;
 }
 
-/* 废弃的 tab 样式（保留兼容） */
-.search-tabs,
-.search-tab {
-  display: none;
+.disclaimer-title {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 8rpx;
 }
 
-.search-input-area,
-.search-btn-inline {
-  display: none;
+.disclaimer-text {
+  font-size: 20rpx;
+  color: var(--color-text-light);
+  line-height: 1.6;
+}
+
+/* 底部安全区占位 */
+.safe-bottom-placeholder {
+  height: 140rpx;
+}
+
+/* 登录态提示（可选） */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 14rpx;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  border-radius: 8rpx;
+  margin-left: 12rpx;
 }

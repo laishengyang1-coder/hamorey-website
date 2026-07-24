@@ -45,4 +45,5 @@
   <view class="float-btn safe-bottom" bindtap="goCreate">
     <text class="float-btn-text">+ 新增门店</text>
   </view>
+<custom-tab-bar />
 </view>

@@ -1,0 +1,168 @@
+.profile-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.profile-header {
+  padding: 32rpx 32rpx 0;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: var(--shadow-md);
+}
+
+.profile-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 16rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-desc {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  padding: 6rpx 16rpx;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  border-radius: 8rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+/* 登录操作 */
+.profile-actions {
+  padding: 32rpx;
+}
+
+.action-btn {
+  height: 88rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.btn-icon {
+  margin-right: 10rpx;
+  font-size: 32rpx;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2rpx solid var(--color-primary);
+}
+
+.btn-outline:active {
+  background: rgba(92, 26, 26, 0.06);
+}
+
+/* 菜单列表 */
+.menu-list {
+  margin: 0 32rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 28rpx;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  background: rgba(92, 26, 26, 0.04);
+}
+
+.menu-icon {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  margin-right: 20rpx;
+}
+
+.menu-title {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.menu-arrow {
+  font-size: 32rpx;
+  color: var(--color-text-light);
+}
+
+/* 品牌页脚 */
+.brand-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 32rpx 0;
+}
+
+.brand-footer-logo {
+  width: 160rpx;
+  height: 48rpx;
+  opacity: 0.6;
+  margin-bottom: 12rpx;
+}
+
+.brand-footer-text {
+  font-size: 22rpx;
+  color: var(--color-text-light);
+  margin-bottom: 8rpx;
+}
+
+.brand-footer-version {
+  font-size: 20rpx;
+  color: var(--color-text-placeholder);
+}
+
+.safe-bottom-placeholder {
+  height: 140rpx;
+}

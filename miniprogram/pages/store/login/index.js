@@ -45,12 +45,15 @@ Page({
       return;
     }
 
-    // 根据角色跳转（后端返回角色为大写：STORE / PROVINCE）
+    // 根据角色跳转（后端返回角色为大写：STORE / PROVINCE / HQ_ADMIN）
     const role = (res.data.role || '').toUpperCase();
     if (role === 'STORE') {
       wx.switchTab({ url: '/pages/store/index/index' });
     } else if (role === 'PROVINCE') {
       wx.switchTab({ url: '/pages/province/index/index' });
+    } else if (role === 'HQ_ADMIN') {
+      wx.showToast({ title: '总部管理请使用网页后台', icon: 'none' });
+      wx.navigateTo({ url: '/pages/owner/profile/index' });
     } else {
       wx.showToast({ title: '未知角色类型', icon: 'none' });
     }

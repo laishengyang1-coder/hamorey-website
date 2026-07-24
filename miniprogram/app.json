@@ -1,6 +1,9 @@
 {
   "pages": [
     "pages/owner/query/index",
+    "pages/owner/warranty/index",
+    "pages/owner/product/index",
+    "pages/owner/profile/index",
     "pages/owner/result/index",
     "pages/owner/detail/index",
     "pages/owner/quote/index",
@@ -57,18 +60,6 @@
       {
         "pagePath": "pages/province/index/index",
         "text": "省代首页"
-      },
-      {
-        "pagePath": "pages/province/stores/index",
-        "text": "门店"
-      },
-      {
-        "pagePath": "pages/province/codes/index",
-        "text": "省码"
-      },
-      {
-        "pagePath": "pages/province/points/index",
-        "text": "省分"
       }
     ]
   },

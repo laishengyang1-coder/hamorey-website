@@ -25,12 +25,15 @@ Page({
 
     if (!res.ok) { wx.showToast({ title: res.message || '登录失败', icon: 'none' }); return; }
 
-    // 后端返回角色为大写：PROVINCE / STORE（与 DB、网页端一致）
+    // 后端返回角色为大写：PROVINCE / STORE / HQ_ADMIN（与 DB、网页端一致）
     const role = (res.data.role || '').toUpperCase();
     if (role === 'PROVINCE') {
       wx.switchTab({ url: '/pages/province/index/index' });
     } else if (role === 'STORE') {
       wx.switchTab({ url: '/pages/store/index/index' });
+    } else if (role === 'HQ_ADMIN') {
+      wx.showToast({ title: '总部管理请使用网页后台', icon: 'none' });
+      wx.navigateTo({ url: '/pages/owner/profile/index' });
     } else {
       wx.showToast({ title: '未知角色类型', icon: 'none' });
     }

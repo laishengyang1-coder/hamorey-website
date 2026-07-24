@@ -1,0 +1,54 @@
+<view class="warranty-page">
+  <!-- 背景轮播 -->
+  <swiper class="page-bg-swiper" indicator-dots="{{true}}" autoplay="{{true}}" circular="{{true}}" interval="{{5000}}" duration="{{800}}" indicator-color="rgba(255,255,255,0.3)" indicator-active-color="#C8A96E">
+    <swiper-item wx:for="{{bgList}}" wx:key="*this">
+      <image class="page-bg" src="{{item}}" mode="aspectFill" />
+    </swiper-item>
+  </swiper>
+  <view class="page-bg-overlay"></view>
+
+  <!-- 内容层 -->
+  <view class="page-content">
+    <view class="brand-header">
+      <image class="brand-logo-img" src="/images/logo.png" mode="aspectFit" />
+      <view class="brand-slogan">和膜 不止于膜</view>
+      <view class="brand-subtitle">HAMOREY 质保查询系统</view>
+    </view>
+
+    <view class="search-section">
+      <view class="search-card">
+        <input
+          class="search-input"
+          type="text"
+          maxlength="50"
+          placeholder="请输入完整的手机号码 / 车架号 / 车牌号 / 质保码"
+          placeholder-class="search-placeholder"
+          value="{{keyword}}"
+          bindinput="onKeywordInput"
+          bindconfirm="doSearch"
+          focus="{{true}}"
+        />
+      </view>
+      <view class="search-btn" bindtap="doSearch">
+        <text class="search-btn-text">查询质保</text>
+      </view>
+      <view class="search-hint">系统将自动识别查询类型</view>
+    </view>
+
+    <view class="footer-section">
+      <view class="store-entry" bindtap="goStoreLogin">
+        <text class="store-entry-icon">🏪</text>
+        <text class="store-entry-text">门店 / 省代登录</text>
+        <text class="store-entry-arrow">›</text>
+      </view>
+
+      <view class="brand-footer">
+        <text class="brand-footer-text">和膜 HAMOREY · 汽车漆面保护膜质保系统</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区占位 -->
+  <view class="safe-bottom-placeholder"></view>
+<custom-tab-bar />
+</view>

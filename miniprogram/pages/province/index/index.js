@@ -49,9 +49,9 @@ Page({
     }
   },
 
-  goStores() { wx.switchTab({ url: '/pages/province/stores/index' }); },
-  goCodes() { wx.switchTab({ url: '/pages/province/codes/index' }); },
-  goPoints() { wx.switchTab({ url: '/pages/province/points/index' }); },
+  goStores() { wx.reLaunch({ url: '/pages/province/stores/index' }); },
+  goCodes() { wx.reLaunch({ url: '/pages/province/codes/index' }); },
+  goPoints() { wx.reLaunch({ url: '/pages/province/points/index' }); },
   goAllocate() { wx.navigateTo({ url: '/pages/province/allocate/index' }); },
   goRewards() { wx.navigateTo({ url: '/pages/province/rewards/index' }); },
 
