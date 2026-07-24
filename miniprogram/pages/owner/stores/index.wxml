@@ -1,0 +1,88 @@
+<view class="stores-page">
+  <!-- 省份筛选 -->
+  <scroll-view class="province-bar" scroll-x="true" enhanced="true" show-scrollbar="false">
+    <view class="province-chip {{activeProvince === '' ? 'active' : ''}}" bindtap="filterProvince" data-province="">全部</view>
+    <view
+      class="province-chip {{activeProvince === item ? 'active' : ''}}"
+      wx:for="{{provinces}}"
+      wx:key="*this"
+      data-province="{{item}}"
+      bindtap="filterProvince"
+    >{{item}}</view>
+  </scroll-view>
+
+  <!-- 统计信息 -->
+  <view class="stores-count" wx:if="{{!loading && stores.length > 0}}">
+    共 {{stores.length}} 家授权门店
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">加载门店信息...</view>
+  </view>
+
+  <!-- 错误 -->
+  <view class="error-wrap" wx:if="{{!loading && error}}">
+    <view class="error-text">{{error}}</view>
+    <view class="error-retry" bindtap="fetchStores">重新加载</view>
+  </view>
+
+  <!-- 空结果 -->
+  <view class="empty-wrap" wx:if="{{!loading && !error && stores.length === 0}}">
+    <view class="empty-text">暂无授权门店信息</view>
+  </view>
+
+  <!-- 门店列表 -->
+  <view class="store-list" wx:if="{{!loading && !error && stores.length > 0}}">
+    <view
+      class="store-card"
+      wx:for="{{stores}}"
+      wx:key="id"
+      wx:if="{{!activeProvince || item.province === activeProvince}}"
+    >
+      <!-- 省份分隔 -->
+      <view class="store-province-sep" wx:if="{{activeProvince === '' && (index === 0 || (index > 0 && item.province !== stores[index-1].province))}}">
+        {{item.province || '其他'}}
+      </view>
+
+      <view class="store-info">
+        <view class="store-header">
+          <view class="store-name">{{item.public_name}}</view>
+          <view class="store-level">{{item.auth_level === 'HEBC' ? '品牌灯塔店' : item.auth_level === 'HSS' ? '标准服务中心' : item.auth_level === 'HSP' ? '优选施工点' : '授权服务点'}}</view>
+        </view>
+
+        <view class="store-city" wx:if="{{item.city}}">{{item.city}} · {{item.province || ''}}</view>
+
+        <view class="store-address" wx:if="{{item.address}}" bindtap="copyAddress" data-address="{{item.address}}">
+          <text class="store-addr-text">{{item.address}}</text>
+          <text class="store-addr-copy">复制</text>
+        </view>
+
+        <view class="store-contact">
+          <view class="store-phone" wx:if="{{item.phone}}" bindtap="callStore" data-phone="{{item.phone}}">
+            <text class="phone-icon">📞</text>
+            <text class="phone-text">{{item.phone}}</text>
+          </view>
+          <view class="store-hours" wx:if="{{item.business_hours}}">
+            <text class="hours-icon">🕐</text>
+            <text class="hours-text">{{item.business_hours}}</text>
+          </view>
+        </view>
+
+        <view class="store-services" wx:if="{{item.service_products}}">
+          <text
+            class="service-tag"
+            wx:for="{{item.service_products.split(';')}}"
+            wx:key="*this"
+            wx:if="{{item}}"
+          >{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom-placeholder"></view>
+  <custom-tab-bar />
+</view>

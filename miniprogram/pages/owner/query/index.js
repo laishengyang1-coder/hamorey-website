@@ -179,6 +179,6 @@ Page({
 
   /** 授权门店 */
   goStores() {
-    wx.showToast({ title: '授权门店页面即将上线', icon: 'none' });
+    wx.navigateTo({ url: '/pages/owner/stores/index' });
   }
 });

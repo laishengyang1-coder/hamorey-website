@@ -112,7 +112,7 @@
 }
 
 .banner-swiper {
-  height: 340rpx;
+  height: 920rpx;
   border-radius: 24rpx;
   overflow: hidden;
   box-shadow: var(--shadow-md);

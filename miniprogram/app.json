@@ -7,6 +7,7 @@
     "pages/owner/result/index",
     "pages/owner/detail/index",
     "pages/owner/quote/index",
+    "pages/owner/stores/index",
     "pages/owner/warranty-terms/index",
     "pages/store/login/index",
     "pages/store/index/index",

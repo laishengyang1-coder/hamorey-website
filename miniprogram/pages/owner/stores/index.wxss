@@ -1,0 +1,216 @@
+/* 授权门店页 */
+
+.stores-page {
+  min-height: 100vh;
+  background: #FEFAF8;
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+}
+
+/* 省份筛选 */
+.province-bar {
+  white-space: nowrap;
+  padding: 20rpx 28rpx 12rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #F0EBE7;
+}
+
+.province-chip {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  margin-right: 12rpx;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #4A3A34;
+  background: #F5F0EB;
+  transition: all 0.2s;
+}
+
+.province-chip.active {
+  background: #5C1A1A;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* 统计 */
+.stores-count {
+  padding: 16rpx 32rpx 8rpx;
+  font-size: 24rpx;
+  color: #9E8A82;
+}
+
+/* 加载/错误/空 */
+.loading-wrap,
+.error-wrap,
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 32rpx;
+}
+
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #F0EBE7;
+  border-top-color: #5C1A1A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text,
+.empty-text {
+  font-size: 28rpx;
+  color: #9E8A82;
+}
+
+.error-text {
+  font-size: 28rpx;
+  color: #B85C5C;
+  margin-bottom: 24rpx;
+}
+
+.error-retry {
+  padding: 16rpx 48rpx;
+  background: #5C1A1A;
+  color: #FFFFFF;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+
+/* 省份分隔 */
+.store-province-sep {
+  padding: 28rpx 32rpx 12rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #5C1A1A;
+  letter-spacing: 2rpx;
+}
+
+/* 门店卡片 */
+.store-list {
+  padding: 0 28rpx;
+}
+
+.store-card {
+  margin-bottom: 20rpx;
+}
+
+.store-info {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 16rpx rgba(92,26,26,0.05);
+  border-left: 6rpx solid #5C1A1A;
+}
+
+.store-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.store-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1A1412;
+  flex: 1;
+}
+
+.store-level {
+  padding: 4rpx 14rpx;
+  border-radius: 6rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  background: #FDF9F5;
+  color: #C8A96E;
+  border: 1rpx solid #E8D5B0;
+  flex-shrink: 0;
+}
+
+.store-city {
+  font-size: 24rpx;
+  color: #7A2E2E;
+  margin-bottom: 10rpx;
+}
+
+.store-address {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14rpx;
+  padding: 14rpx 20rpx;
+  background: #FDF9F5;
+  border-radius: 10rpx;
+}
+
+.store-addr-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #4A3A34;
+  line-height: 36rpx;
+}
+
+.store-addr-copy {
+  font-size: 22rpx;
+  color: #C8A96E;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  border: 1rpx solid #C8A96E;
+  border-radius: 6rpx;
+  flex-shrink: 0;
+  margin-left: 12rpx;
+}
+
+.store-contact {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.store-phone,
+.store-hours {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.phone-icon,
+.hours-icon {
+  font-size: 24rpx;
+}
+
+.phone-text {
+  font-size: 24rpx;
+  color: #5C1A1A;
+  font-weight: 600;
+}
+
+.hours-text {
+  font-size: 24rpx;
+  color: #7A2E2E;
+}
+
+/* 服务标签 */
+.store-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.service-tag {
+  padding: 6rpx 16rpx;
+  border-radius: 6rpx;
+  font-size: 22rpx;
+  background: #F5EDE9;
+  color: #5C1A1A;
+}
+
+/* 底部占位 */
+.safe-bottom-placeholder {
+  height: 20rpx;
+}
