@@ -115,7 +115,7 @@ export default function ServicePage() {
           <Card padding="lg">
             <Badge variant="brand">窗膜</Badge>
             <p className="mt-3 text-sm text-content-secondary">
-              2个部位：前挡玻璃与侧挡玻璃。
+              6个玻璃部位：前挡、左前侧窗、右前侧窗、左后侧窗、右后侧窗、后挡。
             </p>
           </Card>
           <Card padding="lg">

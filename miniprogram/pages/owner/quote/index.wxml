@@ -14,7 +14,18 @@
 
   <!-- 报价内容 -->
   <block wx:else>
-    <!-- 型号选择栏（紧凑） -->
+    <!-- 产品大类 Tab -->
+    <scroll-view class="category-bar" scroll-x="true" enhanced="true" show-scrollbar="false">
+      <view
+        class="cat-chip {{activeCategory === item.cat ? 'active' : ''}}"
+        wx:for="{{categories}}"
+        wx:key="cat"
+        data-cat="{{item.cat}}"
+        bindtap="switchCategory"
+      >{{item.label}}</view>
+    </scroll-view>
+
+    <!-- 型号选择栏 -->
     <view class="model-bar" bindtap="toggleModelPicker">
       <view class="model-bar-left">
         <text class="model-bar-label">型号</text>
@@ -23,29 +34,30 @@
       <view class="model-bar-arrow {{showModelPicker ? 'up' : ''}}">▼</view>
     </view>
 
-    <!-- 型号选择下拉 -->
+    <!-- 型号下拉 -->
     <view class="model-dropdown" wx:if="{{showModelPicker}}">
       <view
         class="model-option {{activeModel === item.code ? 'active' : ''}}"
-        wx:for="{{models}}"
-        wx:key="code"
-        data-code="{{item.code}}"
-        bindtap="onPickModel"
+        wx:for="{{categories}}"
+        wx:for-item="catData"
+        wx:key="cat"
+        wx:if="{{catData.cat === activeCategory}}"
       >
-        <text class="model-option-code">{{item.code}}</text>
-        <text class="model-option-name">{{item.name}}</text>
-        <text class="model-option-check" wx:if="{{activeModel === item.code}}">✓</text>
+        <block wx:for="{{catData.models}}" wx:key="code">
+          <view class="model-option-row" data-code="{{item.code}}" data-name="{{item.name}}" bindtap="onPickModel">
+            <text class="model-option-name">{{item.name}}</text>
+            <text class="model-option-check" wx:if="{{activeModel === item.code}}">✓</text>
+          </view>
+        </block>
       </view>
     </view>
-
-    <!-- 遮罩 -->
     <view class="model-overlay" wx:if="{{showModelPicker}}" bindtap="toggleModelPicker"></view>
 
     <!-- 报价提示 -->
-    <view class="quote-tip">以下为参考理赔报价（元），勾选部位查看预估总额</view>
+    <view class="quote-tip" wx:if="{{groupedParts.length > 0}}">勾选部位查看预估总额（元）</view>
 
     <!-- 部位列表（按区域分组） -->
-    <view class="parts-section">
+    <view class="parts-section" wx:if="{{groupedParts.length > 0}}">
       <block wx:for="{{groupedParts}}" wx:key="group">
         <view class="part-group">
           <view class="group-header">
@@ -82,9 +94,8 @@
       <view class="summary-note">*参考报价，以门店核定为准</view>
     </view>
 
-    <!-- 空选择提示 -->
     <view class="empty-hint" wx:else>
-      <text>👆 勾选上方部位即可查看报价汇总</text>
+      <text>👆 选择大类与型号后勾选部位查看报价</text>
     </view>
   </block>
 </view>

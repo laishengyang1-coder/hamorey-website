@@ -6,6 +6,31 @@
   padding-bottom: 40rpx;
 }
 
+/* 产品大类 Tab */
+.category-bar {
+  white-space: nowrap;
+  padding: 16rpx 28rpx 8rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #F0EBE7;
+}
+
+.cat-chip {
+  display: inline-block;
+  padding: 14rpx 30rpx;
+  margin-right: 12rpx;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #4A3A34;
+  background: #F5F0EB;
+  font-weight: 500;
+}
+
+.cat-chip.active {
+  background: #5C1A1A;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
 /* 加载/错误 */
 .loading-container,
 .error-container {
@@ -101,6 +126,14 @@
 
 .model-option:last-child { border-bottom: none; }
 .model-option.active { background: #FDF9F5; }
+
+.model-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 20rpx 0;
+}
 
 .model-option-code {
   font-size: 24rpx;
