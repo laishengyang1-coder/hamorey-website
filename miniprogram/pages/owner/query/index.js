@@ -79,7 +79,6 @@ const HOME_CONFIG = {
       title: 'TPU 改色 · 哑光战斗灰',
       desc: '高级哑光 · 耐久如新'
     }
-    }
   ],
   productSeries: [
     {
