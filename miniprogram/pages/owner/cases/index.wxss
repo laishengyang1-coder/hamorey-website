@@ -71,7 +71,7 @@
   color: rgba(255,255,255,0.75);
 }
 
-.cases-tip {
+.cases-footer {
   text-align: center;
   padding: 32rpx;
   font-size: 24rpx;

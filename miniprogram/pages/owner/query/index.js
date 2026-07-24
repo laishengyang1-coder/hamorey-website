@@ -65,19 +65,20 @@ const HOME_CONFIG = {
   ],
   cases: [
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-1.jpg',
-      title: ' Porsche 911 全车 PPF',
-      desc: '极致亮度 · 持久守护'
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10001.jpg',
+      title: 'TPU 改色 · 电光金属灰',
+      desc: '质感出众 · 个性定制'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-2.jpg',
-      title: 'BMW M4 TPU 改色',
-      desc: '电光金属 · 个性定制'
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10005.jpg',
+      title: 'TPU 改色 · 液态金属银',
+      desc: '色彩饱满 · 保护随行'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-3.jpg',
-      title: 'Mercedes 全车窗膜',
-      desc: '高隔热 · 低反光'
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10010.jpg',
+      title: 'TPU 改色 · 哑光战斗灰',
+      desc: '高级哑光 · 耐久如新'
+    }
     }
   ],
   productSeries: [

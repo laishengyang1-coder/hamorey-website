@@ -15,6 +15,6 @@
     </view>
   </view>
 
-  <view class="cases-tip">更多案例即将上线</view>
+  <view class="cases-footer">{{cases.length}} 个改色案例</view>
   <view class="safe-bottom"></view>
 </view>
