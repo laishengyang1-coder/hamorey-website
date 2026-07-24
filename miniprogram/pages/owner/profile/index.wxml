@@ -2,7 +2,7 @@
   <!-- 用户信息卡片 -->
   <view class="profile-header">
     <view class="profile-card">
-      <image class="profile-avatar" src="/images/logo.png" mode="aspectFit" />
+      <image class="profile-avatar" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/logo.png" mode="aspectFit" />
       <view class="profile-info">
         <view class="profile-name">
           {{isLoggedIn ? (userInfo.name || userInfo.username || roleText) : '车主 / 访客'}}
@@ -44,7 +44,7 @@
 
   <!-- 品牌信息 -->
   <view class="brand-footer">
-    <image class="brand-footer-logo" src="/images/logo.png" mode="aspectFit" />
+    <image class="brand-footer-logo" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/logo.png" mode="aspectFit" />
     <view class="brand-footer-text">和膜 HAMOREY · 质保服务系统</view>
     <view class="brand-footer-version">v1.0</view>
   </view>

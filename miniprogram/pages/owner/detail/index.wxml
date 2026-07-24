@@ -1,6 +1,6 @@
 <view class="detail-page">
   <!-- 背景图 -->
-  <image class="detail-bg" src="/images/home-bg.jpg" mode="aspectFill" />
+  <image class="detail-bg" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg.jpg" mode="aspectFill" />
   <view class="detail-bg-overlay"></view>
 
   <!-- 内容层 -->

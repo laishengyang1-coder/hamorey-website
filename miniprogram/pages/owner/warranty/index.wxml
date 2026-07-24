@@ -10,7 +10,7 @@
   <!-- 内容层 -->
   <view class="page-content">
     <view class="brand-header">
-      <image class="brand-logo-img" src="/images/logo.png" mode="aspectFit" />
+      <image class="brand-logo-img" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/logo.png" mode="aspectFit" />
       <view class="brand-slogan">和膜 不止于膜</view>
       <view class="brand-subtitle">HAMOREY 质保查询系统</view>
     </view>

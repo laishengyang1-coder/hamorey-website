@@ -84,23 +84,23 @@
     <view class="section-title mb-24">快捷操作</view>
     <view class="action-grid">
       <view class="action-item" bindtap="goStores">
-        <image class="action-icon" src="/images/tab-store-active.png" mode="aspectFit" />
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-store-active.png" mode="aspectFit" />
         <view class="action-text">下属门店</view>
       </view>
       <view class="action-item" bindtap="goCodes">
-        <image class="action-icon" src="/images/tab-code-active.png" mode="aspectFit" />
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png" mode="aspectFit" />
         <view class="action-text">质保码库存</view>
       </view>
       <view class="action-item" bindtap="goAllocate">
-        <image class="action-icon" src="/images/icon-allocate.png" mode="aspectFit" />
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-allocate.png" mode="aspectFit" />
         <view class="action-text">划拨质保码</view>
       </view>
       <view class="action-item" bindtap="goPoints">
-        <image class="action-icon" src="/images/tab-points-active.png" mode="aspectFit" />
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png" mode="aspectFit" />
         <view class="action-text">积分管理</view>
       </view>
       <view class="action-item" bindtap="goRewards">
-        <image class="action-icon" src="/images/icon-gift.png" mode="aspectFit" />
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-gift.png" mode="aspectFit" />
         <view class="action-text">积分商城</view>
       </view>
     </view>

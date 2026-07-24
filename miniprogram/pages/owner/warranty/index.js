@@ -9,10 +9,10 @@ Page({
   data: {
     keyword: '',
     bgList: [
-      '/images/home-bg.jpg',
-      '/images/home-bg-1.jpg',
-      '/images/home-bg-2.jpg',
-      '/images/home-bg-3.jpg'
+      'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg.jpg',
+      'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-1.jpg',
+      'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-2.jpg',
+      'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-3.jpg'
     ]
   },
 

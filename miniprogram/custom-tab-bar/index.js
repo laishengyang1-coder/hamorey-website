@@ -42,26 +42,26 @@ Component({
           {
             pagePath: '/pages/store/index/index',
             text: '首页',
-            icon: '/images/tab-home.png',
-            iconSelected: '/images/tab-home-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home-active.png'
           },
           {
             pagePath: '/pages/store/records/index',
             text: '质保记录',
-            icon: '/images/tab-record.png',
-            iconSelected: '/images/tab-record-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-record.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-record-active.png'
           },
           {
             pagePath: '/pages/store/codes/index',
             text: '质保码',
-            icon: '/images/tab-code.png',
-            iconSelected: '/images/tab-code-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png'
           },
           {
             pagePath: '/pages/store/points/index',
             text: '积分',
-            icon: '/images/tab-points.png',
-            iconSelected: '/images/tab-points-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png'
           }
         ];
       } else if (role === 'PROVINCE') {
@@ -70,26 +70,26 @@ Component({
           {
             pagePath: '/pages/province/index/index',
             text: '首页',
-            icon: '/images/tab-home.png',
-            iconSelected: '/images/tab-home-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home-active.png'
           },
           {
             pagePath: '/pages/province/stores/index',
             text: '门店',
-            icon: '/images/tab-store.png',
-            iconSelected: '/images/tab-store-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-store.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-store-active.png'
           },
           {
             pagePath: '/pages/province/codes/index',
             text: '质保码',
-            icon: '/images/tab-code.png',
-            iconSelected: '/images/tab-code-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png'
           },
           {
             pagePath: '/pages/province/points/index',
             text: '积分',
-            icon: '/images/tab-points.png',
-            iconSelected: '/images/tab-points-active.png'
+            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points.png',
+            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png'
           }
         ];
       } else {
