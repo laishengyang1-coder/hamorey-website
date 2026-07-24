@@ -158,6 +158,11 @@ Page({
     wx.navigateTo({ url: '/pages/owner/cases/index' });
   },
 
+  /** 案例库入口 */
+  goCases() {
+    wx.navigateTo({ url: '/pages/owner/cases/index' });
+  },
+
   onSeriesTap(e) {
     const { key } = e.currentTarget.dataset;
     wx.navigateTo({ url: '/pages/owner/product/index?series=' + key });

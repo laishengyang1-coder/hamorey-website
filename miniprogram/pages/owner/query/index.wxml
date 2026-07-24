@@ -51,7 +51,7 @@
         <text class="section-title-text">和膜案例</text>
         <text class="section-title-en">SUPERFILM CASE</text>
       </view>
-      <view class="section-more" bindtap="goBrandIntro">
+      <view class="section-more" bindtap="goCases">
         <text>更多</text>
         <text class="section-more-arrow">›</text>
       </view>
