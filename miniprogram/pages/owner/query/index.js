@@ -86,32 +86,28 @@ const HOME_CONFIG = {
       title: '窗膜',
       subtitle: 'WINDOW FILM',
       desc: '隔热·防晒·隐私',
-      image: '/images/home-bg-3.jpg',
-      icon: '🪟'
+      image: '/images/prod-window.png'
     },
     {
       key: 'ppf',
       title: '隐形车衣',
       subtitle: 'PAINT PROTECTION',
       desc: '抗划痕·自修复',
-      image: '/images/home-bg-1.jpg',
-      icon: '🛡️'
+      image: '/images/prod-ppf.png'
     },
     {
       key: 'color',
       title: 'TPU 改色膜',
       subtitle: 'COLOR WRAP',
       desc: '色彩·保护·耐久',
-      image: '/images/home-bg-2.jpg',
-      icon: '🎨'
+      image: '/images/prod-color.png'
     },
     {
       key: 'roof',
       title: '天窗冰甲',
       subtitle: 'ROOF ARMOR',
       desc: '降温·防爆·隔热',
-      image: '/images/home-bg.jpg',
-      icon: '❄️'
+      image: '/images/prod-sunroof.png'
     }
   ],
   brand: {

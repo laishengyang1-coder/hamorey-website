@@ -99,7 +99,6 @@
         <image class="series-image" src="{{item.image}}" mode="aspectFill" />
         <view class="series-overlay"></view>
         <view class="series-content">
-          <view class="series-icon">{{item.icon}}</view>
           <view class="series-title">{{item.title}}</view>
           <view class="series-subtitle">{{item.subtitle}}</view>
           <view class="series-desc">{{item.desc}}</view>
