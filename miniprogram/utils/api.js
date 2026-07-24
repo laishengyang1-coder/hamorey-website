@@ -10,7 +10,7 @@ const app = getApp();
  */
 function getBaseUrl() {
   return (app && app.globalData && app.globalData.apiBaseUrl)
-    || 'http://134.175.187.12/api';
+    || 'https://hemoppf.com/api';
 }
 
 /**
