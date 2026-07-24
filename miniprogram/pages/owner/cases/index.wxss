@@ -34,7 +34,7 @@
   position: relative;
   border-radius: 16rpx;
   overflow: hidden;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
 }
 
 .case-img {

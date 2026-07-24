@@ -6,7 +6,7 @@
 
   <view class="cases-grid">
     <view class="case-card" wx:for="{{cases}}" wx:key="index">
-      <image class="case-img" src="{{item.image}}" mode="aspectFill" />
+      <image class="case-img" src="{{item.image}}" mode="aspectFill" lazy-load="{{true}}" />
       <view class="case-overlay"></view>
       <view class="case-info">
         <view class="case-title">{{item.title}}</view>
