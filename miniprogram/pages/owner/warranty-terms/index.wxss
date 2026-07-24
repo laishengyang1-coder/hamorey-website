@@ -1,0 +1,251 @@
+/* 质保条款页 — H&H 有限质保条款 */
+
+.terms-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #FEFAF8;
+}
+
+.terms-scroll {
+  flex: 1;
+  height: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 顶部标题区 */
+.terms-hero {
+  background: linear-gradient(180deg, #5C1A1A 0%, #7A2E2E 100%);
+  padding: 40rpx 32rpx 36rpx;
+  color: #FFFFFF;
+}
+
+.terms-hero-title {
+  font-size: 44rpx;
+  font-weight: 700;
+  letter-spacing: 4rpx;
+  margin-bottom: 8rpx;
+}
+
+.terms-hero-subtitle {
+  font-size: 32rpx;
+  font-weight: 500;
+  letter-spacing: 6rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid rgba(255,255,255,0.2);
+}
+
+.terms-hero-desc {
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: rgba(255,255,255,0.85);
+}
+
+/* 三点摘要 */
+.terms-highlights {
+  display: flex;
+  justify-content: space-around;
+  padding: 24rpx 28rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #F0EBE7;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.highlight-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #C8A96E;
+}
+
+.highlight-text {
+  font-size: 22rpx;
+  color: #5C1A1A;
+  font-weight: 500;
+}
+
+/* 条款正文容器 */
+.terms-body {
+  padding: 0 28rpx;
+}
+
+/* 每条条款 */
+.terms-section {
+  margin-top: 32rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx 28rpx;
+  box-shadow: 0 2rpx 16rpx rgba(92,26,26,0.04);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #F5EDE9;
+}
+
+.section-num {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 12rpx;
+  background: #5C1A1A;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1A1412;
+  letter-spacing: 1rpx;
+}
+
+.section-text {
+  font-size: 28rpx;
+  line-height: 44rpx;
+  color: #2D221E;
+  margin-bottom: 16rpx;
+}
+
+/* 列表 */
+.terms-list-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #5C1A1A;
+  margin-bottom: 12rpx;
+}
+
+.terms-list {
+  margin-bottom: 16rpx;
+}
+
+.terms-list-item {
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: #4A3A34;
+  padding: 10rpx 0 10rpx 32rpx;
+  position: relative;
+}
+
+.terms-list-item::before {
+  content: '';
+  position: absolute;
+  left: 10rpx;
+  top: 20rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #C8A96E;
+}
+
+/* 覆盖内容卡片 */
+.coverage-item {
+  background: #FDF9F5;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 12rpx;
+  border-left: 6rpx solid #5C1A1A;
+}
+
+.coverage-label {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5C1A1A;
+  margin-bottom: 6rpx;
+}
+
+.coverage-desc {
+  font-size: 24rpx;
+  line-height: 38rpx;
+  color: #4A3A34;
+}
+
+/* 表格 */
+.terms-table {
+  border-radius: 12rpx;
+  overflow: hidden;
+  border: 1rpx solid #E8E0DA;
+  margin-bottom: 16rpx;
+}
+
+.table-header {
+  display: flex;
+  background: #5C1A1A;
+  color: #FFFFFF;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.table-header > view {
+  padding: 16rpx 12rpx;
+  text-align: center;
+}
+
+.table-row {
+  display: flex;
+  font-size: 22rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #F5EDE9;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row.alt {
+  background: #FDF9F5;
+}
+
+.table-row > view {
+  padding: 14rpx 12rpx;
+  line-height: 34rpx;
+}
+
+.table-col-cat {
+  flex: 4;
+  color: #5C1A1A;
+  font-weight: 600;
+}
+
+.table-col-series {
+  flex: 5;
+  color: #2D221E;
+}
+
+.table-col-period {
+  flex: 2;
+  text-align: center;
+  color: #C8A96E;
+  font-weight: 700;
+}
+
+.table-note {
+  font-size: 22rpx;
+  line-height: 34rpx;
+  color: #9E8A82;
+  padding: 8rpx 4rpx;
+}
+
+/* 底部间距 */
+.terms-footer-space {
+  height: 60rpx;
+}
+
+/* 安全区占位 */
+.safe-bottom-placeholder {
+  height: calc(100rpx + env(safe-area-inset-bottom));
+}

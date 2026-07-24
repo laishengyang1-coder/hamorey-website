@@ -1,9 +1,8 @@
 /**
  * 和膜 HAMOREY — 品牌首页
- * 车主 / 访客入口：品牌展示 + 功能入口 + 质保快捷查询
+ * 车主 / 访客入口：品牌展示 + 功能入口
  */
 
-const api = require('../../../utils/api');
 const auth = require('../../../utils/auth');
 
 // 首页配置化数据（后续可接入 CMS 后台）
@@ -45,19 +44,19 @@ const HOME_CONFIG = {
     },
     {
       key: 'login',
-      title: '门店 / 省代登录',
-      subtitle: 'Store Login',
+      title: '经销商登录',
+      subtitle: 'Dealer Login',
       icon: '🏪',
       iconBg: '#1A1412',
       page: '/pages/store/login/index'
     },
     {
-      key: 'entry',
-      title: '质保录入',
-      subtitle: 'Warranty Entry',
-      icon: '✍️',
+      key: 'terms',
+      title: '质保范围查询',
+      subtitle: 'Warranty Coverage',
+      icon: '📋',
       iconBg: '#7A2E2E',
-      page: '/pages/store/login/index?scene=entry'
+      page: '/pages/owner/warranty-terms/index'
     },
     {
       key: 'quote',
@@ -132,7 +131,6 @@ const HOME_CONFIG = {
 
 Page({
   data: {
-    keyword: '',
     isLoggedIn: false,
     roleText: '',
     banners: HOME_CONFIG.banners,
@@ -156,63 +154,10 @@ Page({
     this.setData({ isLoggedIn: loggedIn, roleText });
   },
 
-  onKeywordInput(e) {
-    this.setData({ keyword: e.detail.value });
-  },
-
-  /** 首页搜索：优先质保查询，可扩展商品/门店搜索 */
-  async onSearch() {
-    const kw = this.data.keyword.trim();
-    if (!kw) {
-      wx.showToast({ title: '请输入查询内容', icon: 'none' });
-      return;
-    }
-    this.doWarrantySearch(kw);
-  },
-
-  /** 质保查询逻辑（与独立质保页一致） */
-  async doWarrantySearch(kw) {
-    const res = await api.get('/public/warranties', { q: kw }, {
-      loading: true,
-      loadingText: '查询中...'
-    });
-
-    if (!res.ok) {
-      wx.showToast({ title: res.message || '查询失败', icon: 'none' });
-      return;
-    }
-
-    const records = res.data.records || [];
-    if (records.length === 0) {
-      wx.showModal({
-        title: '未找到',
-        content: '未找到质保记录，请联系施工门店',
-        showCancel: false,
-        confirmColor: '#5C1A1A'
-      });
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/owner/result/index?q=${encodeURIComponent(kw)}`
-    });
-  },
-
   /** 功能入口点击 */
   onFunctionTap(e) {
     const { page } = e.currentTarget.dataset;
     if (!page) return;
-
-    // 质保录入需要登录态
-    if (page.includes('scene=entry')) {
-      if (auth.isLoggedIn() && (auth.getRole() === 'STORE' || auth.getRole() === 'PROVINCE' || auth.getRole() === 'HQ_ADMIN')) {
-        wx.switchTab({ url: '/pages/store/records/index' });
-      } else {
-        wx.navigateTo({ url: '/pages/store/login/index' });
-      }
-      return;
-    }
-
     wx.navigateTo({ url: page });
   },
 
@@ -235,17 +180,5 @@ Page({
   /** 授权门店 */
   goStores() {
     wx.showToast({ title: '授权门店页面即将上线', icon: 'none' });
-  },
-
-  /** 扫码查询（快捷入口） */
-  onScan() {
-    wx.scanCode({
-      onlyFromCamera: false,
-      scanType: ['qrCode'],
-      success: (res) => {
-        const code = res.result || '';
-        if (code) this.doWarrantySearch(code);
-      }
-    });
   }
 });

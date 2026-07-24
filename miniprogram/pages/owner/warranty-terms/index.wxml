@@ -1,0 +1,289 @@
+<view class="terms-page">
+  <scroll-view class="terms-scroll" scroll-y="true" enhanced="true">
+    <!-- 标题区 -->
+    <view class="terms-hero">
+      <view class="terms-hero-title">H&H 汽车膜</view>
+      <view class="terms-hero-subtitle">有限质保条款</view>
+      <view class="terms-hero-desc">本条款适用于由 H&H 授权经销商或授权施工门店完成施工，并已在 H&H 电子质保系统中激活的正品汽车膜产品。</view>
+    </view>
+
+    <!-- 三点摘要 -->
+    <view class="terms-highlights">
+      <view class="highlight-item">
+        <view class="highlight-dot"></view>
+        <view class="highlight-text">仅适用于授权施工产品</view>
+      </view>
+      <view class="highlight-item">
+        <view class="highlight-dot"></view>
+        <view class="highlight-text">以电子质保证书为准</view>
+      </view>
+      <view class="highlight-item">
+        <view class="highlight-dot"></view>
+        <view class="highlight-text">质保期限自安装日期起计算</view>
+      </view>
+    </view>
+
+    <!-- 条款正文 -->
+    <view class="terms-body">
+
+      <!-- 1. 适用范围 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">1</view>
+          <view class="section-title">适用范围</view>
+        </view>
+        <view class="section-text">
+          本有限质保条款适用于 H&H 正品漆面保护膜、汽车窗膜、TPU 改色膜及经 H&H 确认适用的相关汽车膜产品。产品必须由 H&H 授权经销商或授权施工门店按照标准流程施工，并完成 H&H 电子质保登记及总部审核。
+        </view>
+        <view class="section-text">
+          本条款仅适用于已在 H&H 电子质保系统中显示为有效状态的产品。未完成电子质保登记、质保状态无效、质保信息不完整或产品来源无法核验的情况，不适用本有限质保条款。
+        </view>
+      </view>
+
+      <!-- 2. 产品质保期限 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">2</view>
+          <view class="section-title">产品质保期限</view>
+        </view>
+        <view class="terms-table">
+          <view class="table-header">
+            <view class="table-col-cat">产品大类</view>
+            <view class="table-col-series">产品系列 / 名称</view>
+            <view class="table-col-period">默认质保</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">漆面保护膜 / PPF</view>
+            <view class="table-col-series">HH Classic 190</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">漆面保护膜 / PPF</view>
+            <view class="table-col-series">HH Plus 190</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">漆面保护膜 / PPF</view>
+            <view class="table-col-series">HH Pro 210</view>
+            <view class="table-col-period">12 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">漆面保护膜 / PPF</view>
+            <view class="table-col-series">HH Ultra 240</view>
+            <view class="table-col-period">10 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">漆面保护膜 / PPF</view>
+            <view class="table-col-series">HH Matte</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">汽车窗膜 / Window Film</view>
+            <view class="table-col-series">HH DS70 / HH DS20</view>
+            <view class="table-col-period">10 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">汽车窗膜 / Window Film</view>
+            <view class="table-col-series">HH UV70 / HH UV15</view>
+            <view class="table-col-period">10 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">汽车窗膜 / Window Film</view>
+            <view class="table-col-series">HH CIR70 / HH CIR15</view>
+            <view class="table-col-period">10 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">炫彩窗膜 / Color Window</view>
+            <view class="table-col-series">HH GQCM70 / HH QCM75</view>
+            <view class="table-col-period">8 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">TPU 改色膜 / TPU Color</view>
+            <view class="table-col-series">Crystal Series</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">TPU 改色膜 / TPU Color</view>
+            <view class="table-col-series">Metallic Series</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">TPU 改色膜 / TPU Color</view>
+            <view class="table-col-series">Satin Series</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">TPU 改色膜 / TPU Color</view>
+            <view class="table-col-series">Color Shift Series</view>
+            <view class="table-col-period">5 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">天窗膜 / Skylight</view>
+            <view class="table-col-series">HH Skylight Armor</view>
+            <view class="table-col-period">3 年</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">玻璃功能膜 / Safety Shield</view>
+            <view class="table-col-series">HH Safety Shield</view>
+            <view class="table-col-period">1 年</view>
+          </view>
+          <view class="table-row">
+            <view class="table-col-cat">建筑膜 / Architectural</view>
+            <view class="table-col-series">HEHE Architectural Film</view>
+            <view class="table-col-period">以订单/证书为准</view>
+          </view>
+          <view class="table-row alt">
+            <view class="table-col-cat">家居膜 / Interior</view>
+            <view class="table-col-series">HEHE Interior Film</view>
+            <view class="table-col-period">以订单/证书为准</view>
+          </view>
+        </view>
+        <view class="table-note">以上期限以电子质保证书为准 | 最终质保期限以 H&H 电子质保证书、产品标签、订单文件或双方书面确认内容为准 | 质保期限自产品安装日期起计算</view>
+      </view>
+
+      <!-- 3. 质保生效条件 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">3</view>
+          <view class="section-title">质保生效条件</view>
+        </view>
+        <view class="section-text">H&H 产品质保需同时满足以下条件方可生效：</view>
+        <view class="terms-list">
+          <view class="terms-list-item">产品来源于 H&H 正规授权渠道</view>
+          <view class="terms-list-item">产品由 H&H 授权经销商或授权施工门店完成施工</view>
+          <view class="terms-list-item">经销商已在 H&H 电子质保系统中完成质保登记</view>
+          <view class="terms-list-item">质保记录已通过 H&H 总部或授权管理方审核，并显示为有效状态</view>
+          <view class="terms-list-item">车主可提供 VIN、质保记录、安装信息、产品信息或其他必要凭证</view>
+          <view class="terms-list-item">产品使用、清洁和维护方式符合 H&H 产品养护说明</view>
+        </view>
+      </view>
+
+      <!-- 4. 质保覆盖内容 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">4</view>
+          <view class="section-title">质保覆盖内容</view>
+        </view>
+        <view class="section-text">
+          在正常车辆使用和合理养护条件下，若产品出现经 H&H 或 H&H 授权管理方确认的材料或制造相关质量问题，可按本条款申请质保服务。
+        </view>
+        <view class="terms-list-title">不同产品可覆盖的质量问题包括但不限于：</view>
+        <view class="coverage-item">
+          <view class="coverage-label">漆面保护膜</view>
+          <view class="coverage-desc">非人为造成的明显黄变、开裂、起泡、脱胶、分层或其他经确认的材料失效问题</view>
+        </view>
+        <view class="coverage-item">
+          <view class="coverage-label">汽车窗膜</view>
+          <view class="coverage-desc">非人为造成的明显褪色、脱胶、分层或影响正常使用的材料缺陷</view>
+        </view>
+        <view class="coverage-item">
+          <view class="coverage-label">TPU 改色膜</view>
+          <view class="coverage-desc">非人为造成的异常开裂、脱胶、分层、明显褪色或材料稳定性问题</view>
+        </view>
+        <view class="section-text">具体是否属于质保范围，应以产品类别、实际安装情况、使用环境、养护情况、电子质保证书记录及 H&H 审核结果为准。</view>
+      </view>
+
+      <!-- 5. 不属于质保范围 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">5</view>
+          <view class="section-title">不属于质保范围</view>
+        </view>
+        <view class="section-text">以下情况不属于 H&H 有限质保范围：</view>
+        <view class="terms-list">
+          <view class="terms-list-item">未经 H&H 授权经销商或授权施工门店施工、拆膜、补膜、重贴或改装所产生的问题</view>
+          <view class="terms-list-item">因施工不当、储存不当、运输损坏、错误使用或未按养护说明维护造成的问题</view>
+          <view class="terms-list-item">因车辆原厂漆面缺陷、二次喷漆、钣喷修复、漆面附着力异常、漆面老化等车辆本身问题导致的异常</view>
+          <view class="terms-list-item">因事故、碰撞、石击、划伤、火烧、水淹、自然灾害、人为破坏、外力撕扯等造成的损坏</view>
+          <view class="terms-list-item">使用强酸、强碱、研磨剂、腐蚀性清洁剂或不当清洁工具造成的问题</view>
+          <view class="terms-list-item">高压水枪近距离冲洗膜边、边角或接缝位置导致的翘边、进水或脱胶</view>
+          <view class="terms-list-item">正常使用过程中产生的轻微磨损、细小划痕、边缘积尘、轻微色差、轻微橘皮或不影响产品正常使用的外观变化</view>
+          <view class="terms-list-item">因未及时处理翘边、破损、污染物、水渍、鸟粪、树胶、沥青、虫胶等造成的进一步损伤</view>
+          <view class="terms-list-item">未在 H&H 电子质保系统中完成登记，或质保状态显示为无效、过期、驳回、作废的产品</view>
+          <view class="terms-list-item">超出电子质保证书载明的质保期限、产品范围、安装部位或适用区域的情况</view>
+        </view>
+      </view>
+
+      <!-- 6. 质保申请流程 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">6</view>
+          <view class="section-title">质保申请流程</view>
+        </view>
+        <view class="section-text">如车主认为产品存在可能属于质保范围的问题，应优先联系原授权施工门店或 H&H 授权经销商，并提供必要信息用于核验。</view>
+        <view class="terms-list-title">申请质保时通常需要提供：</view>
+        <view class="terms-list">
+          <view class="terms-list-item">车辆 VIN</view>
+          <view class="terms-list-item">电子质保证书或质保记录</view>
+          <view class="terms-list-item">产品名称、产品系列或质保编号</view>
+          <view class="terms-list-item">安装日期和安装门店信息</view>
+          <view class="terms-list-item">问题部位的清晰照片或视频</view>
+          <view class="terms-list-item">必要时提供车辆使用、养护、维修或事故记录</view>
+        </view>
+        <view class="section-text">H&H 或授权管理方有权根据实际情况要求补充资料，并对问题原因进行判断。未经确认前，任何维修、更换、拆膜或重贴行为不应视为已获得 H&H 质保承诺。</view>
+      </view>
+
+      <!-- 7. 车主义务 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">7</view>
+          <view class="section-title">车主义务</view>
+        </view>
+        <view class="section-text">为保持产品性能并降低售后争议，车主应按照 H&H 或授权施工门店提供的养护说明使用和维护产品。</view>
+        <view class="terms-list-title">车主应注意：</view>
+        <view class="terms-list">
+          <view class="terms-list-item">施工完成后的初期养护期内，避免洗车、高压冲洗、暴晒后立即冲水或频繁触碰膜边</view>
+          <view class="terms-list-item">日常清洁时使用中性清洁用品和柔软工具</view>
+          <view class="terms-list-item">避免使用强酸、强碱、研磨剂、腐蚀性清洁剂或硬质刮擦工具</view>
+          <view class="terms-list-item">发现翘边、破损、污染物附着或其他异常情况时，应及时联系授权经销商或授权施工门店处理，避免问题扩大</view>
+          <view class="terms-list-item">保留电子质保证书、安装信息及必要的售后沟通记录</view>
+        </view>
+      </view>
+
+      <!-- 8. 服务方式与责任限制 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">8</view>
+          <view class="section-title">服务方式与责任限制</view>
+        </view>
+        <view class="section-text">经 H&H 或授权管理方确认属于质保范围的情况，H&H 可根据具体问题、产品类别、安装范围和当地服务条件，提供合理的质保解决方案。</view>
+        <view class="terms-list-title">质保解决方式可能包括：</view>
+        <view class="terms-list">
+          <view class="terms-list-item">产品更换</view>
+          <view class="terms-list-item">补发对应材料</view>
+          <view class="terms-list-item">维修或重贴支持</view>
+          <view class="terms-list-item">与授权经销商协商的其他合理处理方式</view>
+        </view>
+        <view class="section-text">除非当地法律另有强制规定，H&H 有限质保不涵盖因产品问题间接产生的停用损失、交通费用、保险费用、替代车辆费用、商业损失、时间损失或其他间接、附带、特殊损失。</view>
+      </view>
+
+      <!-- 9. 电子证书与数据说明 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">9</view>
+          <view class="section-title">电子证书与数据说明</view>
+        </view>
+        <view class="section-text">H&H 电子质保证书是车主查询和售后沟通的重要凭证。页面可能会对 VIN 等敏感信息进行脱敏展示；用于售后、保险或打印存档的 PDF 证书可显示完整信息。</view>
+        <view class="section-text">如纸质质保卡、口头承诺、聊天记录或其他渠道信息与 H&H 电子质保系统记录不一致，以 H&H 电子质保系统中的有效记录为准。</view>
+      </view>
+
+      <!-- 10. 地区适用与条款解释 -->
+      <view class="terms-section">
+        <view class="section-heading">
+          <view class="section-num">10</view>
+          <view class="section-title">地区适用与条款解释</view>
+        </view>
+        <view class="section-text">不同国家或地区的消费者保护法律、产品责任规则、施工环境和售后服务条件可能存在差异。如本条款与当地强制性法律规定不一致，以当地强制性法律规定为准；其余部分继续有效。</view>
+        <view class="section-text">H&H 保留在合理范围内更新本有限质保条款的权利。更新后的条款将通过 H&H 官方页面或电子质保系统展示。</view>
+      </view>
+
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="terms-footer-space"></view>
+  </scroll-view>
+
+  <!-- 底部安全区占位 -->
+  <view class="safe-bottom-placeholder"></view>
+  <custom-tab-bar />
+</view>

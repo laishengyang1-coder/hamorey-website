@@ -1,34 +1,4 @@
 <view class="home-page">
-  <!-- 顶部品牌区 + 搜索 -->
-  <view class="home-header">
-    <view class="brand-row">
-      <image class="brand-logo" src="/images/logo.png" mode="aspectFit" />
-      <view class="brand-text">
-        <view class="brand-title">和膜 HAMOREY</view>
-        <view class="brand-slogan">不止于膜 · 更守护每一程</view>
-      </view>
-    </view>
-
-    <view class="home-search-bar">
-      <view class="search-icon">🔍</view>
-      <input
-        class="search-input"
-        type="text"
-        maxlength="50"
-        placeholder="搜索质保码 / 车牌 / 手机号 / 产品"
-        placeholder-class="search-placeholder"
-        value="{{keyword}}"
-        bindinput="onKeywordInput"
-        bindconfirm="onSearch"
-        confirm-type="search"
-      />
-      <view class="scan-icon" bindtap="onScan">
-        <text class="scan-icon-text">▣</text>
-      </view>
-      <view class="search-btn" bindtap="onSearch">查询</view>
-    </view>
-  </view>
-
   <!-- Banner 轮播 -->
   <view class="banner-section">
     <swiper
