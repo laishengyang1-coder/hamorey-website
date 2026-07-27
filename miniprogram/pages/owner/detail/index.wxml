@@ -21,7 +21,6 @@
     <block wx:else>
       <!-- 质保卡头部 -->
       <view class="cert-header">
-        <view class="cert-badge">🛡️</view>
         <view class="cert-title">电子质保卡</view>
         <view class="cert-no">NO. {{record.certificate_no || record.id}}</view>
         <view class="cert-status tag-success">保障中</view>
