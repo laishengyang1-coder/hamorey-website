@@ -162,6 +162,21 @@
   background: rgba(255,255,255,0.05);
 }
 
+/* 印章 */
+.stamp-container {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0 16rpx;
+}
+
+.stamp-img {
+  width: 280rpx;
+  height: 280rpx;
+  opacity: 0.75;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 4rpx 12rpx rgba(0,0,0,0.3));
+}
+
 /* 部位报价入口 */
 .quote-btn {
   margin: 16rpx 28rpx 32rpx;

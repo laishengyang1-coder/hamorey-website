@@ -66,6 +66,11 @@
         </view>
       </view>
 
+      <!-- 印章 -->
+      <view class="stamp-container">
+        <image class="stamp-img" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/stamp.png" mode="aspectFit" />
+      </view>
+
       <!-- 部位报价入口 -->
       <view class="quote-btn" bindtap="goQuote">
         <text>📊 查看部位理赔报价</text>
