@@ -166,8 +166,10 @@
 .stamp-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: -460rpx;
+  margin-top: -240rpx;
   padding-right: 20rpx;
+  position: relative;
+  z-index: 3;
 }
 
 .stamp-img {
