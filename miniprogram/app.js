@@ -33,7 +33,7 @@ App({
    */
   globalData: {
     /** API 基础地址 */
-    apiBaseUrl: 'http://134.175.187.12/api',
+    apiBaseUrl: 'https://hemoppf.com/api',
     /** 登录 token */
     token: null,
     /** 用户信息 */
