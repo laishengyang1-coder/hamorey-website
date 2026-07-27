@@ -165,13 +165,14 @@
 /* 印章 */
 .stamp-container {
   display: flex;
-  justify-content: center;
-  padding: 40rpx 0 16rpx;
+  justify-content: flex-end;
+  margin-top: -200rpx;
+  padding-right: 32rpx;
 }
 
 .stamp-img {
-  width: 280rpx;
-  height: 280rpx;
+  width: 260rpx;
+  height: 260rpx;
   opacity: 0.75;
   transform: rotate(-12deg);
   filter: drop-shadow(0 4rpx 12rpx rgba(0,0,0,0.3));

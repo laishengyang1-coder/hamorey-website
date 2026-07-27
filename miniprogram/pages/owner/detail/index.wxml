@@ -54,6 +54,11 @@
         <view class="info-row"><text class="info-label">门店名称</text><text class="info-value">{{record.store_name_snapshot || '--'}}</text></view>
       </view>
 
+      <!-- 印章 -->
+      <view class="stamp-container">
+        <image class="stamp-img" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/stamp.png" mode="aspectFit" />
+      </view>
+
       <!-- 施工照片 -->
       <view wx:if="{{recordPhotos.length > 0}}" class="info-card">
         <view class="card-title">施工照片</view>
@@ -64,11 +69,6 @@
             class="photo-item" data-url="{{item.url || item.file_key}}" bindtap="previewPhoto"
           />
         </view>
-      </view>
-
-      <!-- 印章 -->
-      <view class="stamp-container">
-        <image class="stamp-img" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/stamp.png" mode="aspectFit" />
       </view>
 
       <!-- 部位报价入口 -->
