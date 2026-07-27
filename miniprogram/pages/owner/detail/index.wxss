@@ -166,13 +166,13 @@
 .stamp-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: -200rpx;
-  padding-right: 32rpx;
+  margin-top: -460rpx;
+  padding-right: 20rpx;
 }
 
 .stamp-img {
-  width: 260rpx;
-  height: 260rpx;
+  width: 200rpx;
+  height: 200rpx;
   opacity: 0.75;
   transform: rotate(-12deg);
   filter: drop-shadow(0 4rpx 12rpx rgba(0,0,0,0.3));
