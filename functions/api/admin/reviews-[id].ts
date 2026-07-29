@@ -218,13 +218,15 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     });
   }
 
+  const modelName = record.product_name_snapshot || record.product_model_snapshot || '未知型号';
+
   // 5-6. 积分/返利流水与审核状态保持同一批次，避免部分成功。
   if (storePoints > 0) {
     statements.push({
       sql: `INSERT INTO points_ledger
             (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
             VALUES (?, ?, 'award', ?, 0, 'warranty', ?, ?, ?, datetime('now'))`,
-      params: [generateId(), record.store_id, storePoints, recordId, `质保审核通过: ${certNo}`, user?.userId || null],
+      params: [generateId(), record.store_id, storePoints, recordId, `质保审核通过: ${modelName}（${certNo}）`, user?.userId || null],
     });
   }
   if (provincePoints > 0 && record.province_org_id) {
@@ -232,7 +234,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
       sql: `INSERT INTO points_ledger
             (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
             VALUES (?, ?, 'award', ?, 0, 'warranty', ?, ?, ?, datetime('now'))`,
-      params: [generateId(), record.province_org_id, provincePoints, recordId, `门店质保返利: ${certNo}`, user?.userId || null],
+      params: [generateId(), record.province_org_id, provincePoints, recordId, `门店质保返利: ${modelName}（${certNo}）`, user?.userId || null],
     });
   }
 

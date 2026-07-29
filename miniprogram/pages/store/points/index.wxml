@@ -1,18 +1,18 @@
 <view class="page-container">
-  <!-- 积分余额卡片 -->
-  <view class="points-card">
-    <view class="points-balance">
-      <view class="points-label">可用积分</view>
-      <view class="points-value">{{points.available || 0}}</view>
+  <!-- 红色头部 -->
+  <view class="points-hero">
+    <view class="points-hero-balance">
+      <view class="points-hero-label">可用积分</view>
+      <view class="points-hero-value">{{points.available || 0}}</view>
     </view>
-    <view class="points-row">
-      <view class="points-frozen">
-        <text class="points-frozen-label">冻结积分</text>
-        <text class="points-frozen-value">{{points.frozen || 0}}</text>
+    <view class="points-hero-row">
+      <view class="points-hero-item">
+        <text class="points-hero-item-label">冻结积分</text>
+        <text class="points-hero-item-value">{{points.frozen || 0}}</text>
       </view>
-      <view class="points-total">
-        <text class="points-total-label">累计获得</text>
-        <text class="points-total-value">{{points.available + points.frozen || 0}}</text>
+      <view class="points-hero-item">
+        <text class="points-hero-item-label">累计获得</text>
+        <text class="points-hero-item-value">{{points.available + points.frozen || 0}}</text>
       </view>
     </view>
   </view>
@@ -20,11 +20,11 @@
   <!-- 快捷入口 -->
   <view class="quick-row">
     <view class="quick-btn" bindtap="goRewards">
-      <image class="quick-btn-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-gift.png" mode="aspectFit" />
+      <view class="quick-btn-icon quick-btn-icon-rewards">🛍️</view>
       <text class="quick-btn-text">积分商城</text>
     </view>
     <view class="quick-btn" bindtap="goOrders">
-      <image class="quick-btn-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-box.png" mode="aspectFit" />
+      <view class="quick-btn-icon quick-btn-icon-orders">📋</view>
       <text class="quick-btn-text">兑换记录</text>
     </view>
   </view>
@@ -35,26 +35,16 @@
       <view class="section-title">积分流水</view>
     </view>
 
-    <!-- Loading -->
-    <view wx:if="{{loading}}" class="loading-container" style="padding:80rpx">
-      <view class="loading-spinner"></view>
-    </view>
-
-    <!-- 空 -->
+    <!-- Loading / Empty / List -->
+    <view wx:if="{{loading}}" class="loading-container" style="padding:80rpx"><view class="loading-spinner"></view></view>
     <view wx:elif="{{!loading && ledger.length === 0}}" class="empty-state" style="padding:60rpx">
       <view class="empty-state-text">暂无积分记录</view>
     </view>
-
-    <!-- 流水列表 -->
     <view wx:else class="section-body">
-      <view
-        wx:for="{{ledger}}"
-        wx:key="id"
-        class="ledger-item"
-      >
+      <view class="ledger-item" wx:for="{{ledger}}" wx:key="id">
         <view class="ledger-info">
           <view class="ledger-desc">{{item.reason || ledgerLabel(item.change_type)}}</view>
-          <view class="ledger-time">{{item.created_at || ''}}</view>
+          <view class="ledger-time">{{formatDate(item.created_at)}}</view>
         </view>
         <view class="ledger-amount {{item.points_change > 0 ? 'text-success' : ''}}">
           {{item.points_change > 0 ? '+' : ''}}{{item.points_change || 0}}

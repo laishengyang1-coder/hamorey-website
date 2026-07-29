@@ -15,6 +15,13 @@ Page({
     this.setData({ loading: false });
     if (res.ok) { this.setData({ points: { available: res.data.available || 0, frozen: res.data.frozen || 0 }, ledger: res.data.ledger || [] }); }
   },
+  formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso.replace('Z', ''));
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${dd} ${hh}:${mm}`;
+  },
   ledgerLabel(type) { return LEDGER_LABELS[type] || type || '积分变动'; },
   goRewards() { wx.navigateTo({ url: '/pages/province/rewards/index' }); },
   goOrders() { wx.navigateTo({ url: '/pages/province/rewards/index' }); }

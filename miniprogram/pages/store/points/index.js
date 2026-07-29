@@ -39,6 +39,14 @@ Page({
     }
   },
 
+  formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso.replace('Z', ''));
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${dd} ${hh}:${mm}`;
+  },
+
   ledgerLabel(type) {
     return LEDGER_LABELS[type] || type || '积分变动';
   },
