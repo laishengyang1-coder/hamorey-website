@@ -17,6 +17,7 @@ Updated: 2026-07-29
 3. Cloudflare safety: the existing Cloudflare Actions workflow is manually disabled in GitHub, so pushes currently deploy Tencent only. Its YAML still contains the historical `push` trigger; do not re-enable it. Converting that YAML to `workflow_dispatch` only requires a GitHub token with `workflow` scope and is a later cleanup task.
 4. Mini-program endpoint routing: development builds use the Tencent preview IP for local debugging. Trial and release builds use `https://api.hemoppf.cn/api` so real devices satisfy WeChat legal-domain validation. After changing this file, upload a new trial build; an already uploaded trial build keeps its old endpoint.
 5. Domain readiness: `scripts/tencent-domain-cutover-check.sh` verifies DNS and Tencent API health after ICP approval. It does not change DNS or issue certificates.
+6. Operations: `scripts/tencent-production-deploy.sh` installs `/opt/hamorey/scripts/backup-db.sh` and an `/etc/cron.d/hamorey-backup` job after each deployment. It exports TencentDB MySQL daily at 03:00, uploads the compressed backup to COS under `backups/mysql/`, and retains local copies for seven days. COS lifecycle management must delete remote backups after the agreed retention period because the runtime key deliberately does not require object-list permission.
 
 ## Required working rules
 

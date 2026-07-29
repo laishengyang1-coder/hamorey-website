@@ -187,6 +187,24 @@ HOOK
   sudo systemctl enable --now certbot.timer
 }
 
+install_database_backup_job() {
+  if ! command -v mysqldump >/dev/null 2>&1; then
+    sudo apt-get update
+    sudo apt-get install -y mysql-client
+  fi
+
+  sudo install -d -m 750 -o ubuntu -g ubuntu /opt/hamorey/scripts /opt/hamorey/backups/mysql
+  sudo install -m 750 -o ubuntu -g ubuntu "$REPO_DIR/scripts/backup-db.sh" /opt/hamorey/scripts/backup-db.sh
+  sudo tee /etc/cron.d/hamorey-backup >/dev/null <<'CRON'
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 3 * * * ubuntu /opt/hamorey/scripts/backup-db.sh >> /var/log/hamorey-backup.log 2>&1
+CRON
+  sudo chmod 644 /etc/cron.d/hamorey-backup
+  sudo touch /var/log/hamorey-backup.log
+  sudo chown ubuntu:ubuntu /var/log/hamorey-backup.log
+}
+
 if [ ! -f "$API_ENV_FILE" ]; then
   echo "Missing $API_ENV_FILE"
   echo "Create it from server/.env.example after TencentDB MySQL and COS are ready."
@@ -202,10 +220,11 @@ sudo mkdir -p /opt/hamorey/source "$APP_ROOT/current" "$API_ROOT" /var/log/hamor
 sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
 if [ ! -d "$REPO_DIR/.git" ]; then
-  retry_network_command "GitHub clone" timeout 120s git clone "$REPO_URL" "$REPO_DIR"
+  retry_network_command "GitHub clone" timeout 120s git -c http.version=HTTP/1.1 clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
-  retry_network_command "GitHub fetch" timeout 120s git fetch --all --prune
+  git config --local http.version HTTP/1.1
+  retry_network_command "GitHub fetch" timeout 120s git -c http.version=HTTP/1.1 fetch --all --prune
   git reset --hard origin/main
 fi
 
@@ -227,6 +246,8 @@ timeout 5m npm run build
 
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
+
+install_database_backup_job
 
 cd "$API_ROOT"
 if pm2 describe hamorey-api >/dev/null 2>&1; then
