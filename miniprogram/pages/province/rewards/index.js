@@ -26,7 +26,7 @@ Page({
         ...r,
         qty: 0,
         coverUrl: r.cover_file_key
-          ? `https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/${r.cover_file_key}`
+          ? `${api.getBaseUrl()}/public/photos/${encodeURIComponent(r.cover_file_key)}`
           : ''
       }));
       this.setData({ rewards: items, myPoints: res.data.points || 0 });
