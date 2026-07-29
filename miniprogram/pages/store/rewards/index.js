@@ -22,12 +22,11 @@ Page({
     this.setData({ loading: false });
 
     if (res.ok) {
-      const baseUrl = api.getBaseUrl();
       const items = (res.data.items || []).map(r => ({
         ...r,
         qty: 0,
         coverUrl: r.cover_file_key
-          ? `${baseUrl}/public/photos/${encodeURIComponent(r.cover_file_key)}`
+          ? `https://api.hemoppf.cn/api/public/photos/${encodeURIComponent(r.cover_file_key)}`
           : ''
       }));
       this.setData({ rewards: items, myPoints: res.data.points || 0 });
