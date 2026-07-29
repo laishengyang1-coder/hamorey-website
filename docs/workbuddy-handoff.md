@@ -8,14 +8,14 @@ Updated: 2026-07-29
 - A push to `main` runs the Tencent production workflow and deploys to the current Tencent preview address: `http://134.175.187.12`.
 - Tencent production components are Nginx static hosting, PM2 `hamorey-api`, TencentDB MySQL, and COS assets.
 - Cloudflare Pages is retained only as an emergency rollback path. Its GitHub Actions workflow is currently manually disabled and must not be re-enabled or deleted before Tencent's formal domain launch is stable.
-- ICP filing has passed. The site-specific record number is `皖ICP备20013908号-8`. As of 2026-07-29, the formal root/system/api/www A records all point to Tencent Cloud `134.175.187.12`; HTTP verification passed. HTTPS, WeChat legal-domain validation, and the mini-program formal switch remain pending.
+- ICP filing has passed. The site-specific record number is `皖ICP备20013908号-8`. As of 2026-07-29, the formal root/system/api/www A records all point to Tencent Cloud `134.175.187.12`; HTTPS and Tencent API verification passed. WeChat legal-domain configuration and uploading a new mini-program trial build remain required.
 
 ## Changes in this handoff
 
 1. API login defense: failed login attempts are limited to 10 per IP in 15 minutes. Successful requests are not counted. Values are configurable in `/etc/hamorey/api.env` using `LOGIN_RATE_LIMIT_WINDOW_MS` and `LOGIN_RATE_LIMIT_MAX`.
 2. Tencent Nginx deployment: Gzip is enabled, hashed `/assets/` files receive one-year immutable cache headers, HTML remains non-cacheable, and API responses are explicitly `no-store`. The production script can issue and renew a single Let's Encrypt certificate for root/www/system/api after `ENABLE_LETSENCRYPT=true` and `LETSENCRYPT_EMAIL` are set only in `/etc/hamorey/api.env`.
 3. Cloudflare safety: the existing Cloudflare Actions workflow is manually disabled in GitHub, so pushes currently deploy Tencent only. Its YAML still contains the historical `push` trigger; do not re-enable it. Converting that YAML to `workflow_dispatch` only requires a GitHub token with `workflow` scope and is a later cleanup task.
-4. Mini-program endpoint routing: development, trial, and release builds currently use the Tencent preview IP. `miniprogram/config/runtime.js` contains the formal API `https://api.hemoppf.cn/api`, but `ENABLE_FORMAL_RELEASE_API` is deliberately `false` until DNS, HTTPS, and WeChat legal domains are verified. Flip it in a reviewed commit immediately before the first formal release.
+4. Mini-program endpoint routing: development builds use the Tencent preview IP for local debugging. Trial and release builds use `https://api.hemoppf.cn/api` so real devices satisfy WeChat legal-domain validation. After changing this file, upload a new trial build; an already uploaded trial build keeps its old endpoint.
 5. Domain readiness: `scripts/tencent-domain-cutover-check.sh` verifies DNS and Tencent API health after ICP approval. It does not change DNS or issue certificates.
 
 ## Required working rules
@@ -40,7 +40,7 @@ Updated: 2026-07-29
 
 4. The deploy updates `CORS_ORIGIN` and `SITE_URL` only after the certificate succeeds. Verify `https://api.hemoppf.cn/api/health`, `https://system.hemoppf.cn`, and an administrator login.
 5. In WeChat public platform, add `https://api.hemoppf.cn` as the request, uploadFile, and downloadFile legal domain. Add the COS public hostname too if mini-program images upload or download directly from COS.
-6. Change `ENABLE_FORMAL_RELEASE_API` to `true`, test the mini-program in WeChat Developer Tools and on a real phone, then submit and publish a release build.
+6. Pull the current `main` branch in the mini-program working copy, upload a new trial build, and test it in WeChat Developer Tools and on a real phone before submitting a release build.
 7. Place the site-specific ICP record number in the website footer. Do not use the ICP subject record number shown on the dashboard. Complete the WeChat mini-program filing with the same company subject, and complete public-security online filing within the required time after the website goes live.
 8. After 48 hours of stable HTTPS traffic, export final Tencent backups and then decide whether to retire Cloudflare.
 

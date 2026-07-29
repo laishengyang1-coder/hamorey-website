@@ -1,13 +1,13 @@
 /**
  * 小程序运行环境地址。
- * 开发版和体验版继续访问当前腾讯云 IP，避免备案审核期间影响联调；
- * 正式发布版在域名、HTTPS 和微信合法域名全部配置完成后自动使用正式 API。
+ * 开发版继续访问当前腾讯云 IP，方便本地联调；
+ * 体验版和正式发布版统一使用 HTTPS 正式 API，满足微信真机的合法域名校验。
  */
 
 const INTERNAL_PREVIEW_API_BASE_URL = 'http://134.175.187.12/api';
 const PRODUCTION_API_BASE_URL = 'https://api.hemoppf.cn/api';
-// Keep this false until DNS, HTTPS and WeChat legal-domain validation are all complete.
-const ENABLE_FORMAL_RELEASE_API = false;
+const ENABLE_FORMAL_RELEASE_API = true;
+const PRODUCTION_API_ENVIRONMENTS = new Set(['trial', 'release']);
 
 function getMiniProgramEnvVersion() {
   try {
@@ -21,7 +21,7 @@ function getMiniProgramEnvVersion() {
 }
 
 function resolveApiBaseUrl() {
-  return getMiniProgramEnvVersion() === 'release' && ENABLE_FORMAL_RELEASE_API
+  return ENABLE_FORMAL_RELEASE_API && PRODUCTION_API_ENVIRONMENTS.has(getMiniProgramEnvVersion())
     ? PRODUCTION_API_BASE_URL
     : INTERNAL_PREVIEW_API_BASE_URL;
 }
