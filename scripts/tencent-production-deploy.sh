@@ -30,6 +30,8 @@ retry_network_command() {
 }
 
 install_build_dependencies() {
+  local requires_vite="${1:-false}"
+
   # api.env exports NODE_ENV=production for the API. Do not let that omit Vite
   # and TypeScript while preparing the web build on the deployment host.
   env \
@@ -40,7 +42,7 @@ install_build_dependencies() {
     NODE_ENV=development \
     timeout 10m npm ci --include=dev
 
-  if [ ! -x node_modules/.bin/vite ]; then
+  if [ "$requires_vite" = "true" ] && [ ! -x node_modules/.bin/vite ]; then
     echo "Frontend build dependencies were not installed: node_modules/.bin/vite is missing."
     exit 1
   fi
@@ -260,7 +262,7 @@ cd "$REPO_DIR"
 DEPLOY_COMMIT="$(git rev-parse HEAD)"
 echo "Deploying commit $DEPLOY_COMMIT"
 npm config set registry https://registry.npmmirror.com
-install_build_dependencies
+install_build_dependencies true
 timeout 10m npm run build
 
 rm -rf "$APP_ROOT/current"
@@ -269,7 +271,7 @@ cp -R dist/. "$APP_ROOT/current"/
 
 cd "$REPO_DIR/server"
 npm config set registry https://registry.npmmirror.com
-install_build_dependencies
+install_build_dependencies false
 timeout 5m npm run build
 
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
