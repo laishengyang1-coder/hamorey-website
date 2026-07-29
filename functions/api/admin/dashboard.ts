@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows.results || []);
     }
 
-    // 质保登记趋势（近30天每日量）
+    // 质保登记趋势（近30天每日量，补零）
     if (type === 'trend') {
       const rows = await db.prepare(
         `SELECT date(created_at) AS date, COUNT(*) AS count
@@ -73,7 +73,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          GROUP BY date(created_at)
          ORDER BY date ASC`
       ).all();
-      return ok(rows.results || []);
+      const dataMap = new Map<string, number>();
+      (rows.results || []).forEach((r: any) => dataMap.set(r.date, r.count));
+      const result: { date: string; count: number }[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        const ds = d.toISOString().split('T')[0];
+        result.push({ date: ds, count: dataMap.get(ds) ?? 0 });
+      }
+      return ok(result);
     }
 
     // 质保码生命周期漏斗
