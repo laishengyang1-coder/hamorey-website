@@ -268,20 +268,21 @@ pm2 status
    - `system.hemoppf.cn` -> 腾讯云服务器 IP
    - `api.hemoppf.cn` -> 腾讯云服务器 IP
    - `www.hemoppf.cn` -> 腾讯云服务器 IP 或静态站点
-2. 运行 `SERVER_IP=134.175.187.12 bash scripts/tencent-domain-cutover-check.sh`，确认输出 `HAMOREY_DOMAIN_CUTOVER_READY`。
-3. 申请并配置覆盖三个域名的 HTTPS 证书，然后切换 Nginx 正式域名配置。
-4. 微信公众平台配置合法域名：
+2. `hemoppf.cn` 也解析到腾讯云服务器 IP；作为主域名应包含在证书与切换检查中。
+3. 运行 `SERVER_IP=134.175.187.12 bash scripts/tencent-domain-cutover-check.sh`，确认输出 `HAMOREY_DOMAIN_CUTOVER_READY`。
+4. 申请并配置覆盖四个域名的 HTTPS 证书，然后切换 Nginx 正式域名配置。
+5. 微信公众平台配置合法域名：
    - request：`https://api.hemoppf.cn`
    - uploadFile：`https://api.hemoppf.cn`
    - downloadFile：`https://api.hemoppf.cn`
-5. 小程序真机测试。
-6. 将 `miniprogram/config/runtime.js` 中的 `ENABLE_FORMAL_RELEASE_API` 改为 `true`，再重新发布小程序。
-7. 确认 GitHub 中 Cloudflare Pages 工作流保持手动禁用状态。
-8. 先保留 Cloudflare 回退副本，腾讯云正式域名稳定运行 48 小时后再人工确认删除。
+6. 小程序真机测试。
+7. 将 `miniprogram/config/runtime.js` 中的 `ENABLE_FORMAL_RELEASE_API` 改为 `true`，再重新发布小程序。
+8. 确认 GitHub 中 Cloudflare Pages 工作流保持手动禁用状态。
+9. 先保留 Cloudflare 回退副本，腾讯云正式域名稳定运行 48 小时后再人工确认删除。
 
 ## 注意事项
 
-- 备案通过前不要把 `hemoppf.cn` 作为正式公开访问入口。
+- ICP 已通过，但 DNS、HTTPS、微信合法域名和小程序备案完成前，`hemoppf.cn` 仍不作为正式公开入口。
 - 当前 IP 预览只用于内部测试。
 - GitHub 自动部署需要单独配置服务器 SSH 密钥和 GitHub Secrets。
 - GitHub 的 Cloudflare Pages 工作流目前为手动禁用；不要恢复为 `main` 自动发布。

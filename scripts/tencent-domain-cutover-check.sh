@@ -4,6 +4,7 @@ set -euo pipefail
 # Run this only after the ICP filing is approved and DNS records have been added.
 SERVER_IP="${SERVER_IP:-134.175.187.12}"
 DOMAINS=(
+  "${ROOT_DOMAIN:-hemoppf.cn}"
   "${SYSTEM_DOMAIN:-system.hemoppf.cn}"
   "${API_DOMAIN:-api.hemoppf.cn}"
   "${WWW_DOMAIN:-www.hemoppf.cn}"
@@ -47,11 +48,11 @@ fi
 
 echo
 echo "Before HTTPS cutover, confirm all of the following:"
-echo "  1. ICP filing is approved and the approval number is ready for the website footer."
+echo "  1. ICP filing is approved and the site-specific ICP record number is ready for the website footer."
 echo "  2. Tencent Cloud security group permits inbound TCP 80 and 443."
-echo "  3. system/api/www A records all point to $SERVER_IP."
-echo "  4. /etc/hamorey/api.env CORS_ORIGIN is set to https://system.hemoppf.cn,https://www.hemoppf.cn."
-echo "  5. A TLS certificate is ready for system.hemoppf.cn, api.hemoppf.cn and www.hemoppf.cn."
+echo "  3. root/system/api/www A records all point to $SERVER_IP."
+echo "  4. /etc/hamorey/api.env CORS_ORIGIN includes https://hemoppf.cn, https://system.hemoppf.cn and https://www.hemoppf.cn."
+echo "  5. A TLS certificate is ready for hemoppf.cn, system.hemoppf.cn, api.hemoppf.cn and www.hemoppf.cn."
 echo "  6. WeChat public platform request/upload/download domains are updated before a release build is submitted."
 
 if [ "$failed" -ne 0 ]; then

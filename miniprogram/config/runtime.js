@@ -6,7 +6,7 @@
 
 const INTERNAL_PREVIEW_API_BASE_URL = 'http://134.175.187.12/api';
 const PRODUCTION_API_BASE_URL = 'https://api.hemoppf.cn/api';
-// Keep this false until ICP, HTTPS and WeChat legal-domain validation are all complete.
+// Keep this false until DNS, HTTPS and WeChat legal-domain validation are all complete.
 const ENABLE_FORMAL_RELEASE_API = false;
 
 function getMiniProgramEnvVersion() {
