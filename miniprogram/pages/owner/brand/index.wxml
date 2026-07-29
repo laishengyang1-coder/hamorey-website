@@ -1,0 +1,89 @@
+<view class="brand-page">
+  <!-- Hero -->
+  <view class="brand-hero">
+    <view class="brand-hero-bg"></view>
+    <view class="brand-hero-content">
+      <view class="brand-logo-area">
+        <image class="brand-logo" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/logo.png" mode="aspectFit" />
+      </view>
+      <view class="brand-name">和膜 HAMOREY</view>
+      <view class="brand-slogan">专业 · 品质 · 服务</view>
+      <view class="brand-slogan-en">BREAKTHROUGH AND WIN-WIN FUTURE</view>
+    </view>
+  </view>
+
+  <!-- 品牌故事 -->
+  <view class="brand-section">
+    <view class="section-title">品牌故事</view>
+    <view class="section-subtitle">Brand Story</view>
+    <view class="brand-story">
+      <view class="story-block">
+        <view class="story-label">"和"</view>
+        <view class="story-desc">产品与汽车的完美贴合，更喻示品牌与合作伙伴、用户之间的和谐共生关系</view>
+      </view>
+      <view class="story-block">
+        <view class="story-label">HAMOREY</view>
+        <view class="story-desc">意大利语"Amore"（爱）与英语"More"（更多）的巧妙融合——传递品牌温度，象征无限潜力</view>
+      </view>
+      <view class="story-block">
+        <view class="story-label">三</view>
+        <view class="story-desc">标志下方的三横线构成稳定天平基座——代表"专业·品质·服务"三位一体价值支柱，呼应《道德经》"三生万物"的智慧</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 公司背景 -->
+  <view class="brand-section brand-section-alt">
+    <view class="section-title">企业背景</view>
+    <view class="section-subtitle">About HeHe</view>
+    <view class="company-card">
+      <view class="company-name">安徽和和新材料有限公司</view>
+      <view class="company-desc">和和新材料旗下全资子公司，专注隐形车衣、改色车衣、窗膜、天窗冰甲及新能源电池膜材的研发制造与销售。和膜作为安徽和和旗下唯一零售渠道品牌，依托母公司完整的产业链优势与自主研发能力，为终端消费者提供高品质全汽车膜类产品及标准化服务体验。</view>
+      <view class="company-tag">上市公司背书</view>
+    </view>
+  </view>
+
+  <!-- 全车资产管家 -->
+  <view class="brand-section">
+    <view class="section-title">全车资产管家</view>
+    <view class="section-subtitle">Full Vehicle Asset Manager</view>
+    <view class="asset-intro">
+      <view class="asset-main">和膜首创「全车资产管家」服务理念，突破传统行业模式——从销售产品到经营价值，从价格内卷到服务共赢。</view>
+      <view class="asset-detail">提供涵盖窗膜、隐形车衣、TPU改色车衣及天窗冰甲在内的全系列膜产品，依托集团全产业链资源与智能管家系统，构建标准化、数字化的车膜服务新标杆。</view>
+    </view>
+  </view>
+
+  <!-- 三大价值 -->
+  <view class="brand-section brand-section-alt">
+    <view class="section-title">核心价值</view>
+    <view class="section-subtitle">Core Values</view>
+    <view class="values-grid">
+      <view class="value-card" wx:for="{{coreValues}}" wx:key="title">
+        <view class="value-icon">{{item.icon}}</view>
+        <view class="value-title">{{item.title}}</view>
+        <view class="value-en">{{item.en}}</view>
+        <view class="value-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 产品体系 -->
+  <view class="brand-section">
+    <view class="section-title">产品体系</view>
+    <view class="section-subtitle">Product Series</view>
+    <view class="product-grid">
+      <view class="product-card" wx:for="{{productSeries}}" wx:key="key" data-key="{{item.key}}" bindtap="onSeriesTap">
+        <image class="product-img" src="{{item.image}}" mode="aspectFill" />
+        <view class="product-overlay"></view>
+        <view class="product-info">
+          <view class="product-title">{{item.title}}</view>
+          <view class="product-subtitle">{{item.subtitle}}</view>
+          <view class="product-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="product-tip">四膜合一 · 一步到位</view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

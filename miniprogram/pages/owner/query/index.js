@@ -170,7 +170,7 @@ Page({
 
   /** 品牌介绍 / 关于 */
   goBrandIntro() {
-    wx.showToast({ title: '品牌故事即将上线', icon: 'none' });
+    wx.navigateTo({ url: '/pages/owner/brand/index' });
   },
 
   /** 授权门店 */

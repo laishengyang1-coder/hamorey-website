@@ -1,0 +1,281 @@
+/* 品牌介绍页 */
+
+.brand-page {
+  min-height: 100vh;
+  background: #FEFAF8;
+  padding-bottom: 40rpx;
+}
+
+/* Hero */
+.brand-hero {
+  position: relative;
+  height: 480rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.brand-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2D1212 0%, #5C1A1A 50%, #7A2828 100%);
+}
+
+.brand-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 40rpx;
+}
+
+.brand-logo-area {
+  margin-bottom: 24rpx;
+}
+
+.brand-logo {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+}
+
+.brand-name {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 6rpx;
+  margin-bottom: 12rpx;
+}
+
+.brand-slogan {
+  font-size: 28rpx;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 4rpx;
+  margin-bottom: 8rpx;
+}
+
+.brand-slogan-en {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 3rpx;
+}
+
+/* 通用 Section */
+.brand-section {
+  padding: 40rpx 32rpx;
+}
+
+.brand-section-alt {
+  background: #F5EDE9;
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1A1412;
+  margin-bottom: 4rpx;
+}
+
+.section-subtitle {
+  font-size: 22rpx;
+  color: #9E8A82;
+  letter-spacing: 3rpx;
+  margin-bottom: 28rpx;
+}
+
+/* 品牌故事 */
+.brand-story {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.story-block {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  border-left: 6rpx solid #5C1A1A;
+}
+
+.story-label {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #5C1A1A;
+  margin-bottom: 8rpx;
+}
+
+.story-desc {
+  font-size: 26rpx;
+  color: #4A3A34;
+  line-height: 1.7;
+}
+
+/* 企业背景 */
+.company-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  border: 1rpx solid #E8E0DC;
+}
+
+.company-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1A1412;
+  margin-bottom: 12rpx;
+}
+
+.company-desc {
+  font-size: 26rpx;
+  color: #4A3A34;
+  line-height: 1.7;
+  margin-bottom: 20rpx;
+}
+
+.company-tag {
+  display: inline-block;
+  padding: 8rpx 24rpx;
+  background: rgba(92,26,26,0.08);
+  color: #5C1A1A;
+  font-size: 22rpx;
+  font-weight: 600;
+  border-radius: 24rpx;
+}
+
+/* 全车资产管家 */
+.asset-intro {
+  background: linear-gradient(135deg, #5C1A1A, #7A2828);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  color: #FFFFFF;
+}
+
+.asset-main {
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.asset-detail {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.7;
+}
+
+/* 核心价值 */
+.values-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16rpx;
+}
+
+.value-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx 16rpx;
+  text-align: center;
+  border: 1rpx solid #E8E0DC;
+}
+
+.value-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5C1A1A, #7A2828);
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12rpx;
+}
+
+.value-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #1A1412;
+  margin-bottom: 2rpx;
+}
+
+.value-en {
+  font-size: 18rpx;
+  color: #9E8A82;
+  letter-spacing: 1rpx;
+  margin-bottom: 8rpx;
+}
+
+.value-desc {
+  font-size: 20rpx;
+  color: #7A6A62;
+  line-height: 1.5;
+}
+
+/* 产品体系 */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+.product-card {
+  position: relative;
+  border-radius: 16rpx;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+}
+
+.product-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(transparent, rgba(26,20,18,0.85));
+}
+
+.product-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16rpx;
+}
+
+.product-title {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 2rpx;
+}
+
+.product-subtitle {
+  font-size: 16rpx;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 2rpx;
+  margin-bottom: 4rpx;
+}
+
+.product-desc {
+  font-size: 18rpx;
+  color: rgba(255,255,255,0.75);
+}
+
+.product-tip {
+  text-align: center;
+  margin-top: 24rpx;
+  font-size: 24rpx;
+  color: #C8A96E;
+  letter-spacing: 4rpx;
+}
+
+.safe-bottom { height: 40rpx; }
