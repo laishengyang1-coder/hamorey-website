@@ -4,13 +4,14 @@
  */
 
 const app = getApp();
+const { resolveApiBaseUrl } = require('../config/runtime');
 
 /**
  * 获取 API 基础地址
  */
 function getBaseUrl() {
   return (app && app.globalData && app.globalData.apiBaseUrl)
-    || 'http://134.175.187.12/api';
+    || resolveApiBaseUrl();
 }
 
 /**

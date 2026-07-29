@@ -7,6 +7,10 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default(''),
   SITE_URL: z.string().url().default('http://134.175.187.12'),
   BRAND_NAME: z.string().default('HAMOREY'),
+  // The Tencent Nginx reverse proxy is the only trusted hop in production.
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
+  LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(60_000).max(3_600_000).default(900_000),
+  LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100).default(10),
 
   MYSQL_HOST: z.string().min(1),
   MYSQL_PORT: z.coerce.number().int().positive().default(3306),

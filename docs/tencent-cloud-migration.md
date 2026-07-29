@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-截至 2026-07-23，腾讯云生产环境已经独立运行：
+截至 2026-07-29，腾讯云生产环境已经独立运行：
 
 - 内部预览地址：`http://134.175.187.12`
 - 前端：腾讯云轻量服务器 Nginx
@@ -27,7 +27,7 @@
 
 Cloudflare Pages/D1/R2 目前只保留为临时回退副本，不再作为腾讯云系统的数据源。未完成正式域名和 HTTPS 切换前，不要删除 Cloudflare 数据。
 
-GitHub Actions 中的 `Deploy to Cloudflare Pages` 工作流已于 2026-07-23 人工停用，后续提交到 `main` 不会再自动发布到 Cloudflare。
+GitHub 中的 Cloudflare Pages Actions 工作流当前为手动禁用状态；后续提交到 `main` 只会自动发布到腾讯云，不会自动发布到 Cloudflare。该工作流 YAML 仍保留历史 `push` 触发器，后续如需将源码也收紧为 `workflow_dispatch`，需要使用具备 `workflow` 权限的 GitHub Token 更新它；在此之前不得重新启用该工作流。
 
 腾讯云自动部署使用一把受限 SSH 密钥。该密钥只能执行
 `/opt/hamorey/bin/github-deploy`，不能打开普通 SSH shell、转发端口或执行其他命令。
@@ -268,15 +268,15 @@ pm2 status
    - `system.hemoppf.cn` -> 腾讯云服务器 IP
    - `api.hemoppf.cn` -> 腾讯云服务器 IP
    - `www.hemoppf.cn` -> 腾讯云服务器 IP 或静态站点
-2. 申请 HTTPS 证书。
-3. Nginx 切换正式域名配置。
+2. 运行 `SERVER_IP=134.175.187.12 bash scripts/tencent-domain-cutover-check.sh`，确认输出 `HAMOREY_DOMAIN_CUTOVER_READY`。
+3. 申请并配置覆盖三个域名的 HTTPS 证书，然后切换 Nginx 正式域名配置。
 4. 微信公众平台配置合法域名：
    - request：`https://api.hemoppf.cn`
    - uploadFile：`https://api.hemoppf.cn`
    - downloadFile：`https://api.hemoppf.cn`
 5. 小程序真机测试。
-6. 把小程序 `apiBaseUrl` 改为 `https://api.hemoppf.cn/api` 并重新发布。
-7. 确认 GitHub 中 Cloudflare Pages 工作流保持停用。
+6. 将 `miniprogram/config/runtime.js` 中的 `ENABLE_FORMAL_RELEASE_API` 改为 `true`，再重新发布小程序。
+7. 确认 GitHub 中 Cloudflare Pages 工作流保持手动禁用状态。
 8. 先保留 Cloudflare 回退副本，腾讯云正式域名稳定运行 48 小时后再人工确认删除。
 
 ## 注意事项
@@ -284,6 +284,6 @@ pm2 status
 - 备案通过前不要把 `hemoppf.cn` 作为正式公开访问入口。
 - 当前 IP 预览只用于内部测试。
 - GitHub 自动部署需要单独配置服务器 SSH 密钥和 GitHub Secrets。
-- GitHub 的 Cloudflare Pages 工作流已经停用；不要重新启用。
+- GitHub 的 Cloudflare Pages 工作流目前为手动禁用；不要恢复为 `main` 自动发布。
 - 数据迁移前必须先备份 D1 和 R2。
 - 质保码、质保记录、积分流水属于核心业务数据，迁移后要做数量和抽样核对。

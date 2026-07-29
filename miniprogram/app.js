@@ -2,6 +2,8 @@
  * 和膜 HAMOREY 质保系统 — 微信小程序全局入口
  */
 
+const { resolveApiBaseUrl } = require('./config/runtime');
+
 App({
   /**
    * 小程序启动时触发
@@ -33,7 +35,7 @@ App({
    */
   globalData: {
     /** API 基础地址 */
-    apiBaseUrl: 'http://134.175.187.12/api',
+    apiBaseUrl: resolveApiBaseUrl(),
     /** 登录 token */
     token: null,
     /** 用户信息 */
