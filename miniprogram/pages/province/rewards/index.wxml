@@ -1,8 +1,11 @@
 <view class="page-container">
-  <!-- 积分余额 -->
-  <view class="points-header" wx:if="{{myPoints > 0}}">
-    <text class="points-header-label">我的积分</text>
-    <text class="points-header-value">{{myPoints}}</text>
+  <!-- 红色头部 -->
+  <view class="rewards-hero">
+    <view class="rewards-hero-title">积分商城</view>
+    <view class="rewards-hero-points">
+      <text class="rewards-hero-num">{{myPoints}}</text>
+      <text class="rewards-hero-label">可用积分</text>
+    </view>
   </view>
 
   <!-- Loading / Error / Empty -->
@@ -18,14 +21,13 @@
   <!-- 商品双列网格 -->
   <view wx:else class="rewards-grid">
     <view class="reward-card" wx:for="{{rewards}}" wx:key="id">
-      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-img" lazy-load />
-      <view wx:else class="reward-img-placeholder"></view>
+      <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="reward-img" lazy-load />
+      <view wx:else class="reward-img-fallback">🎁</view>
       <view class="reward-body">
         <view class="reward-name">{{item.name || '--'}}</view>
         <view class="reward-points">{{item.points_required || 0}} 积分</view>
         <view wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}" class="reward-stock">库存 {{item.stock_quantity}}</view>
         <view wx:else class="reward-soldout">已售罄</view>
-        <!-- 数量选择器 -->
         <view class="qty-row" wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}">
           <view class="qty-btn {{item.qty <= 0 ? 'disabled' : ''}}" data-id="{{item.id}}" bindtap="decQty">−</view>
           <view class="qty-num">{{item.qty || 0}}</view>

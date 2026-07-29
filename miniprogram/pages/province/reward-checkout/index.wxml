@@ -1,31 +1,45 @@
 <view class="checkout-page">
-  <!-- 订单列表 -->
-  <view class="order-list">
-    <view class="order-item" wx:for="{{items}}" wx:key="id">
-      <image wx:if="{{item.image}}" src="{{item.image}}" mode="aspectFill" class="order-img" />
-      <view wx:else class="order-img-placeholder"></view>
-      <view class="order-info">
-        <view class="order-name">{{item.name}}</view>
-        <view class="order-qty">×{{item.qty}}</view>
+  <scroll-view scroll-y="true" class="checkout-scroll">
+    <!-- 订单商品 -->
+    <view class="order-list">
+      <view class="order-item" wx:for="{{items}}" wx:key="id">
+        <image wx:if="{{item.image}}" src="{{item.image}}" mode="aspectFill" class="order-img" />
+        <view wx:else class="order-img-fb">🎁</view>
+        <view class="order-info">
+          <view class="order-name">{{item.name}}</view>
+          <view class="order-qty">×{{item.qty}}</view>
+        </view>
+        <view class="order-subtotal">{{item.points * item.qty}} 积分</view>
       </view>
-      <view class="order-subtotal">{{item.points * item.qty}} 积分</view>
     </view>
-  </view>
 
-  <!-- 汇总 -->
-  <view class="order-summary">
-    <view class="summary-row">
-      <text class="summary-label">商品合计</text>
-      <text class="summary-value">{{total}} 积分</text>
+    <!-- 收货地址 -->
+    <view class="card-section">
+      <view class="card-title">收货地址</view>
+      <view class="addr-row">
+        <input class="addr-input" placeholder="收货人姓名" value="{{address.name}}" data-field="name" bindinput="onAddrChange" />
+        <input class="addr-input" placeholder="手机号" type="number" maxlength="11" value="{{address.phone}}" data-field="phone" bindinput="onAddrChange" />
+      </view>
+      <input class="addr-input-full" placeholder="所在地区（如：浙江省杭州市滨江区）" value="{{address.region}}" data-field="region" bindinput="onAddrChange" />
+      <input class="addr-input-full" placeholder="详细地址（如：XX路XX号XX室）" value="{{address.detail}}" data-field="detail" bindinput="onAddrChange" />
     </view>
-    <view class="summary-divider"></view>
-    <view class="summary-row total">
-      <text class="summary-label">应付积分</text>
-      <text class="summary-total">{{total}}</text>
-    </view>
-  </view>
 
-  <!-- 提交按钮 -->
+    <!-- 汇总 -->
+    <view class="card-section">
+      <view class="card-title">积分汇总</view>
+      <view class="summary-row">
+        <text class="summary-label">商品合计</text>
+        <text class="summary-value">{{total}} 积分</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-row total">
+        <text class="summary-label">应付积分</text>
+        <text class="summary-total">{{total}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 提交 -->
   <view class="submit-area">
     <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="submit">
       {{submitting ? '提交中...' : '确认兑换'}}
