@@ -22,15 +22,15 @@ Page({
     this.setData({ loading: false });
 
     if (res.ok) {
-      const items = (res.data.items || []).map(r => ({ ...r, qty: 0, coverPath: '' }));
+      const baseUrl = api.getBaseUrl();
+      const items = (res.data.items || []).map(r => ({
+        ...r,
+        qty: 0,
+        coverUrl: r.cover_file_key
+          ? `${baseUrl}/public/photos/${encodeURIComponent(r.cover_file_key)}`
+          : ''
+      }));
       this.setData({ rewards: items, myPoints: res.data.points || 0 });
-      // 异步下载封面图（带认证头）
-      items.forEach(async (item, i) => {
-        if (item.cover_file_key) {
-          const img = await api.downloadProtectedPhoto(item.cover_file_key);
-          if (img.ok) this.setData({ [`rewards[${i}].coverPath`]: img.data.tempFilePath });
-        }
-      });
     } else {
       this.setData({ error: res.message || '加载失败' });
     }
@@ -70,7 +70,7 @@ Page({
   goCheckout() {
     const rewards = this.data.rewards;
     const items = rewards.filter(r => r.qty > 0).map(r => ({
-      id: r.id, name: r.name, image: r.coverPath || '',
+      id: r.id, name: r.name, image: r.coverUrl || '',
       points: r.points_required || 0, qty: r.qty
     }));
     if (items.length === 0) { wx.showToast({ title: '请选择商品', icon: 'none' }); return; }
