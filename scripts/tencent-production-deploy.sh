@@ -38,7 +38,7 @@ install_build_dependencies() {
     -u NPM_CONFIG_PRODUCTION \
     -u npm_config_production \
     NODE_ENV=development \
-    timeout 10m npm ci --include=dev --omit=optional
+    timeout 10m npm ci --include=dev
 
   if [ ! -x node_modules/.bin/vite ]; then
     echo "Frontend build dependencies were not installed: node_modules/.bin/vite is missing."
