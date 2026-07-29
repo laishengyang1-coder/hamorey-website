@@ -153,6 +153,9 @@
     </view>
   </view>
 
+  <!-- 版本号 -->
+  <view class="version-footer">{{version}}</view>
+
   <!-- 底部安全区占位（配合自定义 tabBar） -->
   <view class="safe-bottom-placeholder"></view>
 <custom-tab-bar />

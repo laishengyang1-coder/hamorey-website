@@ -129,7 +129,8 @@ Page({
     functions: HOME_CONFIG.functions,
     cases: HOME_CONFIG.cases,
     productSeries: HOME_CONFIG.productSeries,
-    brand: HOME_CONFIG.brand
+    brand: HOME_CONFIG.brand,
+    version: 'v1.0.1'
   },
 
   onShow() {

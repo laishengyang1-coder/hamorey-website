@@ -521,6 +521,15 @@
   line-height: 1.6;
 }
 
+/* 版本号 */
+.version-footer {
+  text-align: center;
+  padding: 16rpx 0 8rpx;
+  font-size: 20rpx;
+  color: #C8B8B0;
+  letter-spacing: 1rpx;
+}
+
 /* 底部安全区占位 */
 .safe-bottom-placeholder {
   height: 140rpx;
