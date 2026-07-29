@@ -14,18 +14,14 @@ interface Env {
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
-    const authUser = getAuthUser(context.data);
-    if (!authUser) return error('请先登录', 401);
-
     const pathname = url.pathname;
     const fileKey = decodeURIComponent(pathname.replace(/^\/api\/public\/photos\//, ''));
     if (!fileKey || fileKey.includes('..')) return error('无效的图片路径', 400);
 
-    const object = await context.env.R2.get(fileKey);
-    if (!object) return error('图片不存在', 404);
-
-    // reward-covers 是公共商品封面，所有已登录用户可读
+    // reward-covers 是公开商品封面，不要求登录
     if (fileKey.startsWith('reward-covers/')) {
+      const object = await context.env.R2.get(fileKey);
+      if (!object) return error('图片不存在', 404);
       return new Response(object.body, {
         headers: {
           'Content-Type': object.httpMetadata?.contentType || 'image/jpeg',
@@ -36,6 +32,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         status: 200,
       });
     }
+
+    const authUser = getAuthUser(context.data);
+    if (!authUser) return error('请先登录', 401);
+
+    const object = await context.env.R2.get(fileKey);
+    if (!object) return error('图片不存在', 404);
 
     const ownerOrgId = object.customMetadata?.organizationId
       || fileKey.match(/^warranty-photos\/([^/]+)\//)?.[1]
