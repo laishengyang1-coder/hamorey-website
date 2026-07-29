@@ -264,6 +264,7 @@ function downloadProtectedPhoto(fileKey) {
 }
 
 module.exports = {
+  getBaseUrl,
   request,
   get,
   post,
