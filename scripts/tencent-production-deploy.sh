@@ -6,6 +6,9 @@ API_ROOT="${API_ROOT:-/opt/hamorey/apps/api}"
 REPO_DIR="${REPO_DIR:-/opt/hamorey/source/hamorey-website}"
 REPO_URL="${REPO_URL:-https://github.com/laishengyang1-coder/hamorey-website.git}"
 API_ENV_FILE="${API_ENV_FILE:-/etc/hamorey/api.env}"
+LETSENCRYPT_WEBROOT="${LETSENCRYPT_WEBROOT:-/var/www/letsencrypt}"
+LETSENCRYPT_CERT_NAME="${LETSENCRYPT_CERT_NAME:-hamorey-cn}"
+FORMAL_SERVER_NAMES="hemoppf.cn www.hemoppf.cn system.hemoppf.cn api.hemoppf.cn"
 
 retry_network_command() {
   local description="$1"
@@ -24,6 +27,164 @@ retry_network_command() {
     echo "$description failed; retrying in $((attempt * 3)) seconds ($attempt/4)."
     sleep "$((attempt * 3))"
   done
+}
+
+upsert_api_env() {
+  local key="$1"
+  local value="$2"
+  local temp_file
+
+  temp_file="$(mktemp)"
+  sudo awk -v key="$key" -v value="$value" '
+    $0 ~ "^" key "=" {
+      print key "=" value
+      found = 1
+      next
+    }
+    { print }
+    END {
+      if (!found) {
+        print key "=" value
+      }
+    }
+  ' "$API_ENV_FILE" >"$temp_file"
+  sudo install -m 600 -o ubuntu -g ubuntu "$temp_file" "$API_ENV_FILE"
+  rm -f "$temp_file"
+}
+
+write_nginx_config() {
+  local tls_ready="$1"
+
+  sudo mkdir -p /etc/nginx/snippets "$LETSENCRYPT_WEBROOT"
+  sudo chown -R www-data:www-data "$LETSENCRYPT_WEBROOT"
+
+  cat >/tmp/hamorey-app-locations.conf <<NGINX
+root $APP_ROOT/current;
+index index.html;
+client_max_body_size 30m;
+server_tokens off;
+
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_types text/plain text/css text/xml application/json application/javascript application/xml image/svg+xml font/ttf font/otf application/vnd.ms-fontobject;
+
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+access_log /var/log/hamorey/web.access.log;
+error_log /var/log/hamorey/web.error.log;
+
+location /api/ {
+    add_header Cache-Control "no-store" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    proxy_pass http://127.0.0.1:3001/api/;
+    proxy_http_version 1.1;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 60s;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+}
+
+location ^~ /assets/ {
+    try_files \$uri =404;
+    expires 365d;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    access_log off;
+}
+
+location = /index.html {
+    try_files \$uri =404;
+    add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+}
+
+location / {
+    try_files \$uri \$uri/ /index.html;
+    add_header Cache-Control "no-cache" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+}
+NGINX
+  sudo mv /tmp/hamorey-app-locations.conf /etc/nginx/snippets/hamorey-app-locations.conf
+
+  if [ "$tls_ready" = "true" ]; then
+    cat >/tmp/hamorey-production.conf <<NGINX
+server {
+    listen 80;
+    server_name $FORMAL_SERVER_NAMES;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root $LETSENCRYPT_WEBROOT;
+        default_type "text/plain";
+        try_files \$uri =404;
+    }
+
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+    include /etc/nginx/snippets/hamorey-app-locations.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name $FORMAL_SERVER_NAMES;
+
+    ssl_certificate /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+
+    include /etc/nginx/snippets/hamorey-app-locations.conf;
+}
+NGINX
+  else
+    cat >/tmp/hamorey-production.conf <<NGINX
+server {
+    listen 80 default_server;
+    server_name $FORMAL_SERVER_NAMES _;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root $LETSENCRYPT_WEBROOT;
+        default_type "text/plain";
+        try_files \$uri =404;
+    }
+
+    include /etc/nginx/snippets/hamorey-app-locations.conf;
+}
+NGINX
+  fi
+
+  sudo mv /tmp/hamorey-production.conf /etc/nginx/sites-available/hamorey-production
+  sudo ln -sf /etc/nginx/sites-available/hamorey-production /etc/nginx/sites-enabled/hamorey-production
+  sudo rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/hamorey-web
+  sudo nginx -t
+  sudo systemctl reload nginx
+}
+
+install_certbot_renewal_hook() {
+  sudo mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+  sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-hamorey-nginx >/dev/null <<'HOOK'
+#!/usr/bin/env bash
+set -euo pipefail
+systemctl reload nginx
+HOOK
+  sudo chmod 755 /etc/letsencrypt/renewal-hooks/deploy/reload-hamorey-nginx
+  sudo systemctl enable --now certbot.timer
 }
 
 if [ ! -f "$API_ENV_FILE" ]; then
@@ -75,73 +236,49 @@ else
 fi
 pm2 save --force
 
-cat >/tmp/hamorey-production.conf <<NGINX
-server {
-    listen 80 default_server;
-    server_name _;
+TLS_CERTIFICATE_PATH="/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/fullchain.pem"
+TLS_PRIVATE_KEY_PATH="/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/privkey.pem"
+TLS_READY=false
+if [ -f "$TLS_CERTIFICATE_PATH" ] && [ -f "$TLS_PRIVATE_KEY_PATH" ]; then
+  TLS_READY=true
+fi
 
-    root $APP_ROOT/current;
-    index index.html;
-    client_max_body_size 30m;
-    server_tokens off;
+# Keep HTTP available for the ACME challenge before the first certificate exists.
+write_nginx_config "$TLS_READY"
 
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 5;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml application/json application/javascript application/xml image/svg+xml font/ttf font/otf application/vnd.ms-fontobject;
+if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ] && [ "$TLS_READY" = "false" ]; then
+  if [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
+    echo "TLS certificate skipped: LETSENCRYPT_EMAIL is missing from $API_ENV_FILE."
+  else
+    sudo apt-get update
+    sudo apt-get install -y certbot
+    sudo certbot certonly \
+      --webroot \
+      --non-interactive \
+      --agree-tos \
+      --email "$LETSENCRYPT_EMAIL" \
+      --cert-name "$LETSENCRYPT_CERT_NAME" \
+      --keep-until-expiring \
+      -w "$LETSENCRYPT_WEBROOT" \
+      -d hemoppf.cn \
+      -d www.hemoppf.cn \
+      -d system.hemoppf.cn \
+      -d api.hemoppf.cn
 
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    TLS_READY=true
+    install_certbot_renewal_hook
+    write_nginx_config "$TLS_READY"
 
-    access_log /var/log/hamorey/web.access.log;
-    error_log /var/log/hamorey/web.error.log;
-
-    location /api/ {
-        add_header Cache-Control "no-store" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        proxy_pass http://127.0.0.1:3001/api/;
-        proxy_http_version 1.1;
-        proxy_connect_timeout 5s;
-        proxy_read_timeout 60s;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location ^~ /assets/ {
-        try_files \$uri =404;
-        expires 365d;
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        access_log off;
-    }
-
-    location = /index.html {
-        try_files \$uri =404;
-        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    }
-
-    location / {
-        try_files \$uri \$uri/ /index.html;
-        add_header Cache-Control "no-cache" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    }
-}
-NGINX
-
-sudo mv /tmp/hamorey-production.conf /etc/nginx/sites-available/hamorey-production
-sudo ln -sf /etc/nginx/sites-available/hamorey-production /etc/nginx/sites-enabled/hamorey-production
-sudo rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/hamorey-web
-sudo nginx -t
-sudo systemctl reload nginx
+    upsert_api_env "CORS_ORIGIN" "https://hemoppf.cn,https://www.hemoppf.cn,https://system.hemoppf.cn"
+    upsert_api_env "SITE_URL" "https://system.hemoppf.cn"
+    set -a
+    # shellcheck source=/dev/null
+    source "$API_ENV_FILE"
+    set +a
+    pm2 restart hamorey-api --update-env
+    pm2 save --force
+  fi
+fi
 
 for attempt in $(seq 1 30); do
   if curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health >/tmp/hamorey-health.json; then
@@ -153,6 +290,16 @@ for attempt in $(seq 1 30); do
   fi
   sleep 1
 done
+
+if [ "$TLS_READY" = "true" ]; then
+  curl \
+    --fail \
+    --silent \
+    --show-error \
+    --max-time 10 \
+    --resolve "api.hemoppf.cn:443:127.0.0.1" \
+    https://api.hemoppf.cn/api/health >/tmp/hamorey-https-health.json
+fi
 
 printf '%s\n' "$DEPLOY_COMMIT" >/opt/hamorey/apps/DEPLOYED_COMMIT
 curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health

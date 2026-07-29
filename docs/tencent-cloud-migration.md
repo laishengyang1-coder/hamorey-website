@@ -270,7 +270,7 @@ pm2 status
    - `www.hemoppf.cn` -> 腾讯云服务器 IP 或静态站点
 2. `hemoppf.cn` 也解析到腾讯云服务器 IP；作为主域名应包含在证书与切换检查中。
 3. 运行 `SERVER_IP=134.175.187.12 bash scripts/tencent-domain-cutover-check.sh`，确认输出 `HAMOREY_DOMAIN_CUTOVER_READY`。
-4. 申请并配置覆盖四个域名的 HTTPS 证书，然后切换 Nginx 正式域名配置。
+4. 在服务器 `/etc/hamorey/api.env` 设置 `ENABLE_LETSENCRYPT=true` 和仅供续期提醒使用的 `LETSENCRYPT_EMAIL`，然后运行正式部署。部署脚本会申请覆盖四个域名的 Let's Encrypt 证书、配置 HTTPS 与自动续期。
 5. 微信公众平台配置合法域名：
    - request：`https://api.hemoppf.cn`
    - uploadFile：`https://api.hemoppf.cn`
