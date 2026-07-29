@@ -30,7 +30,7 @@
       <view class="product-highlight">{{item.highlight}}</view>
       <view class="product-tech">{{item.tech}}</view>
       <view class="specs-grid">
-        <view class="spec-item" wx:for="{{item.specs}}" wx:key="*this">
+        <view class="spec-item" wx:for="{{item.specs}}" wx:key="index">
           <view class="spec-dot"></view>
           <text class="spec-text">{{item}}</text>
         </view>
