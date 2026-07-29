@@ -49,6 +49,17 @@ export class CosR2Bucket {
     private readonly region: string,
   ) {}
 
+  getSignedUrl(key: string, expiresInSeconds = 60 * 60 * 24): string {
+    return this.cos.getObjectUrl({
+      Bucket: this.bucket,
+      Region: this.region,
+      Key: key,
+      Sign: true,
+      Expires: expiresInSeconds,
+      Protocol: 'https:',
+    });
+  }
+
   async head(key: string): Promise<{ key: string; httpMetadata: R2HttpMetadata } | null> {
     try {
       const data = await cosPromise<any>((callback) => (this.cos.headObject as any)({
@@ -106,8 +117,6 @@ export class CosR2Bucket {
       ContentType: options?.httpMetadata?.contentType,
       CacheControl: options?.httpMetadata?.cacheControl,
       Metadata: options?.customMetadata,
-      // 只有积分商城的公开商品封面可直读，质保照片等其他对象保持私有。
-      ACL: key.startsWith('reward-covers/') ? 'public-read' : undefined,
     }, callback));
     return { key };
   }

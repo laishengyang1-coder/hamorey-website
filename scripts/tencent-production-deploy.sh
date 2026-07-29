@@ -235,14 +235,6 @@ set -a
 source "$API_ENV_FILE"
 set +a
 
-# 商品封面使用固定的公开 COS 域名直出。它们是后台上传的营销图，文件名为
-# UUID，且和质保施工照片分前缀隔离；因此可以长缓存且不会暴露质保图片。
-if [ -z "${R2_PUBLIC_BASE_URL:-}" ] && [ -n "${COS_BUCKET:-}" ]; then
-  R2_PUBLIC_BASE_URL="https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com"
-  upsert_api_env "R2_PUBLIC_BASE_URL" "$R2_PUBLIC_BASE_URL"
-fi
-export R2_PUBLIC_BASE_URL
-
 sudo mkdir -p /opt/hamorey/source "$APP_ROOT/current" "$API_ROOT" /var/log/hamorey
 sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
@@ -278,11 +270,6 @@ find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
 
 install_database_backup_job
-
-cd "$API_ROOT"
-# 给历史商品封面补齐 public-read。新上传的 reward-covers/ 由 COS 适配器
-# 自动带上同样权限，施工照片等其它前缀不会受影响。
-HAMOREY_ENV_FILE="$API_ENV_FILE" node scripts/publish-reward-covers.mjs
 
 if pm2 describe hamorey-api >/dev/null 2>&1; then
   pm2 restart hamorey-api --update-env

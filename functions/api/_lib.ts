@@ -74,19 +74,19 @@ export function parsePagination(url: URL): { page: number; pageSize: number; off
   return { page, pageSize, offset };
 }
 
+type RewardCoverUrlBucket = R2Bucket & {
+  getSignedUrl?: (key: string, expiresInSeconds?: number) => string;
+};
+
 /**
- * 商品封面是公开的营销素材，可直接从对象存储读取，避免经过 API 服务中转。
- * 仅允许 reward-covers 前缀，施工照片仍然必须经过权限校验。
+ * 商品封面走 COS 限时签名直链，避免 API 转发；施工照片仍然保持私有。
  */
-export function getPublicRewardCoverUrl(
-  baseUrl: string | undefined,
+export function getRewardCoverUrl(
+  bucket: R2Bucket,
   fileKey: string | null | undefined,
 ): string | null {
-  if (!baseUrl || !fileKey?.startsWith('reward-covers/')) return null;
-
-  const origin = baseUrl.replace(/\/+$/, '');
-  const encodedKey = fileKey.split('/').map(encodeURIComponent).join('/');
-  return `${origin}/${encodedKey}`;
+  if (!fileKey?.startsWith('reward-covers/')) return null;
+  return (bucket as RewardCoverUrlBucket).getSignedUrl?.(fileKey, 60 * 60 * 24) || null;
 }
 
 // ============================================================

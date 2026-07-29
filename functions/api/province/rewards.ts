@@ -3,12 +3,12 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { getPublicRewardCoverUrl, queryAll } from '../_lib';
+import { getRewardCoverUrl, queryAll } from '../_lib';
 import { ok, error } from '../_middleware';
 
 interface Env {
   DB: D1Database;
-  R2_PUBLIC_BASE_URL?: string;
+  R2: R2Bucket;
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -18,8 +18,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return ok({
       items: items.map((item) => ({
         ...item,
-        cover_url: getPublicRewardCoverUrl(
-          context.env.R2_PUBLIC_BASE_URL,
+        cover_url: getRewardCoverUrl(
+          context.env.R2,
           typeof item.cover_file_key === 'string' ? item.cover_file_key : null,
         ),
       })),
