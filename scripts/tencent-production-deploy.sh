@@ -41,10 +41,10 @@ sudo mkdir -p /opt/hamorey/source "$APP_ROOT/current" "$API_ROOT" /var/log/hamor
 sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
 if [ ! -d "$REPO_DIR/.git" ]; then
-  retry_network_command "GitHub clone" git clone "$REPO_URL" "$REPO_DIR"
+  retry_network_command "GitHub clone" timeout 120s git clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
-  retry_network_command "GitHub fetch" git fetch --all --prune
+  retry_network_command "GitHub fetch" timeout 120s git fetch --all --prune
   git reset --hard origin/main
 fi
 
@@ -52,8 +52,8 @@ cd "$REPO_DIR"
 DEPLOY_COMMIT="$(git rev-parse HEAD)"
 echo "Deploying commit $DEPLOY_COMMIT"
 npm config set registry https://registry.npmmirror.com
-npm ci --include=dev
-npm run build
+timeout 10m npm ci --include=dev
+timeout 10m npm run build
 
 rm -rf "$APP_ROOT/current"
 mkdir -p "$APP_ROOT/current"
@@ -61,8 +61,8 @@ cp -R dist/. "$APP_ROOT/current"/
 
 cd "$REPO_DIR/server"
 npm config set registry https://registry.npmmirror.com
-npm ci --include=dev
-npm run build
+timeout 10m npm ci --include=dev
+timeout 5m npm run build
 
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
