@@ -77,7 +77,7 @@ pm2 save --force
 
 cat >/tmp/hamorey-production.conf <<NGINX
 server {
-    listen 80;
+    listen 80 default_server;
     server_name _;
 
     root $APP_ROOT/current;
@@ -100,6 +100,8 @@ server {
 
     location /api/ {
         add_header Cache-Control "no-store" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         proxy_pass http://127.0.0.1:3001/api/;
         proxy_http_version 1.1;
         proxy_connect_timeout 5s;
@@ -113,18 +115,24 @@ server {
     location ^~ /assets/ {
         try_files \$uri =404;
         expires 365d;
-        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         access_log off;
     }
 
     location = /index.html {
         try_files \$uri =404;
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     }
 
     location / {
         try_files \$uri \$uri/ /index.html;
-        add_header Cache-Control "no-cache";
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     }
 }
 NGINX
