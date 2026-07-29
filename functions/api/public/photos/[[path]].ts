@@ -1,5 +1,5 @@
 // ============================================================
-// GET /api/public/photos/* — 读取 R2 施工照片（按组织权限校验）
+// GET /api/public/photos/* — 读取对象存储图片（施工照片按组织权限校验）
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
@@ -18,14 +18,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const fileKey = decodeURIComponent(pathname.replace(/^\/api\/public\/photos\//, ''));
     if (!fileKey || fileKey.includes('..')) return error('无效的图片路径', 400);
 
-    // reward-covers 是公开商品封面，不要求登录
+    // reward-covers 是公开商品封面，不要求登录。新版本小程序优先走 COS
+    // 直链；这里保留为旧版客户端与直链失败时的兼容回退。
     if (fileKey.startsWith('reward-covers/')) {
       const object = await context.env.R2.get(fileKey);
       if (!object) return error('图片不存在', 404);
       return new Response(object.body, {
         headers: {
           'Content-Type': object.httpMetadata?.contentType || 'image/jpeg',
-          'Cache-Control': 'public, max-age=3600',
+          'Cache-Control': 'public, max-age=31536000, immutable',
           'Content-Length': String(object.size),
           'X-Content-Type-Options': 'nosniff',
         },

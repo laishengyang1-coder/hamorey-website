@@ -74,6 +74,21 @@ export function parsePagination(url: URL): { page: number; pageSize: number; off
   return { page, pageSize, offset };
 }
 
+/**
+ * 商品封面是公开的营销素材，可直接从对象存储读取，避免经过 API 服务中转。
+ * 仅允许 reward-covers 前缀，施工照片仍然必须经过权限校验。
+ */
+export function getPublicRewardCoverUrl(
+  baseUrl: string | undefined,
+  fileKey: string | null | undefined,
+): string | null {
+  if (!baseUrl || !fileKey?.startsWith('reward-covers/')) return null;
+
+  const origin = baseUrl.replace(/\/+$/, '');
+  const encodedKey = fileKey.split('/').map(encodeURIComponent).join('/');
+  return `${origin}/${encodedKey}`;
+}
+
 // ============================================================
 // 第二阶段新增：SHA-256 密码哈希
 // ============================================================

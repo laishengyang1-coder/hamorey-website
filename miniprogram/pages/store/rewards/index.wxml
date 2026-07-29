@@ -20,8 +20,8 @@
   <view wx:else class="product-grid">
     <view class="product-card" wx:for="{{rewards}}" wx:key="id">
       <view class="product-img-wrap">
-        <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="product-img" lazy-load />
-        <view wx:else class="product-img-empty">🎁</view>
+        <image wx:if="{{item.coverUrl && !item.imageFailed}}" src="{{item.coverUrl}}" mode="aspectFill" class="product-img" lazy-load binderror="handleImageError" data-index="{{index}}" />
+        <view wx:else class="product-img-empty">暂无图片</view>
       </view>
       <view class="product-info">
         <view class="product-name">{{item.name || '--'}}</view>

@@ -69,16 +69,18 @@ export class CosR2Bucket {
     }
   }
 
-  async get(key: string): Promise<{ key: string; body: Buffer; httpMetadata: R2HttpMetadata } | null> {
+  async get(key: string): Promise<{ key: string; body: Buffer; size: number; httpMetadata: R2HttpMetadata } | null> {
     try {
       const data = await cosPromise<any>((callback) => (this.cos.getObject as any)({
         Bucket: this.bucket,
         Region: this.region,
         Key: key,
       }, callback));
+      const body = await toBuffer(data.Body);
       return {
         key,
-        body: await toBuffer(data.Body),
+        body,
+        size: Number(data.headers?.['content-length'] || body.length),
         httpMetadata: {
           contentType: data.headers?.['content-type'],
           cacheControl: data.headers?.['cache-control'],
@@ -104,6 +106,8 @@ export class CosR2Bucket {
       ContentType: options?.httpMetadata?.contentType,
       CacheControl: options?.httpMetadata?.cacheControl,
       Metadata: options?.customMetadata,
+      // 只有积分商城的公开商品封面可直读，质保照片等其他对象保持私有。
+      ACL: key.startsWith('reward-covers/') ? 'public-read' : undefined,
     }, callback));
     return { key };
   }

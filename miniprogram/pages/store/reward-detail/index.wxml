@@ -12,10 +12,12 @@
   <block wx:else>
     <!-- 商品头图 -->
     <image
-      wx:if="{{reward.coverPath}}"
-      src="{{reward.coverPath}}"
+      wx:if="{{reward.coverUrl && !reward.imageFailed}}"
+      src="{{reward.coverUrl}}"
       mode="aspectFill"
       class="detail-image"
+      lazy-load
+      binderror="handleImageError"
     />
     <view wx:else class="detail-image-placeholder"></view>
 

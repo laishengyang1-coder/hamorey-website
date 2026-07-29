@@ -26,14 +26,30 @@ Page({
       const items = (res.data.items || []).map(r => ({
         ...r,
         qty: 0,
-        coverUrl: r.cover_file_key
-          ? `https://api.hemoppf.cn/api/public/photos/${encodeURIComponent(r.cover_file_key)}`
-          : ''
+        fallbackCoverUrl: api.getPublicPhotoUrl(r.cover_file_key),
+        coverUrl: r.cover_url || api.getPublicPhotoUrl(r.cover_file_key),
+        usingFallbackCover: !r.cover_url,
+        imageFailed: false
       }));
       this.setData({ rewards: items });
     } else {
       this.setData({ error: res.message || '加载失败' });
     }
+  },
+
+  handleImageError(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const item = this.data.rewards[index];
+    if (!item || item.imageFailed) return;
+
+    if (!item.usingFallbackCover && item.fallbackCoverUrl) {
+      this.setData({
+        [`rewards[${index}].coverUrl`]: item.fallbackCoverUrl,
+        [`rewards[${index}].usingFallbackCover`]: true
+      });
+      return;
+    }
+    this.setData({ [`rewards[${index}].imageFailed`]: true });
   },
 
   /** 单独读取门店积分 */

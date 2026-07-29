@@ -15,6 +15,14 @@ function getBaseUrl() {
 }
 
 /**
+ * 公开商品封面的 API 回退地址。施工照片仍应使用 downloadProtectedPhoto。
+ */
+function getPublicPhotoUrl(fileKey) {
+  const encodedKey = String(fileKey || '').split('/').map(encodeURIComponent).join('/');
+  return encodedKey ? `${getBaseUrl()}/public/photos/${encodedKey}` : '';
+}
+
+/**
  * 获取 Token
  */
 function getToken() {
@@ -241,8 +249,7 @@ function upload(filePath, uploadUrl) {
  */
 function downloadProtectedPhoto(fileKey) {
   const token = getToken();
-  const encodedKey = String(fileKey || '').split('/').map(encodeURIComponent).join('/');
-  const url = `${getBaseUrl()}/public/photos/${encodedKey}`;
+  const url = getPublicPhotoUrl(fileKey);
 
   return new Promise((resolve) => {
     // 优先 downloadFile（性能好），失败用 request+写临时文件兜底
@@ -287,6 +294,7 @@ function downloadProtectedPhoto(fileKey) {
 
 module.exports = {
   getBaseUrl,
+  getPublicPhotoUrl,
   request,
   get,
   post,

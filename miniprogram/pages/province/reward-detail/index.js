@@ -1,5 +1,4 @@
 const api = require('../../../utils/api');
-const auth = require('../../../utils/auth');
 
 Page({
   data: { rewardId: '', loading: true, error: '', reward: {}, submitting: false },
@@ -16,14 +15,29 @@ Page({
     if (res.ok && res.data.items) {
       const reward = res.data.items.find(r => r.id === this.data.rewardId);
       if (reward) {
-        this.setData({ loading: false, reward });
-        // 下载封面图
-        if (reward.cover_file_key) {
-          const img = await api.downloadProtectedPhoto(reward.cover_file_key);
-          if (img.ok) this.setData({ 'reward.coverPath': img.data.tempFilePath });
-        }
+        const fallbackCoverUrl = api.getPublicPhotoUrl(reward.cover_file_key);
+        this.setData({
+          loading: false,
+          reward: {
+            ...reward,
+            fallbackCoverUrl,
+            coverUrl: reward.cover_url || fallbackCoverUrl,
+            usingFallbackCover: !reward.cover_url,
+            imageFailed: false
+          }
+        });
       } else { this.setData({ loading: false, error: '商品不存在' }); }
     } else { this.setData({ loading: false, error: '加载失败' }); }
+  },
+
+  handleImageError() {
+    const { reward } = this.data;
+    if (!reward || reward.imageFailed) return;
+    if (!reward.usingFallbackCover && reward.fallbackCoverUrl) {
+      this.setData({ 'reward.coverUrl': reward.fallbackCoverUrl, 'reward.usingFallbackCover': true });
+      return;
+    }
+    this.setData({ 'reward.imageFailed': true });
   },
 
   async handleRedeem() {

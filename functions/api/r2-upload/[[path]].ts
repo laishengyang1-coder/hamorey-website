@@ -49,7 +49,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (file.size <= 0 || file.size > MAX_FILE_SIZE) return error('图片大小必须在 10MB 以内', 400);
 
     await context.env.R2.put(fileKey, file.stream(), {
-      httpMetadata: { contentType: file.type },
+      // 商品封面使用不可变 UUID 文件名，可被客户端长期缓存；施工照片继续私有。
+      httpMetadata: {
+        contentType: file.type,
+        cacheControl: fileKey.startsWith('reward-covers/')
+          ? 'public, max-age=31536000, immutable'
+          : 'private, max-age=300',
+      },
       customMetadata: { organizationId: user.orgId, uploadedBy: user.userId },
     });
 
