@@ -1,10 +1,13 @@
 <view class="page-container">
   <!-- 红色头部 -->
   <view class="rewards-hero">
-    <view class="rewards-hero-title">积分商城</view>
-    <view class="rewards-hero-points">
-      <text class="rewards-hero-num">{{myPoints}}</text>
-      <text class="rewards-hero-label">可用积分</text>
+    <view class="rewards-hero-back" bindtap="goBack">← 返回</view>
+    <view class="rewards-hero-center">
+      <view class="rewards-hero-title">积分商城</view>
+      <view class="rewards-hero-points">
+        <text class="rewards-hero-num">{{myPoints}}</text>
+        <text class="rewards-hero-label">可用积分</text>
+      </view>
     </view>
   </view>
 
@@ -21,7 +24,7 @@
   <!-- 商品双列网格 -->
   <view wx:else class="rewards-grid">
     <view class="reward-card" wx:for="{{rewards}}" wx:key="id">
-      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-img" lazy-load />
+      <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="reward-img" lazy-load />
       <view wx:else class="reward-img-fallback">🎁</view>
       <view class="reward-body">
         <view class="reward-name">{{item.name || '--'}}</view>
