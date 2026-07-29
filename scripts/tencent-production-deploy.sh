@@ -244,7 +244,10 @@ export R2_PUBLIC_BASE_URL
 sudo mkdir -p /opt/hamorey/source "$APP_ROOT/current" "$API_ROOT" /var/log/hamorey
 sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
-if [ ! -d "$REPO_DIR/.git" ]; then
+if [ "${SKIP_GIT_FETCH:-false}" = "true" ]; then
+  cd "$REPO_DIR"
+  echo "Skipping GitHub fetch; deploying the checked-out commit $(git rev-parse HEAD)."
+elif [ ! -d "$REPO_DIR/.git" ]; then
   retry_network_command "GitHub clone" timeout 120s git -c http.version=HTTP/1.1 clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
