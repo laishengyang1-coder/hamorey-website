@@ -246,10 +246,10 @@ fi
 # Keep HTTP available for the ACME challenge before the first certificate exists.
 write_nginx_config "$TLS_READY"
 
-if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ] && [ "$TLS_READY" = "false" ]; then
-  if [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
+if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
+  if [ "$TLS_READY" = "false" ] && [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
     echo "TLS certificate skipped: LETSENCRYPT_EMAIL is missing from $API_ENV_FILE."
-  else
+  elif [ "$TLS_READY" = "false" ]; then
     sudo apt-get update
     sudo apt-get install -y certbot
     sudo certbot certonly \
@@ -266,6 +266,9 @@ if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ] && [ "$TLS_READY" = "false" ]; th
       -d api.hemoppf.cn
 
     TLS_READY=true
+  fi
+
+  if [ "$TLS_READY" = "true" ]; then
     install_certbot_renewal_hook
     write_nginx_config "$TLS_READY"
 
@@ -304,4 +307,9 @@ fi
 printf '%s\n' "$DEPLOY_COMMIT" >/opt/hamorey/apps/DEPLOYED_COMMIT
 curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health
 echo
+if [ "$TLS_READY" = "true" ]; then
+  echo "HAMOREY_HTTPS_READY $FORMAL_SERVER_NAMES"
+else
+  echo "HAMOREY_HTTP_ONLY"
+fi
 echo "HAMOREY_PRODUCTION_DEPLOYED $DEPLOY_COMMIT"
