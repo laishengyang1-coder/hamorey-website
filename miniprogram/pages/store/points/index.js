@@ -39,8 +39,7 @@ Page({
     }
   },
 
-  ledgerLabel(type, desc) {
-    if (desc && desc.length < 20) return desc;
+  ledgerLabel(type) {
     return LEDGER_LABELS[type] || type || '积分变动';
   },
 

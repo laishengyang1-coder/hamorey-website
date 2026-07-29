@@ -53,7 +53,7 @@
         class="ledger-item"
       >
         <view class="ledger-info">
-          <view class="ledger-desc">{{ledgerLabel(item.change_type, item.description)}}</view>
+          <view class="ledger-desc">{{item.reason || ledgerLabel(item.change_type)}}</view>
           <view class="ledger-time">{{item.created_at || ''}}</view>
         </view>
         <view class="ledger-amount {{item.points_change > 0 ? 'text-success' : ''}}">
@@ -63,3 +63,4 @@
     </view>
   </view>
 </view>
+<custom-tab-bar/>

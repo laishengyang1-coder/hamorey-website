@@ -18,7 +18,7 @@
   <!-- 商品双列网格 -->
   <view wx:else class="rewards-grid">
     <view class="reward-card" wx:for="{{rewards}}" wx:key="id">
-      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-img" />
+      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-img" lazy-load />
       <view wx:else class="reward-img-placeholder"></view>
       <view class="reward-body">
         <view class="reward-name">{{item.name || '--'}}</view>
@@ -44,3 +44,4 @@
     <view class="checkout-btn" bindtap="goCheckout">去结算</view>
   </view>
 </view>
+<custom-tab-bar/>
