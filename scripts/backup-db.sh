@@ -36,6 +36,7 @@ temporary_file="${backup_file}.tmp"
 mkdir -p "$BACKUP_DIR"
 trap 'rm -f "$temporary_file"' EXIT
 
+echo "HAMOREY_DB_BACKUP_START $file_name"
 export MYSQL_PWD="$MYSQL_PASSWORD"
 mysqldump \
   --protocol=TCP \
@@ -53,6 +54,7 @@ mysqldump \
 unset MYSQL_PWD
 
 mv "$temporary_file" "$backup_file"
+echo "HAMOREY_DB_BACKUP_UPLOAD $file_name"
 node "$API_ROOT/scripts/upload-mysql-backup.mjs" "$backup_file" "backups/mysql/$file_name"
 find "$BACKUP_DIR" -type f -name 'hamorey-mysql-*.sql.gz' -mtime "+$LOCAL_RETENTION_DAYS" -delete
 
