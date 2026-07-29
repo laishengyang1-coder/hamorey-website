@@ -87,7 +87,16 @@ export function Footer() {
             © {new Date().getFullYear()} {siteConfig.brandName} {siteConfig.brandNameEn}. All rights reserved.
           </p>
           <p className="text-xs text-white/40">
-            {siteConfig.icpNumber && <span>{siteConfig.icpNumber}</span>}
+            {siteConfig.icpNumber && (
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white/70 transition-fast"
+              >
+                {siteConfig.icpNumber}
+              </a>
+            )}
           </p>
         </div>
       </Container>

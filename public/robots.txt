@@ -3,4 +3,4 @@ Allow: /
 Disallow: /warranty
 Disallow: /api/
 
-Sitemap: https://hemoppf.com/sitemap.xml
+Sitemap: https://hemoppf.cn/sitemap.xml

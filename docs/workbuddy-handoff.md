@@ -8,7 +8,7 @@ Updated: 2026-07-29
 - A push to `main` runs the Tencent production workflow and deploys to the current Tencent preview address: `http://134.175.187.12`.
 - Tencent production components are Nginx static hosting, PM2 `hamorey-api`, TencentDB MySQL, and COS assets.
 - Cloudflare Pages is retained only as an emergency rollback path. Its GitHub Actions workflow is currently manually disabled and must not be re-enabled or deleted before Tencent's formal domain launch is stable.
-- ICP filing has passed. As of 2026-07-29, the formal root/system/api/www hostnames still have no public A record and no working HTTPS endpoint, so do not switch public traffic or submit a mini-program release yet.
+- ICP filing has passed. The site-specific record number is `皖ICP备20013908号-8`. As of 2026-07-29, the formal root/system/api/www hostnames still have no public A record and no working HTTPS endpoint, so do not switch public traffic or submit a mini-program release yet.
 
 ## Changes in this handoff
 

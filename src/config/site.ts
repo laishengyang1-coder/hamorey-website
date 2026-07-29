@@ -15,11 +15,11 @@ export const siteConfig = {
   description:
     '以产品、智能与服务，构建覆盖选膜、施工、质保与理赔的全车资产管理体系。',
   /** 正式域名 */
-  domain: 'hemoppf.com',
+  domain: 'hemoppf.cn',
   /** 站点 URL */
-  siteUrl: 'https://hemoppf.com',
-  /** ICP 备案号（占位） */
-  icpNumber: '',
+  siteUrl: 'https://hemoppf.cn',
+  /** 工信部网站备案号 */
+  icpNumber: '皖ICP备20013908号-8',
   /** 联系方式 */
   contact: {
     phone: '',
