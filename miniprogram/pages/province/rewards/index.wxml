@@ -21,7 +21,7 @@
   <!-- 商品双列网格 -->
   <view wx:else class="rewards-grid">
     <view class="reward-card" wx:for="{{rewards}}" wx:key="id">
-      <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="reward-img" lazy-load />
+      <image wx:if="{{item.coverPath}}" src="{{item.coverPath}}" mode="aspectFill" class="reward-img" lazy-load />
       <view wx:else class="reward-img-fallback">🎁</view>
       <view class="reward-body">
         <view class="reward-name">{{item.name || '--'}}</view>
