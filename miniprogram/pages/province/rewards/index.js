@@ -14,6 +14,7 @@ Page({
     const app = getApp();
     if (!app.checkLogin('province')) return;
     this.loadRewards();
+    this.loadPoints();
   },
 
   async loadRewards() {
@@ -29,9 +30,17 @@ Page({
           ? `https://api.hemoppf.cn/api/public/photos/${encodeURIComponent(r.cover_file_key)}`
           : ''
       }));
-      this.setData({ rewards: items, myPoints: res.data.points || 0 });
+      this.setData({ rewards: items });
     } else {
       this.setData({ error: res.message || '加载失败' });
+    }
+  },
+
+  /** 单独读取门店积分 */
+  async loadPoints() {
+    const res = await api.get('/province/points', {}, { loading: false });
+    if (res.ok) {
+      this.setData({ myPoints: res.data.available || 0 });
     }
   },
 
