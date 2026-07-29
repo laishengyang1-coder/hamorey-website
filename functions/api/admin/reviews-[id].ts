@@ -84,7 +84,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   } catch (err) {
     console.error('[admin/reviews POST]', err);
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('UNIQUE constraint failed') || message.includes('INVALID_WARRANTY_')) {
+    if (message.includes('UNIQUE constraint failed') || message.includes('Duplicate entry') || message.includes('ER_DUP_ENTRY') || message.includes('INVALID_WARRANTY_')) {
       return error('该质保记录已被审核，请刷新列表', 409);
     }
     return error('操作失败', 500);

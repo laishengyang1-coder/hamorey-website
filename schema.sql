@@ -271,9 +271,10 @@ CREATE TABLE IF NOT EXISTS warranty_audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_record ON warranty_audit_logs(warranty_record_id);
 CREATE INDEX IF NOT EXISTS idx_audit_action ON warranty_audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_operator ON warranty_audit_logs(operator_user_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_single_approval
-    ON warranty_audit_logs(warranty_record_id)
-    WHERE action = 'approve';
+-- MySQL: Partial unique indexes with WHERE clause not supported.
+-- Use (warranty_record_id, action) UNIQUE instead: one action type per record.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_single_action
+    ON warranty_audit_logs(warranty_record_id, action);
 
 CREATE TRIGGER IF NOT EXISTS trg_warranty_audit_matches_status
 BEFORE INSERT ON warranty_audit_logs
