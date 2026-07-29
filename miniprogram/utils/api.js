@@ -242,22 +242,44 @@ function upload(filePath, uploadUrl) {
 function downloadProtectedPhoto(fileKey) {
   const token = getToken();
   const encodedKey = String(fileKey || '').split('/').map(encodeURIComponent).join('/');
+  const url = `${getBaseUrl()}/public/photos/${encodedKey}`;
 
   return new Promise((resolve) => {
+    // 优先 downloadFile（性能好），失败用 request+写临时文件兜底
     wx.downloadFile({
-      url: `${getBaseUrl()}/public/photos/${encodedKey}`,
+      url,
       header: token ? { 'Authorization': `Bearer ${token}` } : {},
-      timeout: 30000,
+      timeout: 15000,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300 && res.tempFilePath) {
-          resolve({ ok: true, data: { tempFilePath: res.tempFilePath }, message: '' });
-          return;
+          return resolve({ ok: true, data: { tempFilePath: res.tempFilePath }, message: '' });
         }
         if (res.statusCode === 401 && app && app.clearLoginState) app.clearLoginState();
-        resolve({ ok: false, data: null, message: res.statusCode === 401 ? '登录已过期' : '图片加载失败' });
+        resolve({ ok: false, data: null, message: `HTTP ${res.statusCode}` });
       },
-      fail(err) {
-        resolve({ ok: false, data: null, message: err.errMsg || '图片加载失败' });
+      fail() {
+        // downloadFile 失败 → 用 wx.request 下载本体再写临时文件
+        wx.request({
+          url,
+          header: token ? { 'Authorization': `Bearer ${token}` } : {},
+          responseType: 'arraybuffer',
+          timeout: 15000,
+          success(r) {
+            if (r.statusCode >= 200 && r.statusCode < 300 && r.data) {
+              const fs = wx.getFileSystemManager();
+              const tmpPath = `${wx.env.USER_DATA_PATH}/img_${Date.now()}.jpg`;
+              try {
+                fs.writeFileSync(tmpPath, r.data, 'binary');
+                resolve({ ok: true, data: { tempFilePath: tmpPath }, message: '' });
+              } catch (e) {
+                resolve({ ok: false, data: null, message: 'write file error' });
+              }
+            } else {
+              resolve({ ok: false, data: null, message: `HTTP ${r.statusCode}` });
+            }
+          },
+          fail() { resolve({ ok: false, data: null, message: 'request failed' }); }
+        });
       }
     });
   });
