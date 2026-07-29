@@ -37,9 +37,8 @@
 }
 
 .brand-logo {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
+  width: 200rpx;
+  height: 200rpx;
 }
 
 .brand-name {

@@ -65,17 +65,17 @@ const HOME_CONFIG = {
   ],
   cases: [
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/cases/color-ppf/10001.jpg',
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10001.jpg',
       title: 'TPU 改色 · 电光金属灰',
       desc: '质感出众 · 个性定制'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/cases/color-ppf/10005.jpg',
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10005.jpg',
       title: 'TPU 改色 · 液态金属银',
       desc: '色彩饱满 · 保护随行'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/cases/color-ppf/10010.jpg',
+      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/cases/color-ppf/10010.jpg',
       title: 'TPU 改色 · 哑光战斗灰',
       desc: '高级哑光 · 耐久如新'
     }
