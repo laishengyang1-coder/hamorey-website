@@ -7,6 +7,25 @@ REPO_DIR="${REPO_DIR:-/opt/hamorey/source/hamorey-website}"
 REPO_URL="${REPO_URL:-https://github.com/laishengyang1-coder/hamorey-website.git}"
 API_ENV_FILE="${API_ENV_FILE:-/etc/hamorey/api.env}"
 
+retry_network_command() {
+  local description="$1"
+  shift
+
+  for attempt in 1 2 3 4; do
+    if "$@"; then
+      return 0
+    fi
+
+    if [ "$attempt" -eq 4 ]; then
+      echo "$description failed after $attempt attempts."
+      return 1
+    fi
+
+    echo "$description failed; retrying in $((attempt * 3)) seconds ($attempt/4)."
+    sleep "$((attempt * 3))"
+  done
+}
+
 if [ ! -f "$API_ENV_FILE" ]; then
   echo "Missing $API_ENV_FILE"
   echo "Create it from server/.env.example after TencentDB MySQL and COS are ready."
@@ -22,10 +41,10 @@ sudo mkdir -p /opt/hamorey/source "$APP_ROOT/current" "$API_ROOT" /var/log/hamor
 sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
 if [ ! -d "$REPO_DIR/.git" ]; then
-  git clone "$REPO_URL" "$REPO_DIR"
+  retry_network_command "GitHub clone" git clone "$REPO_URL" "$REPO_DIR"
 else
   cd "$REPO_DIR"
-  git fetch --all --prune
+  retry_network_command "GitHub fetch" git fetch --all --prune
   git reset --hard origin/main
 fi
 
