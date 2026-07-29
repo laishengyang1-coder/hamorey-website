@@ -1,0 +1,122 @@
+/* 确认订单 */
+
+.checkout-page {
+  min-height: 100vh;
+  background: #FEFAF8;
+  padding: 24rpx;
+  padding-bottom: 160rpx;
+}
+
+/* 订单列表 */
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.order-img, .order-img-placeholder {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+}
+
+.order-img-placeholder {
+  background: #F5F0EB;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.order-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1A1412;
+  margin-bottom: 4rpx;
+}
+
+.order-qty {
+  font-size: 22rpx;
+  color: #9E8A82;
+}
+
+.order-subtotal {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #C8A96E;
+  flex-shrink: 0;
+}
+
+/* 汇总 */
+.order-summary {
+  margin-top: 24rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.summary-label {
+  font-size: 26rpx;
+  color: #4A3A34;
+}
+
+.summary-value {
+  font-size: 26rpx;
+  color: #4A3A34;
+}
+
+.summary-divider {
+  height: 1rpx;
+  background: #EDE6E2;
+  margin: 12rpx 0;
+}
+
+.summary-total {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #C8A96E;
+}
+
+/* 提交 */
+.submit-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 24rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1rpx solid #EDE6E2;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #5C1A1A, #7A2828);
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 16rpx;
+  text-align: center;
+}
+
+.submit-btn.disabled {
+  opacity: 0.5;
+}

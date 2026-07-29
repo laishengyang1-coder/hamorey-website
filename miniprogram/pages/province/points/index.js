@@ -13,7 +13,7 @@ Page({
     this.setData({ loading: true });
     const res = await api.get('/province/points', {}, { loading: false });
     this.setData({ loading: false });
-    if (res.ok) { this.setData({ points: { available: res.data.available || 0, frozen: res.data.frozen || 0 }, ledger: res.data.items || [] }); }
+    if (res.ok) { this.setData({ points: { available: res.data.available || 0, frozen: res.data.frozen || 0 }, ledger: res.data.ledger || [] }); }
   },
   ledgerLabel(type, desc) { if (desc && desc.length < 20) return desc; return LEDGER_LABELS[type] || type || '积分变动'; },
   goRewards() { wx.navigateTo({ url: '/pages/province/rewards/index' }); },

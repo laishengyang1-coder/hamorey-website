@@ -1,0 +1,34 @@
+<view class="checkout-page">
+  <!-- 订单列表 -->
+  <view class="order-list">
+    <view class="order-item" wx:for="{{items}}" wx:key="id">
+      <image wx:if="{{item.image}}" src="{{item.image}}" mode="aspectFill" class="order-img" />
+      <view wx:else class="order-img-placeholder"></view>
+      <view class="order-info">
+        <view class="order-name">{{item.name}}</view>
+        <view class="order-qty">×{{item.qty}}</view>
+      </view>
+      <view class="order-subtotal">{{item.points * item.qty}} 积分</view>
+    </view>
+  </view>
+
+  <!-- 汇总 -->
+  <view class="order-summary">
+    <view class="summary-row">
+      <text class="summary-label">商品合计</text>
+      <text class="summary-value">{{total}} 积分</text>
+    </view>
+    <view class="summary-divider"></view>
+    <view class="summary-row total">
+      <text class="summary-label">应付积分</text>
+      <text class="summary-total">{{total}}</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-area">
+    <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="submit">
+      {{submitting ? '提交中...' : '确认兑换'}}
+    </view>
+  </view>
+</view>

@@ -19,6 +19,7 @@
     "pages/store/codes/index",
     "pages/store/points/index",
     "pages/store/rewards/index",
+    "pages/store/reward-checkout/index",
     "pages/store/reward-detail/index",
     "pages/store/orders/index",
     "pages/province/login/index",
@@ -29,6 +30,7 @@
     "pages/province/allocate/index",
     "pages/province/points/index",
     "pages/province/rewards/index",
+    "pages/province/reward-checkout/index",
     "pages/province/reward-detail/index"
   ],
   "window": {

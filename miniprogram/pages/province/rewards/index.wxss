@@ -1,19 +1,187 @@
-.page-container { min-height: 100vh; background: var(--color-bg); padding-bottom: 40rpx; }
-.rewards-grid { display: flex; flex-wrap: wrap; padding: 24rpx; gap: 16rpx; }
-.reward-card { width: calc(50% - 8rpx); background: var(--color-bg-white); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
-.reward-image { width: 100%; height: 240rpx; background: var(--color-bg-card); }
-.reward-image-placeholder { width: 100%; height: 240rpx; display: flex; align-items: center; justify-content: center; background: var(--color-bg-card); position: relative; }
-.reward-image-placeholder::after {
-  content: '';
-  position: absolute;
-  width: 44rpx;
-  height: 6rpx;
-  border-radius: 3rpx;
-  background: var(--color-text-light);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* 积分商城 */
+
+.page-container {
+  min-height: 100vh;
+  background: #FEFAF8;
+  padding-bottom: 120rpx;
 }
-.reward-info { padding: 20rpx 16rpx; }
-.reward-name { font-size: var(--font-md); font-weight: 500; color: var(--color-text); margin-bottom: 8rpx; }
-.reward-points { font-size: var(--font-sm); color: var(--color-primary); font-weight: 600; }
+
+/* 积分余额 */
+.points-header {
+  background: linear-gradient(135deg, #5C1A1A, #7A2828);
+  padding: 24rpx 32rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.points-header-label { font-size: 26rpx; color: rgba(255,255,255,0.7); }
+.points-header-value { font-size: 40rpx; font-weight: 700; color: #FFFFFF; }
+
+/* Loading / Error / Empty */
+.loading-container, .error-container, .empty-state {
+  padding: 120rpx 32rpx;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 48rpx; height: 48rpx;
+  border: 4rpx solid #E8E0DC;
+  border-top-color: #5C1A1A;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-text, .empty-state-text { font-size: 28rpx; color: #9E8A82; }
+.retry-btn {
+  display: inline-block; margin-top: 20rpx; padding: 12rpx 40rpx;
+  background: #5C1A1A; color: #FFF; border-radius: 24rpx; font-size: 26rpx;
+}
+
+/* 商品网格 */
+.rewards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  padding: 16rpx 24rpx;
+}
+
+.reward-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+}
+
+.reward-img {
+  width: 100%;
+  height: 280rpx;
+}
+
+.reward-img-placeholder {
+  width: 100%;
+  height: 280rpx;
+  background: #F5F0EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reward-img-placeholder::after {
+  content: '暂无图片';
+  font-size: 24rpx;
+  color: #C8B8B0;
+}
+
+.reward-body {
+  padding: 16rpx;
+}
+
+.reward-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1A1412;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
+}
+
+.reward-points {
+  font-size: 24rpx;
+  color: #C8A96E;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.reward-stock {
+  font-size: 20rpx;
+  color: #9E8A82;
+}
+
+.reward-soldout {
+  font-size: 22rpx;
+  color: #D48888;
+  font-weight: 600;
+}
+
+/* 数量选择器 */
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.qty-btn {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #F5F0EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #5C1A1A;
+}
+
+.qty-btn.disabled {
+  opacity: 0.3;
+}
+
+.qty-num {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1A1412;
+  min-width: 36rpx;
+  text-align: center;
+}
+
+/* 底部结算栏 */
+.checkout-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top: 1rpx solid #EDE6E2;
+  padding: 16rpx 28rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+}
+
+.checkout-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-count {
+  font-size: 22rpx;
+  color: #7A6A62;
+}
+
+.checkout-total {
+  font-size: 24rpx;
+  color: #1A1412;
+  font-weight: 600;
+}
+
+.checkout-points {
+  font-size: 32rpx;
+  color: #C8A96E;
+  font-weight: 700;
+}
+
+.checkout-btn {
+  padding: 16rpx 48rpx;
+  background: linear-gradient(135deg, #5C1A1A, #7A2828);
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 600;
+  border-radius: 32rpx;
+}

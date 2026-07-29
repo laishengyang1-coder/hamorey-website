@@ -34,7 +34,7 @@ Page({
           available: res.data.available || 0,
           frozen: res.data.frozen || 0
         },
-        ledger: res.data.items || []
+        ledger: res.data.ledger || []
       });
     }
   },
