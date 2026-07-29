@@ -39,58 +39,18 @@ Component({
       if (role === 'STORE') {
         visible = true;
         tabs = [
-          {
-            pagePath: '/pages/store/index/index',
-            text: '首页',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home-active.png'
-          },
-          {
-            pagePath: '/pages/store/records/index',
-            text: '质保记录',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-record.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-record-active.png'
-          },
-          {
-            pagePath: '/pages/store/codes/index',
-            text: '质保码',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png'
-          },
-          {
-            pagePath: '/pages/store/points/index',
-            text: '积分',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png'
-          }
+          { pagePath: '/pages/store/index/index', text: '首页', textIcon: '🏠', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/store/records/index', text: '质保记录', textIcon: '📋', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/store/codes/index', text: '质保码', textIcon: '🔖', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/store/points/index', text: '积分', textIcon: '⭐', activeColor: '#5C1A1A' }
         ];
       } else if (role === 'PROVINCE') {
         visible = true;
         tabs = [
-          {
-            pagePath: '/pages/province/index/index',
-            text: '首页',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-home-active.png'
-          },
-          {
-            pagePath: '/pages/province/stores/index',
-            text: '门店',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-store.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-store-active.png'
-          },
-          {
-            pagePath: '/pages/province/codes/index',
-            text: '质保码',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png'
-          },
-          {
-            pagePath: '/pages/province/points/index',
-            text: '积分',
-            icon: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points.png',
-            iconSelected: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png'
-          }
+          { pagePath: '/pages/province/index/index', text: '首页', textIcon: '🏠', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/province/stores/index', text: '门店', textIcon: '🏪', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/province/codes/index', text: '质保码', textIcon: '🔖', activeColor: '#5C1A1A' },
+          { pagePath: '/pages/province/points/index', text: '积分', textIcon: '⭐', activeColor: '#5C1A1A' }
         ];
       } else {
         // 公共访客 / 未登录：品牌首页、产品、质保、我的
