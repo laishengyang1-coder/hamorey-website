@@ -1,131 +1,57 @@
-/* 积分商城 */
+/* 积分商城 — 对齐我的积分风格 */
 
-.page-container {
-  min-height: 100vh;
-  background: #FEFAF8;
-  padding-bottom: 160rpx;
-}
+.page-container { min-height: 100vh; background: #FEFAF8; padding-bottom: 140rpx; }
 
-/* 红色头部（高度翻倍） */
-.rewards-hero {
-  background: linear-gradient(135deg, #5C1A1A, #7A2828);
-  padding: 48rpx 24rpx 40rpx;
-  position: relative;
-}
+/* 积分条 */
+.points-strip { background: linear-gradient(135deg, #5C1A1A, #7A2828); padding: 16rpx 32rpx; display: flex; justify-content: space-between; align-items: baseline; }
 
-.rewards-hero-back {
-  position: absolute;
-  top: 48rpx;
-  left: 24rpx;
-  font-size: 28rpx;
-  color: rgba(255,255,255,0.7);
-  padding: 8rpx 0;
-}
+.points-strip-label { font-size: 24rpx; color: rgba(255,255,255,0.6); }
 
-.rewards-hero-center {
-  text-align: center;
-}
+.points-strip-value { font-size: 36rpx; font-weight: 700; color: #FFFFFF; }
 
-.rewards-hero-title {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 16rpx;
-}
+/* Loading / Error / Empty */
+.loading-wrap, .error-wrap, .empty-wrap { padding: 160rpx 32rpx; text-align: center; }
 
-.rewards-hero-points {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-}
-
-.rewards-hero-num {
-  font-size: 56rpx;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.rewards-hero-label {
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.6);
-}
-
-/* Loading / Error */
-.loading-container, .error-container, .empty-state { padding: 120rpx 32rpx; text-align: center; }
-
-.loading-spinner {
-  width: 48rpx; height: 48rpx;
-  border: 4rpx solid #E8E0DC; border-top-color: #5C1A1A;
-  border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto;
-}
+.loading-spinner { width: 48rpx; height: 48rpx; border: 4rpx solid #E8E0DC; border-top-color: #5C1A1A; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-text, .empty-state-text { font-size: 28rpx; color: #9E8A82; }
+.error-text, .empty-text { font-size: 26rpx; color: #9E8A82; }
 
-.retry-btn { display: inline-block; margin-top: 20rpx; padding: 12rpx 40rpx; background: #5C1A1A; color: #FFF; border-radius: 24rpx; font-size: 26rpx; }
+.retry-btn { display: inline-block; margin-top: 16rpx; padding: 10rpx 36rpx; background: #5C1A1A; color: #FFF; border-radius: 20rpx; font-size: 24rpx; }
 
-/* 商品网格（底部留出结算栏高度） */
-.rewards-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16rpx;
-  padding: 16rpx 24rpx;
-}
+/* 商品网格 */
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; padding: 20rpx 24rpx; }
 
-.reward-card {
-  background: #FFFFFF; border-radius: 16rpx; overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
-}
+.product-card { background: #FFFFFF; border-radius: 16rpx; overflow: hidden; }
 
-.reward-img { width: 100%; height: 280rpx; }
+.product-img-wrap { width: 100%; height: 280rpx; }
 
-.reward-img-fallback {
-  width: 100%; height: 280rpx; background: #F5F0EB;
-  display: flex; align-items: center; justify-content: center; font-size: 64rpx;
-}
+.product-img { width: 100%; height: 100%; }
 
-.reward-body { padding: 16rpx; }
+.product-img-empty { width: 100%; height: 100%; background: #F5F0EB; display: flex; align-items: center; justify-content: center; font-size: 60rpx; }
 
-.reward-name { font-size: 26rpx; font-weight: 600; color: #1A1412; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4rpx; }
+.product-info { padding: 16rpx; }
 
-.reward-points { font-size: 24rpx; color: #C8A96E; font-weight: 600; margin-bottom: 4rpx; }
+.product-name { font-size: 26rpx; font-weight: 600; color: #1A1412; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 6rpx; }
 
-.reward-stock { font-size: 20rpx; color: #9E8A82; }
+.product-points { font-size: 24rpx; color: #C8A96E; font-weight: 600; margin-bottom: 4rpx; }
 
-.reward-soldout { font-size: 22rpx; color: #D48888; font-weight: 600; }
+.product-stock { font-size: 20rpx; color: #9E8A82; margin-bottom: 8rpx; }
 
-/* 数量选择器 */
-.qty-row { display: flex; align-items: center; gap: 12rpx; margin-top: 12rpx; }
+.product-sold { font-size: 22rpx; color: #D48888; font-weight: 600; margin-bottom: 8rpx; }
 
-.qty-btn {
-  width: 48rpx; height: 48rpx; border-radius: 50%; background: #F5F0EB;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28rpx; font-weight: 600; color: #5C1A1A;
-}
+/* 数量选择 */
+.qty-row { display: flex; align-items: center; gap: 12rpx; }
 
-.qty-btn.disabled { opacity: 0.3; }
+.qty-minus, .qty-plus { width: 44rpx; height: 44rpx; border-radius: 50%; background: #F5F0EB; display: flex; align-items: center; justify-content: center; font-size: 26rpx; font-weight: 600; color: #5C1A1A; }
 
-.qty-num { font-size: 26rpx; font-weight: 600; color: #1A1412; min-width: 36rpx; text-align: center; }
+.qty-minus.off { opacity: 0.25; }
 
-/* 底部结算栏 */
-.checkout-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: #FFFFFF; border-top: 1rpx solid #EDE6E2;
-  padding: 16rpx 28rpx; padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  display: flex; justify-content: space-between; align-items: center; z-index: 20;
-  box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.06);
-}
+.qty-val { font-size: 26rpx; font-weight: 600; color: #1A1412; min-width: 32rpx; text-align: center; }
 
-.checkout-info { display: flex; flex-direction: column; }
+/* 结算栏 */
+.settle-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #FFFFFF; border-top: 1rpx solid #EDE6E2; padding: 16rpx 28rpx; padding-bottom: calc(16rpx + env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.06); font-size: 24rpx; color: #4A3A34; }
 
-.checkout-count { font-size: 22rpx; color: #7A6A62; }
+.settle-pts { font-size: 28rpx; font-weight: 700; color: #C8A96E; }
 
-.checkout-total { font-size: 24rpx; color: #1A1412; font-weight: 600; }
-
-.checkout-points { font-size: 32rpx; color: #C8A96E; font-weight: 700; }
-
-.checkout-btn {
-  padding: 16rpx 48rpx; background: linear-gradient(135deg, #5C1A1A, #7A2828);
-  color: #FFFFFF; font-size: 28rpx; font-weight: 600; border-radius: 32rpx;
-}
+.settle-btn { padding: 14rpx 40rpx; background: linear-gradient(135deg, #5C1A1A, #7A2828); color: #FFFFFF; font-size: 26rpx; font-weight: 600; border-radius: 28rpx; }

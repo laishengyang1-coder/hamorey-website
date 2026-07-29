@@ -1,52 +1,50 @@
 <view class="page-container">
-  <!-- 红色头部 -->
-  <view class="rewards-hero">
-    <view class="rewards-hero-back" bindtap="goBack">← 返回</view>
-    <view class="rewards-hero-center">
-      <view class="rewards-hero-title">积分商城</view>
-      <view class="rewards-hero-points">
-        <text class="rewards-hero-num">{{myPoints}}</text>
-        <text class="rewards-hero-label">可用积分</text>
-      </view>
-    </view>
+<nav-bar title="积分商城" />
+  <!-- 积分条 -->
+  <view class="points-strip">
+    <text class="points-strip-label">可用积分</text>
+    <text class="points-strip-value">{{myPoints}}</text>
   </view>
 
   <!-- Loading / Error / Empty -->
-  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
-  <view wx:elif="{{error}}" class="error-container">
+  <view wx:if="{{loading}}" class="loading-wrap"><view class="loading-spinner"></view></view>
+  <view wx:elif="{{error}}" class="error-wrap">
     <view class="error-text">{{error}}</view>
     <view class="retry-btn" bindtap="loadRewards">重试</view>
   </view>
-  <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-state">
-    <view class="empty-state-text">暂无兑换商品</view>
+  <view wx:elif="{{!loading && rewards.length === 0}}" class="empty-wrap">
+    <view class="empty-text">暂无兑换商品</view>
   </view>
 
-  <!-- 商品双列网格 -->
-  <view wx:else class="rewards-grid">
-    <view class="reward-card" wx:for="{{rewards}}" wx:key="id">
-      <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="reward-img" lazy-load />
-      <view wx:else class="reward-img-fallback">🎁</view>
-      <view class="reward-body">
-        <view class="reward-name">{{item.name || '--'}}</view>
-        <view class="reward-points">{{item.points_required || 0}} 积分</view>
-        <view wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}" class="reward-stock">库存 {{item.stock_quantity}}</view>
-        <view wx:else class="reward-soldout">已售罄</view>
-        <view class="qty-row" wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}">
-          <view class="qty-btn {{item.qty <= 0 ? 'disabled' : ''}}" data-id="{{item.id}}" bindtap="decQty">−</view>
-          <view class="qty-num">{{item.qty || 0}}</view>
-          <view class="qty-btn" data-id="{{item.id}}" bindtap="incQty">+</view>
+  <!-- 商品网格 -->
+  <view wx:else class="product-grid">
+    <view class="product-card" wx:for="{{rewards}}" wx:key="id">
+      <view class="product-img-wrap">
+        <image wx:if="{{item.coverUrl}}" src="{{item.coverUrl}}" mode="aspectFill" class="product-img" lazy-load />
+        <view wx:else class="product-img-empty">🎁</view>
+      </view>
+      <view class="product-info">
+        <view class="product-name">{{item.name || '--'}}</view>
+        <view class="product-points">{{item.points_required || 0}} 积分</view>
+        <view wx:if="{{item.stock_quantity > 0 && item.stock_status !== 'out_of_stock'}}" class="product-stock">库存 {{item.stock_quantity}}</view>
+        <view wx:else class="product-sold">已售罄</view>
+        <view wx:if="{{item.stock_quantity > 0 && item.stock_status !== 'out_of_stock'}}" class="qty-row">
+          <view class="qty-minus {{item.qty <= 0 ? 'off' : ''}}" data-id="{{item.id}}" bindtap="decQty">−</view>
+          <text class="qty-val">{{item.qty || 0}}</text>
+          <view class="qty-plus" data-id="{{item.id}}" bindtap="incQty">+</view>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 底部结算栏 -->
-  <view class="checkout-bar" wx:if="{{showCart}}">
-    <view class="checkout-info">
-      <view class="checkout-count">已选 {{cartCount}} 种商品</view>
-      <view class="checkout-total"><text class="checkout-points">{{cartTotal}}</text> 积分</view>
+  <!-- 结算栏 -->
+  <view class="settle-bar" wx:if="{{showCart}}">
+    <view class="settle-left">
+      <text>已选 {{cartCount}} 种 · </text>
+      <text class="settle-pts">{{cartTotal}}</text>
+      <text> 积分</text>
     </view>
-    <view class="checkout-btn" bindtap="goCheckout">去结算</view>
+    <view class="settle-btn" bindtap="goCheckout">去结算</view>
   </view>
 </view>
 <custom-tab-bar/>

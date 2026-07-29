@@ -66,8 +66,6 @@ Page({
     this.setData({ cartTotal, cartCount, showCart: cartCount > 0 });
   },
 
-  goBack() { wx.navigateBack(); },
-
   goCheckout() {
     const rewards = this.data.rewards;
     const items = rewards.filter(r => r.qty > 0).map(r => ({
