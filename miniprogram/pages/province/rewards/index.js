@@ -35,7 +35,7 @@ Page({
     const idx = rewards.findIndex(r => r.id === id);
     if (idx < 0) return;
     const item = rewards[idx];
-    if (item.stock > 0 && item.qty >= item.stock) { wx.showToast({ title: '库存不足', icon: 'none' }); return; }
+    if (item.stock_quantity > 0 && item.qty >= item.stock_quantity) { wx.showToast({ title: '库存不足', icon: 'none' }); return; }
     rewards[idx].qty = (rewards[idx].qty || 0) + 1;
     this.setData({ rewards }, () => this.updateCart());
   },

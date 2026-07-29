@@ -23,10 +23,10 @@
       <view class="reward-body">
         <view class="reward-name">{{item.name || '--'}}</view>
         <view class="reward-points">{{item.points_required || 0}} 积分</view>
-        <view wx:if="{{item.stock > 0}}" class="reward-stock">库存 {{item.stock}}</view>
+        <view wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}" class="reward-stock">库存 {{item.stock_quantity}}</view>
         <view wx:else class="reward-soldout">已售罄</view>
         <!-- 数量选择器 -->
-        <view class="qty-row" wx:if="{{item.stock > 0}}">
+        <view class="qty-row" wx:if="{{item.stock_status !== 'out_of_stock' && item.stock_quantity > 0}}">
           <view class="qty-btn {{item.qty <= 0 ? 'disabled' : ''}}" data-id="{{item.id}}" bindtap="decQty">−</view>
           <view class="qty-num">{{item.qty || 0}}</view>
           <view class="qty-btn" data-id="{{item.id}}" bindtap="incQty">+</view>
