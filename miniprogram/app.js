@@ -115,7 +115,7 @@ App({
     return {
       title: '和膜电子质保 — 正品保障·全国联保',
       path: '/pages/owner/query/index',
-      imageUrl: '/images-share.png'
+      imageUrl: '/images-share.jpg'
     };
   },
 
@@ -126,7 +126,7 @@ App({
     return {
       title: '和膜电子质保 — 正品保障·全国联保',
       query: '',
-      imageUrl: '/images-share.png'
+      imageUrl: '/images-share.jpg'
     };
   }
 });
