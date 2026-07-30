@@ -3,6 +3,10 @@ Component({
     title: {
       type: String,
       value: ''
+    },
+    backUrl: {
+      type: String,
+      value: ''
     }
   },
 
@@ -26,6 +30,8 @@ Component({
       const pages = getCurrentPages();
       if (pages.length > 1) {
         wx.navigateBack({ delta: 1 });
+      } else if (this.properties.backUrl) {
+        wx.reLaunch({ url: this.properties.backUrl });
       } else {
         // No page to go back to — go to owner query page
         wx.reLaunch({ url: '/pages/owner/query/index' });

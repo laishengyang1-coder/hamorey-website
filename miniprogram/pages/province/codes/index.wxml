@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="质保码库存" backUrl="/pages/province/index/index" />
   <view class="filter-bar">
     <view class="filter-search">
       <input class="filter-input" placeholder="搜索质保码" placeholder-class="search-placeholder" value="{{keyword}}" bindinput="onKeywordInput" bindconfirm="onSearch"/>
