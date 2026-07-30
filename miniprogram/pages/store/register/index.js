@@ -32,6 +32,18 @@ Page({
   },
 
   /**
+   * 从「我的质保码」带码进入：预填质保码并跳到下一步
+   */
+  onLoad(options) {
+    if (options && options.code) {
+      this.setData({
+        'form.warranty_code': decodeURIComponent(options.code),
+        currentStep: 1
+      });
+    }
+  },
+
+  /**
    * 表单字段输入
    */
   onFieldInput(e) {

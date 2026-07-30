@@ -78,3 +78,20 @@
   font-size: var(--font-sm);
   color: var(--color-text-light);
 }
+
+.code-card-hover {
+  transform: scale(0.985);
+  opacity: 0.9;
+}
+
+.code-action {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx dashed var(--color-border, #eee);
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+}
+
+.code-action text {
+  font-weight: 500;
+}

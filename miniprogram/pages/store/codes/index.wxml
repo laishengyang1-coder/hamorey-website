@@ -45,6 +45,10 @@
       wx:for="{{codes}}"
       wx:key="id"
       class="code-card card"
+      hover-class="code-card-hover"
+      bindtap="onCodeTap"
+      data-code="{{item.code}}"
+      data-status="{{item.status}}"
     >
       <view class="code-top">
         <view class="code-value">{{item.code || '--'}}</view>
@@ -53,6 +57,10 @@
       <view class="code-meta">
         <text>型号：{{item.model_name || item.display_name || '--'}}</text>
         <text>已用：{{item.used_count || 0}}/{{item.usage_limit || 1}}</text>
+      </view>
+      <view class="code-action">
+        <text wx:if="{{item.status === 'in_stock' || item.status === 'partial_used'}}">点击使用此码录入 ›</text>
+        <text wx:else>该码已不可用</text>
       </view>
     </view>
   </view>

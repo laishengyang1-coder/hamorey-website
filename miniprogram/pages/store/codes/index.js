@@ -77,5 +77,30 @@ Page({
   onSearch() { this.loadCodes(); },
   switchStatus(e) { this.setData({ activeStatus: e.currentTarget.dataset.value }, () => this.loadCodes()); },
   statusLabel(s) { return STATUS_MAP[s] || s; },
-  statusTagClass(s) { return STATUS_TAG[s] || 'tag-info'; }
+  statusTagClass(s) { return STATUS_TAG[s] || 'tag-info'; },
+
+  /**
+   * 点击质保码卡片：可用的码弹出确认框，确认后带码进入登记流程
+   */
+  onCodeTap(e) {
+    const { code, status } = e.currentTarget.dataset;
+    if (status === 'exhausted' || status === 'frozen' || status === 'voided') {
+      wx.showToast({ title: '该质保码已不可用', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '使用质保码',
+      content: `是否使用此质保（${code}）进行录入？`,
+      confirmText: '使用并录入',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          wx.navigateTo({
+            url: `/pages/store/register/index?code=${encodeURIComponent(code)}`
+          });
+        }
+      }
+    });
+  }
 });
