@@ -14,7 +14,8 @@ Page({
     availableCodes: [],
     loadingCodes: true,
     submitting: false,
-    allCodesSelected: false
+    allCodesSelected: false,
+    selectedCodes: []
   },
 
   onShow() {
@@ -61,14 +62,15 @@ Page({
     codes[idx].checked = !codes[idx].checked;
     this.setData({
       availableCodes: codes,
-      allCodesSelected: codes.every(c => c.checked)
+      allCodesSelected: codes.every(c => c.checked),
+      selectedCodes: codes.filter(c => c.checked)
     });
   },
 
   toggleAllCodes() {
     const allSelected = !this.data.allCodesSelected;
     const codes = this.data.availableCodes.map(c => ({ ...c, checked: allSelected }));
-    this.setData({ availableCodes: codes, allCodesSelected: allSelected });
+    this.setData({ availableCodes: codes, allCodesSelected: allSelected, selectedCodes: codes.filter(c => c.checked) });
   },
 
   async handleAllocate() {
