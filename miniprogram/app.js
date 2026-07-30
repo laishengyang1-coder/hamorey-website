@@ -35,9 +35,23 @@ App({
       menus: ['shareAppMessage', 'shareTimeline']
     });
 
+    // 把代码包里的分享缩略图复制到本地临时路径。
+    // 预览/真机下直接用代码包路径 `/images/share.jpg` 偶尔加载失败导致裂图，
+    // 复制到 wx.env.USER_DATA_PATH 后作为临时文件路径使用更稳。
+    const fs = wx.getFileSystemManager();
+    const localSharePath = `${wx.env.USER_DATA_PATH}/share.jpg`;
+    try {
+      fs.copyFileSync('/images/share.jpg', localSharePath);
+      this.globalData.shareImageUrl = localSharePath;
+    } catch (err) {
+      console.error('复制分享缩略图失败', err);
+      this.globalData.shareImageUrl = '/images/share.jpg';
+    }
+
     // 全局注入默认分享：微信只在 Page 上识别 onShareAppMessage/onShareTimeline，
     // App 上同名方法无效，因此重写 Page 构造函数给未定义分享的页面补默认值。
     const originalPage = Page;
+    const app = this;
     const defaultShare = {
       title: '和膜电子质保 — 正品保障·全国联保',
       imageUrl: '/images/share.jpg'
@@ -48,7 +62,7 @@ App({
           return {
             title: defaultShare.title,
             path: '/pages/owner/query/index',
-            imageUrl: defaultShare.imageUrl
+            imageUrl: app.globalData.shareImageUrl || defaultShare.imageUrl
           };
         };
       }
@@ -57,7 +71,7 @@ App({
           return {
             title: defaultShare.title,
             query: '',
-            imageUrl: defaultShare.imageUrl
+            imageUrl: app.globalData.shareImageUrl || defaultShare.imageUrl
           };
         };
       }
@@ -84,7 +98,9 @@ App({
     /** 状态栏高度 */
     statusBarHeight: 0,
     /** 底部安全区域高度 */
-    safeAreaBottom: 0
+    safeAreaBottom: 0,
+    /** 分享缩略图本地临时路径 */
+    shareImageUrl: ''
   },
 
   /**
