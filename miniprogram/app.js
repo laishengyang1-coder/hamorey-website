@@ -34,6 +34,35 @@ App({
       withShareTicket: true,
       menus: ['shareAppMessage', 'shareTimeline']
     });
+
+    // 全局注入默认分享：微信只在 Page 上识别 onShareAppMessage/onShareTimeline，
+    // App 上同名方法无效，因此重写 Page 构造函数给未定义分享的页面补默认值。
+    const originalPage = Page;
+    const defaultShare = {
+      title: '和膜电子质保 — 正品保障·全国联保',
+      imageUrl: '/images-share.jpg'
+    };
+    Page = function (options) {
+      if (typeof options.onShareAppMessage !== 'function') {
+        options.onShareAppMessage = function () {
+          return {
+            title: defaultShare.title,
+            path: '/pages/owner/query/index',
+            imageUrl: defaultShare.imageUrl
+          };
+        };
+      }
+      if (typeof options.onShareTimeline !== 'function') {
+        options.onShareTimeline = function () {
+          return {
+            title: defaultShare.title,
+            query: '',
+            imageUrl: defaultShare.imageUrl
+          };
+        };
+      }
+      return originalPage(options);
+    };
   },
 
   /**
@@ -107,26 +136,4 @@ App({
     wx.removeStorageSync('userInfo');
   },
 
-  /**
-   * 全局默认分享（转发给好友）
-   * 各页面可同名方法覆盖
-   */
-  onShareAppMessage() {
-    return {
-      title: '和膜电子质保 — 正品保障·全国联保',
-      path: '/pages/owner/query/index',
-      imageUrl: '/images-share.jpg'
-    };
-  },
-
-  /**
-   * 全局默认分享（朋友圈）
-   */
-  onShareTimeline() {
-    return {
-      title: '和膜电子质保 — 正品保障·全国联保',
-      query: '',
-      imageUrl: '/images-share.jpg'
-    };
-  }
 });
