@@ -17,11 +17,11 @@
     <view class="card-section">
       <view class="card-title">收货地址</view>
       <view class="addr-row">
-        <input class="addr-input" placeholder="收货人姓名" value="{{address.name}}" data-field="name" bindinput="onAddrChange" />
-        <input class="addr-input" placeholder="手机号" type="number" maxlength="11" value="{{address.phone}}" data-field="phone" bindinput="onAddrChange" />
+        <view class="addr-cell"><input placeholder="收货人姓名" value="{{address.name}}" data-field="name" bindinput="onAddrChange" /></view>
+        <view class="addr-cell"><input placeholder="手机号" type="number" maxlength="11" value="{{address.phone}}" data-field="phone" bindinput="onAddrChange" /></view>
       </view>
-      <input class="addr-input-full" placeholder="所在地区（如：浙江省杭州市滨江区）" value="{{address.region}}" data-field="region" bindinput="onAddrChange" />
-      <input class="addr-input-full" placeholder="详细地址（如：XX路XX号XX室）" value="{{address.detail}}" data-field="detail" bindinput="onAddrChange" />
+      <view class="addr-cell-full"><input placeholder="所在地区（如：浙江省杭州市滨江区）" value="{{address.region}}" data-field="region" bindinput="onAddrChange" /></view>
+      <view class="addr-cell-full"><input placeholder="详细地址（如：XX路XX号XX室）" value="{{address.detail}}" data-field="detail" bindinput="onAddrChange" /></view>
     </view>
 
     <!-- 汇总 -->
