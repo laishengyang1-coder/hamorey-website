@@ -37,11 +37,9 @@
       </view>
       <view class="product-card-footer" wx:if="{{item.price}}">
         <view class="product-price">参考价 ¥{{item.price}}</view>
-        <view class="product-quote-btn" bindtap="goQuote">查看报价</view>
       </view>
       <view class="product-card-footer" wx:else>
         <view class="product-price">询价请咨询门店</view>
-        <view class="product-quote-btn" bindtap="goQuote">查看报价</view>
       </view>
     </view>
   </view>
