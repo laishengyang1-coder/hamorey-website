@@ -63,16 +63,13 @@ export function startAutoApproveTimer(env: EnvLike, intervalMs = 60_000): Return
  * 扫描并自动通过所有超时待审记录。返回本次通过数量。
  */
 export async function runAutoApprove(env: EnvLike): Promise<{ approved: number; scanned: number }> {
-  // 用 Node 计算时间边界（UTC，与 DB 连接时区一致），避免依赖 SQL 日期函数翻译。
-  const cutoff = new Date(Date.now() - AUTO_APPROVE_MINUTES * 60 * 1000)
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
-
+  // 时区注意：MySQL 会话时区为东八区，created_at 以「北京时间字面量」存储。
+  // 必须用 NOW()（会话时区一致）判断超时，不能用 Node 计算的 UTC 字符串——
+  // 否则 MySQL 会把 UTC 字符串当成东八区解释，比 created_at 早 8 小时，导致永远选不中待审记录。
   const pending = await queryAll<PendingRecord>(
     env.DB,
-    `SELECT * FROM warranty_records WHERE status = 'pending' AND created_at < ? ORDER BY created_at ASC LIMIT 50`,
-    cutoff,
+    `SELECT * FROM warranty_records WHERE status = 'pending' AND created_at < NOW() - INTERVAL ? MINUTE ORDER BY created_at ASC LIMIT 50`,
+    AUTO_APPROVE_MINUTES,
   );
 
   let approved = 0;
