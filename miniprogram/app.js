@@ -115,7 +115,7 @@ App({
     return {
       title: '和膜电子质保 — 正品保障·全国联保',
       path: '/pages/owner/query/index',
-      imageUrl: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/share-cover.png'
+      imageUrl: '/images-share.png'
     };
   },
 
@@ -126,7 +126,7 @@ App({
     return {
       title: '和膜电子质保 — 正品保障·全国联保',
       query: '',
-      imageUrl: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/share-cover.png'
+      imageUrl: '/images-share.png'
     };
   }
 });
