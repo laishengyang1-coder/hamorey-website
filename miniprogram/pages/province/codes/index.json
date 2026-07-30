@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "质保码库存"
+  "navigationBarTitleText": "质保码库存",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

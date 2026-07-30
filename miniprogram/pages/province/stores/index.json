@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "下属门店"
+  "navigationBarTitleText": "下属门店",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

@@ -1,4 +1,5 @@
 <view class="page-container">
+<nav-bar title="积分管理" />
   <!-- 红色头部 -->
   <view class="points-hero">
     <view class="points-hero-balance">
