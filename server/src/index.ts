@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import { corsOrigins, env } from './env.js';
 import { handleFunctionRequest } from './function-router.js';
 import { healthRouter } from './routes/health.js';
+import { apiEnv } from './cloudflare-env.js';
+import { startAutoApproveTimer } from './auto-approve.js';
 
 const app = express();
 
@@ -55,4 +57,10 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 
 app.listen(env.PORT, () => {
   console.log(`[hamorey-api] listening on ${env.PORT}`);
+
+  // 启动质保记录超时自动审核（默认关闭请设 DISABLE_AUTO_APPROVE=1）
+  if (process.env.DISABLE_AUTO_APPROVE !== '1') {
+    startAutoApproveTimer(apiEnv);
+    console.log('[hamorey-api] 质保自动审核定时任务已启动（提交满 10 分钟未审核将自动通过）');
+  }
 });

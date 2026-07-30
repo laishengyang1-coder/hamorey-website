@@ -1,11 +1,9 @@
 import type { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import * as apiMiddleware from '../../functions/api/_middleware.ts';
-import { createCloudflareEnv } from './cloudflare-env.js';
+import { apiEnv } from './cloudflare-env.js';
 import { type FunctionRouteDefinition, functionRoutes, type RouteSegment } from './generated/function-routes.js';
 
 type PagesHandler = (context: Record<string, any>) => Promise<Response> | Response;
-
-const apiEnv = createCloudflareEnv();
 
 function splitPath(pathname: string): string[] {
   return pathname.split('/').filter(Boolean);

@@ -18,3 +18,10 @@ export function createCloudflareEnv(): Record<string, unknown> {
     NODE_ENV: env.NODE_ENV,
   };
 }
+
+/**
+ * 单例：整个进程共享一份 Cloudflare 兼容环境（DB / R2）。
+ * function-router 与后台定时任务（自动审核等）都从这里取，
+ * 避免重复创建 MySQL 连接池。
+ */
+export const apiEnv = createCloudflareEnv();
