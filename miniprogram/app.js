@@ -113,9 +113,9 @@ App({
    */
   onShareAppMessage() {
     return {
-      title: '和膜 HAMOREY — 汽车膜电子质保',
+      title: '和膜电子质保 — 正品保障·全国联保',
       path: '/pages/owner/query/index',
-      imageUrl: ''
+      imageUrl: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/share-cover.png'
     };
   },
 
@@ -124,9 +124,9 @@ App({
    */
   onShareTimeline() {
     return {
-      title: '和膜 HAMOREY — 汽车膜电子质保',
+      title: '和膜电子质保 — 正品保障·全国联保',
       query: '',
-      imageUrl: ''
+      imageUrl: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/share-cover.png'
     };
   }
 });
