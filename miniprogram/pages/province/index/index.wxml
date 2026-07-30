@@ -97,7 +97,7 @@
       </view>
       <view class="action-item" bindtap="goPoints">
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png" mode="aspectFit" />
-        <view class="action-text">积分管理</view>
+        <view class="action-text">积分明细</view>
       </view>
       <view class="action-item" bindtap="goRewards">
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-gift.png" mode="aspectFit" />
