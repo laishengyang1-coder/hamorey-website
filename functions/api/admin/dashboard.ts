@@ -63,18 +63,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows.results || []);
     }
 
-    // 质保登记趋势（近30天每日量，补零）
+    // 质保登记趋势（近30天每日量，补零；MySQL原生日期函数）
     if (type === 'trend') {
       const rows = await db.prepare(
-        `SELECT date(created_at) AS date, COUNT(*) AS count
+        `SELECT DATE(created_at) AS date, COUNT(*) AS count
          FROM warranty_records
          WHERE status NOT IN ('draft')
-           AND created_at >= datetime('now', '-30 days')
-         GROUP BY date(created_at)
+           AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+         GROUP BY DATE(created_at)
          ORDER BY date ASC`
       ).all();
       const dataMap = new Map<string, number>();
-      (rows.results || []).forEach((r: any) => dataMap.set(r.date, r.count));
+      (rows.results || []).forEach((r: any) => {
+        const ds = r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date || '');
+        dataMap.set(ds, r.count);
+      });
       const result: { date: string; count: number }[] = [];
       for (let i = 29; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);

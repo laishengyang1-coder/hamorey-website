@@ -60,7 +60,7 @@ export default function DashboardPage() {
     apiRequest<RankingItem[]>('/admin/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
     apiRequest<RankingItem[]>('/admin/dashboard?type=points-ranking').then(setPointsRanking).catch(() => {});
-    apiRequest<{ date: string; count: number }[]>('/admin/dashboard?type=trend').then(setTrendData).catch(() => {});
+    apiRequest<{ date: string; count: number }[]>('/admin/dashboard?type=trend').then(d => { console.log('趋势数据:', d?.length, '条, 首:', d?.[0], '尾:', d?.[d.length-1]); setTrendData(d); }).catch(e => { console.error('趋势加载失败:', e); setTrendData([]); });
     apiRequest<any>('/admin/dashboard?type=code-lifecycle').then(setLifecycle).catch(() => {});
     apiRequest<any[]>('/admin/dashboard?type=store-activity').then(setStoreActivity).catch(() => {});
   }, []);
