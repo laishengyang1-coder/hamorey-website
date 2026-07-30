@@ -58,3 +58,16 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     return ok(null, '更新成功');
   } catch (err) { console.error('[rebate-rules PUT]', err); return error('更新失败', 500); }
 };
+
+export const onRequestDelete: PagesFunction<Env> = async (context) => {
+  try {
+    const url = new URL(context.request.url);
+    const ruleId = url.pathname.split('/').pop();
+    if (!ruleId || ruleId === 'rebate-rules') return error('缺少规则 ID', 400);
+
+    const user = getAuthUser(context.data);
+    await execute(context.env.DB, `DELETE FROM rebate_rules WHERE id = ?`, ruleId);
+    await writeOperationLog(context.env.DB, user?.userId || null, 'delete_rebate_rule', 'rebate_rules', ruleId, {}, getClientIP(context.request));
+    return ok(null, '删除成功');
+  } catch (err) { console.error('[rebate-rules DELETE]', err); return error('删除失败', 500); }
+};

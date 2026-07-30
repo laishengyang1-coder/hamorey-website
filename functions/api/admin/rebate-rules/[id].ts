@@ -1,1 +1,1 @@
-export { onRequestPut } from '../rebate-rules';
+export { onRequestPut, onRequestDelete } from '../rebate-rules';

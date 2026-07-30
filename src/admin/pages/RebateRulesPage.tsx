@@ -19,6 +19,7 @@ export default function RebateRulesPage() {
   const [selected, setSelected] = useState<RebateRule | null>(null);
   const [form, setForm] = useState({ product_model_id: '', rebate_ratio: 0.1, is_global: false, effective_from: '', effective_to: '' });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [models, setModels] = useState<Array<{ id: string; display_name: string }>>([]);
 
   const fetchData = useCallback(async () => {
@@ -57,10 +58,21 @@ export default function RebateRulesPage() {
     finally { setSaving(false); }
   };
 
+  const handleDelete = async () => {
+    if (!selected) return;
+    if (!confirm(`确定删除该返利规则吗？`)) return;
+    setDeleting(true);
+    try {
+      await apiRequest(`/admin/rebate-rules/${selected.id}`, { method: 'DELETE' });
+      setDrawerOpen(false); fetchData();
+    } catch (err) { alert(err instanceof Error ? err.message : '删除失败'); }
+    finally { setDeleting(false); }
+  };
+
   return (
     <div>
       <PageHeader title="返利规则" description="配置省代返利比例" actions={<button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">新增规则</button>} />
-      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无返利规则" />
+      <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无返利规则" onRowClick={(row) => { setSelected(row as RebateRule); setForm({ product_model_id: (row as RebateRule).product_model_id || '', rebate_ratio: (row as RebateRule).rebate_ratio, is_global: !!(row as RebateRule).is_global, effective_from: (row as RebateRule).effective_from?.slice(0,10) || '', effective_to: (row as RebateRule).effective_to?.slice(0,10) || '' }); setDrawerOpen(true); }} />
       <DetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} title={selected ? '编辑返利规则' : '新增返利规则'}>
         <div className="space-y-4">
           <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -95,6 +107,11 @@ export default function RebateRulesPage() {
           <button onClick={handleSave} disabled={saving} className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {saving ? '保存中...' : '保存'}
           </button>
+          {selected && (
+            <button onClick={handleDelete} disabled={deleting} className="w-full rounded-lg border border-red-400 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">
+              {deleting ? '删除中...' : '删除此规则'}
+            </button>
+          )}
         </div>
       </DetailDrawer>
     </div>
