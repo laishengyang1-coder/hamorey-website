@@ -28,6 +28,12 @@ App({
     this.globalData.safeAreaBottom = systemInfo.safeArea
       ? systemInfo.screenHeight - systemInfo.safeArea.bottom
       : 0;
+
+    // 启用分享功能（转发给好友 + 分享到朋友圈）
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
   },
 
   /**
@@ -99,5 +105,28 @@ App({
     this.globalData.role = '';
     wx.removeStorageSync('token');
     wx.removeStorageSync('userInfo');
+  },
+
+  /**
+   * 全局默认分享（转发给好友）
+   * 各页面可同名方法覆盖
+   */
+  onShareAppMessage() {
+    return {
+      title: '和膜 HAMOREY — 汽车膜电子质保',
+      path: '/pages/owner/query/index',
+      imageUrl: ''
+    };
+  },
+
+  /**
+   * 全局默认分享（朋友圈）
+   */
+  onShareTimeline() {
+    return {
+      title: '和膜 HAMOREY — 汽车膜电子质保',
+      query: '',
+      imageUrl: ''
+    };
   }
 });
