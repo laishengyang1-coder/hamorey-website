@@ -11,6 +11,17 @@ Page({
     submitting: false
   },
 
+  onLoad() {
+    const app = getApp();
+    // 已登录（本地 token 仍有效）则直接进入后台，跳过输入账号密码
+    if (app && app.globalData && app.globalData.isLoggedIn) {
+      const role = (app.globalData.role || '').toUpperCase();
+      wx.switchTab({
+        url: role === 'PROVINCE' ? '/pages/province/index/index' : '/pages/store/index/index'
+      });
+    }
+  },
+
   onUsernameInput(e) { this.setData({ username: e.detail.value }); },
   onPasswordInput(e) { this.setData({ password: e.detail.value }); },
 
