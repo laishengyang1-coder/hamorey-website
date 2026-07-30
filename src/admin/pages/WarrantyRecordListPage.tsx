@@ -55,6 +55,14 @@ export default function WarrantyRecordListPage() {
   const [detail, setDetail] = useState<{ record: any; photos: PhotoItem[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [stores, setStores] = useState<Array<{ id: string; name: string }>>([]);
+  const [storeLoading, setStoreLoading] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    store_id: '', warranty_code: '', customer_name: '', customer_phone: '',
+    plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: ''
+  });
+  const [creating, setCreating] = useState(false);
 
 
   const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
@@ -124,9 +132,58 @@ export default function WarrantyRecordListPage() {
     }
   };
 
+  const openCreate = async () => {
+    setCreateForm({
+      store_id: '', warranty_code: '', customer_name: '', customer_phone: '',
+      plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: ''
+    });
+    setCreateOpen(true);
+    if (stores.length === 0) {
+      setStoreLoading(true);
+      try {
+        const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&pageSize=999`);
+        setStores(res.items || []);
+      } catch { /* ignore */ }
+      finally { setStoreLoading(false); }
+    }
+  };
+
+  const handleCreateSubmit = async () => {
+    const f = createForm;
+    if (!f.store_id) { alert('请选择门店'); return; }
+    if (!f.warranty_code.trim()) { alert('请输入质保码'); return; }
+    if (!f.customer_name.trim()) { alert('请输入车主姓名'); return; }
+    if (!/^1\d{10}$/.test(f.customer_phone.trim())) { alert('请输入正确的手机号'); return; }
+    if (!f.plate_no.trim()) { alert('请输入车牌号'); return; }
+    if (!f.vehicle_brand.trim()) { alert('请输入车辆品牌'); return; }
+    if (!f.vehicle_model.trim()) { alert('请输入车辆型号'); return; }
+    if (!f.installation_date) { alert('请选择施工日期'); return; }
+    setCreating(true);
+    try {
+      await apiRequest('/admin/warranty-records', { method: 'POST', body: JSON.stringify({
+        store_id: f.store_id,
+        warranty_code: f.warranty_code.trim(),
+        customer_name: f.customer_name.trim(),
+        customer_phone: f.customer_phone.trim(),
+        plate_no: f.plate_no.trim(),
+        vin: f.vin.trim() || undefined,
+        vehicle_brand: f.vehicle_brand.trim(),
+        vehicle_model: f.vehicle_model.trim(),
+        vehicle_year: f.vehicle_year.trim() || undefined,
+        installation_date: f.installation_date,
+      }) });
+      setCreateOpen(false);
+      setPage(1);
+      fetchData(1, filters, pageSize);
+    } catch (err) { alert(err instanceof Error ? err.message : '录入失败'); }
+    finally { setCreating(false); }
+  };
+
   return (
     <div>
-      <PageHeader title="质保记录" description="查看所有质保登记记录" />
+      <PageHeader title="质保记录" description="查看所有质保登记记录" actions={
+        <button onClick={openCreate} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors">+ 手动录入</button>
+      } />
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} className="mb-4" />
       <DataTable
         columns={[...COLUMNS, { key: 'actions', title: '操作', dataIndex: 'id', render: (_v: any, record: any) => (
@@ -204,6 +261,48 @@ export default function WarrantyRecordListPage() {
             <button onClick={handleSave} disabled={saving}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50">
               {saving ? '保存中...' : '保存修改'}
+            </button>
+          </div>
+        </div>
+      </DetailDrawer>
+
+      <DetailDrawer open={createOpen} onOpenChange={setCreateOpen} title="手动录入质保">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">所属门店 <span className="text-red-500">*</span></label>
+            <select value={createForm.store_id} onChange={(e) => setCreateForm({ ...createForm, store_id: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
+              <option value="">{storeLoading ? '加载中...' : '请选择门店'}</option>
+              {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">质保码 <span className="text-red-500">*</span></label>
+            <input value={createForm.warranty_code} onChange={(e) => setCreateForm({ ...createForm, warranty_code: e.target.value })}
+              placeholder="请输入质保码（须属于所选门店）"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          {(['customer_name', 'customer_phone', 'plate_no', 'vin', 'vehicle_brand', 'vehicle_model', 'vehicle_year'] as const).map((field) => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {{ customer_name: '车主姓名 *', customer_phone: '联系电话 *', plate_no: '车牌号 *', vin: 'VIN（选填）', vehicle_brand: '车辆品牌 *', vehicle_model: '车辆型号 *', vehicle_year: '年款（选填）' }[field]}
+              </label>
+              <input
+                type={field === 'customer_phone' ? 'number' : 'text'}
+                value={createForm[field]} onChange={(e) => setCreateForm({ ...createForm, [field]: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+            </div>
+          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">施工日期 <span className="text-red-500">*</span></label>
+            <input type="date" value={createForm.installation_date} onChange={(e) => setCreateForm({ ...createForm, installation_date: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          <p className="text-xs text-gray-400">提交后进入待审核，10 分钟内无人审核将自动通过；也可在「审核管理」手动通过。</p>
+          <div className="pt-4 border-t border-gray-100">
+            <button onClick={handleCreateSubmit} disabled={creating}
+              className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50">
+              {creating ? '提交中...' : '确认录入'}
             </button>
           </div>
         </div>
