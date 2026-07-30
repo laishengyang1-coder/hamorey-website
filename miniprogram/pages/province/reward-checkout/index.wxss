@@ -18,8 +18,8 @@
 
 /* 地址输入 */
 .addr-row { display: flex; gap: 16rpx; margin-bottom: 20rpx; }
-.addr-input { flex: 1; padding: 28rpx 24rpx; border-radius: 14rpx; border: 1rpx solid #D6CCC4; font-size: 30rpx; background: #FAF7F5; box-sizing: border-box; line-height: 1.4; min-height: 0; }
-.addr-input-full { width: 100%; padding: 28rpx 24rpx; border-radius: 14rpx; border: 1rpx solid #D6CCC4; font-size: 30rpx; background: #FAF7F5; margin-bottom: 20rpx; box-sizing: border-box; line-height: 1.4; min-height: 0; }
+.addr-input { flex: 1; padding: 28rpx 24rpx; border-radius: 14rpx; border: 1rpx solid #D6CCC4; font-size: 30rpx; background: #FAF7F5; box-sizing: border-box; }
+.addr-input-full { width: 100%; padding: 28rpx 24rpx; border-radius: 14rpx; border: 1rpx solid #D6CCC4; font-size: 30rpx; background: #FAF7F5; margin-bottom: 20rpx; box-sizing: border-box; }
 
 /* 汇总 */
 .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 0; }
