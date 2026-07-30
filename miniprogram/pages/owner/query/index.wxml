@@ -159,4 +159,7 @@
   <!-- 底部安全区占位（配合自定义 tabBar） -->
   <view class="safe-bottom-placeholder"></view>
 <custom-tab-bar />
+
+  <!-- 分享缩略图依赖引用：确保微信开发者工具上传时不会过滤掉该图片 -->
+  <image src="/images/share.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
 </view>

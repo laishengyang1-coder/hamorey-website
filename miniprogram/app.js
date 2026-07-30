@@ -40,7 +40,7 @@ App({
     const originalPage = Page;
     const defaultShare = {
       title: '和膜电子质保 — 正品保障·全国联保',
-      imageUrl: '/images-share.jpg'
+      imageUrl: '/images/share.jpg'
     };
     Page = function (options) {
       if (typeof options.onShareAppMessage !== 'function') {
