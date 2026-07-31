@@ -8,30 +8,10 @@ const auth = require('../../../utils/auth');
 // 首页配置化数据（后续可接入 CMS 后台）
 const HOME_CONFIG = {
   banners: [
-    {
-      image: '/images/banner/banner-brand.jpg',
-      title: '和膜 HAMOREY',
-      subtitle: '高端汽车膜 · 守护每一程',
-      tag: '品牌旗舰'
-    },
-    {
-      image: '/images/banner/banner-ppf.jpg',
-      title: '隐形车衣',
-      subtitle: '漆面保护膜 · 自愈抗污',
-      tag: 'PPF'
-    },
-    {
-      image: '/images/banner/banner-color.jpg',
-      title: 'TPU 改色膜',
-      subtitle: '色彩随心 · 保护随行',
-      tag: 'COLOR'
-    },
-    {
-      image: '/images/banner/banner-window.jpg',
-      title: '全车窗膜',
-      subtitle: '隔热防晒 · 清晰视野',
-      tag: 'WINDOW'
-    }
+    { image: '/images/banner/banner-brand.jpg' },
+    { image: '/images/banner/banner-ppf.jpg' },
+    { image: '/images/banner/banner-color.jpg' },
+    { image: '/images/banner/banner-window.jpg' }
   ],
   functions: [
     {

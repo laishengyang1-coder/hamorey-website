@@ -143,39 +143,6 @@
   );
 }
 
-.banner-content {
-  position: absolute;
-  left: 28rpx;
-  bottom: 28rpx;
-  right: 28rpx;
-}
-
-.banner-tag {
-  display: inline-block;
-  padding: 6rpx 16rpx;
-  background: var(--color-accent);
-  color: #FFFFFF;
-  font-size: 20rpx;
-  font-weight: 600;
-  border-radius: 8rpx;
-  margin-bottom: 14rpx;
-}
-
-.banner-title {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #FFFFFF;
-  letter-spacing: 2rpx;
-  margin-bottom: 8rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
-}
-
-.banner-subtitle {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
-}
-
 /* 2x2 功能入口 */
 .function-grid {
   display: grid;

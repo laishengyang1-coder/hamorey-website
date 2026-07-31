@@ -15,11 +15,6 @@
         <view class="banner-item">
           <image class="banner-image" src="{{item.image}}" mode="aspectFill" />
           <view class="banner-overlay"></view>
-          <view class="banner-content">
-            <view class="banner-tag">{{item.tag}}</view>
-            <view class="banner-title">{{item.title}}</view>
-            <view class="banner-subtitle">{{item.subtitle}}</view>
-          </view>
         </view>
       </swiper-item>
     </swiper>
