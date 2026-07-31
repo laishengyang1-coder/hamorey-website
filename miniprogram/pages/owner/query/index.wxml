@@ -162,4 +162,10 @@
 
   <!-- 分享缩略图依赖引用：确保微信开发者工具上传时不会过滤掉该图片 -->
   <image src="/images/share.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
+
+  <!-- Banner 本地图依赖引用：路径仅在 JS 中绑定，强制保留进上传包 -->
+  <image src="/images/banner/banner-brand.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
+  <image src="/images/banner/banner-ppf.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
+  <image src="/images/banner/banner-color.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
+  <image src="/images/banner/banner-window.jpg" style="width:0;height:0;position:absolute;opacity:0;" aria-hidden="true" />
 </view>

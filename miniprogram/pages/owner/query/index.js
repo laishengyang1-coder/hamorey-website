@@ -9,25 +9,25 @@ const auth = require('../../../utils/auth');
 const HOME_CONFIG = {
   banners: [
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg.jpg',
+      image: '/images/banner/banner-brand.jpg',
       title: '和膜 HAMOREY',
       subtitle: '高端汽车膜 · 守护每一程',
       tag: '品牌旗舰'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-1.jpg',
+      image: '/images/banner/banner-ppf.jpg',
       title: '隐形车衣',
       subtitle: '漆面保护膜 · 自愈抗污',
       tag: 'PPF'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-2.jpg',
+      image: '/images/banner/banner-color.jpg',
       title: 'TPU 改色膜',
       subtitle: '色彩随心 · 保护随行',
       tag: 'COLOR'
     },
     {
-      image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg-3.jpg',
+      image: '/images/banner/banner-window.jpg',
       title: '全车窗膜',
       subtitle: '隔热防晒 · 清晰视野',
       tag: 'WINDOW'
