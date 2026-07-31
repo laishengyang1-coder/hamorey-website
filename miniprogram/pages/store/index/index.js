@@ -64,6 +64,10 @@ Page({
     }
   },
 
+  goHome() {
+    wx.reLaunch({ url: '/pages/owner/query/index' });
+  },
+
   goRegister() {
     wx.navigateTo({ url: '/pages/store/register/index' });
   },

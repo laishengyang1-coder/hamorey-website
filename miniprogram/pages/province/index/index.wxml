@@ -1,6 +1,12 @@
 <view class="page-container">
   <!-- 省代头部 -->
   <view class="store-header">
+    <view class="header-nav">
+      <view class="nav-back" bindtap="goHome">
+        <text class="nav-back-icon">‹</text>
+        <text>主页</text>
+      </view>
+    </view>
     <view class="brand-line">和膜 HAMOREY</view>
     <view class="store-name">{{provinceName}}</view>
     <view class="store-meta">省级代理商</view>

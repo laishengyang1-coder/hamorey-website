@@ -49,6 +49,8 @@ Page({
     }
   },
 
+  goHome() { wx.reLaunch({ url: '/pages/owner/query/index' }); },
+
   goStores() { wx.reLaunch({ url: '/pages/province/stores/index' }); },
   goCodes() { wx.reLaunch({ url: '/pages/province/codes/index' }); },
   goPoints() { wx.reLaunch({ url: '/pages/province/points/index' }); },

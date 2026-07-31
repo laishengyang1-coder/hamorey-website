@@ -11,6 +11,32 @@
   color: #FFFFFF;
 }
 
+/* 头部返回主页 */
+.header-nav {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+
+.nav-back {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 22rpx 10rpx 14rpx;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 40rpx;
+  font-size: 24rpx;
+  color: #FFFFFF;
+}
+
+.nav-back-icon {
+  font-size: 34rpx;
+  line-height: 1;
+  margin-right: 4rpx;
+}
+
+.nav-back:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .brand-line {
   font-size: 24rpx;
   letter-spacing: 4rpx;
