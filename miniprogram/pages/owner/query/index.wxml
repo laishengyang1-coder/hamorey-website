@@ -14,7 +14,6 @@
       <swiper-item wx:for="{{banners}}" wx:key="index">
         <view class="banner-item">
           <image class="banner-image" src="{{item.image}}" mode="aspectFill" />
-          <view class="banner-overlay"></view>
         </view>
       </swiper-item>
     </swiper>
