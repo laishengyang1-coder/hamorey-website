@@ -1,10 +1,11 @@
 // ============================================================
-// GET /api/admin/warranty-codes — 总部质保码列表（状态筛选/批次/型号/归属）
+// GET  /api/admin/warranty-codes — 总部质保码列表（状态筛选/批次/型号/归属）
+// POST /api/admin/warranty-codes — 总部手动新增单个质保码（直接分配给门店，可立即用于录入质保）
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryAll, queryFirst, parsePagination } from '../_lib';
-import { ok, error } from '../_middleware';
+import { generateId, queryAll, queryFirst, execute, parsePagination, writeOperationLog, getAuthUser } from '../_lib';
+import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
   DB: D1Database;
@@ -130,5 +131,79 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   } catch (err) {
     console.error('[admin/warranty-codes GET]', err);
     return error('获取质保码列表失败', 500);
+  }
+};
+
+export const onRequestPost: PagesFunction<Env> = async (context) => {
+  try {
+    const user = getAuthUser(context.data);
+    if (!user) return error('未登录', 401);
+    if (user.role !== 'HQ_ADMIN') return error('仅总部可手动新增质保码', 403);
+
+    const body = (await context.request.json()) as {
+      code?: string;
+      product_model_id?: string;
+      store_id?: string;
+      batch_no?: string;
+      usage_limit?: number;
+    };
+
+    // 校验必填
+    const errors: Array<{ field: string; message: string }> = [];
+    if (!body.code || !body.code.trim()) errors.push({ field: 'code', message: '质保码不能为空' });
+    if (!body.product_model_id) errors.push({ field: 'product_model_id', message: '请选择产品型号' });
+    if (!body.store_id) errors.push({ field: 'store_id', message: '请选择所属门店' });
+    if (errors.length > 0) return validationError(errors);
+
+    const code = body.code!.trim();
+
+    // 质保码唯一性
+    const existing = await queryFirst<{ id: string }>(
+      context.env.DB,
+      `SELECT id FROM warranty_codes WHERE code = ? COLLATE NOCASE`,
+      code,
+    );
+    if (existing) return error('该质保码已存在', 409);
+
+    // 产品型号必须有效且启用
+    const model = await queryFirst<{ display_name: string; usage_limit: number; status: string }>(
+      context.env.DB,
+      `SELECT display_name, usage_limit, status FROM product_models WHERE id = ?`,
+      body.product_model_id,
+    );
+    if (!model) return error('产品型号不存在', 404);
+    if (model.status !== 'active') return error('该产品型号已停用', 400);
+
+    // 门店必须有效且启用
+    const store = await queryFirst<{ id: string; name: string }>(
+      context.env.DB,
+      `SELECT id, name FROM organizations WHERE id = ? AND type = 'STORE' AND status = 'active'`,
+      body.store_id,
+    );
+    if (!store) return error('所选门店不存在或已停用', 404);
+
+    const usageLimit = Math.max(1, Number(body.usage_limit) || Number(model.usage_limit) || 1);
+    const batchNo = (body.batch_no && body.batch_no.trim()) || `MANUAL-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;
+    const codeId = generateId();
+
+    // 直接分配给门店，状态为 in_stock（可立即用于录入质保）
+    await execute(
+      context.env.DB,
+      `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 0, 'in_stock', datetime('now'))`,
+      codeId, code, body.product_model_id, model.display_name, batchNo, body.store_id, usageLimit,
+    );
+
+    await writeOperationLog(
+      context.env.DB, user.userId, 'admin_create_warranty_code',
+      'warranty_codes', codeId,
+      { code, product_model_id: body.product_model_id, store_id: body.store_id, batch_no: batchNo, usage_limit: usageLimit },
+      getClientIP(context.request),
+    );
+
+    return ok({ id: codeId, code }, '新增成功，质保码已分配给所选门店，可立即用于录入质保');
+  } catch (err) {
+    console.error('[admin/warranty-codes POST]', err);
+    return error('新增质保码失败', 500);
   }
 };

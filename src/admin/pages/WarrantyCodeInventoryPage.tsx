@@ -9,6 +9,7 @@ import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { DetailDrawer } from '../../shared/components/DetailDrawer';
 
 interface WarrantyCode {
   id: string;
@@ -40,6 +41,11 @@ export default function WarrantyCodeInventoryPage() {
   const [toOrgId, setToOrgId] = useState('');
   const [operating, setOperating] = useState(false);
   const [orgs, setOrgs] = useState<Array<{ id: string; name: string; type: string }>>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [models, setModels] = useState<Array<{ id: string; model_code: string; display_name: string; usage_limit: number | null; product_name?: string }>>([]);
+  const [stores, setStores] = useState<Array<{ id: string; name: string }>>([]);
+  const [createForm, setCreateForm] = useState({ code: '', product_model_id: '', store_id: '', batch_no: '', usage_limit: '' });
+  const [creating, setCreating] = useState(false);
 
   const filterFields: FilterField[] = [
     { key: 'status', label: '状态', type: 'select', options: [
@@ -121,6 +127,45 @@ export default function WarrantyCodeInventoryPage() {
     });
   };
 
+  const openCreate = async () => {
+    setCreateForm({ code: '', product_model_id: '', store_id: '', batch_no: '', usage_limit: '' });
+    setCreateOpen(true);
+    // 并行拉取型号 + 门店
+    if (models.length === 0) {
+      try {
+        const res = await apiRequest<{ items: Array<{ id: string; model_code: string; display_name: string; usage_limit: number | null; product_name?: string }> }>(`/admin/product-models?status=active`);
+        setModels(res.items || []);
+      } catch { /* ignore */ }
+    }
+    if (stores.length === 0) {
+      try {
+        const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&pageSize=999`);
+        setStores(res.items || []);
+      } catch { /* ignore */ }
+    }
+  };
+
+  const handleCreateSubmit = async () => {
+    const f = createForm;
+    if (!f.code.trim()) { alert('请输入质保码'); return; }
+    if (!f.product_model_id) { alert('请选择产品型号'); return; }
+    if (!f.store_id) { alert('请选择所属门店'); return; }
+    setCreating(true);
+    try {
+      await apiRequest('/admin/warranty-codes', { method: 'POST', body: JSON.stringify({
+        code: f.code.trim(),
+        product_model_id: f.product_model_id,
+        store_id: f.store_id,
+        batch_no: f.batch_no.trim() || undefined,
+        usage_limit: f.usage_limit ? Number(f.usage_limit) : undefined,
+      }) });
+      setCreateOpen(false);
+      setPage(1);
+      fetchData(1, filters, pageSize, sortKey, sortDir);
+    } catch (err) { alert(err instanceof Error ? err.message : '新增失败'); }
+    finally { setCreating(false); }
+  };
+
   const COLUMNS: Column[] = [
     { key: 'select', title: (
       <input type="checkbox" checked={pageSelected} onChange={togglePage} disabled={transferableRows.length === 0}
@@ -142,12 +187,18 @@ export default function WarrantyCodeInventoryPage() {
   return (
     <div>
       <PageHeader title="质保码库存" description="管理质保码库存、划拨与撤回"
-        actions={selected.size > 0 && (
+        actions={(
           <div className="flex gap-2">
-            <button onClick={() => setAllocateOpen(true)}
-              className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">批量划拨 ({selected.size})</button>
-            <button onClick={handleRevoke} disabled={operating}
-              className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">批量撤回</button>
+            <button onClick={openCreate}
+              className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors">+ 手动新增质保码</button>
+            {selected.size > 0 && (
+              <>
+                <button onClick={() => setAllocateOpen(true)}
+                  className="rounded-lg border border-[#5C1A1A] px-4 py-2 text-sm font-medium text-[#5C1A1A] hover:bg-[#5C1A1A]/5">批量划拨 ({selected.size})</button>
+                <button onClick={handleRevoke} disabled={operating}
+                  className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">批量撤回</button>
+              </>
+            )}
           </div>
         )}
       />
@@ -180,6 +231,54 @@ export default function WarrantyCodeInventoryPage() {
           ))}
         </select>
       </ConfirmDialog>
+
+      <DetailDrawer open={createOpen} onOpenChange={setCreateOpen} title="手动新增质保码">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">质保码 <span className="text-red-500">*</span></label>
+            <input value={createForm.code} onChange={(e) => setCreateForm({ ...createForm, code: e.target.value })}
+              placeholder="请输入质保码编码"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">产品型号 <span className="text-red-500">*</span></label>
+            <select value={createForm.product_model_id} onChange={(e) => setCreateForm({ ...createForm, product_model_id: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
+              <option value="">请选择产品型号</option>
+              {models.map((m) => <option key={m.id} value={m.id}>{m.display_name}{m.product_name ? `（${m.product_name}）` : ''}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">所属门店 <span className="text-red-500">*</span></label>
+            <select value={createForm.store_id} onChange={(e) => setCreateForm({ ...createForm, store_id: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
+              <option value="">请选择门店（质保码将分配给该门店）</option>
+              {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">批次号</label>
+              <input value={createForm.batch_no} onChange={(e) => setCreateForm({ ...createForm, batch_no: e.target.value })}
+                placeholder="留空自动生成"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">可用次数</label>
+              <input type="number" min="1" value={createForm.usage_limit} onChange={(e) => setCreateForm({ ...createForm, usage_limit: e.target.value })}
+                placeholder="留空取型号默认"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+            </div>
+          </div>
+          <p className="text-xs text-gray-400">新增后质保码状态为「库存中」并归属于所选门店，可立即在「质保记录 - 手动录入」中使用该码登记质保。</p>
+          <div className="pt-4 border-t border-gray-100">
+            <button onClick={handleCreateSubmit} disabled={creating}
+              className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50">
+              {creating ? '提交中...' : '确认新增'}
+            </button>
+          </div>
+        </div>
+      </DetailDrawer>
     </div>
   );
 }
