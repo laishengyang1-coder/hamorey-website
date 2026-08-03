@@ -70,6 +70,18 @@
         </view>
       </view>
 
+      <!-- 电子证书下载 -->
+      <view class="cert-download-btn" bindtap="downloadCert">
+        <view class="cert-download-left">
+          <text class="cert-download-icon">📄</text>
+          <view class="cert-download-text">
+            <text class="cert-download-title">查看电子证书</text>
+            <text class="cert-download-sub">{{record.certificate_no ? 'NO. ' + record.certificate_no : '该质保暂无证书文件'}}</text>
+          </view>
+        </view>
+        <text class="arrow">›</text>
+      </view>
+
       <!-- 部位报价入口 -->
       <view class="quote-btn" bindtap="goQuote">
         <text>📊 查看部位理赔报价</text>

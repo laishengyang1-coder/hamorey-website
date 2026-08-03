@@ -180,6 +180,57 @@
   filter: drop-shadow(0 4rpx 12rpx rgba(0,0,0,0.3));
 }
 
+/* 电子证书下载按钮 */
+.cert-download-btn {
+  margin: 16rpx 28rpx 0;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #5C1A1A 0%, #7A2E2E 100%);
+  border-radius: 16rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6rpx 20rpx rgba(92, 26, 26, 0.25);
+}
+
+.cert-download-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.cert-download-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.cert-download-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cert-download-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.cert-download-sub {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cert-download-btn .arrow {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
 /* 部位报价入口 */
 .quote-btn {
   margin: 16rpx 28rpx 32rpx;

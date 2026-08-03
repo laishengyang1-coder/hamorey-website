@@ -73,6 +73,45 @@ Page({
   },
 
   /**
+   * 下载/查看电子证书 PDF
+   */
+  downloadCert() {
+    const certNo = this.data.record.certificate_no || '';
+    if (!certNo) {
+      wx.showToast({ title: '该质保暂无证书', icon: 'none' });
+      return;
+    }
+    if (this.data.downloading) return;
+    this.setData({ downloading: true });
+    wx.showLoading({ title: '正在获取证书...', mask: true });
+
+    const url = `${api.getBaseUrl()}/public/certificates/${encodeURIComponent(certNo)}/download`;
+    wx.downloadFile({
+      url,
+      success: (res) => {
+        wx.hideLoading();
+        this.setData({ downloading: false });
+        if (res.statusCode !== 200) {
+          wx.showToast({ title: '证书获取失败', icon: 'none' });
+          return;
+        }
+        wx.openDocument({
+          filePath: res.tempFilePath,
+          fileType: 'pdf',
+          showMenu: true,
+          fail: () => { wx.showToast({ title: '打开证书失败', icon: 'none' }); }
+        });
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        this.setData({ downloading: false });
+        console.error('[download cert]', err);
+        wx.showToast({ title: '下载失败，请确认网络与域名配置', icon: 'none', duration: 2500 });
+      }
+    });
+  },
+
+  /**
    * 跳转报价页
    */
   goQuote() {
