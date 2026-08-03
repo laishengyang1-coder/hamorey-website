@@ -70,7 +70,7 @@ export function createCertificatePdf(data: CertificateData): Uint8Array {
   lines.forEach(([label, value], index) => {
     content.push(...fieldLine(label, String(value), 695 - index * 28));
   });
-  content.push(textLine('本证书由和膜 HAMOREY 官方签发，可通过 hemoppf.com 查询真伪。', 50, 335, 10));
+  content.push(textLine('本证书由和膜 HAMOREY 官方签发，可通过 hemoppf.cn 查询真伪。', 50, 335, 10));
 
   const stream = content.join('\n');
   const objects = [
