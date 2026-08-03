@@ -79,10 +79,11 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
        WHERE wr.customer_phone_snapshot = ? AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`, value);
   } else {
+    // code 兜底：同时支持「质保码」(warranty_codes.code) 与「证书号」(warranty_records.certificate_no)
     records = await queryAll<RecordRow>(db,
       `${selectSql}
-       WHERE wc.code = ? COLLATE NOCASE AND wr.status = 'active'
-       ORDER BY wr.installation_date DESC`, value);
+       WHERE (wc.code = ? COLLATE NOCASE OR wr.certificate_no = ? COLLATE NOCASE) AND wr.status = 'active'
+       ORDER BY wr.installation_date DESC`, value, value);
   }
 
   if (records.length === 0) {
