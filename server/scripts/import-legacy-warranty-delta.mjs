@@ -361,8 +361,10 @@ async function main() {
       sourceItems: plans.length,
       targetExistingRecordsSkipped: plans.filter((plan) => plan.existingRecordId).length,
       targetNewRecords: plans.filter((plan) => !plan.existingRecordId).length,
-      activeRecords: plans.filter((plan) => plan.status === 'active').length,
-      pendingManualReviewRecords: plans.filter((plan) => plan.status !== 'active').length,
+      sourceActiveRecords: plans.filter((plan) => plan.status === 'active').length,
+      sourcePendingManualReviewRecords: plans.filter((plan) => plan.status !== 'active').length,
+      newActiveRecords: activeNewPlans.length,
+      newPendingManualReviewRecords: plans.filter((plan) => plan.status !== 'active' && !plan.existingRecordId).length,
       uniqueWarrantyCodes: sourceCodes.size,
       newWarrantyCodes: [...new Set(plans.filter((plan) => plan.code.isNew).map((plan) => plan.reelNumber))].length,
       unusedWarrantyCodesReassignedToLegacyActualStore: [...new Set(plans

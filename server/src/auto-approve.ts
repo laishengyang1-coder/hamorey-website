@@ -68,7 +68,20 @@ export async function runAutoApprove(env: EnvLike): Promise<{ approved: number; 
   // 否则 MySQL 会把 UTC 字符串当成东八区解释，比 created_at 早 8 小时，导致永远选不中待审记录。
   const pending = await queryAll<PendingRecord>(
     env.DB,
-    `SELECT * FROM warranty_records WHERE status = 'pending' AND created_at < NOW() - INTERVAL ? MINUTE ORDER BY created_at ASC LIMIT 50`,
+    `SELECT wr.*
+     FROM warranty_records wr
+     WHERE wr.status = 'pending'
+       AND wr.created_at < NOW() - INTERVAL ? MINUTE
+       -- Imported legacy rows explicitly marked for manual review must never
+       -- become active merely because their historical submit time is old.
+       AND NOT EXISTS (
+         SELECT 1
+         FROM warranty_audit_logs wal
+         WHERE wal.warranty_record_id = wr.id
+           AND wal.note = '旧小程序后台状态异常，待人工复核'
+       )
+     ORDER BY wr.created_at ASC
+     LIMIT 50`,
     AUTO_APPROVE_MINUTES,
   );
 

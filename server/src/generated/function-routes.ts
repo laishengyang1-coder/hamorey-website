@@ -44,48 +44,49 @@ import * as route42 from '../../../functions/api/admin/warranty-codes/import.ts'
 import * as route43 from '../../../functions/api/admin/warranty-codes/revoke.ts';
 import * as route44 from '../../../functions/api/admin/warranty-record-list.ts';
 import * as route45 from '../../../functions/api/admin/warranty-records-[id].ts';
-import * as route46 from '../../../functions/api/admin/warranty-records.ts';
-import * as route47 from '../../../functions/api/admin/warranty-records/[id].ts';
-import * as route48 from '../../../functions/api/auth/login.ts';
-import * as route49 from '../../../functions/api/auth/logout.ts';
-import * as route50 from '../../../functions/api/auth/me.ts';
-import * as route51 from '../../../functions/api/contact.ts';
-import * as route52 from '../../../functions/api/health.ts';
-import * as route53 from '../../../functions/api/partner-leads.ts';
-import * as route54 from '../../../functions/api/province/account.ts';
-import * as route55 from '../../../functions/api/province/addresses.ts';
-import * as route56 from '../../../functions/api/province/addresses/[id].ts';
-import * as route57 from '../../../functions/api/province/dashboard.ts';
-import * as route58 from '../../../functions/api/province/organizations.ts';
-import * as route59 from '../../../functions/api/province/organizations/[id].ts';
-import * as route60 from '../../../functions/api/province/points.ts';
-import * as route61 from '../../../functions/api/province/redemptions.ts';
-import * as route62 from '../../../functions/api/province/rewards.ts';
-import * as route63 from '../../../functions/api/province/warranty-codes.ts';
-import * as route64 from '../../../functions/api/province/warranty-codes/allocate.ts';
-import * as route65 from '../../../functions/api/province/warranty-records-[id].ts';
-import * as route66 from '../../../functions/api/province/warranty-records.ts';
-import * as route67 from '../../../functions/api/province/warranty-records/[id].ts';
-import * as route68 from '../../../functions/api/public/certificates.ts';
-import * as route69 from '../../../functions/api/public/certificates/[[path]].ts';
-import * as route70 from '../../../functions/api/public/claim-prices.ts';
-import * as route71 from '../../../functions/api/public/photos/[[path]].ts';
-import * as route72 from '../../../functions/api/public/warranties.ts';
-import * as route73 from '../../../functions/api/r2-upload/[[path]].ts';
-import * as route74 from '../../../functions/api/store/account.ts';
-import * as route75 from '../../../functions/api/store/addresses.ts';
-import * as route76 from '../../../functions/api/store/addresses/[id].ts';
-import * as route77 from '../../../functions/api/store/dashboard.ts';
-import * as route78 from '../../../functions/api/store/points.ts';
-import * as route79 from '../../../functions/api/store/redemptions.ts';
-import * as route80 from '../../../functions/api/store/rewards.ts';
-import * as route81 from '../../../functions/api/store/upload-url.ts';
-import * as route82 from '../../../functions/api/store/warranty-codes.ts';
-import * as route83 from '../../../functions/api/store/warranty-records-[id].ts';
-import * as route84 from '../../../functions/api/store/warranty-records.ts';
-import * as route85 from '../../../functions/api/store/warranty-records/[id].ts';
-import * as route86 from '../../../functions/api/stores.ts';
-import * as route87 from '../../../functions/api/warranty-search.ts';
+import * as route46 from '../../../functions/api/admin/warranty-records-create.ts';
+import * as route47 from '../../../functions/api/admin/warranty-records.ts';
+import * as route48 from '../../../functions/api/admin/warranty-records/[id].ts';
+import * as route49 from '../../../functions/api/auth/login.ts';
+import * as route50 from '../../../functions/api/auth/logout.ts';
+import * as route51 from '../../../functions/api/auth/me.ts';
+import * as route52 from '../../../functions/api/contact.ts';
+import * as route53 from '../../../functions/api/health.ts';
+import * as route54 from '../../../functions/api/partner-leads.ts';
+import * as route55 from '../../../functions/api/province/account.ts';
+import * as route56 from '../../../functions/api/province/addresses.ts';
+import * as route57 from '../../../functions/api/province/addresses/[id].ts';
+import * as route58 from '../../../functions/api/province/dashboard.ts';
+import * as route59 from '../../../functions/api/province/organizations.ts';
+import * as route60 from '../../../functions/api/province/organizations/[id].ts';
+import * as route61 from '../../../functions/api/province/points.ts';
+import * as route62 from '../../../functions/api/province/redemptions.ts';
+import * as route63 from '../../../functions/api/province/rewards.ts';
+import * as route64 from '../../../functions/api/province/warranty-codes.ts';
+import * as route65 from '../../../functions/api/province/warranty-codes/allocate.ts';
+import * as route66 from '../../../functions/api/province/warranty-records-[id].ts';
+import * as route67 from '../../../functions/api/province/warranty-records.ts';
+import * as route68 from '../../../functions/api/province/warranty-records/[id].ts';
+import * as route69 from '../../../functions/api/public/certificates.ts';
+import * as route70 from '../../../functions/api/public/certificates/[[path]].ts';
+import * as route71 from '../../../functions/api/public/claim-prices.ts';
+import * as route72 from '../../../functions/api/public/photos/[[path]].ts';
+import * as route73 from '../../../functions/api/public/warranties.ts';
+import * as route74 from '../../../functions/api/r2-upload/[[path]].ts';
+import * as route75 from '../../../functions/api/store/account.ts';
+import * as route76 from '../../../functions/api/store/addresses.ts';
+import * as route77 from '../../../functions/api/store/addresses/[id].ts';
+import * as route78 from '../../../functions/api/store/dashboard.ts';
+import * as route79 from '../../../functions/api/store/points.ts';
+import * as route80 from '../../../functions/api/store/redemptions.ts';
+import * as route81 from '../../../functions/api/store/rewards.ts';
+import * as route82 from '../../../functions/api/store/upload-url.ts';
+import * as route83 from '../../../functions/api/store/warranty-codes.ts';
+import * as route84 from '../../../functions/api/store/warranty-records-[id].ts';
+import * as route85 from '../../../functions/api/store/warranty-records.ts';
+import * as route86 from '../../../functions/api/store/warranty-records/[id].ts';
+import * as route87 from '../../../functions/api/stores.ts';
+import * as route88 from '../../../functions/api/warranty-search.ts';
 
 export type RouteSegment =
   | { kind: 'static'; value: string }
@@ -159,7 +160,7 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/province/warranty-codes/allocate",
     score: 123,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"warranty-codes"},{"kind":"static","value":"allocate"}],
-    module: route64,
+    module: route65,
   },
   {
     path: "/api/admin/organizations/:id",
@@ -219,49 +220,49 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/admin/warranty-records/:id",
     score: 103,
     segments: [{"kind":"static","value":"admin"},{"kind":"static","value":"warranty-records"},{"kind":"param","name":"id"}],
-    module: route47,
+    module: route48,
   },
   {
     path: "/api/province/addresses/:id",
     score: 103,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"addresses"},{"kind":"param","name":"id"}],
-    module: route56,
+    module: route57,
   },
   {
     path: "/api/province/organizations/:id",
     score: 103,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"organizations"},{"kind":"param","name":"id"}],
-    module: route59,
+    module: route60,
   },
   {
     path: "/api/province/warranty-records/:id",
     score: 103,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"warranty-records"},{"kind":"param","name":"id"}],
-    module: route67,
+    module: route68,
   },
   {
     path: "/api/store/addresses/:id",
     score: 103,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"addresses"},{"kind":"param","name":"id"}],
-    module: route76,
+    module: route77,
   },
   {
     path: "/api/store/warranty-records/:id",
     score: 103,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-records"},{"kind":"param","name":"id"}],
-    module: route85,
+    module: route86,
   },
   {
     path: "/api/public/certificates/:path*",
     score: 83,
     segments: [{"kind":"static","value":"public"},{"kind":"static","value":"certificates"},{"kind":"catchAll","name":"path"}],
-    module: route69,
+    module: route70,
   },
   {
     path: "/api/public/photos/:path*",
     score: 83,
     segments: [{"kind":"static","value":"public"},{"kind":"static","value":"photos"},{"kind":"catchAll","name":"path"}],
-    module: route71,
+    module: route72,
   },
   {
     path: "/api/admin/claim-parts",
@@ -423,151 +424,157 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/admin/warranty-records",
     score: 82,
     segments: [{"kind":"static","value":"admin"},{"kind":"static","value":"warranty-records"}],
+    module: route47,
+  },
+  {
+    path: "/api/admin/warranty-records-create",
+    score: 82,
+    segments: [{"kind":"static","value":"admin"},{"kind":"static","value":"warranty-records-create"}],
     module: route46,
   },
   {
     path: "/api/auth/login",
     score: 82,
     segments: [{"kind":"static","value":"auth"},{"kind":"static","value":"login"}],
-    module: route48,
+    module: route49,
   },
   {
     path: "/api/auth/logout",
     score: 82,
     segments: [{"kind":"static","value":"auth"},{"kind":"static","value":"logout"}],
-    module: route49,
+    module: route50,
   },
   {
     path: "/api/auth/me",
     score: 82,
     segments: [{"kind":"static","value":"auth"},{"kind":"static","value":"me"}],
-    module: route50,
+    module: route51,
   },
   {
     path: "/api/province/account",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"account"}],
-    module: route54,
+    module: route55,
   },
   {
     path: "/api/province/addresses",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"addresses"}],
-    module: route55,
+    module: route56,
   },
   {
     path: "/api/province/dashboard",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"dashboard"}],
-    module: route57,
+    module: route58,
   },
   {
     path: "/api/province/organizations",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"organizations"}],
-    module: route58,
+    module: route59,
   },
   {
     path: "/api/province/points",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"points"}],
-    module: route60,
+    module: route61,
   },
   {
     path: "/api/province/redemptions",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"redemptions"}],
-    module: route61,
+    module: route62,
   },
   {
     path: "/api/province/rewards",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"rewards"}],
-    module: route62,
+    module: route63,
   },
   {
     path: "/api/province/warranty-codes",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"warranty-codes"}],
-    module: route63,
+    module: route64,
   },
   {
     path: "/api/province/warranty-records",
     score: 82,
     segments: [{"kind":"static","value":"province"},{"kind":"static","value":"warranty-records"}],
-    module: route66,
+    module: route67,
   },
   {
     path: "/api/public/certificates",
     score: 82,
     segments: [{"kind":"static","value":"public"},{"kind":"static","value":"certificates"}],
-    module: route68,
+    module: route69,
   },
   {
     path: "/api/public/claim-prices",
     score: 82,
     segments: [{"kind":"static","value":"public"},{"kind":"static","value":"claim-prices"}],
-    module: route70,
+    module: route71,
   },
   {
     path: "/api/public/warranties",
     score: 82,
     segments: [{"kind":"static","value":"public"},{"kind":"static","value":"warranties"}],
-    module: route72,
+    module: route73,
   },
   {
     path: "/api/store/account",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"account"}],
-    module: route74,
+    module: route75,
   },
   {
     path: "/api/store/addresses",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"addresses"}],
-    module: route75,
+    module: route76,
   },
   {
     path: "/api/store/dashboard",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"dashboard"}],
-    module: route77,
+    module: route78,
   },
   {
     path: "/api/store/points",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"points"}],
-    module: route78,
+    module: route79,
   },
   {
     path: "/api/store/redemptions",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"redemptions"}],
-    module: route79,
+    module: route80,
   },
   {
     path: "/api/store/rewards",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"rewards"}],
-    module: route80,
+    module: route81,
   },
   {
     path: "/api/store/upload-url",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"upload-url"}],
-    module: route81,
+    module: route82,
   },
   {
     path: "/api/store/warranty-codes",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-codes"}],
-    module: route82,
+    module: route83,
   },
   {
     path: "/api/store/warranty-records",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-records"}],
-    module: route84,
+    module: route85,
   },
   {
     path: "/api/admin/reviews-:id",
@@ -585,48 +592,48 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/province/warranty-records-:id",
     score: 72,
     segments: [{"kind":"static","value":"province"},{"kind":"embeddedParam","prefix":"warranty-records-","name":"id","suffix":""}],
-    module: route65,
+    module: route66,
   },
   {
     path: "/api/store/warranty-records-:id",
     score: 72,
     segments: [{"kind":"static","value":"store"},{"kind":"embeddedParam","prefix":"warranty-records-","name":"id","suffix":""}],
-    module: route83,
+    module: route84,
   },
   {
     path: "/api/r2-upload/:path*",
     score: 42,
     segments: [{"kind":"static","value":"r2-upload"},{"kind":"catchAll","name":"path"}],
-    module: route73,
+    module: route74,
   },
   {
     path: "/api/contact",
     score: 41,
     segments: [{"kind":"static","value":"contact"}],
-    module: route51,
+    module: route52,
   },
   {
     path: "/api/health",
     score: 41,
     segments: [{"kind":"static","value":"health"}],
-    module: route52,
+    module: route53,
   },
   {
     path: "/api/partner-leads",
     score: 41,
     segments: [{"kind":"static","value":"partner-leads"}],
-    module: route53,
+    module: route54,
   },
   {
     path: "/api/stores",
     score: 41,
     segments: [{"kind":"static","value":"stores"}],
-    module: route86,
+    module: route87,
   },
   {
     path: "/api/warranty-search",
     score: 41,
     segments: [{"kind":"static","value":"warranty-search"}],
-    module: route87,
+    module: route88,
   }
 ];
