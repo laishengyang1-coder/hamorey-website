@@ -221,7 +221,17 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   const modelName = record.product_name_snapshot || record.product_model_snapshot || '未知型号';
 
   // 5-6. 积分/返利流水与审核状态保持同一批次，避免部分成功。
-  if (storePoints > 0) {
+  // 幂等：legacy 历史数据导入/自动审核可能已预发积分或返利流水（points_ledger 存在
+  // (organization_id, related_id) 唯一索引），已发过则跳过对应插入，避免撞索引导致 500。
+  const awarded = await queryAll<{ organization_id: string }>(
+    env.DB,
+    `SELECT organization_id FROM points_ledger
+     WHERE related_id = ? AND related_type = 'warranty' AND change_type = 'award'`,
+    recordId,
+  );
+  const awardedOrgIds = new Set(awarded.map((l) => l.organization_id));
+
+  if (storePoints > 0 && !awardedOrgIds.has(record.store_id)) {
     statements.push({
       sql: `INSERT INTO points_ledger
             (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
@@ -229,7 +239,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
       params: [generateId(), record.store_id, storePoints, recordId, `质保审核通过: ${modelName}（${certNo}）`, user?.userId || null],
     });
   }
-  if (provincePoints > 0 && record.province_org_id) {
+  if (provincePoints > 0 && record.province_org_id && !awardedOrgIds.has(record.province_org_id)) {
     statements.push({
       sql: `INSERT INTO points_ledger
             (id, organization_id, change_type, points_change, frozen_change, related_type, related_id, reason, operator_user_id, created_at)
