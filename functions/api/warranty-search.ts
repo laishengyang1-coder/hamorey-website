@@ -110,6 +110,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     id: r.id,
     certificate_no: r.certificate_no,
     warranty_code: r.warranty_code,
+    plate_no_snapshot: r.plate_no_snapshot,
     product_name: r.product_name_snapshot,
     product_model: r.product_model_snapshot,
     warranty_price_cents: r.warranty_price_cents,
