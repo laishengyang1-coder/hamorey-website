@@ -36,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (!obj) return error('证书文件不存在', 404);
 
     const headers = new Headers();
-    obj.writeHttpMetadata(headers);
+    if (obj.httpMetadata?.contentType) headers.set('Content-Type', obj.httpMetadata.contentType);
     headers.set('Content-Disposition', `inline; filename="HAMOREY-${certNo}.pdf"`);
     headers.set('Cache-Control', 'public, max-age=86400');
 
