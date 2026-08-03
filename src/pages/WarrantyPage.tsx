@@ -223,6 +223,11 @@ export default function WarrantyPage() {
                 {/* 质保卡列表 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {result.records
+                    .filter(
+                      (record) =>
+                        record.plate_no_snapshot === vehicle.plate_no ||
+                        (record as any).plate_no === vehicle.plate_no,
+                    )
                     .map((record) => {
                       const status = warrantyStatusText(
                         record.status,
@@ -277,6 +282,28 @@ export default function WarrantyPage() {
                               <span>{record.store_name}</span>
                             </div>
                           </div>
+                          {record.certificate_no && (
+                            <a
+                              href={`/api/public/certificates/${record.certificate_no}/download`}
+                              className="mt-4 inline-flex items-center justify-center gap-2 rounded-md border border-border-default px-4 py-2 text-sm font-medium text-content-primary hover:border-brand hover:text-content-brand transition-normal"
+                            >
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                              </svg>
+                              下载证书
+                            </a>
+                          )}
                         </Card>
                       );
                     })}
