@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { MapPinned } from 'lucide-react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
+import { DetailDrawer } from '../../shared/components/DetailDrawer';
 
 interface DashboardData {
   provinces: number; stores: number; totalCodes: number;
@@ -346,6 +347,7 @@ function LifecycleFunnel({ data }: { data: { total: number; hq: number; province
 
 // ─── 门店活跃度 ───
 function StoreActivitySection({ items }: { items: any[] }) {
+  const [showAll, setShowAll] = useState(false);
   if (items.length === 0) return null;
   const inactive = items
     .filter(s => s.is_inactive)
@@ -384,12 +386,47 @@ function StoreActivitySection({ items }: { items: any[] }) {
             </div>
           ))}
           {inactive.length > 12 && (
-            <div className="flex items-center justify-center rounded-lg bg-[var(--paper-border)] px-3 py-2">
-              <span className="text-xs text-[var(--paper-muted)]">+{inactive.length - 12} 家</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="flex items-center justify-center rounded-lg bg-[var(--paper-border)] px-3 py-2 transition-colors hover:bg-[var(--burgundy-tint)] focus:outline-none focus:ring-2 focus:ring-[#5C1A1A]/25 cursor-pointer"
+            >
+              <span className="text-xs text-[#5C1A1A] font-medium">
+                +{inactive.length - 12} 家 · 查看全部
+              </span>
+            </button>
           )}
         </div>
       )}
+
+      <DetailDrawer
+        open={showAll}
+        onOpenChange={setShowAll}
+        title={`沉默门店（${inactive.length} 家 · 30天无登记）`}
+        width="560px"
+      >
+        {inactive.length === 0 ? (
+          <p className="text-sm text-gray-500 py-8 text-center">无沉默门店</p>
+        ) : (
+          <div className="space-y-2">
+            {inactive.map((s) => (
+              <div key={s.id} className="flex items-center justify-between rounded-lg bg-[#FBEAEA] px-3 py-2.5">
+                <div className="min-w-0 mr-3">
+                  <span className="text-sm text-gray-900 font-medium truncate block">{s.name}</span>
+                  <span className="text-xs text-gray-500">
+                    {s.last_active ? `最后登记: ${s.last_active.slice(0, 10)}` : '从未登记'}
+                    {s.province ? ` · ${s.province}` : ''}
+                    {s.city ? ` · ${s.city}` : ''}
+                  </span>
+                </div>
+                <span className="text-xs text-red-500 font-medium shrink-0">
+                  {s.days_since !== null ? `${s.days_since}天前` : '从未登记'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </DetailDrawer>
     </div>
   );
 }
