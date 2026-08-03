@@ -12,6 +12,23 @@ interface Env { DB: D1Database; }
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const url = new URL(context.request.url);
+
+    // 组织积分余额汇总（省代/门店，供总部实时查看各组织积分）
+    if (url.searchParams.get('type') === 'balances') {
+      const rows = await queryAll(context.env.DB,
+        `SELECT o.id, o.code, o.name, o.type, o.province, o.city, o.status,
+                COALESCE(SUM(pl.points_change), 0) AS balance,
+                COALESCE(SUM(CASE WHEN pl.points_change > 0 THEN pl.points_change ELSE 0 END), 0) AS awarded,
+                COALESCE(SUM(CASE WHEN pl.points_change < 0 THEN -pl.points_change ELSE 0 END), 0) AS redeemed,
+                COUNT(pl.id) AS ledger_count
+         FROM organizations o
+         LEFT JOIN points_ledger pl ON pl.organization_id = o.id
+         WHERE o.type IN ('PROVINCE', 'STORE')
+         GROUP BY o.id
+         ORDER BY balance DESC`);
+      return ok(rows);
+    }
+
     const orgId = url.searchParams.get('organization_id') || '';
     const changeType = url.searchParams.get('change_type') || '';
     const { page, pageSize, offset } = parsePagination(url);
