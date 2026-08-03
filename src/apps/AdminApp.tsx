@@ -20,6 +20,7 @@ const WarrantyRecordListPage = lazyWithRetry(() => import('../admin/pages/Warran
 const ProductManagePage = lazyWithRetry(() => import('../admin/pages/ProductManagePage'));
 const WarrantyCodeImportPage = lazyWithRetry(() => import('../admin/pages/WarrantyCodeImportPage'));
 const WarrantyCodeInventoryPage = lazyWithRetry(() => import('../admin/pages/WarrantyCodeInventoryPage'));
+const CodeAllocationHistoryPage = lazyWithRetry(() => import('../admin/pages/CodeAllocationHistoryPage'));
 const PointsRulesPage = lazyWithRetry(() => import('../admin/pages/PointsRulesPage'));
 const RebateRulesPage = lazyWithRetry(() => import('../admin/pages/RebateRulesPage'));
 const PointsLedgerPage = lazyWithRetry(() => import('../admin/pages/PointsLedgerPage'));
@@ -50,6 +51,7 @@ const ADMIN_MENU: MenuItem[] = [
       { key: 'reviews', label: '质保审核', path: '/admin/reviews' },
       { key: 'warranty-records', label: '质保记录', path: '/admin/warranty-records' },
       { key: 'warranty-codes', label: '质保码库存', path: '/admin/warranty-codes' },
+      { key: 'code-allocation-history', label: '库存流转记录', path: '/admin/code-allocation-history' },
       { key: 'warranty-import', label: '质保码导入', path: '/admin/warranty-import' },
       { key: 'warranty-tree', label: '库存层级总览', path: '/admin/warranty-tree' },
     ],
@@ -190,6 +192,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <WarrantyCodeInventoryPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'code-allocation-history',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <CodeAllocationHistoryPage />
           </Suspense>
         ),
       },
