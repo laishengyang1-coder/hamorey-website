@@ -10,6 +10,7 @@
 
 import { queryFirst, queryAll, execute, batch, generateId } from '../../functions/api/_lib.ts';
 import { createCertificatePdf } from '../../functions/api/_certificate.ts';
+import { getCertificateSeal } from '../../functions/api/_seal.ts';
 
 /** 提交后超过多少分钟仍未审核则自动通过 */
 export const AUTO_APPROVE_MINUTES = 10;
@@ -133,6 +134,7 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   // 生成 PDF 证书
   let certFileKey = '';
   try {
+    const seal = await getCertificateSeal();
     const pdfBytes = createCertificatePdf({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
@@ -146,7 +148,8 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
       installationDate: record.installation_date,
       expiryDate: expiryDateStr,
       warrantyYears: record.warranty_years_snapshot,
-    });
+      issueDate: new Date().toISOString().slice(0, 10),
+    }, seal);
     certFileKey = `certificates/${certNo}.pdf`;
     await env.R2.put(certFileKey, pdfBytes, {
       httpMetadata: { contentType: 'application/pdf' },

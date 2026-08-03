@@ -8,6 +8,7 @@ import { type PagesFunction } from '@cloudflare/workers-types';
 import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 import { createCertificatePdf } from '../_certificate';
+import { getCertificateSeal } from '../_seal';
 
 interface Env {
   DB: D1Database;
@@ -157,6 +158,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   // 生成 PDF 证书
   let certFileKey = '';
   try {
+    const seal = await getCertificateSeal();
     const pdfBytes = createCertificatePdf({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
@@ -170,7 +172,8 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
       installationDate: record.installation_date,
       expiryDate: expiryDateStr,
       warrantyYears: record.warranty_years_snapshot,
-    });
+      issueDate: new Date().toISOString().slice(0, 10),
+    }, seal);
     certFileKey = `certificates/${certNo}.pdf`;
     await env.R2.put(certFileKey, pdfBytes, {
       httpMetadata: { contentType: 'application/pdf' },
