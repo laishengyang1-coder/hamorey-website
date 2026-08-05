@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS organizations (
     social_credit_code TEXT,
     legal_person TEXT,
     status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'disabled')),
+    -- 门店审核状态（省代新增门店需总部审核通过后才正式开通）：
+    -- approved=已通过可登录 / pending=待审核 / rejected=已驳回
+    audit_status   TEXT NOT NULL DEFAULT 'approved' CHECK (audit_status IN ('pending', 'approved', 'rejected')),
+    audit_reason   TEXT,
+    audited_at     TEXT,
+    audited_by     TEXT,
     created_by  TEXT,
     created_at  TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
@@ -32,6 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_org_type ON organizations(type);
 CREATE INDEX IF NOT EXISTS idx_org_parent ON organizations(parent_id);
 CREATE INDEX IF NOT EXISTS idx_org_status ON organizations(status);
 CREATE INDEX IF NOT EXISTS idx_org_province ON organizations(province);
+CREATE INDEX IF NOT EXISTS idx_org_audit_status ON organizations(type, audit_status);
 
 -- ============================================================
 -- 2. users — 登录账号

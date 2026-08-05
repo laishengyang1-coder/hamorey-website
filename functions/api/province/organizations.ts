@@ -86,8 +86,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const passwordHash = await hashPassword(body.password!);
     await batch(context.env.DB, [
       {
-        sql: `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, created_by, created_at, updated_at)
-              VALUES (?, ?, 'STORE', ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
+        sql: `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, audit_status, created_by, created_at, updated_at)
+              VALUES (?, ?, 'STORE', ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, datetime('now'), datetime('now'))`,
         params: [id, code, user.orgId, body.name, body.province || null, body.city || null,
           body.address || null, body.contact_name || null, body.phone || null, user.userId],
       },
@@ -97,8 +97,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         params: [accountId, id, body.username, passwordHash],
       },
       {
+        // 未审核通过的门店不在官网公开（is_public=0），总部审核通过后自动置 1
         sql: `INSERT INTO store_public_profiles (id, organization_id, public_name, auth_level, province, city, address, phone, is_public, sort_order, created_at, updated_at)
-              VALUES (?, ?, ?, 'Service_Point', ?, ?, ?, ?, 1, 0, datetime('now'), datetime('now'))`,
+              VALUES (?, ?, ?, 'Service_Point', ?, ?, ?, ?, 0, 0, datetime('now'), datetime('now'))`,
         params: [profileId, id, body.name, body.province || null, body.city || null, body.address || null, body.phone || null],
       },
     ]);

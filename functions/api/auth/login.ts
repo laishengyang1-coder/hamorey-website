@@ -67,15 +67,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       province: string | null;
       city: string | null;
       status: string;
+      audit_status: string | null;
     }>(
       env.DB,
-      `SELECT id, type, name, province, city, status FROM organizations WHERE id = ?`,
+      `SELECT id, type, name, province, city, status, audit_status FROM organizations WHERE id = ?`,
       user.organization_id,
     );
 
     const expectedRole = org?.type === 'HQ' ? 'HQ_ADMIN' : org?.type;
     if (!org || org.status !== 'active' || expectedRole !== user.role) {
       return error('账号所属组织无效，请联系管理员', 403);
+    }
+
+    // 门店审核状态拦截：省代新增的门店需总部审核通过后才可登录
+    if (org.type === 'STORE') {
+      if (org.audit_status === 'pending') {
+        return error('门店账号待总部审核开通，暂无法登录', 403);
+      }
+      if (org.audit_status === 'rejected') {
+        return error('门店开通申请未通过审核，请联系总部', 403);
+      }
     }
 
     // 创建 Session

@@ -14,6 +14,7 @@ const DashboardPage = lazyWithRetry(() => import('../admin/pages/DashboardPage')
 const ChinaStoreMapPage = lazyWithRetry(() => import('../admin/pages/ChinaStoreMapPage'));
 const ProvinceListPage = lazyWithRetry(() => import('../admin/pages/ProvinceListPage'));
 const StoreListPage = lazyWithRetry(() => import('../admin/pages/StoreListPage'));
+const StoreAuditPage = lazyWithRetry(() => import('../admin/pages/StoreAuditPage'));
 const ReviewListPage = lazyWithRetry(() => import('../admin/pages/ReviewListPage'));
 const ReviewDetailPage = lazyWithRetry(() => import('../admin/pages/ReviewDetailPage'));
 const WarrantyRecordListPage = lazyWithRetry(() => import('../admin/pages/WarrantyRecordListPage'));
@@ -73,6 +74,7 @@ const ADMIN_MENU: MenuItem[] = [
     children: [
       { key: 'provinces', label: '省代管理', path: '/admin/provinces' },
       { key: 'stores', label: '门店管理', path: '/admin/stores' },
+      { key: 'store-audit', label: '门店审核', path: '/admin/store-audit' },
       { key: 'store-public', label: '授权门店', path: '/admin/store-public' },
       { key: 'partner-leads', label: '合作线索', path: '/admin/partner-leads' },
     ],
@@ -226,6 +228,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <StoreListPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'store-audit',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <StoreAuditPage />
           </Suspense>
         ),
       },

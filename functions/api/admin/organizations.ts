@@ -1,8 +1,8 @@
 // ============================================================
 // GET/POST/PUT /api/admin/organizations — 总部管理省代/门店
-// GET  ?type=PROVINCE|STORE&province=&status=&page=&pageSize=
-// POST 创建省代或直属门店
-// PUT  /api/admin/organizations/:id 编辑
+// GET  ?type=PROVINCE|STORE&province=&status=&audit_status=&keyword=&page=&pageSize=
+// POST 创建省代或直属门店（总部创建的门店默认已审核通过）
+// PUT  /api/admin/organizations/:id 编辑；传 audit_status 进行门店审核（通过/驳回）
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
@@ -20,6 +20,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const type = url.searchParams.get('type') || '';
     const province = url.searchParams.get('province') || '';
     const status = url.searchParams.get('status') || '';
+    const auditStatus = url.searchParams.get('audit_status') || '';
     const keyword = url.searchParams.get('keyword') || '';
     const { page, pageSize, offset } = parsePagination(url);
 
@@ -41,6 +42,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (status) {
       conditions.push(`o.status = ?`);
       params.push(status);
+    }
+
+    if (auditStatus && ['pending', 'approved', 'rejected'].includes(auditStatus)) {
+      conditions.push(`o.audit_status = ?`);
+      params.push(auditStatus);
     }
 
     if (keyword) {
@@ -149,8 +155,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await execute(
       context.env.DB,
-      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, social_credit_code, legal_person, status, created_by, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))`,
+      `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, social_credit_code, legal_person, status, audit_status, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'approved', ?, datetime('now'), datetime('now'))`,
       id,
       code,
       body.type,
@@ -249,11 +255,28 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       password?: string;
       status?: string;
       parent_id?: string | null;
+      audit_status?: string;
+      audit_reason?: string;
     };
 
     const existing = await queryFirst<{ id: string; type: string }>(context.env.DB, `SELECT id, type FROM organizations WHERE id = ?`, orgId);
     if (!existing) return error('组织不存在', 404);
 
+    // 审核操作校验：仅门店可审核，状态取值合法，驳回必填原因
+    const isAudit = body.audit_status !== undefined;
+    if (isAudit) {
+      if (!['pending', 'approved', 'rejected'].includes(body.audit_status!)) {
+        return error('审核状态无效', 400);
+      }
+      if (existing.type !== 'STORE') {
+        return error('仅门店可进行审核操作', 400);
+      }
+      if (body.audit_status === 'rejected' && !(body.audit_reason || '').trim()) {
+        return error('驳回门店时请填写原因', 400);
+      }
+    }
+
+    const auditUserId = getAuthUser(context.data)?.userId || null;
     const updates: string[] = [];
     const params: unknown[] = [];
 
@@ -267,6 +290,14 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     if (body.legal_person !== undefined) { updates.push('legal_person = ?'); params.push(body.legal_person); }
     if (body.parent_id !== undefined) { updates.push('parent_id = ?'); params.push(body.parent_id); }
     if (body.status !== undefined) { updates.push('status = ?'); params.push(body.status); }
+    if (body.audit_status !== undefined) {
+      updates.push('audit_status = ?');
+      params.push(body.audit_status);
+      updates.push("audited_at = datetime('now')");
+      updates.push('audited_by = ?');
+      params.push(auditUserId);
+    }
+    if (body.audit_reason !== undefined) { updates.push('audit_reason = ?'); params.push(body.audit_reason); }
 
     const username = body.username?.trim();
     const password = body.password ?? '';
@@ -384,16 +415,44 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       }
     }
 
+    // 审核状态变化时同步官网公开状态（审核通过且运营状态为启用才公开，驳回/待审核不公开）
+    if (isAudit) {
+      const orgRow = await queryFirst<{ status: string }>(
+        context.env.DB,
+        `SELECT status FROM organizations WHERE id = ?`,
+        orgId,
+      );
+      const isPublic = body.audit_status === 'approved' && (orgRow?.status ?? 'active') === 'active' ? 1 : 0;
+      await execute(
+        context.env.DB,
+        `UPDATE store_public_profiles SET is_public = ?, updated_at = datetime('now') WHERE organization_id = ?`,
+        isPublic,
+        orgId,
+      );
+    }
+
     const user = getAuthUser(context.data);
-    await writeOperationLog(
-      context.env.DB,
-      user?.userId || null,
-      'update_organization',
-      'organization',
-      orgId,
-      body,
-      getClientIP(context.request),
-    );
+    if (isAudit) {
+      await writeOperationLog(
+        context.env.DB,
+        user?.userId || null,
+        'audit_store',
+        'organization',
+        orgId,
+        { action: body.audit_status, reason: body.audit_reason || '' },
+        getClientIP(context.request),
+      );
+    } else {
+      await writeOperationLog(
+        context.env.DB,
+        user?.userId || null,
+        'update_organization',
+        'organization',
+        orgId,
+        body,
+        getClientIP(context.request),
+      );
+    }
 
     const updated = await queryFirst(context.env.DB, `SELECT * FROM organizations WHERE id = ?`, orgId);
     return ok(updated, '更新成功');

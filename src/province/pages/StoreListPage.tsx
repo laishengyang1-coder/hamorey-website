@@ -20,6 +20,7 @@ interface Organization {
   contact_name: string | null;
   phone: string | null;
   status: string;
+  audit_status: string;
   created_at: string;
 }
 
@@ -39,6 +40,11 @@ const COLUMNS: Column[] = [
   { key: 'contact_name', title: '联系人', dataIndex: 'contact_name', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
   { key: 'phone', title: '电话', dataIndex: 'phone', render: (v) => (v as string) || '-', className: 'whitespace-nowrap' },
   { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} />, className: 'whitespace-nowrap' },
+  { key: 'audit_status', title: '审核状态', dataIndex: 'audit_status', render: (v) => {
+      const s = (v as string) || 'approved';
+      const label = s === 'approved' ? '已通过' : s === 'pending' ? '待审核' : s === 'rejected' ? '已驳回' : s;
+      return <StatusBadge status={s} label={label} />;
+    }, className: 'whitespace-nowrap' },
 ];
 
 export default function StoreListPage() {
@@ -111,6 +117,9 @@ export default function StoreListPage() {
       }
       setDrawerOpen(false);
       fetchData(page, filters, pageSize);
+      if (!selected) {
+        alert('门店已创建，待总部审核通过后即可登录使用');
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : '保存失败');
     } finally { setSaving(false); }
