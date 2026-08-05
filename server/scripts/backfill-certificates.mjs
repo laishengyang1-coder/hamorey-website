@@ -3,8 +3,9 @@
 // 为 active 且已有 certificate_no 但 certificate_files 无记录的历史质保
 // 生成 PDF 证书并上传 COS、写入 certificate_files 记录。
 // 模板直接复用 functions/api/_certificate.ts（与线上审核一致，含印章）。
-// 用法: node --experimental-strip-types backfill-certificates.mjs [--dry-run] [--force]
+// 用法: node --experimental-strip-types backfill-certificates.mjs [--dry-run] [--force] [--cert=证书号A,证书号B]
 //   --force: 重新生成全部（覆盖已有 PDF）
+//   --cert=xxx,yyy: 只重新生成指定证书号（可逗号分隔多个），强制覆盖
 // ============================================================
 
 import fs from 'node:fs';
@@ -23,6 +24,8 @@ for (const line of fs.readFileSync(envFile, 'utf8').split('\n')) {
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const FORCE = process.argv.includes('--force');
+const certArg = process.argv.find((a) => a.startsWith('--cert='));
+const CERT_FILTER = certArg ? certArg.slice(7).split(',').map((s) => s.trim()).filter(Boolean) : [];
 
 async function main() {
   const db = await mysql.createConnection({
@@ -32,12 +35,15 @@ async function main() {
   const cos = new COS({ SecretId: env.COS_SECRET_ID, SecretKey: env.COS_SECRET_KEY });
   const seal = await getCertificateSeal();
 
-  const sql = FORCE
+  const certFilterSql = CERT_FILTER.length > 0
+    ? ` AND wr.certificate_no IN (${CERT_FILTER.map(() => '?').join(',')})`
+    : '';
+  const sql = FORCE || CERT_FILTER.length > 0
     ? `SELECT wr.id, wr.certificate_no, wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot, wr.product_name_snapshot, wr.product_model_snapshot,
               wr.store_name_snapshot, wr.installation_date, wr.warranty_expiry_date, wr.warranty_years_snapshot
        FROM warranty_records wr
-       WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> ''`
+       WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> ''${certFilterSql}`
     : `SELECT wr.id, wr.certificate_no, wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot, wr.product_name_snapshot, wr.product_model_snapshot,
               wr.store_name_snapshot, wr.installation_date, wr.warranty_expiry_date, wr.warranty_years_snapshot
@@ -45,8 +51,8 @@ async function main() {
        LEFT JOIN certificate_files cf ON cf.warranty_record_id = wr.id
        WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> '' AND cf.id IS NULL`;
 
-  const [rows] = await db.query(sql);
-  console.log(`待${FORCE ? '重新生成' : '补'}证书: ${rows.length} 条${DRY_RUN ? '（dry-run 仅预览）' : ''}（印章: ${seal ? '已加载' : '无'}）`);
+  const [rows] = await db.query(sql, CERT_FILTER.length > 0 ? CERT_FILTER : []);
+  console.log(`待${FORCE || CERT_FILTER.length > 0 ? '重新生成' : '补'}证书: ${rows.length} 条${DRY_RUN ? '（dry-run 仅预览）' : ''}（印章: ${seal ? '已加载' : '无'}）`);
 
   let ok = 0, fail = 0;
   const failedList = [];
@@ -72,7 +78,7 @@ async function main() {
       if (DRY_RUN) { ok++; continue; }
       const pdf = createCertificatePdf(data, seal);
       await new Promise((resolve, reject) =>
-        cos.putObject({ Bucket: env.COS_BUCKET, Region: env.COS_REGION, Key: key, Body: pdf, ContentType: 'application/pdf' }, (e) => (e ? reject(e) : resolve())),
+        cos.putObject({ Bucket: env.COS_BUCKET, Region: env.COS_REGION, Key: key, Body: Buffer.from(pdf), ContentType: 'application/pdf' }, (e) => (e ? reject(e) : resolve())),
       );
       const existing = await db.query(`SELECT id FROM certificate_files WHERE warranty_record_id = ? LIMIT 1`, [r.id]);
       if (existing[0].length === 0) {
