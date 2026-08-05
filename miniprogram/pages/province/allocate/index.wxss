@@ -48,3 +48,21 @@
 .load-more-done {
   font-size: var(--font-xs); color: var(--color-text-light);
 }
+
+/* 关键字搜索 */
+.search-box {
+  display: flex; align-items: center;
+  margin: 0 24rpx 20rpx; padding: 0 24rpx;
+  height: 72rpx; border-radius: var(--radius-md);
+  background: var(--color-bg-secondary, #F5F5F5);
+}
+.search-input {
+  flex: 1; font-size: var(--font-md); color: var(--color-text);
+  height: 100%;
+}
+.search-placeholder { color: var(--color-text-light); font-size: var(--font-md); }
+.search-clear {
+  width: 40rpx; height: 40rpx; display: flex; align-items: center; justify-content: center;
+  margin-left: 16rpx; border-radius: 50%;
+  background: rgba(0,0,0,0.12); color: #FFFFFF; font-size: 30rpx; line-height: 1;
+}

@@ -28,9 +28,21 @@
         {{allCodesSelected ? '取消全选' : '全选可用'}}
       </view>
     </view>
+    <!-- 关键字搜索 -->
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索质保码 / 型号编码 / 型号名称"
+        value="{{keyword}}"
+        bindinput="onKeywordInput"
+        confirm-type="search"
+        placeholder-class="search-placeholder"
+      />
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="clearKeyword">×</view>
+    </view>
     <view class="section-body">
       <view wx:if="{{availableCodes.length === 0}}" class="empty-state" style="padding:40rpx">
-        <view class="empty-state-text">暂无可分配的质保码</view>
+        <view class="empty-state-text">{{keyword ? '未找到匹配的质保码' : '暂无可分配的质保码'}}</view>
       </view>
 
       <view wx:else>
@@ -62,9 +74,9 @@
   </view>
 
   <!-- 已选汇总 -->
-  <view wx:if="{{selectedCodes.length > 0}}" class="summary-bar safe-bottom">
+  <view wx:if="{{selectedCount > 0}}" class="summary-bar safe-bottom">
     <view class="summary-info">
-      <text>已选 {{selectedCodes.length}} 个质保码</text>
+      <text>已选 {{selectedCount}} 个质保码</text>
     </view>
     <button
       class="btn-primary"

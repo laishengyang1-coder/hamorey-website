@@ -20,10 +20,16 @@ Page({
     page: 1,
     hasMore: false,
     totalCodes: 0,
+    keyword: '',
     submitting: false,
     allCodesSelected: false,
     selectedCodes: [],
-    selectedIds: {}
+    selectedIds: {},
+    selectedCount: 0
+  },
+
+  onUnload() {
+    if (this._searchTimer) clearTimeout(this._searchTimer);
   },
 
   onShow() {
@@ -55,7 +61,9 @@ Page({
     const nextPage = reset ? 1 : this.data.page + 1;
     this.setData(reset ? { loadingCodes: true } : { loadingMore: true });
 
-    const res = await api.get('/province/warranty-codes', { status: 'in_stock', page: nextPage, pageSize: PAGE_SIZE }, { loading: false });
+    const params = { status: 'in_stock', page: nextPage, pageSize: PAGE_SIZE };
+    if (this.data.keyword) params.keyword = this.data.keyword;
+    const res = await api.get('/province/warranty-codes', params, { loading: false });
 
     if (res.ok) {
       const items = res.data.items || [];
@@ -73,9 +81,25 @@ Page({
         hasMore: merged.length < total,
         allCodesSelected: merged.length > 0 && merged.every(c => c.checked),
         selectedCodes: merged.filter(c => selectedIds[c.id]),
+        selectedCount: Object.keys(selectedIds).length
       });
     }
     this.setData({ loadingCodes: false, loadingMore: false });
+  },
+
+  /** 关键字输入（防抖 400ms 后重新搜索） */
+  onKeywordInput(e) {
+    const keyword = e.detail.value;
+    this.setData({ keyword });
+    if (this._searchTimer) clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => this.loadCodes(true), 400);
+  },
+
+  /** 清空搜索关键字 */
+  clearKeyword() {
+    if (this._searchTimer) clearTimeout(this._searchTimer);
+    this.setData({ keyword: '' });
+    this.loadCodes(true);
   },
 
   /** 滚动到底部自动加载更多 */
@@ -117,7 +141,8 @@ Page({
       availableCodes: codes,
       selectedIds,
       allCodesSelected: codes.length > 0 && codes.every(c => c.checked),
-      selectedCodes: codes.filter(c => selectedIds[c.id])
+      selectedCodes: codes.filter(c => selectedIds[c.id]),
+      selectedCount: Object.keys(selectedIds).length
     });
   },
 
@@ -134,7 +159,8 @@ Page({
       availableCodes: codes,
       allCodesSelected: allSelected,
       selectedIds,
-      selectedCodes: codes.filter(c => c.checked)
+      selectedCodes: codes.filter(c => c.checked),
+      selectedCount: Object.keys(selectedIds).length
     });
   },
 
