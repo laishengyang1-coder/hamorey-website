@@ -34,3 +34,17 @@
   box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.1);
 }
 .summary-info { font-size: var(--font-md); color: var(--color-text); }
+
+/* 加载更多 / 加载完成 */
+.load-more {
+  display: flex; align-items: center; justify-content: center;
+  padding: 24rpx 0 8rpx; min-height: 72rpx;
+}
+.load-more-text {
+  font-size: var(--font-sm); color: var(--color-primary);
+  padding: 12rpx 32rpx; border: 1rpx solid var(--color-border);
+  border-radius: 999rpx; background: var(--color-bg-white);
+}
+.load-more-done {
+  font-size: var(--font-xs); color: var(--color-text-light);
+}

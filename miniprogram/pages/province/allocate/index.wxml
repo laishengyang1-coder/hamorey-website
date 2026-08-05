@@ -49,6 +49,14 @@
             <view class="code-select-model">{{item.model_name || item.display_name || '--'}} · 已用 {{item.used_count || 0}}/{{item.usage_limit || 1}}</view>
           </view>
         </view>
+        <!-- 加载更多 / 加载完成提示 -->
+        <view wx:if="{{hasMore}}" class="load-more" bindtap="loadMore">
+          <text wx:if="{{loadingMore}}" class="load-more-text">加载中...</text>
+          <text wx:else class="load-more-text">加载更多（已显示 {{availableCodes.length}}/{{totalCodes}} 条）</text>
+        </view>
+        <view wx:elif="{{totalCodes > 0}}" class="load-more">
+          <text class="load-more-done">已全部加载，共 {{totalCodes}} 条</text>
+        </view>
       </view>
     </view>
   </view>
