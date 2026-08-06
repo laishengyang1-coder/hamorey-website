@@ -1,5 +1,5 @@
 // ============================================================
-// GET /api/public/certificates/:certNo/download — 下载质保证书 PDF
+// GET /api/public/certificates/:certNo/download — 下载质保证书（PNG 长图）
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
@@ -35,9 +35,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const obj = await context.env.R2.get(cert.file_key);
     if (!obj) return error('证书文件不存在', 404);
 
+    const ext = cert.file_key.endsWith('.png') ? 'png' : 'pdf';
     const headers = new Headers();
     if (obj.httpMetadata?.contentType) headers.set('Content-Type', obj.httpMetadata.contentType);
-    headers.set('Content-Disposition', `inline; filename="HAMOREY-${certNo}.pdf"`);
+    headers.set('Content-Disposition', `inline; filename="HAMOREY-${certNo}.${ext}"`);
     headers.set('Cache-Control', 'public, max-age=86400');
 
     return new Response(obj.body, { headers });

@@ -7,7 +7,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
-import { createCertificatePdf } from '../_certificate';
+import { createCertificateImage, type PartPriceItem } from '../_certificate';
 import { getCertificateSeal } from '../_seal';
 
 interface Env {
@@ -155,11 +155,23 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   const rebateRatio = rebateRule?.rebate_ratio ?? 0;
   const provincePoints = Math.round(storePoints * rebateRatio);
 
-  // 生成 PDF 证书
+  // 生成质保证书长图 PNG
   let certFileKey = '';
   try {
     const seal = await getCertificateSeal();
-    const pdfBytes = createCertificatePdf({
+    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null }>(
+      context.env.DB,
+      `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm WHERE wc.id = ? AND pm.id = ?`,
+      record.warranty_code_id, record.product_model_id,
+    );
+    const partPriceRows = await queryAll<{ name: string; price_cents: number }>(
+      context.env.DB,
+      `SELECT cp.name, cli.price_cents FROM claim_prices cli JOIN claim_parts cp ON cp.id = cli.claim_part_id
+       WHERE cli.product_model_id = ? AND cli.status = 'active' ORDER BY cp.category, cp.sort_order`,
+      record.product_model_id,
+    );
+    const partPrices: PartPriceItem[] = partPriceRows.map(r => ({ name: r.name, priceCents: r.price_cents }));
+    const pngBytes = await createCertificateImage({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
       plateNo: record.plate_no_snapshot,
@@ -173,14 +185,16 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
       expiryDate: expiryDateStr,
       warrantyYears: record.warranty_years_snapshot,
       issueDate: new Date().toISOString().slice(0, 10),
+      warrantyCode: codeAndPrice?.code,
+      warrantyPriceCents: codeAndPrice?.warranty_price_cents,
+      partPrices,
     }, seal);
-    certFileKey = `certificates/${certNo}.pdf`;
-    await env.R2.put(certFileKey, pdfBytes, {
-      httpMetadata: { contentType: 'application/pdf' },
+    certFileKey = `certificates/${certNo}.png`;
+    await env.R2.put(certFileKey, pngBytes, {
+      httpMetadata: { contentType: 'image/png' },
     });
-  } catch (pdfErr) {
-    console.error('[PDF generation]', pdfErr);
-    // PDF 生成失败不阻塞审核
+  } catch (imgErr) {
+    console.error('[certificate generation]', imgErr);
     certFileKey = '';
   }
 

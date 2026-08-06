@@ -9,7 +9,7 @@
 // ============================================================
 
 import { queryFirst, queryAll, execute, batch, generateId } from '../../functions/api/_lib.ts';
-import { createCertificatePdf } from '../../functions/api/_certificate.ts';
+import { createCertificateImage, type PartPriceItem } from '../../functions/api/_certificate.ts';
 import { getCertificateSeal } from '../../functions/api/_seal.ts';
 
 /** 提交后超过多少分钟仍未审核则自动通过 */
@@ -131,11 +131,24 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   const rebateRatio = rebateRule?.rebate_ratio ?? 0;
   const provincePoints = Math.round(storePoints * rebateRatio);
 
-  // 生成 PDF 证书
+  // 生成质保证书长图 PNG
   let certFileKey = '';
   try {
     const seal = await getCertificateSeal();
-    const pdfBytes = createCertificatePdf({
+    // 补充证书长图所需数据：质保码(卷号) + 官方指导价 + 部位价值参考
+    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null }>(
+      env.DB,
+      `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm WHERE wc.id = ? AND pm.id = ?`,
+      record.warranty_code_id, record.product_model_id,
+    );
+    const partPriceRows = await queryAll<{ name: string; price_cents: number }>(
+      env.DB,
+      `SELECT cp.name, cli.price_cents FROM claim_prices cli JOIN claim_parts cp ON cp.id = cli.claim_part_id
+       WHERE cli.product_model_id = ? AND cli.status = 'active' ORDER BY cp.category, cp.sort_order`,
+      record.product_model_id,
+    );
+    const partPrices: PartPriceItem[] = partPriceRows.map(r => ({ name: r.name, priceCents: r.price_cents }));
+    const pngBytes = await createCertificateImage({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
       plateNo: record.plate_no_snapshot,
@@ -149,14 +162,17 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
       expiryDate: expiryDateStr,
       warrantyYears: record.warranty_years_snapshot,
       issueDate: new Date().toISOString().slice(0, 10),
+      warrantyCode: codeAndPrice?.code,
+      warrantyPriceCents: codeAndPrice?.warranty_price_cents,
+      partPrices,
     }, seal);
-    certFileKey = `certificates/${certNo}.pdf`;
-    await env.R2.put(certFileKey, pdfBytes, {
-      httpMetadata: { contentType: 'application/pdf' },
+    certFileKey = `certificates/${certNo}.png`;
+    await env.R2.put(certFileKey, pngBytes, {
+      httpMetadata: { contentType: 'image/png' },
     });
-  } catch (pdfErr) {
-    console.error('[auto-approve] PDF 生成失败', pdfErr);
-    // PDF 生成失败不阻塞审核
+  } catch (imgErr) {
+    console.error('[auto-approve] 证书长图生成失败', imgErr);
+    // 证书生成失败不阻塞审核
     certFileKey = '';
   }
 
