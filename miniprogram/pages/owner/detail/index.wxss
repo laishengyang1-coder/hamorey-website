@@ -1,34 +1,11 @@
-/* 电子质保卡详情 — 高级质感版 */
+/* 电子质保卡详情 — 友商式长图版式（红色暖白主题） */
 
 .detail-page {
-  position: relative;
   min-height: 100vh;
-  background: #1A1412;
-}
-
-.detail-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  filter: brightness(0.35);
-}
-
-.detail-bg-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(26,20,18,0.6) 0%, rgba(26,20,18,0.85) 40%, rgba(26,20,18,0.95) 100%);
-  z-index: 1;
+  background: var(--color-bg);
 }
 
 .detail-scroll {
-  position: relative;
-  z-index: 2;
   height: 100vh;
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -43,149 +20,301 @@
 
 .loading-spinner {
   width: 48rpx; height: 48rpx;
-  border: 3rpx solid rgba(255,255,255,0.15);
-  border-top-color: #C8A96E;
+  border: 3rpx solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 20rpx;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.loading-text { font-size: 28rpx; color: rgba(255,255,255,0.5); }
-.error-text { font-size: 28rpx; color: rgba(255,255,255,0.7); margin-bottom: 24rpx; }
+.loading-text { font-size: 28rpx; color: var(--color-text-secondary); }
+.error-text { font-size: 28rpx; color: var(--color-text-secondary); margin-bottom: 24rpx; }
 
 .retry-btn {
   padding: 16rpx 48rpx;
-  background: rgba(200,169,110,0.2);
-  color: #C8A96E;
-  border-radius: 40rpx;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border-radius: var(--radius-round);
   font-size: 28rpx;
-  border: 1rpx solid rgba(200,169,110,0.3);
 }
 
-/* 质保卡头部 */
+/* 证书卡 */
+.cert-card {
+  margin: 24rpx 24rpx 0;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8rpx 32rpx rgba(92, 26, 26, 0.08);
+}
+
+/* 品牌头 */
 .cert-header {
-  text-align: center;
-  padding: 48rpx 32rpx 32rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 40rpx 32rpx 36rpx;
+  background: var(--color-primary);
 }
 
-.cert-badge {
-  font-size: 56rpx;
-  margin-bottom: 12rpx;
-}
+.header-left { flex: 1; min-width: 0; }
 
-.cert-title {
+.brand-title {
   font-size: 38rpx;
   font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: 4rpx;
-  margin-bottom: 8rpx;
+  letter-spacing: 2rpx;
 }
 
-.cert-no {
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.5);
+.brand-sub {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.warranty-en {
+  font-size: 18rpx;
+  color: #C8A96E;
   letter-spacing: 2rpx;
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .cert-status {
   display: inline-block;
-  padding: 8rpx 28rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
+  padding: 6rpx 20rpx;
+  border-radius: var(--radius-round);
+  font-size: 22rpx;
   font-weight: 600;
 }
 
 .tag-success {
-  background: rgba(200,169,110,0.2);
+  background: rgba(200, 169, 110, 0.22);
   color: #C8A96E;
-  border: 1rpx solid rgba(200,169,110,0.3);
+  border: 1rpx solid rgba(200, 169, 110, 0.35);
 }
 
-/* 信息卡片 */
-.info-card {
-  margin: 0 28rpx 20rpx;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(20rpx);
-  -webkit-backdrop-filter: blur(20rpx);
-  border-radius: 20rpx;
+/* 产品卡 */
+.product-card {
+  margin: 24rpx 24rpx 0;
   padding: 28rpx;
-  border: 1rpx solid rgba(255,255,255,0.08);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.card-title {
+.product-info { flex: 1; min-width: 0; }
+
+.product-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.product-model {
+  margin-top: 8rpx;
   font-size: 24rpx;
-  font-weight: 600;
-  color: rgba(200,169,110,0.8);
-  letter-spacing: 2rpx;
-  margin-bottom: 20rpx;
-  padding-bottom: 16rpx;
-  border-bottom: 1rpx solid rgba(255,255,255,0.06);
+  color: var(--color-text-secondary);
+}
+
+.product-cert {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  text-align: right;
+}
+
+.product-cert-label {
+  font-size: 18rpx;
+  color: var(--color-text-light);
+}
+
+.product-cert-no {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* 信息分组 */
+.info-group {
+  margin: 28rpx 24rpx 0;
+}
+
+.group-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 14rpx;
+}
+
+.group-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.group-note {
+  font-size: 18rpx;
+  color: var(--color-text-light);
+}
+
+.info-card {
+  background: var(--color-bg-white);
+  border: 1rpx solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 4rpx 24rpx;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14rpx 0;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
+}
+
+.info-row:last-child {
+  border-bottom: none;
 }
 
 .info-label {
-  font-size: 26rpx;
-  color: rgba(255,255,255,0.45);
+  font-size: 24rpx;
+  color: var(--color-text-light);
   flex-shrink: 0;
-  width: 140rpx;
+  width: 150rpx;
 }
 
 .info-value {
-  font-size: 26rpx;
-  color: rgba(255,255,255,0.85);
+  font-size: 24rpx;
+  color: var(--color-text);
   text-align: right;
   flex: 1;
+  margin-left: 16rpx;
+  word-break: break-all;
 }
 
-.info-value.strong { font-weight: 700; color: #FFFFFF; }
-.info-value.accent { font-weight: 700; color: #C8A96E; }
-
-/* 施工照片 */
-.photos-grid {
+/* 部位价值参考表 */
+.part-table {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
+  background: var(--color-bg-white);
+  border: 1rpx solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-.photo-item {
-  width: 200rpx;
-  height: 200rpx;
-  border-radius: 12rpx;
-  background: rgba(255,255,255,0.05);
+.part-col {
+  flex: 1;
+  min-width: 0;
+  padding: 0 20rpx;
 }
 
-/* 印章 */
-.stamp-container {
+.part-col + .part-col {
+  border-left: 1rpx solid var(--color-border-light);
+}
+
+.part-row {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -240rpx;
-  padding-right: 20rpx;
-  position: relative;
-  z-index: 3;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--color-border-light);
 }
 
-.stamp-img {
-  width: 200rpx;
-  height: 200rpx;
-  opacity: 0.75;
-  transform: rotate(-12deg);
-  filter: drop-shadow(0 4rpx 12rpx rgba(0,0,0,0.3));
+.part-row:last-child {
+  border-bottom: none;
+}
+
+.part-head {
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.part-name {
+  font-size: 22rpx;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 12rpx;
+}
+
+.part-price {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.part-head .part-name, .part-head .part-price {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* 质保须知 / 除外情形 */
+.notice-card {
+  background: var(--color-bg-white);
+  border: 1rpx solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 20rpx 24rpx;
+}
+
+.notice-line {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8rpx;
+}
+
+.notice-line:last-child {
+  margin-bottom: 0;
+}
+
+/* 底部品牌条 */
+.cert-footer {
+  margin-top: 28rpx;
+  padding: 28rpx 32rpx;
+  background: var(--color-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.footer-left { flex: 1; min-width: 0; }
+
+.footer-phone {
+  font-size: 22rpx;
+  color: #FFFFFF;
+}
+
+.footer-gen {
+  margin-top: 6rpx;
+  font-size: 18rpx;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.footer-brand {
+  font-size: 20rpx;
+  color: #C8A96E;
+  flex-shrink: 0;
+  margin-left: 16rpx;
 }
 
 /* 电子证书下载按钮 */
 .cert-download-btn {
-  margin: 16rpx 28rpx 0;
+  margin: 28rpx 24rpx 0;
   padding: 24rpx 28rpx;
   background: linear-gradient(135deg, #5C1A1A 0%, #7A2E2E 100%);
-  border-radius: 16rpx;
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -233,16 +362,16 @@
 
 /* 部位报价入口 */
 .quote-btn {
-  margin: 16rpx 28rpx 32rpx;
+  margin: 16rpx 24rpx 32rpx;
   padding: 24rpx 28rpx;
-  background: rgba(200,169,110,0.12);
-  border: 1rpx solid rgba(200,169,110,0.25);
-  border-radius: 16rpx;
+  background: var(--color-bg-white);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 28rpx;
-  color: #C8A96E;
+  color: var(--color-primary);
 }
 
 .arrow { font-size: 32rpx; }

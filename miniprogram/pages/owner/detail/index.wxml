@@ -1,9 +1,4 @@
 <view class="detail-page">
-  <!-- 背景图 -->
-  <image class="detail-bg" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/home-bg.jpg" mode="aspectFill" />
-  <view class="detail-bg-overlay"></view>
-
-  <!-- 内容层 -->
   <scroll-view class="detail-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
     <!-- Loading -->
     <view wx:if="{{loading}}" class="loading-container">
@@ -17,66 +12,123 @@
       <view class="retry-btn" bindtap="loadData">重试</view>
     </view>
 
-    <!-- 质保卡详情 -->
+    <!-- 质保卡详情（友商式长图版式） -->
     <block wx:else>
-      <!-- 质保卡头部 -->
-      <view class="cert-header">
-        <view class="cert-title">电子质保卡</view>
-        <view class="cert-no">NO. {{record.certificate_no || record.id}}</view>
-        <view class="cert-status tag-success">保障中</view>
-      </view>
+      <view class="cert-card">
+        <!-- 品牌头 -->
+        <view class="cert-header">
+          <view class="header-left">
+            <view class="brand-title">和膜 HAMOREY</view>
+            <view class="brand-sub">汽车膜品质保障 · 电子质保证书</view>
+          </view>
+          <view class="header-right">
+            <view class="warranty-en">WARRANTY CERTIFICATE</view>
+            <view class="cert-status tag-success">保障中</view>
+          </view>
+        </view>
 
-      <!-- 产品信息卡片 -->
-      <view class="info-card">
-        <view class="card-title">质保信息</view>
-        <view class="info-row"><text class="info-label">产品名称</text><text class="info-value strong">{{record.product_name_snapshot || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">产品型号</text><text class="info-value">{{record.product_model_snapshot || record.model_name || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">质保年限</text><text class="info-value">{{record.warranty_years_snapshot || '--'}} 年</text></view>
-        <view class="info-row"><text class="info-label">质保价格</text><text class="info-value accent">{{record.warranty_price_text || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">质保码</text><text class="info-value">{{record.warranty_code || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">施工日期</text><text class="info-value">{{record.installation_date || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">到期日期</text><text class="info-value accent">{{record.warranty_expiry_date || '--'}}</text></view>
-      </view>
+        <!-- 产品卡 -->
+        <view class="product-card">
+          <view class="product-info">
+            <view class="product-name">{{record.product_name_snapshot || '漆面保护膜'}}</view>
+            <view class="product-model">{{record.product_model_snapshot || record.model_name || ''}}</view>
+          </view>
+          <view class="product-cert">
+            <view class="product-cert-label">质保编码</view>
+            <view class="product-cert-no">{{record.certificate_no || record.id}}</view>
+          </view>
+        </view>
 
-      <!-- 车辆信息 -->
-      <view class="info-card">
-        <view class="card-title">车辆信息</view>
-        <view class="info-row"><text class="info-label">车牌号</text><text class="info-value">{{record.plate_no_snapshot || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">车架号</text><text class="info-value">{{record.vin_snapshot || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">品牌</text><text class="info-value">{{record.vehicle_brand_snapshot || '--'}}</text></view>
-        <view class="info-row"><text class="info-label">型号</text><text class="info-value">{{record.vehicle_model_snapshot || '--'}}</text></view>
-      </view>
+        <!-- 商品信息 -->
+        <view class="info-group">
+          <view class="group-title">商品信息</view>
+          <view class="info-card">
+            <view class="info-row" wx:for="{{record.product_rows}}" wx:key="label">
+              <text class="info-label">{{item.label}}</text>
+              <text class="info-value">{{item.value}}</text>
+            </view>
+          </view>
+        </view>
 
-      <!-- 施工门店 -->
-      <view class="info-card">
-        <view class="card-title">施工门店</view>
-        <view class="info-row"><text class="info-label">门店名称</text><text class="info-value">{{record.store_name_snapshot || '--'}}</text></view>
-      </view>
+        <!-- 车主信息 -->
+        <view class="info-group">
+          <view class="group-title">车主信息</view>
+          <view class="info-card">
+            <view class="info-row" wx:for="{{record.owner_rows}}" wx:key="label">
+              <text class="info-label">{{item.label}}</text>
+              <text class="info-value">{{item.value}}</text>
+            </view>
+          </view>
+        </view>
 
-      <!-- 印章 -->
-      <view class="stamp-container">
-        <image class="stamp-img" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/stamp.png" mode="aspectFit" />
-      </view>
+        <!-- 施工信息 -->
+        <view class="info-group">
+          <view class="group-title">施工信息</view>
+          <view class="info-card">
+            <view class="info-row" wx:for="{{record.install_rows}}" wx:key="label">
+              <text class="info-label">{{item.label}}</text>
+              <text class="info-value">{{item.value}}</text>
+            </view>
+          </view>
+        </view>
 
-      <!-- 施工照片 -->
-      <view wx:if="{{recordPhotos.length > 0}}" class="info-card">
-        <view class="card-title">施工照片</view>
-        <view class="photos-grid">
-          <image
-            wx:for="{{recordPhotos}}" wx:key="id"
-            src="{{item.url || item.file_key}}" mode="aspectFill"
-            class="photo-item" data-url="{{item.url || item.file_key}}" bindtap="previewPhoto"
-          />
+        <!-- 常见部位价值参考 -->
+        <view wx:if="{{partPrices.length > 0}}" class="info-group">
+          <view class="group-title-row">
+            <view class="group-title">常见部位价值参考</view>
+            <view class="group-note">仅供参考，以实际安装部位为准</view>
+          </view>
+          <view class="part-table">
+            <view class="part-col" wx:for="{{partCols}}" wx:key="index" wx:for-item="col">
+              <view class="part-row part-head">
+                <text class="part-name">部位</text>
+                <text class="part-price">价值</text>
+              </view>
+              <view class="part-row" wx:for="{{col}}" wx:key="name" wx:for-item="p">
+                <text class="part-name">{{p.name}}</text>
+                <text class="part-price">{{p.priceText}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 质保须知 -->
+        <view class="info-group">
+          <view class="group-title">质保须知</view>
+          <view class="notice-card">
+            <view class="notice-line">1. 本质保仅对和膜品牌正品汽车膜产品有效，质保期内出现非人为质量问题可享免费维修或更换。</view>
+            <view class="notice-line">2. 质保服务须通过和膜官方渠道或授权施工门店申请，请妥善保存本质保凭证。</view>
+          </view>
+        </view>
+
+        <!-- 除外情形 -->
+        <view class="info-group">
+          <view class="group-title">质保范围除外情形</view>
+          <view class="notice-card">
+            <view class="notice-line">• 因交通事故、碰撞、划伤等外力导致的损坏；</view>
+            <view class="notice-line">• 因非授权门店施工或施工技术不当导致的问题；</view>
+            <view class="notice-line">• 因特殊漆面（哑光、电镀漆等）或使用环境异常导致的异常；</view>
+            <view class="notice-line">• 因未按产品使用说明维护保养导致的损坏。</view>
+          </view>
+        </view>
+
+        <!-- 底部品牌条 -->
+        <view class="cert-footer">
+          <view class="footer-left">
+            <view class="footer-phone">服务电话：400-888-0000</view>
+            <view class="footer-gen">质保卡生成于 {{record.updated_at || record.installation_date || '--'}}</view>
+          </view>
+          <view class="footer-brand">和膜品牌运营中心</view>
         </view>
       </view>
 
-      <!-- 电子证书下载 -->
+      <!-- 电子证书下载（PNG 长图） -->
       <view class="cert-download-btn" bindtap="downloadCert">
         <view class="cert-download-left">
           <text class="cert-download-icon">📄</text>
           <view class="cert-download-text">
             <text class="cert-download-title">查看电子证书</text>
-            <text class="cert-download-sub">{{record.certificate_no ? 'NO. ' + record.certificate_no : '该质保暂无证书文件'}}</text>
+            <text class="cert-download-sub">{{certificateNo ? 'NO. ' + certificateNo : '该质保暂无证书文件'}}</text>
           </view>
         </view>
         <text class="arrow">›</text>

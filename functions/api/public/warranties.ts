@@ -56,7 +56,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               wr.product_name_snapshot, wr.product_model_snapshot,
               pm.model_code, pm.warranty_price_cents,
               wr.warranty_years_snapshot, wr.installation_date,
-              wr.warranty_expiry_date, wr.store_name_snapshot, wr.status
+              wr.warranty_expiry_date, wr.store_name_snapshot, wr.status,
+              wr.product_model_id
        FROM warranty_records wr
        JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
        LEFT JOIN product_models pm ON wr.product_model_id = pm.id
@@ -65,7 +66,32 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       value,
     );
 
-    return ok({ records, total: records.length });
+    // 批量查询部位价值参考表（与长图证书数据一致）
+    const modelIds = [...new Set(records.map((r: any) => r.product_model_id).filter(Boolean))] as string[];
+    const partPriceMap = new Map<string, Array<{ name: string; priceCents: number }>>();
+    if (modelIds.length > 0) {
+      const placeholders = modelIds.map(() => '?').join(',');
+      const partRows = await queryAll(
+        context.env.DB,
+        `SELECT cli.product_model_id, cp.name AS name, cli.price_cents
+           FROM claim_prices cli
+           JOIN claim_parts cp ON cp.id = cli.claim_part_id
+          WHERE cli.product_model_id IN (${placeholders}) AND cli.status = 'active'
+          ORDER BY cp.category, cp.sort_order`,
+        ...modelIds,
+      );
+      for (const row of partRows as any[]) {
+        if (!partPriceMap.has(row.product_model_id)) partPriceMap.set(row.product_model_id, []);
+        partPriceMap.get(row.product_model_id)!.push({ name: row.name, priceCents: row.price_cents });
+      }
+    }
+
+    const result = (records as any[]).map((r) => ({
+      ...r,
+      part_prices: r.product_model_id ? partPriceMap.get(r.product_model_id) || [] : [],
+    }));
+
+    return ok({ records: result, total: result.length });
   } catch (err) {
     console.error('[public/warranties]', err);
     return error('查询失败', 500);

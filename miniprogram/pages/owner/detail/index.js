@@ -1,6 +1,7 @@
 /**
- * 车主端 — 质保卡详情页
- * 含施工门店、照片、到期日
+ * 车主端 — 质保卡详情页（友商式长图版式）
+ * 品牌头 + 产品卡 + 商品/车主/施工信息分组 + 部位价值参考表
+ * + 质保须知 + 除外情形 + 下载证书（PNG 长图预览/保存）
  */
 
 const api = require('../../../utils/api');
@@ -11,13 +12,22 @@ function formatWarrantyPrice(cents) {
   return `¥${yuan}`;
 }
 
+function formatPriceCents(cents) {
+  if (cents === null || cents === undefined || cents === '') return '--';
+  const yuan = Math.round(Number(cents) / 100);
+  return `¥${yuan.toLocaleString('zh-CN')}`;
+}
+
 Page({
   data: {
     recordId: '',
     loading: true,
     error: '',
     record: {},
-    recordPhotos: []
+    recordPhotos: [],
+    partPrices: [],
+    partCols: [[], []],
+    certificateNo: ''
   },
 
   onLoad(options) {
@@ -49,13 +59,49 @@ Page({
       return;
     }
 
+    const raw = records[0];
     const record = {
-      ...records[0],
-      warranty_price_text: formatWarrantyPrice(records[0].warranty_price_cents)
+      ...raw,
+      warranty_price_text: formatWarrantyPrice(raw.warranty_price_cents),
+      // 商品/车主/施工分组行（与长图证书版式一致）
+      product_rows: [
+        { label: '车膜卷号', value: raw.warranty_code || '--' },
+        { label: '型号规格', value: `${raw.product_name_snapshot || ''} ${raw.product_model_snapshot || ''}`.trim() || '--' },
+        { label: '装贴部位', value: '整车' },
+        { label: '官方指导价', value: formatWarrantyPrice(raw.warranty_price_cents) },
+        {
+          label: '质保期限',
+          value: `${raw.warranty_years_snapshot || '--'} 年（${raw.installation_date || '--'} 至 ${raw.warranty_expiry_date || '--'}）`
+        }
+      ],
+      owner_rows: [
+        { label: '车主姓名', value: raw.customer_name_snapshot || '--' },
+        { label: '品牌车型', value: `${raw.vehicle_brand_snapshot || ''} ${raw.vehicle_model_snapshot || ''}`.trim() || '--' },
+        { label: '车牌号码', value: raw.plate_no_snapshot || '--' },
+        { label: '车架号码', value: raw.vin_snapshot || '--' }
+      ],
+      install_rows: [
+        { label: '施工日期', value: raw.installation_date || '--' },
+        { label: '质保录入单位', value: raw.store_name_snapshot || '--' }
+      ]
     };
+
+    // 部位价值参考表：两列布局
+    const partPrices = raw.part_prices || [];
+    const partCols = [[], []];
+    partPrices.forEach((p, i) => {
+      partCols[i % 2].push({
+        name: p.name,
+        priceText: formatPriceCents(p.priceCents)
+      });
+    });
+
     this.setData({
       loading: false,
       record,
+      partPrices,
+      partCols,
+      certificateNo: raw.certificate_no || '',
       recordPhotos: [] // 公开接口不返回照片详情，此处预留
     });
   },
@@ -73,10 +119,10 @@ Page({
   },
 
   /**
-   * 下载/查看电子证书 PDF
+   * 下载/查看电子证书（PNG 长图，预览后可保存）
    */
   downloadCert() {
-    const certNo = this.data.record.certificate_no || '';
+    const certNo = this.data.certificateNo;
     if (!certNo) {
       wx.showToast({ title: '该质保暂无证书', icon: 'none' });
       return;
@@ -95,10 +141,10 @@ Page({
           wx.showToast({ title: '证书获取失败', icon: 'none' });
           return;
         }
-        wx.openDocument({
-          filePath: res.tempFilePath,
-          fileType: 'pdf',
-          showMenu: true,
+        // 证书为 PNG 长图：预览（可长按保存到相册）
+        wx.previewImage({
+          current: res.tempFilePath,
+          urls: [res.tempFilePath],
           fail: () => { wx.showToast({ title: '打开证书失败', icon: 'none' }); }
         });
       },
