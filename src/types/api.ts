@@ -53,6 +53,11 @@ export interface WarrantyCardData {
   store_city?: string;
   plate_no_snapshot?: string;
   customer_name_snapshot?: string;
+  vin_snapshot?: string;
+  vehicle_brand_snapshot?: string;
+  vehicle_model_snapshot?: string;
+  /** 常见部位价值参考表（与长图证书数据一致） */
+  part_prices?: Array<{ name: string; priceCents: number }>;
 }
 
 export interface WarrantyQueryResult {

@@ -1,16 +1,17 @@
 // ============================================================
 // 和膜 HAMOREY — 公开质保查询页 /warranty/
 // 单输入框智能识别 + 查询结果展示 + noindex
+// 结果区参考 shark 质保卡设计：品牌头 + 产品卡 + 商品/车主/施工
+// 信息分组 + 部位价值参考表 + 质保须知 + 除外情形 + 下载证书
 // ============================================================
 
-import { useState, useEffect, useCallback, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSEO } from '../lib/seo';
 import { PageLayout } from '../layouts/PageLayout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
-import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Spinner } from '../components/ui/Spinner';
 import { detectInput, getInputPlaceholder } from '../lib/detect';
@@ -18,12 +19,213 @@ import { searchWarrantyByQuery } from '../lib/api';
 import { WARRANTY_INPUT_TYPE_LABELS } from '../types/enums';
 import { formatDate, warrantyStatusText } from '../lib/format';
 import { siteConfig } from '../config/site';
-import type { WarrantyQueryResult } from '../types/api';
+import type { WarrantyCardData, WarrantyQueryResult } from '../types/api';
 
 type QueryState = 'idle' | 'loading' | 'success' | 'error' | 'empty';
 
 function formatWarrantyPrice(cents?: number | null): string {
   return cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+}
+
+function fmtDate(s?: string | null): string {
+  if (!s) return '-';
+  return formatDate(s);
+}
+
+/** 信息分组卡片 */
+function InfoSection({ title, rows }: { title: string; rows: Array<[string, ReactNode]> }) {
+  return (
+    <div>
+      <h4 className="text-sm font-bold text-brand">{title}</h4>
+      <div className="mt-2 overflow-hidden rounded-lg border border-border-subtle bg-white">
+        {rows.map(([k, v], i) => (
+          <div
+            key={k}
+            className={`flex items-center gap-3 px-4 py-2.5 text-sm ${i > 0 ? 'border-t border-border-subtle' : ''}`}
+          >
+            <span className="w-24 shrink-0 text-content-muted">{k}</span>
+            <span className="flex-1 truncate text-content-primary">{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 常见部位价值参考表（两列） */
+function PartPricesTable({ items }: { items: Array<{ name: string; priceCents: number }> }) {
+  const colCount = 2;
+  const rowCount = Math.max(1, Math.ceil(items.length / colCount));
+  return (
+    <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
+      <div className="grid grid-cols-2 divide-x divide-border-subtle">
+        {Array.from({ length: colCount }).map((_, c) => (
+          <div key={c} className="px-4 pb-1 pt-2.5">
+            <div className="grid grid-cols-2 text-xs font-bold text-brand">
+              <span>部位</span>
+              <span className="text-right">价值</span>
+            </div>
+            <div className="mt-1 divide-y divide-border-subtle">
+              {Array.from({ length: rowCount }).map((_, r) => {
+                const item = items[r * colCount + c];
+                if (!item) return <div key={r} className="py-1.5" />;
+                return (
+                  <div key={item.name} className="grid grid-cols-2 py-1.5 text-xs text-content-primary">
+                    <span className="pr-2">{item.name}</span>
+                    <span className="text-right text-content-secondary">
+                      {formatWarrantyPrice(item.priceCents)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 单张质保证书卡（长图版式） */
+function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
+  const status = warrantyStatusText(record.status, record.warranty_expiry_date);
+  const partPrices = record.part_prices && record.part_prices.length > 0 ? record.part_prices : null;
+
+  return (
+    <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-border-subtle animate-fade-in-up">
+      {/* 品牌头 */}
+      <div className="bg-brand px-6 py-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xl font-bold tracking-wide text-white">和膜 HAMOREY</div>
+            <div className="mt-1 text-xs text-[#E8D5C5]">汽车膜品质保障 · 电子质保证书</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] tracking-[0.2em] text-[#C8A96E]">WARRANTY CERTIFICATE</div>
+            <div className="mt-2">
+              <Badge variant={record.status === 'active' ? 'success' : record.status === 'expired' ? 'error' : 'default'}>
+                {status.text}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 产品卡 */}
+      <div className="mx-4 mt-4 rounded-lg bg-graphite px-5 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-lg font-bold text-brand">{record.product_name}</div>
+            <div className="mt-0.5 text-sm text-content-secondary">{record.product_model}</div>
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[10px] text-content-muted">质保编码</div>
+            <div className="mt-0.5 text-sm font-bold text-brand">{record.certificate_no || '-'}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 信息分组 */}
+      <div className="flex flex-col gap-5 px-4 pt-5">
+        <InfoSection
+          title="商品信息"
+          rows={[
+            ['车膜卷号', record.warranty_code || '-'],
+            ['型号规格', `${record.product_name} ${record.product_model}`.trim()],
+            ['装贴部位', '整车'],
+            ['官方指导价', formatWarrantyPrice(record.warranty_price_cents)],
+            [
+              '质保期限',
+              `${record.warranty_years} 年（${fmtDate(record.installation_date)} 至 ${fmtDate(record.warranty_expiry_date)}）`,
+            ],
+          ]}
+        />
+        <InfoSection
+          title="车主信息"
+          rows={[
+            ['车主姓名', record.customer_name_snapshot || '-'],
+            ['品牌车型', `${record.vehicle_brand_snapshot || '-'} ${record.vehicle_model_snapshot || ''}`.trim()],
+            ['车牌号码', record.plate_no_snapshot || '-'],
+            ['车架号码', record.vin_snapshot || '-'],
+          ]}
+        />
+        <InfoSection
+          title="施工信息"
+          rows={[
+            ['施工日期', fmtDate(record.installation_date)],
+            ['质保录入单位', record.store_name || '-'],
+          ]}
+        />
+
+        {/* 部位价值参考表 */}
+        {partPrices && (
+          <div>
+            <div className="flex items-end justify-between gap-2">
+              <h4 className="text-sm font-bold text-brand">常见部位价值参考</h4>
+              <span className="text-[10px] text-content-muted">部位占比及价值仅供参考，以实际安装部位为准</span>
+            </div>
+            <div className="mt-2">
+              <PartPricesTable items={partPrices} />
+            </div>
+          </div>
+        )}
+
+        {/* 质保须知 */}
+        <div>
+          <h4 className="text-sm font-bold text-brand">质保须知</h4>
+          <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-content-secondary">
+            <li>1. 本质保仅对和膜品牌正品汽车膜产品有效，质保期内出现非人为质量问题可享免费维修或更换。</li>
+            <li>2. 质保服务须通过和膜官方渠道或授权施工门店申请，请妥善保存本质保凭证。</li>
+          </ul>
+        </div>
+
+        {/* 除外情形 */}
+        <div>
+          <h4 className="text-sm font-bold text-brand">质保范围除外情形</h4>
+          <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-content-secondary">
+            <li>• 因交通事故、碰撞、划伤等外力导致的损坏；</li>
+            <li>• 因非授权门店施工或施工技术不当导致的问题；</li>
+            <li>• 因特殊漆面（哑光、电镀漆等）或使用环境异常导致的异常；</li>
+            <li>• 因未按产品使用说明维护保养导致的损坏。</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* 底部品牌条 */}
+      <div className="mt-5 bg-brand px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-xs text-white">服务电话：{siteConfig.contact.phone}</div>
+            <div className="mt-0.5 text-[10px] text-[#E8D5C5]">
+              质保卡生成于 {new Date().toLocaleString('zh-CN')}
+            </div>
+          </div>
+          {record.certificate_no && (
+            <a
+              href={`/api/public/certificates/${record.certificate_no}/download`}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-white/95 px-4 py-2 text-sm font-medium text-brand transition-normal hover:bg-white"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              下载证书（长图）
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function WarrantyPage() {
@@ -142,10 +344,8 @@ export default function WarrantyPage() {
       {/* 查询结果 */}
       <div className="mt-12">
         {state === 'idle' && (
-          <div className="text-center py-12">
-            <p className="text-sm text-content-muted">
-              请输入查询内容后点击"立即查询"
-            </p>
+          <div className="py-12 text-center">
+            <p className="text-sm text-content-muted">请输入查询内容后点击"立即查询"</p>
           </div>
         )}
 
@@ -187,10 +387,10 @@ export default function WarrantyPage() {
         )}
 
         {state === 'success' && result && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-10">
             {/* Mock 数据提示 */}
             {result.is_mock && (
-              <div className="p-3 rounded bg-status-warning/10 border border-status-warning/30 flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded border border-status-warning/30 bg-status-warning/10 p-3">
                 <Badge variant="warning">提示</Badge>
                 <p className="text-sm text-content-secondary">
                   当前为演示数据，真实质保数据将在质保后台上线后接入。
@@ -198,118 +398,34 @@ export default function WarrantyPage() {
               </div>
             )}
 
-            {/* 按车辆聚合展示质保卡 */}
-            {result.vehicles.map((vehicle) => (
-              <div key={vehicle.vehicle_id} className="flex flex-col gap-4">
-                {/* 车辆信息 */}
-                <Card padding="lg">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-content-primary">
-                        {vehicle.brand} {vehicle.model}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap gap-4 text-sm text-content-secondary">
-                        <span>车牌：{vehicle.plate_no}</span>
-                        {vehicle.vin && <span>VIN：{vehicle.vin}</span>}
-                        {vehicle.model_year && <span>年款：{vehicle.model_year}</span>}
-                      </div>
-                    </div>
-                    <Badge variant="brand">
-                      {vehicle.record_count} 张质保
-                    </Badge>
-                  </div>
-                </Card>
+            {/* 查询摘要 */}
+            <div className="flex items-center gap-2 text-sm text-content-secondary">
+              <span className="font-medium text-content-primary">查询结果</span>
+              <span className="text-content-muted">共 {result.records.length} 张质保证书</span>
+            </div>
 
-                {/* 质保卡列表 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {result.records
-                    .filter(
-                      (record) =>
-                        record.plate_no_snapshot === vehicle.plate_no ||
-                        (record as any).plate_no === vehicle.plate_no,
-                    )
-                    .map((record) => {
-                      const status = warrantyStatusText(
-                        record.status,
-                        record.warranty_expiry_date,
-                      );
-                      return (
-                        <Card key={record.id} hover padding="md">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h4 className="text-base font-semibold text-content-primary">
-                                {record.product_name}
-                              </h4>
-                              <p className="text-sm text-content-brand mt-0.5">
-                                {record.product_model}
-                              </p>
-                            </div>
-                            <Badge
-                              variant={
-                                record.status === 'active'
-                                  ? 'success'
-                                  : record.status === 'expired'
-                                    ? 'error'
-                                    : 'default'
-                              }
-                            >
-                              {status.text}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-col gap-1.5 text-sm text-content-secondary">
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">质保码：</span>
-                              <span className="font-mono">{record.warranty_code}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">施工日期：</span>
-                              <span>{formatDate(record.installation_date)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">到期日期：</span>
-                              <span>{formatDate(record.warranty_expiry_date)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">质保年限：</span>
-                              <span>{record.warranty_years} 年</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">质保价格：</span>
-                              <span>{formatWarrantyPrice(record.warranty_price_cents)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-content-muted">施工门店：</span>
-                              <span>{record.store_name}</span>
-                            </div>
-                          </div>
-                          {record.certificate_no && (
-                            <a
-                              href={`/api/public/certificates/${record.certificate_no}/download`}
-                              className="mt-4 inline-flex items-center justify-center gap-2 rounded-md border border-border-default px-4 py-2 text-sm font-medium text-content-primary hover:border-brand hover:text-content-brand transition-normal"
-                            >
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                              </svg>
-                              下载证书
-                            </a>
-                          )}
-                        </Card>
-                      );
-                    })}
-                </div>
-              </div>
-            ))}
+            {/* 按车辆分组渲染证书卡 */}
+            {result.vehicles.length > 1
+              ? result.vehicles.map((vehicle) => (
+                  <div key={`${vehicle.plate_no}_${vehicle.vin || ''}`} className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-base font-semibold text-content-primary">
+                        {vehicle.brand} {vehicle.model}
+                      </span>
+                      {vehicle.plate_no && (
+                        <span className="rounded bg-graphite px-2 py-0.5 text-xs font-medium text-content-secondary">
+                          {vehicle.plate_no}
+                        </span>
+                      )}
+                    </div>
+                    {result.records
+                      .filter((r) => r.plate_no_snapshot === vehicle.plate_no)
+                      .map((record) => (
+                        <WarrantyCertificateCard key={record.id} record={record} />
+                      ))}
+                  </div>
+                ))
+              : result.records.map((record) => <WarrantyCertificateCard key={record.id} record={record} />)}
           </div>
         )}
       </div>

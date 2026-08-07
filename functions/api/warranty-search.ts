@@ -55,6 +55,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     warranty_price_cents: number | null;
     installation_date: string; warranty_expiry_date: string | null;
     store_name_snapshot: string; status: string;
+    product_model_id: string | null;
   }
 
   const selectSql = `SELECT wr.*, wc.code AS warranty_code, pm.warranty_price_cents
@@ -107,11 +108,36 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
   }
 
   const vehicles = [...vehicleMap.values()];
+
+  // 批量查询部位价值参考表（与长图证书数据一致）
+  const modelIds = [...new Set(records.map((r) => r.product_model_id).filter(Boolean))] as string[];
+  const partPriceMap = new Map<string, Array<{ name: string; priceCents: number }>>();
+  if (modelIds.length > 0) {
+    const placeholders = modelIds.map(() => '?').join(',');
+    const partRows = await queryAll<{ product_model_id: string; name: string; price_cents: number }>(
+      db,
+      `SELECT cli.product_model_id, cp.name AS name, cli.price_cents
+         FROM claim_prices cli
+         JOIN claim_parts cp ON cp.id = cli.claim_part_id
+        WHERE cli.product_model_id IN (${placeholders}) AND cli.status = 'active'
+        ORDER BY cp.category, cp.sort_order`,
+      ...modelIds,
+    );
+    for (const row of partRows) {
+      if (!partPriceMap.has(row.product_model_id)) partPriceMap.set(row.product_model_id, []);
+      partPriceMap.get(row.product_model_id)!.push({ name: row.name, priceCents: row.price_cents });
+    }
+  }
+
   const cards = records.map((r) => ({
     id: r.id,
     certificate_no: r.certificate_no,
     warranty_code: r.warranty_code,
     plate_no_snapshot: r.plate_no_snapshot,
+    customer_name_snapshot: r.customer_name_snapshot,
+    vin_snapshot: r.vin_snapshot,
+    vehicle_brand_snapshot: r.vehicle_brand_snapshot,
+    vehicle_model_snapshot: r.vehicle_model_snapshot,
     product_name: r.product_name_snapshot,
     product_model: r.product_model_snapshot,
     warranty_price_cents: r.warranty_price_cents,
@@ -120,6 +146,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     warranty_years: r.warranty_years_snapshot,
     status: r.status,
     store_name: r.store_name_snapshot,
+    part_prices: r.product_model_id ? partPriceMap.get(r.product_model_id) || [] : [],
   }));
 
   return ok({ vehicles, records: cards, query_type: type, query_value: value, is_mock: false });
