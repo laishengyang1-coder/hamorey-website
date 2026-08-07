@@ -284,29 +284,12 @@
   margin-top: 28rpx;
   padding: 28rpx 32rpx;
   background: var(--color-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.footer-left { flex: 1; min-width: 0; }
-
-.footer-phone {
-  font-size: 22rpx;
-  color: #FFFFFF;
-}
-
-.footer-gen {
-  margin-top: 6rpx;
-  font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
 }
 
 .footer-brand {
   font-size: 20rpx;
   color: #C8A96E;
-  flex-shrink: 0;
-  margin-left: 16rpx;
 }
 
 /* 电子证书下载按钮 */
@@ -358,20 +341,6 @@
   color: rgba(255, 255, 255, 0.85);
   margin-left: 16rpx;
   flex-shrink: 0;
-}
-
-/* 部位报价入口 */
-.quote-btn {
-  margin: 16rpx 24rpx 32rpx;
-  padding: 24rpx 28rpx;
-  background: var(--color-bg-white);
-  border: 1rpx solid var(--color-border);
-  border-radius: var(--radius-md);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 28rpx;
-  color: var(--color-primary);
 }
 
 .arrow { font-size: 32rpx; }

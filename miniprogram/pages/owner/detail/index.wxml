@@ -114,10 +114,6 @@
 
         <!-- 底部品牌条 -->
         <view class="cert-footer">
-          <view class="footer-left">
-            <view class="footer-phone">服务电话：400-888-0000</view>
-            <view class="footer-gen">质保卡生成于 {{record.updated_at || record.installation_date || '--'}}</view>
-          </view>
           <view class="footer-brand">和膜品牌运营中心</view>
         </view>
       </view>
@@ -131,12 +127,6 @@
             <text class="cert-download-sub">{{certificateNo ? 'NO. ' + certificateNo : '该质保暂无证书文件'}}</text>
           </view>
         </view>
-        <text class="arrow">›</text>
-      </view>
-
-      <!-- 部位报价入口 -->
-      <view class="quote-btn" bindtap="goQuote">
-        <text>📊 查看部位理赔报价</text>
         <text class="arrow">›</text>
       </view>
 

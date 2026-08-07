@@ -194,12 +194,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
       {/* 底部品牌条 */}
       <div className="mt-5 bg-brand px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-xs text-white">服务电话：{siteConfig.contact.phone}</div>
-            <div className="mt-0.5 text-[10px] text-[#E8D5C5]">
-              质保卡生成于 {new Date().toLocaleString('zh-CN')}
-            </div>
-          </div>
+          <div className="text-xs text-[#E8D5C5]">和膜品牌运营中心</div>
           {record.certificate_no && (
             <a
               href={`/api/public/certificates/${record.certificate_no}/download`}

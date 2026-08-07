@@ -18,6 +18,16 @@ function formatPriceCents(cents) {
   return `¥${yuan.toLocaleString('zh-CN')}`;
 }
 
+/** 日期格式化：兼容 ISO 时间戳与 YYYY-MM-DD，输出 YYYY-MM-DD */
+function fmtDate(s) {
+  if (!s) return '--';
+  const str = String(s);
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str.slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 Page({
   data: {
     recordId: '',
@@ -60,6 +70,8 @@ Page({
     }
 
     const raw = records[0];
+    const installDate = fmtDate(raw.installation_date);
+    const expiryDate = fmtDate(raw.warranty_expiry_date);
     const record = {
       ...raw,
       warranty_price_text: formatWarrantyPrice(raw.warranty_price_cents),
@@ -71,7 +83,7 @@ Page({
         { label: '官方指导价', value: formatWarrantyPrice(raw.warranty_price_cents) },
         {
           label: '质保期限',
-          value: `${raw.warranty_years_snapshot || '--'} 年（${raw.installation_date || '--'} 至 ${raw.warranty_expiry_date || '--'}）`
+          value: `${raw.warranty_years_snapshot || '--'} 年（${installDate} 至 ${expiryDate}）`
         }
       ],
       owner_rows: [
@@ -81,7 +93,7 @@ Page({
         { label: '车架号码', value: raw.vin_snapshot || '--' }
       ],
       install_rows: [
-        { label: '施工日期', value: raw.installation_date || '--' },
+        { label: '施工日期', value: installDate },
         { label: '质保录入单位', value: raw.store_name_snapshot || '--' }
       ]
     };
@@ -154,16 +166,6 @@ Page({
         console.error('[download cert]', err);
         wx.showToast({ title: '下载失败，请确认网络与域名配置', icon: 'none', duration: 2500 });
       }
-    });
-  },
-
-  /**
-   * 跳转报价页
-   */
-  goQuote() {
-    const modelCode = this.data.record.model_code || this.data.record.product_model_snapshot || '';
-    wx.navigateTo({
-      url: `/pages/owner/quote/index?model_code=${encodeURIComponent(modelCode)}`
     });
   }
 });
