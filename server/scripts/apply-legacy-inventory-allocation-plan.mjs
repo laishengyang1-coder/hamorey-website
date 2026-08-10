@@ -58,6 +58,9 @@ function readPlan(filePath) {
     if (!allocation?.code || !allocation?.targetOrgId) {
       fail(`Invalid allocation in plan: ${JSON.stringify(allocation)}`);
     }
+    if (allocation.allowUsedTransfer != null && typeof allocation.allowUsedTransfer !== 'boolean') {
+      fail(`allowUsedTransfer must be boolean for ${allocation.code}.`);
+    }
     if (allocationCodes.has(allocation.code)) fail(`Duplicate warranty code in plan: ${allocation.code}`);
     allocationCodes.add(allocation.code);
   }
@@ -175,14 +178,20 @@ async function evaluateAllocation(connection, allocation, plannedById, { lock })
     [code.id],
   );
   const actualUsed = Number(usageRows[0]?.actual_used_count || 0);
+  const usedCount = Number(code.used_count || 0);
+  const usageLimit = Number(code.usage_limit || 1);
   if (code.owner_org_id === allocation.targetOrgId) {
     return { type: 'alreadyAligned', code: allocation.code, warrantyCodeId: code.id };
   }
   if (!mutableStatuses.has(code.status)) {
     return { type: 'lockedStatus', code: allocation.code, status: code.status, actualUsed };
   }
-  if (actualUsed > 0 || Number(code.used_count) > 0) {
-    return { type: 'usedCode', code: allocation.code, status: code.status, actualUsed, usedCount: Number(code.used_count) };
+  const hasUsage = actualUsed > 0 || usedCount > 0;
+  const canMovePartialUsed = allocation.allowUsedTransfer === true
+    && code.status === 'partial_used'
+    && Math.max(actualUsed, usedCount) < usageLimit;
+  if (hasUsage && !canMovePartialUsed) {
+    return { type: 'usedCode', code: allocation.code, status: code.status, actualUsed, usedCount, usageLimit };
   }
   return {
     type: 'move',
@@ -190,12 +199,18 @@ async function evaluateAllocation(connection, allocation, plannedById, { lock })
     warrantyCodeId: code.id,
     fromOrgId: code.owner_org_id,
     targetOrgId: allocation.targetOrgId,
+    preserveUsage: hasUsage,
+    actualUsed,
+    usedCount,
+    usageLimit,
   };
 }
 
 function emptySummary() {
   return {
     moved: 0,
+    movedUnused: 0,
+    movedPartialUsed: 0,
     alreadyAligned: 0,
     missingCode: 0,
     usedCode: 0,
@@ -209,6 +224,8 @@ function emptySummary() {
 function recordResult(summary, result) {
   if (result.type === 'move') {
     summary.moved += 1;
+    if (result.preserveUsage) summary.movedPartialUsed += 1;
+    else summary.movedUnused += 1;
   } else {
     summary[result.type] += 1;
   }
@@ -240,9 +257,13 @@ async function main() {
         recordResult(summary, result);
         if (!apply || result.type !== 'move') continue;
 
-        const reason = `同步旧系统库存划拨 ${allocation.legacyAllocationId || ''} ${allocation.legacyAllocatedAt || ''}`.trim();
+        const usageNote = result.preserveUsage ? '（保留已用次数）' : '';
+        const reason = `同步旧系统库存划拨${usageNote} ${allocation.legacyAllocationId || ''} ${allocation.legacyAllocatedAt || ''}`.trim();
         await connection.execute(
-          `UPDATE warranty_codes SET owner_org_id = ?, status = 'in_stock', used_count = 0 WHERE id = ?`,
+          `UPDATE warranty_codes
+           SET owner_org_id = ?,
+               status = CASE WHEN status = 'unallocated' THEN 'in_stock' ELSE status END
+           WHERE id = ?`,
           [result.targetOrgId, result.warrantyCodeId],
         );
         await connection.execute(

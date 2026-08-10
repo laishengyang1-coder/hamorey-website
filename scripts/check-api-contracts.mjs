@@ -101,6 +101,8 @@ const requiredContracts = [
   ['migrations/phase3_hardening.sql', 'trg_warranty_audit_matches_status'],
   ['miniprogram/utils/api.js', 'downloadProtectedPhoto'],
   ['miniprogram/pages/store/edit/index.js', 'display_url'],
+  ['miniprogram/config/runtime.js', "new Set(['develop', 'trial', 'release'])"],
+  ['miniprogram/config/runtime.js', 'https://api.hemoppf.cn/api'],
   ['src/shared/components/ProtectedImage.tsx', 'fetchProtectedAsset'],
   ['package.json', 'npm run test:contracts && tsc'],
 ];
@@ -110,6 +112,11 @@ for (const [file, marker] of requiredContracts) {
   if (!existsSync(path) || !readFileSync(path, 'utf8').includes(marker)) {
     failures.push(`${file}: missing required contract marker ${marker}`);
   }
+}
+
+const miniProgramRuntime = readFileSync(join(miniRoot, 'config/runtime.js'), 'utf8');
+if (/https?:\/\/\d{1,3}(?:\.\d{1,3}){3}/.test(miniProgramRuntime)) {
+  failures.push('miniprogram/config/runtime.js: mini-program API must not use a raw IP address');
 }
 
 for (const directory of [join(root, 'src'), miniRoot]) {

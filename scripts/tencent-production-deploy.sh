@@ -224,6 +224,13 @@ CRON
   sudo chown ubuntu:ubuntu /var/log/hamorey-backup.log
 }
 
+install_github_deploy_gateway() {
+  sudo install -d -m 755 -o root -g root /opt/hamorey/bin
+  sudo install -m 755 -o root -g root \
+    "$REPO_DIR/scripts/tencent-github-deploy-gateway.sh" \
+    /opt/hamorey/bin/github-deploy
+}
+
 if [ ! -f "$API_ENV_FILE" ]; then
   echo "Missing $API_ENV_FILE"
   echo "Create it from server/.env.example after TencentDB MySQL and COS are ready."
@@ -240,18 +247,28 @@ sudo chown -R ubuntu:ubuntu /opt/hamorey /var/log/hamorey
 
 if [ "${SKIP_GIT_FETCH:-false}" = "true" ]; then
   cd "$REPO_DIR"
-  echo "Skipping GitHub fetch; deploying the checked-out commit $(git rev-parse HEAD)."
+  if [ -n "${DEPLOY_COMMIT_OVERRIDE:-}" ]; then
+    DEPLOY_COMMIT="$DEPLOY_COMMIT_OVERRIDE"
+  elif [ -d "$REPO_DIR/.git" ]; then
+    DEPLOY_COMMIT="$(git rev-parse HEAD)"
+  else
+    echo "DEPLOY_COMMIT_OVERRIDE is required when deploying an uploaded release without .git metadata."
+    exit 1
+  fi
+  echo "Skipping GitHub fetch; deploying uploaded commit $DEPLOY_COMMIT."
 elif [ ! -d "$REPO_DIR/.git" ]; then
   retry_network_command "GitHub clone" timeout 120s git -c http.version=HTTP/1.1 clone "$REPO_URL" "$REPO_DIR"
+  cd "$REPO_DIR"
+  DEPLOY_COMMIT="$(git rev-parse HEAD)"
 else
   cd "$REPO_DIR"
   git config --local http.version HTTP/1.1
   retry_network_command "GitHub fetch" timeout 120s git -c http.version=HTTP/1.1 fetch --all --prune
   git reset --hard origin/main
+  DEPLOY_COMMIT="$(git rev-parse HEAD)"
 fi
 
 cd "$REPO_DIR"
-DEPLOY_COMMIT="$(git rev-parse HEAD)"
 echo "Deploying commit $DEPLOY_COMMIT"
 npm config set registry https://registry.npmmirror.com
 install_build_dependencies true
@@ -269,6 +286,7 @@ timeout 5m npm run build
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
 
+install_github_deploy_gateway
 install_database_backup_job
 
 if pm2 describe hamorey-api >/dev/null 2>&1; then

@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import process from 'node:process';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
@@ -7,11 +8,9 @@ import mysql from 'mysql2/promise';
 const args = process.argv.slice(2);
 const sourcePath = args.find((arg) => !arg.startsWith('--'));
 const apply = args.includes('--apply');
-const BATCH_ID = 'legacy-warranty-delta-20260715-20260803';
-const BATCH_NAME = '旧小程序后台质保增量（2026-07-15 至 2026-08-03）';
 
 if (!sourcePath) {
-  console.error('Usage: node scripts/import-legacy-warranty-delta.mjs <legacy-export.json> [--apply]');
+  console.error('Usage: node scripts/import-legacy-warranty-delta.mjs <legacy-export.json> [--apply] [--batch-id=<id>] [--batch-name=<name>]');
   process.exit(1);
 }
 
@@ -90,6 +89,32 @@ function sourceOrders(source) {
   return orders;
 }
 
+function optionValue(name) {
+  const prefix = `--${name}=`;
+  return args.find((arg) => arg.startsWith(prefix))?.slice(prefix.length).trim() || null;
+}
+
+function batchMetadata(sourceText, orders) {
+  const sourceDates = orders
+    .map((order) => cleanDate(order.createTime))
+    .filter(Boolean)
+    .map((dateTime) => dateTime.slice(0, 10))
+    .sort();
+  const sourceFrom = sourceDates[0] || 'unknown';
+  const sourceTo = sourceDates.at(-1) || sourceFrom;
+  const compactRange = `${sourceFrom.replaceAll('-', '')}-${sourceTo.replaceAll('-', '')}`;
+  const sourceHash = crypto.createHash('sha256').update(sourceText).digest('hex').slice(0, 12);
+
+  return {
+    id: optionValue('batch-id') || `legacy-warranty-delta-${compactRange}-${sourceHash}`,
+    name: optionValue('batch-name') || `旧小程序后台质保增量（${sourceFrom} 至 ${sourceTo}）`,
+    fileName: basename(sourcePath),
+    sourceFrom,
+    sourceTo,
+    sourceHash,
+  };
+}
+
 function sourceSnapshot(order, item, modelCode) {
   return JSON.stringify({
     source: 'legacy-mini-program',
@@ -133,8 +158,10 @@ async function rowsByIn(connection, sqlPrefix, values) {
 }
 
 async function main() {
-  const source = JSON.parse(readFileSync(sourcePath, 'utf8'));
+  const sourceText = readFileSync(sourcePath, 'utf8');
+  const source = JSON.parse(sourceText);
   const orders = sourceOrders(source);
+  const batch = batchMetadata(sourceText, orders);
   const connection = await mysql.createConnection({
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT || 3306),
@@ -357,6 +384,7 @@ async function main() {
 
     const report = {
       mode: apply ? 'apply' : 'dry-run',
+      batch,
       sourceOrders: orders.length,
       sourceItems: plans.length,
       targetExistingRecordsSkipped: plans.filter((plan) => plan.existingRecordId).length,
@@ -391,7 +419,7 @@ async function main() {
         `INSERT INTO import_batches (id, file_name, batch_name, total_rows, success_rows, error_rows, status, created_at)
          VALUES (?, ?, ?, ?, ?, 0, 'imported', ?)
          ON DUPLICATE KEY UPDATE total_rows = VALUES(total_rows), success_rows = VALUES(success_rows), error_rows = VALUES(error_rows), status = 'imported'`,
-        [BATCH_ID, 'legacy-warranty-delta-20260715-20260803.json', BATCH_NAME, plans.length, report.targetNewRecords, now],
+        [batch.id, batch.fileName, batch.name, plans.length, report.targetNewRecords, now],
       );
       for (const store of prospectiveStores.values()) {
         await connection.query(
@@ -420,7 +448,7 @@ async function main() {
           await connection.query(
             `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'in_stock', ?)`,
-            [code.id, code.code, code.product_model_id, plan.productLabel || plan.model.display_name, BATCH_NAME, BATCH_ID, code.owner_org_id, code.usage_limit, now],
+            [code.id, code.code, code.product_model_id, plan.productLabel || plan.model.display_name, batch.name, batch.id, code.owner_org_id, code.usage_limit, now],
           );
           await connection.query(
             `INSERT IGNORE INTO code_allocations (id, warranty_code_id, from_org_id, to_org_id, action, reason, created_at)

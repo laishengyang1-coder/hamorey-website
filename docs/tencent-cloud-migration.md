@@ -31,7 +31,8 @@ GitHub 中的 Cloudflare Pages Actions 工作流当前为手动禁用状态；�
 
 腾讯云自动部署使用一把受限 SSH 密钥。该密钥只能执行
 `/opt/hamorey/bin/github-deploy`，不能打开普通 SSH shell、转发端口或执行其他命令。
-部署脚本会锁定并发发布、同步 GitHub `main`、完成构建、重启 API、更新 Nginx，
+GitHub Actions 会将当前提交打包后通过该受限入口传入服务器，服务器不再自行连接 GitHub。
+部署脚本会锁定并发发布、完成构建、重启 API、更新 Nginx，
 最后验证部署提交号以及 API、MySQL、COS 健康状态。
 
 自动部署工作流所需的 GitHub Actions Secrets：

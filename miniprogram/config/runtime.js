@@ -1,13 +1,13 @@
 /**
  * 小程序运行环境地址。
- * 开发版继续访问当前腾讯云 IP，方便本地联调；
- * 体验版和正式发布版统一使用 HTTPS 正式 API，满足微信真机的合法域名校验。
+ * 开发版、体验版和正式版统一使用 HTTPS 正式 API。
+ * 微信真机不会接受裸 IP 作为合法 request/upload/download 域名。
  */
 
-const INTERNAL_PREVIEW_API_BASE_URL = 'http://134.175.187.12/api';
 const PRODUCTION_API_BASE_URL = 'https://api.hemoppf.cn/api';
+const INTERNAL_PREVIEW_API_BASE_URL = PRODUCTION_API_BASE_URL;
 const ENABLE_FORMAL_RELEASE_API = true;
-const PRODUCTION_API_ENVIRONMENTS = new Set(['trial', 'release']);
+const PRODUCTION_API_ENVIRONMENTS = new Set(['develop', 'trial', 'release']);
 
 function getMiniProgramEnvVersion() {
   try {
