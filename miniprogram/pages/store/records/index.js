@@ -5,6 +5,26 @@
 const api = require('../../../utils/api');
 const auth = require('../../../utils/auth');
 
+/** ISO 日期长串 → YYYY-MM-DD */
+function fmtDate(s) {
+  if (!s) return '--';
+  const str = String(s);
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str.slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** 列表记录日期格式化 */
+function fmtRecord(r) {
+  if (!r || typeof r !== 'object') return r;
+  return {
+    ...r,
+    installation_date: fmtDate(r.installation_date),
+    warranty_expiry_date: fmtDate(r.warranty_expiry_date)
+  };
+}
+
 const STATUS_MAP = {
   pending: '待审核',
   active: '已通过',
@@ -65,7 +85,7 @@ Page({
       return;
     }
 
-    const items = res.data.items || [];
+    const items = (res.data.items || []).map(fmtRecord);
     const total = res.data.total || 0;
 
     this.setData({
@@ -97,7 +117,7 @@ Page({
     this.setData({ loadingMore: false });
 
     if (res.ok) {
-      const items = res.data.items || [];
+      const items = (res.data.items || []).map(fmtRecord);
       const total = res.data.total || 0;
       const records = [...this.data.records, ...items];
 

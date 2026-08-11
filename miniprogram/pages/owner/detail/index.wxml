@@ -35,7 +35,7 @@
           </view>
           <view class="product-cert">
             <view class="product-cert-label">质保编码</view>
-            <view class="product-cert-no">{{record.certificate_no || record.id}}</view>
+            <view class="product-cert-no">{{record.certificate_no || record.warranty_code || '--'}}</view>
           </view>
         </view>
 

@@ -43,7 +43,14 @@ export default function ReviewDetailPage() {
     if (!id) return;
     setLoading(true);
     apiRequest<ReviewDetail>(`/admin/reviews/${id}`)
-      .then(setDetail)
+      .then((d) => {
+        if (d?.record) {
+          const fmt = (v: string | undefined | null) => (v ? String(v).slice(0, 10) : v || '-');
+          d.record.installation_date = fmt(d.record.installation_date);
+          d.record.warranty_expiry_date = fmt(d.record.warranty_expiry_date);
+        }
+        setDetail(d);
+      })
       .catch((err) => setError(err instanceof Error ? err.message : '加载失败'))
       .finally(() => setLoading(false));
   }, [id]);

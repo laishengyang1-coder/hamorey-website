@@ -94,8 +94,8 @@ export default function WarrantyResultPage() {
                           <StatusBadge status={record.status} />
                         </div>
                         <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
-                          <div><span className="text-gray-400">施工日期</span><p className="text-gray-700">{record.installation_date}</p></div>
-                          <div><span className="text-gray-400">到期日期</span><p className="text-gray-700">{record.warranty_expiry_date || '-'}</p></div>
+                          <div><span className="text-gray-400">施工日期</span><p className="text-gray-700">{(record.installation_date || '').slice(0, 10)}</p></div>
+                          <div><span className="text-gray-400">到期日期</span><p className="text-gray-700">{(record.warranty_expiry_date || '-').slice(0, 10)}</p></div>
                           <div><span className="text-gray-400">质保年限</span><p className="text-gray-700">{record.warranty_years} 年</p></div>
                           <div><span className="text-gray-400">质保价格</span><p className="text-gray-700">{formatWarrantyPrice(record.warranty_price_cents)}</p></div>
                           <div><span className="text-gray-400">施工门店</span><p className="text-gray-700">{record.store_name}</p></div>

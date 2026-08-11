@@ -11,6 +11,15 @@ function formatWarrantyPrice(cents) {
   return `¥${yuan}`;
 }
 
+function fmtDate(s) {
+  if (!s) return '--';
+  const str = String(s);
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str.slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 Page({
   data: {
     keyword: '',
@@ -62,7 +71,9 @@ Page({
 
     const records = (res.data.records || []).map((record) => ({
       ...record,
-      warranty_price_text: formatWarrantyPrice(record.warranty_price_cents)
+      warranty_price_text: formatWarrantyPrice(record.warranty_price_cents),
+      installation_date: fmtDate(record.installation_date),
+      warranty_expiry_date: fmtDate(record.warranty_expiry_date)
     }));
 
     if (records.length === 0) {

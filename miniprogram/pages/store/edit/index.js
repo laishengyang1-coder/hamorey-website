@@ -51,6 +51,17 @@ Page({
     }
 
     const record = res.data.record || {};
+    // 日期格式化：ISO 长串 → YYYY-MM-DD（picker 与展示均需要）
+    const fmtDate = (s) => {
+      if (!s) return s || '';
+      const str = String(s);
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return str.slice(0, 10);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    record.installation_date = fmtDate(record.installation_date);
+    record.warranty_expiry_date = fmtDate(record.warranty_expiry_date);
     const sourcePhotos = res.data.photos || [];
     const photos = await Promise.all(sourcePhotos.map(async (photo) => {
       const download = await api.downloadProtectedPhoto(photo.file_key);
