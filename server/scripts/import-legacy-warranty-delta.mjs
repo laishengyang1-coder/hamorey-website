@@ -377,6 +377,9 @@ async function main() {
     }
 
     const activeNewPlans = plans.filter((plan) => plan.status === 'active' && !plan.existingRecordId);
+    const storesToCreate = new Map(plans
+      .filter((plan) => !plan.existingRecordId && plan.store?.isNew)
+      .map((plan) => [plan.store.id, plan.store]));
     const newCodeUsage = new Map();
     for (const plan of activeNewPlans) {
       newCodeUsage.set(plan.reelNumber, (newCodeUsage.get(plan.reelNumber) || 0) + 1);
@@ -405,7 +408,7 @@ async function main() {
       unusedWarrantyCodesReassignedToLegacyActualStore: [...new Set(plans
         .filter((plan) => plan.code.reassignUnusedLegacyCode)
         .map((plan) => plan.reelNumber))].length,
-      newlyCreatedStores: prospectiveStores.size,
+      newlyCreatedStores: storesToCreate.size,
       newlyCreatedCustomers: prospectiveCustomers.size,
       newlyCreatedVehicles: prospectiveVehicles.size,
       missingPlatePlaceholders: missingPlateCount,
@@ -428,7 +431,7 @@ async function main() {
          ON DUPLICATE KEY UPDATE total_rows = VALUES(total_rows), success_rows = VALUES(success_rows), error_rows = VALUES(error_rows), status = 'imported'`,
         [batch.id, batch.fileName, batch.name, plans.length, report.targetNewRecords, now],
       );
-      for (const store of prospectiveStores.values()) {
+      for (const store of storesToCreate.values()) {
         await connection.query(
           `INSERT IGNORE INTO organizations (id, code, type, parent_id, name, status, created_at, updated_at)
            VALUES (?, ?, 'STORE', ?, ?, 'active', ?, ?)`,

@@ -176,11 +176,20 @@ function inferCity(customer) {
 
 function latestInventoryRows(rows) {
   const selected = new Map();
+  const latestUsed = new Map();
   const duplicates = [];
   for (const row of rows) {
-    if (Number(row.status) !== CURRENT_INVENTORY_STATUS || !RELEVANT_BRANDS.has(productBrand(row))) continue;
+    if (!RELEVANT_BRANDS.has(productBrand(row))) continue;
     const code = string(row.reelNumber);
     if (!code) continue;
+    if (Number(row.status) === 3 && Number(row.warrantyTimes || 0) > 0) {
+      const previous = latestUsed.get(code);
+      if (!previous || (cleanDate(row.updateTime) || '') > (cleanDate(previous.updateTime) || '')) {
+        latestUsed.set(code, row);
+      }
+      continue;
+    }
+    if (Number(row.status) !== CURRENT_INVENTORY_STATUS) continue;
     const previous = selected.get(code);
     if (!previous) {
       selected.set(code, row);
@@ -198,7 +207,20 @@ function latestInventoryRows(rows) {
     duplicate.keptCustomer = string(kept.customer?.customerName);
     duplicate.ignoredCustomer = string(ignored.customer?.customerName);
   }
-  return { rows: [...selected.values()], duplicates };
+  const staleActive = [];
+  for (const [code, activeRow] of selected) {
+    const usedRow = latestUsed.get(code);
+    if (!usedRow || (cleanDate(usedRow.updateTime) || '') <= (cleanDate(activeRow.updateTime) || '')) continue;
+    selected.set(code, usedRow);
+    staleActive.push({
+      code,
+      staleOwner: string(activeRow.customer?.customerName),
+      staleUpdatedAt: cleanDate(activeRow.updateTime),
+      warrantyOwner: string(usedRow.customer?.customerName),
+      warrantyUpdatedAt: cleanDate(usedRow.updateTime),
+    });
+  }
+  return { rows: [...selected.values()], duplicates, staleActive };
 }
 
 function summaryTemplate(snapshotSha256) {
@@ -218,6 +240,7 @@ function summaryTemplate(snapshotSha256) {
       movedUnusedCodes: 0,
       alreadyAligned: 0,
       blockedUsedOrLocked: 0,
+      staleActiveRowsSupersededByWarranty: 0,
     },
     allocations: {
       sourceDocuments: 0,
@@ -238,6 +261,7 @@ function summaryTemplate(snapshotSha256) {
       blockedCodes: [],
       unresolvedAllocations: [],
       duplicateInventory: [],
+      staleActiveInventory: [],
     },
   };
 }
@@ -467,11 +491,13 @@ async function main() {
       return targetOrgByLegacyId.get(sourceId) || orgById.get(sourceId) || null;
     }
 
-    const { rows: activeInventoryRows, duplicates } = latestInventoryRows(inventoryExport);
+    const { rows: activeInventoryRows, duplicates, staleActive } = latestInventoryRows(inventoryExport);
     report.inventory.activeRelevantRows = activeInventoryRows.length + duplicates.length;
     report.inventory.uniqueCodes = activeInventoryRows.length;
     report.inventory.duplicateRowsIgnored = duplicates.length;
+    report.inventory.staleActiveRowsSupersededByWarranty = staleActive.length;
     report.samples.duplicateInventory = duplicates.slice(0, 10);
+    report.samples.staleActiveInventory = staleActive.slice(0, 20);
 
     const inventoryCodes = activeInventoryRows.map((row) => string(row.reelNumber));
     const [existingCodeRows] = inventoryCodes.length
