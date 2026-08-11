@@ -35,6 +35,9 @@ const modelAliases = [
   [/和真\s*15/i, 'WF-HZ15'],
   [/和真\s*35/i, 'WF-HZ35'],
   [/和真\s*75/i, 'WF-HZ75'],
+  [/和光\s*70/i, 'WF-HG70'],
+  [/和盾\s*70/i, 'WF-HD70'],
+  [/WH[\s.-]*7\.?5|透明车衣\s*WH[\s.-]*7\.?5/i, 'WH-7.5'],
   [/和粹|全彩车衣|和膜和彩|黑金.*AMG/i, 'QCCY'],
 ];
 
@@ -177,7 +180,9 @@ async function main() {
       "SELECT id, code, type, parent_id, name FROM organizations WHERE type IN ('HQ', 'PROVINCE', 'STORE')",
     );
     const [models] = await connection.query(
-      'SELECT id, model_code, display_name, warranty_years, usage_limit FROM product_models WHERE status = \'active\'',
+      `SELECT id, model_code, display_name, warranty_years, usage_limit
+       FROM product_models
+       WHERE status = 'active' OR model_code = 'WH-7.5'`,
     );
     const [pointsRules] = await connection.query(
       "SELECT product_model_id, points, effective_from, effective_to FROM points_rules WHERE status = 'active'",
