@@ -35,7 +35,7 @@ const COLUMNS: Column[] = [
   { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot' },
   { key: 'model_name', title: '型号', dataIndex: 'model_name' },
   { key: 'store_name', title: '门店', dataIndex: 'store_name' },
-  { key: 'installation_date', title: '施工日期', dataIndex: 'installation_date' },
+  { key: 'installation_date', title: '施工日期', dataIndex: 'installation_date', render: (v) => String(v || '').slice(0, 10) || '-' },
   { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={v as string} /> },
 ];
 
