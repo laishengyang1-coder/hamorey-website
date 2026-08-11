@@ -4,7 +4,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryAll, queryFirst } from './_lib';
+import { queryAll, queryFirst, sanitizeLegacyValue } from './_lib';
 import { ok, error } from './_middleware';
 
 interface Env {
@@ -92,15 +92,15 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
   }
 
   // 聚合车辆信息
-  const vehicleMap = new Map<string, { plate_no: string; vin: string | null; brand: string; model: string; record_count: number }>();
+  const vehicleMap = new Map<string, { plate_no: string | null; vin: string | null; brand: string | null; model: string | null; record_count: number }>();
   for (const r of records) {
     const key = `${r.plate_no_snapshot}_${r.vin_snapshot || ''}`;
     if (!vehicleMap.has(key)) {
       vehicleMap.set(key, {
-        plate_no: r.plate_no_snapshot,
+        plate_no: sanitizeLegacyValue(r.plate_no_snapshot),
         vin: r.vin_snapshot,
-        brand: r.vehicle_brand_snapshot,
-        model: r.vehicle_model_snapshot,
+        brand: sanitizeLegacyValue(r.vehicle_brand_snapshot),
+        model: sanitizeLegacyValue(r.vehicle_model_snapshot),
         record_count: 0,
       });
     }
@@ -133,11 +133,11 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     id: r.id,
     certificate_no: r.certificate_no,
     warranty_code: r.warranty_code,
-    plate_no_snapshot: r.plate_no_snapshot,
-    customer_name_snapshot: r.customer_name_snapshot,
+    plate_no_snapshot: sanitizeLegacyValue(r.plate_no_snapshot),
+    customer_name_snapshot: sanitizeLegacyValue(r.customer_name_snapshot),
     vin_snapshot: r.vin_snapshot,
-    vehicle_brand_snapshot: r.vehicle_brand_snapshot,
-    vehicle_model_snapshot: r.vehicle_model_snapshot,
+    vehicle_brand_snapshot: sanitizeLegacyValue(r.vehicle_brand_snapshot),
+    vehicle_model_snapshot: sanitizeLegacyValue(r.vehicle_model_snapshot),
     product_name: r.product_name_snapshot,
     product_model: r.product_model_snapshot,
     warranty_price_cents: r.warranty_price_cents,

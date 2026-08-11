@@ -10,6 +10,18 @@ export function generateId(): string {
 }
 
 /**
+ * 清洗旧系统迁移的占位符值（如 "旧系统未录入品牌"、"旧系统未录入-xxx"）。
+ * 返回 '--' 表示该字段旧系统未录入有效数据，避免把内部占位符直接展示给用户。
+ */
+export function sanitizeLegacyValue(value: string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  const v = String(value).trim();
+  if (!v) return v;
+  if (v.startsWith('旧系统未录入')) return '--';
+  return v;
+}
+
+/**
  * 执行单条查询并返回第一行
  */
 export async function queryFirst<T = unknown>(
