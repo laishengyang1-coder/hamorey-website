@@ -303,6 +303,9 @@ async function main() {
       }
       plan.store = store;
       plan.provinceOrgId = store.province_id || (orgById.get(store.parent_id)?.type === 'PROVINCE' ? store.parent_id : null);
+      plan.existingRecordId = existingRecordIds.has(plan.recordId)
+        ? plan.recordId
+        : existingRecordByCodeAndTime.get(`${plan.reelNumber}:${plan.createdAt}`) || null;
       const previousStore = sourceCodeStore.get(plan.reelNumber);
       if (previousStore && previousStore !== store.id) {
         throw new Error(`Preflight failed: warranty code ${plan.reelNumber} belongs to multiple legacy stores.`);
@@ -318,7 +321,7 @@ async function main() {
         && code.owner_org_id
         && code.owner_org_id !== store.id
         && Number(code.used_count || 0) === 0;
-      if (code && (code.product_model_id !== plan.model.id || (code.owner_org_id && code.owner_org_id !== store.id && !isProvinceSelfStore && !canReassignUnusedCode))) {
+      if (!plan.existingRecordId && code && (code.product_model_id !== plan.model.id || (code.owner_org_id && code.owner_org_id !== store.id && !isProvinceSelfStore && !canReassignUnusedCode))) {
         throw new Error(`Preflight failed: target warranty code conflict for ${plan.reelNumber} (targetModel=${code.product_model_id}, sourceModel=${plan.model.id}, targetOwner=${code.owner_org_id || 'none'}, sourceOwner=${store.id}).`);
       }
       plan.code = code ? {
@@ -334,9 +337,6 @@ async function main() {
         used_count: 0,
         isNew: true,
       };
-      plan.existingRecordId = existingRecordIds.has(plan.recordId)
-        ? plan.recordId
-        : existingRecordByCodeAndTime.get(`${plan.reelNumber}:${plan.createdAt}`) || null;
     }
 
     const prospectiveCustomers = new Map();
