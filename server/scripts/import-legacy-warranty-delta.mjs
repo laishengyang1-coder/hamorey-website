@@ -306,11 +306,13 @@ async function main() {
       plan.existingRecordId = existingRecordIds.has(plan.recordId)
         ? plan.recordId
         : existingRecordByCodeAndTime.get(`${plan.reelNumber}:${plan.createdAt}`) || null;
-      const previousStore = sourceCodeStore.get(plan.reelNumber);
-      if (previousStore && previousStore !== store.id) {
-        throw new Error(`Preflight failed: warranty code ${plan.reelNumber} belongs to multiple legacy stores.`);
+      if (!plan.existingRecordId) {
+        const previousStore = sourceCodeStore.get(plan.reelNumber);
+        if (previousStore && previousStore !== store.id) {
+          throw new Error(`Preflight failed: warranty code ${plan.reelNumber} belongs to multiple legacy stores.`);
+        }
+        sourceCodeStore.set(plan.reelNumber, store.id);
       }
-      sourceCodeStore.set(plan.reelNumber, store.id);
       const code = existingCodes.get(plan.reelNumber);
       const owner = code ? orgById.get(code.owner_org_id) : null;
       const isProvinceSelfStore = code
