@@ -3,7 +3,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryAll, sanitizeLegacyValue, sanitizeLegacyProductName } from '../_lib';
+import { queryAll, sanitizeLegacyValue, sanitizeLegacyProductName, fmtDate } from '../_lib';
 import { ok, error } from '../_middleware';
 
 interface Env {
@@ -94,6 +94,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       vehicle_model_snapshot: sanitizeLegacyValue(r.vehicle_model_snapshot),
       product_name_snapshot: sanitizeLegacyProductName(r.product_name_snapshot),
       product_model_snapshot: sanitizeLegacyProductName(r.product_model_snapshot),
+      installation_date: fmtDate(r.installation_date),
+      warranty_expiry_date: fmtDate(r.warranty_expiry_date),
       part_prices: r.product_model_id ? partPriceMap.get(r.product_model_id) || [] : [],
     }));
 

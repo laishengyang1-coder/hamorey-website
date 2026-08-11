@@ -4,7 +4,7 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryAll, queryFirst, sanitizeLegacyValue, sanitizeLegacyProductName } from './_lib';
+import { queryAll, queryFirst, sanitizeLegacyValue, sanitizeLegacyProductName, fmtDate } from './_lib';
 import { ok, error } from './_middleware';
 
 interface Env {
@@ -141,8 +141,8 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     product_name: sanitizeLegacyProductName(r.product_name_snapshot),
     product_model: sanitizeLegacyProductName(r.product_model_snapshot),
     warranty_price_cents: r.warranty_price_cents,
-    installation_date: r.installation_date,
-    warranty_expiry_date: r.warranty_expiry_date,
+    installation_date: fmtDate(r.installation_date),
+    warranty_expiry_date: fmtDate(r.warranty_expiry_date),
     warranty_years: r.warranty_years_snapshot,
     status: r.status,
     store_name: r.store_name_snapshot,

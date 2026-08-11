@@ -10,6 +10,20 @@ export function generateId(): string {
 }
 
 /**
+ * ISO 日期长串（如 2026-08-05T00:00:00.000Z）或 "2026-08-05 00:00:00"
+ * 统一格式化为 YYYY-MM-DD；非法输入原样返回。
+ */
+export function fmtDate(value: string | null | undefined): string | null | undefined {
+  if (value === null || value === undefined || value === '') return value;
+  const v = String(value);
+  const m = v.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return v;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
  * 清洗旧系统迁移的占位符值（如 "旧系统未录入品牌"、"旧系统未录入-xxx"）。
  * 返回 '--' 表示该字段旧系统未录入有效数据，避免把内部占位符直接展示给用户。
  */
