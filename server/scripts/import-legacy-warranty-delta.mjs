@@ -215,7 +215,10 @@ async function main() {
       sourceStoreNames.add(storeName);
       sourcePhones.add(phone);
       for (const item of items) {
-        const reelNumber = string(item.reelNumber);
+        // Warranty codes are case-insensitive business identifiers. Normalize
+        // them before deduplication so legacy casing drift cannot create a
+        // second inventory item or warranty record.
+        const reelNumber = string(item.reelNumber).toUpperCase();
         const modelCode = modelCodeFor(item);
         const model = modelsByCode.get(modelCode);
         const recordId = stableId('legacy-warranty', `${order.id}:${item.id}`);
