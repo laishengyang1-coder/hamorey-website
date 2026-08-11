@@ -240,6 +240,7 @@ function summaryTemplate(snapshotSha256) {
       movedUnusedCodes: 0,
       alreadyAligned: 0,
       blockedUsedOrLocked: 0,
+      protectedUsedOwnerMismatch: 0,
       staleActiveRowsSupersededByWarranty: 0,
     },
     allocations: {
@@ -259,6 +260,7 @@ function summaryTemplate(snapshotSha256) {
       movedCodes: [],
       deferredCodes: [],
       blockedCodes: [],
+      protectedCodes: [],
       unresolvedAllocations: [],
       duplicateInventory: [],
       staleActiveInventory: [],
@@ -558,6 +560,20 @@ async function main() {
       const usedCount = Number(existing.used_count || 0);
       const recordCount = Number(existing.warranty_record_count || 0);
       if (existing.status !== 'in_stock' || usedCount !== 0 || recordCount !== 0) {
+        if (Number(row.status) === 3 && Number(row.warrantyTimes || 0) > 0) {
+          report.inventory.protectedUsedOwnerMismatch += 1;
+          if (report.samples.protectedCodes.length < 20) {
+            report.samples.protectedCodes.push({
+              code,
+              status: existing.status,
+              usedCount,
+              warrantyRecords: recordCount,
+              preservedOwnerOrgId: existing.owner_org_id,
+              legacyUsedRowOwner: targetOwner.name,
+            });
+          }
+          continue;
+        }
         blocked.push({
           code,
           reason: 'used-or-locked-code-owner-conflict',
