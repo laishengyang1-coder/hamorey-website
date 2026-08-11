@@ -22,6 +22,18 @@ export function sanitizeLegacyValue(value: string | null | undefined): string | 
 }
 
 /**
+ * 清洗旧系统迁移的产品名快照：去掉 "和膜"/"和膜和彩" 前缀，避免
+ * "和膜 和兴 和兴HX8" 这类重复拼接的乱码直出。返回空则调用方自行兜底。
+ */
+export function sanitizeLegacyProductName(value: string | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  let v = String(value).trim();
+  if (!v) return v;
+  v = v.replace(/^和膜和彩\s*/, '').replace(/^和膜\s*/, '');
+  return v;
+}
+
+/**
  * 执行单条查询并返回第一行
  */
 export async function queryFirst<T = unknown>(
