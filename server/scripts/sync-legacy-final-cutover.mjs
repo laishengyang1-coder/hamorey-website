@@ -44,6 +44,11 @@ if (missingEnv.length) {
 const LEGACY_ROOT_AUTH_CODE = '1000_1537';
 const LEGACY_ROOT_ID = 'da21fbb2-bc49-4883-9c5d-1e01793cb705';
 const HQ_ID = 'org-hq-001';
+const LEGACY_PARTY_ALIASES = new Map([
+  ['aee1f0b6-c074-45b6-9978-94be7c9fb466', '23719484-265a-48c9-9365-59dd91c93e60'],
+  ['88537727-1888-4609-88ec-8db9ccf7fee7', 'bf3ff2ef-f7e7-4a50-ae41-09b6620828dd'],
+  ['6e318c0c-5370-4c8e-90a1-d63918d7cba7', '53fcb048-df05-4fab-bb9b-f284faf44f1b'],
+]);
 const DEFAULT_PASSWORD = 'hemo123456';
 const CURRENT_INVENTORY_STATUS = 1;
 const RELEVANT_BRANDS = new Set(['和膜', '和膜和彩']);
@@ -457,6 +462,8 @@ async function main() {
       const sourceId = String(sourceParty?.id || '');
       if (!sourceId) return null;
       if (sourceId === LEGACY_ROOT_ID) return hq;
+      const aliasTargetId = LEGACY_PARTY_ALIASES.get(sourceId);
+      if (aliasTargetId) return orgById.get(aliasTargetId) || null;
       return targetOrgByLegacyId.get(sourceId) || orgById.get(sourceId) || null;
     }
 
