@@ -236,8 +236,8 @@ export async function fetchProtectedAsset(path: string): Promise<Blob> {
 }
 
 /** Upload a warranty photo to the same R2 bucket used by the mini program. */
-export async function uploadWarrantyPhoto(file: File): Promise<WarrantyPhotoUploadResult> {
-  const uploadTarget = await request<{ uploadUrl: string; fileKey: string }>('/store/upload-url', {
+export async function uploadWarrantyPhoto(file: File, uploadUrlPath = '/store/upload-url'): Promise<WarrantyPhotoUploadResult> {
+  const uploadTarget = await request<{ uploadUrl: string; fileKey: string }>(uploadUrlPath, {
     method: 'POST',
     body: JSON.stringify({ fileName: file.name, contentType: file.type }),
   });

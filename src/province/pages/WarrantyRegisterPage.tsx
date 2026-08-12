@@ -1,5 +1,6 @@
 // ============================================================
-// WarrantyRegistrationPage — 门店质保登记（6步流程）
+// WarrantyRegisterPage — 省代代下属门店登记质保（7步流程）
+// 省代不能给自己上质保；须先选择下属门店，质保码可从省代库存或门店库存中选
 // ============================================================
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -9,7 +10,7 @@ import { PageHeader } from '../../shared/components/PageHeader';
 import { StepWizard } from '../../shared/components/StepWizard';
 
 const STEPS = [
-  { key: 'code', title: '质保码', description: '输入质保码' },
+  { key: 'store-code', title: '门店与质保码', description: '选择门店并输入质保码' },
   { key: 'customer', title: '车主信息', description: '填写车主资料' },
   { key: 'vehicle', title: '车辆信息', description: '填写车辆资料' },
   { key: 'date', title: '施工日期', description: '选择施工日期' },
@@ -17,7 +18,10 @@ const STEPS = [
   { key: 'confirm', title: '确认提交', description: '核对信息' },
 ];
 
-export default function WarrantyRegistrationPage() {
+interface StoreOption { id: string; name: string; code: string; }
+interface CodeOption { id: string; code: string; model_name: string; model_code: string; }
+
+export default function WarrantyRegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -26,50 +30,20 @@ export default function WarrantyRegistrationPage() {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoNames, setPhotoNames] = useState<string[]>([]);
 
+  // 门店列表
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  // 库存来源：'province' = 省代库存，'store' = 门店库存
+  const [stockSource, setStockSource] = useState<'province' | 'store'>('province');
+
   // 质保码自动补全
   const [codeQuery, setCodeQuery] = useState('');
-  const [codeOptions, setCodeOptions] = useState<Array<{ id: string; code: string; model_name: string; model_code: string }>>([]);
+  const [codeOptions, setCodeOptions] = useState<CodeOption[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  // 点击外部关闭下拉
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const searchCodes = useCallback(async (value: string) => {
-    if (!value.trim()) { setCodeOptions([]); setDropdownOpen(false); return; }
-    try {
-      const res = await apiRequest<{ items: typeof codeOptions }>(`/store/warranty-codes?q=${encodeURIComponent(value)}&limit=10`);
-      setCodeOptions(res.items || []);
-      setDropdownOpen(true);
-    } catch {
-      setCodeOptions([]);
-    }
-  }, []);
-
-  const handleCodeInput = (value: string) => {
-    setCodeQuery(value);
-    updateField('warranty_code', value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => searchCodes(value), 200);
-  };
-
-  const selectCode = (item: typeof codeOptions[0]) => {
-    setCodeQuery(item.code);
-    updateField('warranty_code', item.code);
-    setDropdownOpen(false);
-    setCodeOptions([]);
-  };
-
   const [form, setForm] = useState({
+    store_id: '',
     warranty_code: '',
     customer_name: '',
     customer_phone: '',
@@ -87,12 +61,73 @@ export default function WarrantyRegistrationPage() {
     setError('');
   };
 
+  // 点击外部关闭下拉
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // 加载下属门店
+  useEffect(() => {
+    apiRequest<{ items: StoreOption[] }>('/province/organizations')
+      .then((res) => setStores(res.items || []))
+      .catch(() => setStores([]));
+  }, []);
+
+  // 切换门店或库存来源时清空已选质保码
+  const handleStoreChange = (storeId: string) => {
+    updateField('store_id', storeId);
+    setCodeQuery('');
+    setCodeOptions([]);
+    updateField('warranty_code', '');
+  };
+  const handleSourceChange = (source: 'province' | 'store') => {
+    setStockSource(source);
+    setCodeQuery('');
+    setCodeOptions([]);
+    updateField('warranty_code', '');
+  };
+
+  const searchCodes = useCallback(async (value: string) => {
+    if (!form.store_id) { setError('请先选择门店'); return; }
+    if (!value.trim()) { setCodeOptions([]); setDropdownOpen(false); return; }
+    try {
+      const ownerId = stockSource === 'province' ? '' : form.store_id;
+      const res = await apiRequest<{ items: CodeOption[] }>(
+        `/province/warranty-codes?q=${encodeURIComponent(value)}&limit=10&owner_org_id=${encodeURIComponent(ownerId)}&transferable=1`
+      );
+      setCodeOptions(res.items || []);
+      setDropdownOpen(true);
+    } catch {
+      setCodeOptions([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.store_id, stockSource]);
+
+  const handleCodeInput = (value: string) => {
+    setCodeQuery(value);
+    updateField('warranty_code', value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => searchCodes(value), 200);
+  };
+
+  const selectCode = (item: CodeOption) => {
+    setCodeQuery(item.code);
+    updateField('warranty_code', item.code);
+    setDropdownOpen(false);
+    setCodeOptions([]);
+  };
+
   const handleSubmit = async () => {
-    // 客户端校验
     const required: Array<[keyof typeof form, string]> = [
-      ['warranty_code', '质保码'], ['customer_name', '车主姓名'], ['customer_phone', '联系电话'],
-      ['plate_no', '车牌号'], ['vehicle_brand', '车辆品牌'], ['vehicle_model', '车辆型号'],
-      ['installation_date', '施工日期'],
+      ['store_id', '门店'], ['warranty_code', '质保码'], ['customer_name', '车主姓名'],
+      ['customer_phone', '联系电话'], ['plate_no', '车牌号'], ['vehicle_brand', '车辆品牌'],
+      ['vehicle_model', '车辆型号'], ['installation_date', '施工日期'],
     ];
     for (const [field, label] of required) {
       if (!form[field]) { setError(`请填写「${label}」`); return; }
@@ -100,7 +135,7 @@ export default function WarrantyRegistrationPage() {
 
     setLoading(true); setError('');
     try {
-      await apiRequest('/store/warranty-records', {
+      await apiRequest('/province/warranty-records', {
         method: 'POST', body: JSON.stringify(form),
       });
       setSuccess('质保登记已提交，等待总部审核');
@@ -120,7 +155,7 @@ export default function WarrantyRegistrationPage() {
     setUploadingPhotos(true);
     setError('');
     try {
-      const uploaded = await Promise.all(files.map((f) => uploadWarrantyPhoto(f)));
+      const uploaded = await Promise.all(files.map((f) => uploadWarrantyPhoto(f, '/province/upload-url')));
       updateField('photo_keys', uploaded.map((item) => item.fileKey));
       setPhotoNames(files.map((file) => file.name));
     } catch (err) {
@@ -132,6 +167,19 @@ export default function WarrantyRegistrationPage() {
     }
   };
 
+  const resetForm = () => {
+    setSuccess('');
+    setCodeQuery('');
+    setCodeOptions([]);
+    setPhotoNames([]);
+    setStockSource('province');
+    setStep(0);
+    setForm({
+      store_id: '', warranty_code: '', customer_name: '', customer_phone: '', plate_no: '',
+      vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [],
+    });
+  };
+
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -141,8 +189,8 @@ export default function WarrantyRegistrationPage() {
         <h2 className="text-xl font-semibold text-gray-900">提交成功</h2>
         <p className="mt-2 text-gray-500">{success}</p>
         <div className="flex gap-3 mt-6">
-          <button onClick={() => navigate('/store/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
-          <button onClick={() => { setSuccess(''); setCodeQuery(''); setCodeOptions([]); setStep(0); setPhotoNames([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
+          <button onClick={() => navigate('/province/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
+          <button onClick={resetForm}
             className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">继续登记</button>
         </div>
       </div>
@@ -151,39 +199,73 @@ export default function WarrantyRegistrationPage() {
 
   return (
     <div>
-      <PageHeader title="录入质保" description="为车主登记质保信息" />
+      <PageHeader title="代门店登记质保" description="为下属门店的客户登记质保信息（省代不参与积分，仅可代下属门店提交）" />
       <StepWizard steps={STEPS} currentStep={step} onStepClick={setStep}>
         {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
         <div className="bg-white rounded-xl border border-gray-100 p-6 min-h-[300px]">
           {step === 0 && (
-            <div className="max-w-md" ref={dropdownRef}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">质保码 *</label>
-              <div className="relative">
-                <input
-                  value={codeQuery}
-                  onChange={(e) => handleCodeInput(e.target.value)}
-                  onFocus={() => { if (codeOptions.length > 0) setDropdownOpen(true); }}
+            <div className="max-w-md space-y-4">
+              {/* 选择门店 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">选择门店 *</label>
+                <select
+                  value={form.store_id}
+                  onChange={(e) => handleStoreChange(e.target.value)}
                   className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                  placeholder="输入字母或数字搜索质保码"
-                  autoComplete="off"
-                />
-                {dropdownOpen && codeOptions.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white rounded-lg border border-gray-100 shadow-lg max-h-56 overflow-y-auto">
-                    {codeOptions.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => selectCode(item)}
-                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#5C1A1A]/5 transition-colors border-b border-gray-50 last:border-0"
-                      >
-                        <span className="font-medium text-gray-900">{item.code}</span>
-                        <span className="ml-2 text-xs text-gray-400">{item.model_name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                >
+                  <option value="">请选择下属门店</option>
+                  {stores.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}（{s.code}）</option>
+                  ))}
+                </select>
               </div>
-              <p className="mt-2 text-xs text-gray-400">输入质保码后自动匹配门店库存中的可用质保码</p>
+
+              {/* 库存来源 + 质保码搜索 */}
+              {form.store_id && (
+                <div ref={dropdownRef}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">质保码来源</label>
+                  <div className="flex gap-2 mb-3">
+                    <button type="button" onClick={() => handleSourceChange('province')}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm ${stockSource === 'province' ? 'border-[#5C1A1A] bg-[#5C1A1A]/5 text-[#5C1A1A] font-medium' : 'border-gray-200 text-gray-600'}`}>
+                      省代库存
+                    </button>
+                    <button type="button" onClick={() => handleSourceChange('store')}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm ${stockSource === 'store' ? 'border-[#5C1A1A] bg-[#5C1A1A]/5 text-[#5C1A1A] font-medium' : 'border-gray-200 text-gray-600'}`}>
+                      门店库存
+                    </button>
+                  </div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-1">质保码 *</label>
+                  <div className="relative">
+                    <input
+                      value={codeQuery}
+                      onChange={(e) => handleCodeInput(e.target.value)}
+                      onFocus={() => { if (codeOptions.length > 0) setDropdownOpen(true); }}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                      placeholder="输入关键词搜索质保码"
+                      autoComplete="off"
+                    />
+                    {dropdownOpen && codeOptions.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white rounded-lg border border-gray-100 shadow-lg max-h-56 overflow-y-auto">
+                        {codeOptions.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => selectCode(item)}
+                            className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#5C1A1A]/5 transition-colors border-b border-gray-50 last:border-0"
+                          >
+                            <span className="font-medium text-gray-900">{item.code}</span>
+                            <span className="ml-2 text-xs text-gray-400">{item.model_name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-400">
+                    {stockSource === 'province' ? '从省代自有库存中选择可用质保码' : `从「${stores.find((s) => s.id === form.store_id)?.name || ''}」库存中选择可用质保码`}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -254,6 +336,7 @@ export default function WarrantyRegistrationPage() {
               <h3 className="text-sm font-semibold text-gray-900">请核对以下信息</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {[
+                  ['门店', stores.find((s) => s.id === form.store_id)?.name || form.store_id],
                   ['质保码', form.warranty_code], ['车主', form.customer_name], ['电话', form.customer_phone],
                   ['车牌', form.plate_no], ['VIN', form.vin || '-'], ['品牌', form.vehicle_brand],
                   ['型号', form.vehicle_model], ['施工日期', form.installation_date],

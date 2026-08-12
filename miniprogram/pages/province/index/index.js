@@ -56,6 +56,7 @@ Page({
   goPoints() { wx.reLaunch({ url: '/pages/province/points/index' }); },
   goAllocate() { wx.navigateTo({ url: '/pages/province/allocate/index' }); },
   goRewards() { wx.navigateTo({ url: '/pages/province/rewards/index' }); },
+  goRegister() { wx.navigateTo({ url: '/pages/province/register/index' }); },
 
   handleLogout() {
     wx.showModal({

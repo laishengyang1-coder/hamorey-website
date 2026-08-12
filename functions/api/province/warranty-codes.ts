@@ -17,6 +17,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const user = getAuthUser(context.data);
     const status = url.searchParams.get('status') || '';
     const keyword = url.searchParams.get('keyword') || '';
+    // 指定查看某归属的库存：省代自身 orgId 或下属门店 id（用于省代代门店上质保时选择码）
+    const ownerId = (url.searchParams.get('owner_org_id') || '').trim();
     const transferable = url.searchParams.get('transferable') === '1';
     const sortBy = url.searchParams.get('sort_by') || 'created_at';
     const sortDir = url.searchParams.get('sort_dir') === 'asc' ? 'ASC' : 'DESC';
@@ -32,8 +34,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     };
     const orderBy = sortColumns[sortBy] || sortColumns.created_at;
 
+    // 校验 owner_org_id：仅允许省代自身或其下属门店
+    let effectiveOwner = user?.orgId;
+    if (ownerId && ownerId !== user?.orgId) {
+      const subStore = await queryFirst<{ id: string }>(
+        context.env.DB,
+        `SELECT id FROM organizations WHERE id = ? AND parent_id = ? AND type = 'STORE'`,
+        ownerId, user?.orgId,
+      );
+      if (!subStore) return error('无权查看该组织库存', 403);
+      effectiveOwner = ownerId;
+    }
+
     const conditions: string[] = [];
-    const params: unknown[] = [user?.orgId];
+    const params: unknown[] = [effectiveOwner];
 
     if (status) { conditions.push('status = ?'); params.push(status); }
     if (transferable) {

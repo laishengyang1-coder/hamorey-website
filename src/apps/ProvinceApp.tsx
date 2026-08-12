@@ -13,6 +13,7 @@ const DashboardPage = lazyWithRetry(() => import('../province/pages/DashboardPag
 const StoreListPage = lazyWithRetry(() => import('../province/pages/StoreListPage'));
 const WarrantyCodeInventoryPage = lazyWithRetry(() => import('../province/pages/WarrantyCodeInventoryPage'));
 const WarrantyCodeAllocatePage = lazyWithRetry(() => import('../province/pages/WarrantyCodeAllocatePage'));
+const WarrantyRegisterPage = lazyWithRetry(() => import('../province/pages/WarrantyRegisterPage'));
 const SubRecordListPage = lazyWithRetry(() => import('../province/pages/SubRecordListPage'));
 const PointsPage = lazyWithRetry(() => import('../province/pages/PointsPage'));
 const RewardsPage = lazyWithRetry(() => import('../province/pages/RewardsPage'));
@@ -29,6 +30,7 @@ const Loading = () => (
 const PROVINCE_MENU: MenuItem[] = [
   { key: 'dashboard', label: '数据看板', path: '/province/dashboard' },
   { key: 'stores', label: '下属门店', path: '/province/stores' },
+  { key: 'warranty-register', label: '代门店登记质保', path: '/province/warranty-register' },
   { key: 'warranty-codes', label: '质保码库存', path: '/province/warranty-codes' },
   { key: 'allocate', label: '质保码划拨', path: '/province/allocate' },
   { key: 'records', label: '下属质保记录', path: '/province/records' },
@@ -71,6 +73,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/province/dashboard" replace /> },
       { path: 'dashboard', element: <Suspense fallback={<Loading />}><DashboardPage /></Suspense> },
       { path: 'stores', element: <Suspense fallback={<Loading />}><StoreListPage /></Suspense> },
+      { path: 'warranty-register', element: <Suspense fallback={<Loading />}><WarrantyRegisterPage /></Suspense> },
       { path: 'warranty-codes', element: <Suspense fallback={<Loading />}><WarrantyCodeInventoryPage /></Suspense> },
       { path: 'allocate', element: <Suspense fallback={<Loading />}><WarrantyCodeAllocatePage /></Suspense> },
       { path: 'records', element: <Suspense fallback={<Loading />}><SubRecordListPage /></Suspense> },

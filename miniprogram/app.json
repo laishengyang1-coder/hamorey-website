@@ -28,6 +28,7 @@
     "pages/province/store-form/index",
     "pages/province/codes/index",
     "pages/province/allocate/index",
+    "pages/province/register/index",
     "pages/province/points/index",
     "pages/province/rewards/index",
     "pages/province/reward-checkout/index",

@@ -101,6 +101,10 @@
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-allocate.png" mode="aspectFit" />
         <view class="action-text">划拨质保码</view>
       </view>
+      <view class="action-item" bindtap="goRegister">
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png" mode="aspectFit" />
+        <view class="action-text">代门店登记质保</view>
+      </view>
       <view class="action-item" bindtap="goPoints">
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-points-active.png" mode="aspectFit" />
         <view class="action-text">积分明细</view>

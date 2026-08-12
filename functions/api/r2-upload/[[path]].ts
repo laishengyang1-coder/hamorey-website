@@ -32,7 +32,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (fileKey.includes('..')) return error('上传路径无效', 403);
 
     // 角色 + 路径前缀校验
-    if (user.role === 'STORE') {
+    if (user.role === 'STORE' || user.role === 'PROVINCE') {
       const expectedPrefix = `warranty-photos/${user.orgId}/`;
       if (!fileKey.startsWith(expectedPrefix)) return error('上传路径无效', 403);
     } else if (user.role === 'HQ_ADMIN') {

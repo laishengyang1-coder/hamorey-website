@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "代门店登记质保",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  },
+  "navigationStyle": "custom",
+  "backgroundColor": "#F5F0EB"
+}
