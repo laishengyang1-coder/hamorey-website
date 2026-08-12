@@ -153,7 +153,8 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     record.product_model_id,
   );
   const rebateRatio = rebateRule?.rebate_ratio ?? 0;
-  const provincePoints = Math.round(storePoints * rebateRatio);
+  // 省代返利：四舍五入取整；门店得分>=1 且返利比例>0 时保底返 1 分（避免 1 分奖品返利为 0）
+  const provincePoints = rebateRatio > 0 && storePoints > 0 ? Math.max(1, Math.round(storePoints * rebateRatio)) : 0;
 
   // 生成质保证书长图 PNG
   let certFileKey = '';
