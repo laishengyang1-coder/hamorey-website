@@ -133,7 +133,10 @@ export default function ProductManagePage() {
     ...item,
     dbModel: modelByCode.get(item.modelCode),
   }));
-  const otherModels = models.filter((model) => model.product_category !== 'window_film');
+  // 远方集团专属系列：型号编码以 WH / K 开头（如 WH6.5、K85），单独区块展示，所属分类为隐形车衣
+  const YUANFANG_MODEL_PATTERN = /^(WH|K)\d/;
+  const yuanfangModels = models.filter((model) => YUANFANG_MODEL_PATTERN.test(model.model_code));
+  const otherModels = models.filter((model) => model.product_category !== 'window_film' && !YUANFANG_MODEL_PATTERN.test(model.model_code));
 
   const WINDOW_COLS: Column[] = [
     { key: 'seriesName', title: '产品名称', dataIndex: 'seriesName', render: (_v, record) => (
@@ -196,6 +199,14 @@ export default function ProductManagePage() {
           <p className="mt-1 text-sm text-[var(--paper-muted)]">按价格表拆分前挡和侧挡，并维护质保价格与质保码可使用次数。</p>
         </div>
         <DataTable columns={WINDOW_COLS} data={windowRows as any} loading={loading} emptyText="暂无窗膜型号" />
+      </div>
+
+      <div className="mb-6">
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-[var(--paper-text)]">远方集团型号</h2>
+          <p className="mt-1 text-sm text-[var(--paper-muted)]">远方集团专属隐形车衣系列（WH6.5 / WH7.5 / WH8.5 / K65 / K75 / K85），所属分类为隐形车衣。</p>
+        </div>
+        <DataTable columns={COLS} data={yuanfangModels as any} loading={loading} emptyText="暂无远方集团型号" />
       </div>
 
       <div>
