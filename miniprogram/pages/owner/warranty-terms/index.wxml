@@ -58,7 +58,9 @@
         <view class="table-row"><view class="table-col-name">和御 HY8</view><view class="table-col-period">10 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和旺 HW8</view><view class="table-col-period">8 年</view></view>
         <view class="table-row"><view class="table-col-name">和旺 HW9</view><view class="table-col-period">10 年</view></view>
-        <view class="table-row alt"><view class="table-col-name">和雅 HYM 哑光</view><view class="table-col-period">6 年</view></view>
+        <view class="table-row alt"><view class="table-col-name">和雅 HYM 哑光</view><view class="table-col-period">8 年</view></view>
+        <view class="table-row"><view class="table-col-name">和尊 HZ</view><view class="table-col-period">15 年</view></view>
+        <view class="table-row alt"><view class="table-col-name">和鼎 HD</view><view class="table-col-period">15 年</view></view>
       </view>
 
       <!-- TPU 改色膜 -->
