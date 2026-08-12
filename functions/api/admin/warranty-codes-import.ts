@@ -67,10 +67,6 @@ async function checkRows(
       errors.push({ row: rowNum, code: '', reason: '质保码为空' });
       return;
     }
-    if (!row.batch_no || !row.batch_no.trim()) {
-      errors.push({ row: rowNum, code: row.code, reason: '批次号为空' });
-      return;
-    }
     if (!row.model_code || !row.model_code.trim()) {
       errors.push({ row: rowNum, code: row.code, reason: '型号编码为空' });
       return;
@@ -160,6 +156,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       // 事务写入
       const batchId = generateId();
       const importBatchId = generateId();
+      // 批次号选填：未填写时自动生成（带时间戳，同一批统一编号）
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const autoBatchNo = `AUTO-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
       const statements: Array<{ sql: string; params: unknown[] }> = [];
 
       // 1. 创建导入批次
@@ -176,7 +176,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         statements.push({
           sql: `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 0, 'unallocated', datetime('now'))`,
-          params: [codeId, row.code, model?.id, row.product_name || null, row.batch_no, importBatchId, model?.usage_limit || 1],
+          params: [codeId, row.code, model?.id, row.product_name || null, row.batch_no?.trim() || autoBatchNo, importBatchId, model?.usage_limit || 1],
         });
       }
 

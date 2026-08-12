@@ -153,7 +153,7 @@ export default function WarrantyCodeImportPage() {
         <p className="mb-2 font-semibold text-amber-900">填写说明</p>
         <ul className="mb-3 list-inside list-disc space-y-1">
           <li><strong>质保编码</strong>（必填）：要导入的质保码，不能与系统已有码重复，文件内也不能重复。</li>
-          <li><strong>批次号</strong>（必填）：本次导入的批次标识，如 Batch001。</li>
+          <li><strong>批次号</strong>（选填）：本次导入的批次标识，如 Batch001；留空将自动生成批次号。</li>
           <li><strong>产品型号</strong>（必填）：填下方任一在产型号的「型号编码」或「显示名」均可（二选一，需与后台完全一致）。</li>
           <li><strong>产品名称</strong>（可选）：可留空；填写后作为该批质保码的展示名称。</li>
         </ul>
