@@ -142,12 +142,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     if (body.username) {
       // 检查登录账号唯一性（前置校验，避免创建组织后账号冲突产生孤儿组织）
-      const existingUser = await queryFirst(
+      // 规则：门店建号时，用户名不能与省代(PROVINCE)账号相同，否则登录只会进省代后台
+      const existingUser = await queryFirst<{ id: string; role: string }>(
         context.env.DB,
-        `SELECT id FROM users WHERE username = ?`,
+        `SELECT id, role FROM users WHERE username = ?`,
         body.username,
       );
-      if (existingUser) return error('登录账号已存在', 409);
+      if (existingUser) {
+        if (body.type === 'STORE' && existingUser.role === 'PROVINCE') {
+          return error('该账号已为省代登录账号，门店账号不能与省代账号重复，请更换手机号', 409);
+        }
+        return error('登录账号已存在', 409);
+      }
     }
 
     const id = generateId();

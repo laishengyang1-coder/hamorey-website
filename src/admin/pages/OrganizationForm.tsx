@@ -158,8 +158,11 @@ export function OrganizationForm({
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                placeholder="登录用户名"
+                placeholder="登录用户名（手机号）"
               />
+              {type === 'STORE' && (
+                <p className="mt-1 text-xs text-amber-600">门店账号不能与省代登录账号重复，请使用不同的手机号</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">密码 *</label>

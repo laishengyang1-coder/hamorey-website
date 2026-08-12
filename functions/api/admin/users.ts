@@ -79,13 +79,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.organization_id) errors.push({ field: 'organization_id', message: '所属组织不能为空' });
     if (errors.length > 0) return validationError(errors);
 
-    // 检查用户名唯一性
-    const existing = await queryFirst(
+    // 检查用户名唯一性（门店账号不能与省代账号重复）
+    const existing = await queryFirst<{ id: string; role: string }>(
       context.env.DB,
-      `SELECT id FROM users WHERE username = ?`,
+      `SELECT id, role FROM users WHERE username = ?`,
       body.username,
     );
-    if (existing) return error('用户名已存在', 409);
+    if (existing) {
+      // 规则：门店建号时，用户名不能与省代(PROVINCE)账号相同，否则登录只会进省代后台
+      if (body.role === 'STORE' && existing.role === 'PROVINCE') {
+        return error('该账号已为省代登录账号，门店账号不能与省代账号重复，请更换手机号', 409);
+      }
+      return error('用户名已存在', 409);
+    }
 
     // 检查组织
     const org = await queryFirst(
