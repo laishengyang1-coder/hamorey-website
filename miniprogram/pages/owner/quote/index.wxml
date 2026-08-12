@@ -25,33 +25,16 @@
       >{{item.label}}</view>
     </scroll-view>
 
-    <!-- 型号选择栏 -->
-    <view class="model-bar" bindtap="toggleModelPicker">
-      <view class="model-bar-left">
-        <text class="model-bar-label">型号</text>
-        <text class="model-bar-name">{{activeModelName || activeModel || '选择型号'}}</text>
+    <!-- 型号选择栏（微信内置下拉） -->
+    <picker mode="selector" range="{{modelNames}}" value="{{modelIndex}}" bindchange="onModelPickerChange">
+      <view class="model-bar">
+        <view class="model-bar-left">
+          <text class="model-bar-label">型号</text>
+          <text class="model-bar-name">{{activeModelName || activeModel || '选择型号'}}</text>
+        </view>
+        <view class="model-bar-arrow">▼</view>
       </view>
-      <view class="model-bar-arrow {{showModelPicker ? 'up' : ''}}">▼</view>
-    </view>
-
-    <!-- 型号下拉 -->
-    <view class="model-dropdown" wx:if="{{showModelPicker}}">
-      <view
-        class="model-option {{activeModel === item.code ? 'active' : ''}}"
-        wx:for="{{categories}}"
-        wx:for-item="catData"
-        wx:key="cat"
-        wx:if="{{catData.cat === activeCategory}}"
-      >
-        <block wx:for="{{catData.models}}" wx:key="code">
-          <view class="model-option-row" data-code="{{item.code}}" data-name="{{item.name}}" bindtap="onPickModel">
-            <text class="model-option-name">{{item.name}}</text>
-            <text class="model-option-check" wx:if="{{activeModel === item.code}}">✓</text>
-          </view>
-        </block>
-      </view>
-    </view>
-    <view class="model-overlay" wx:if="{{showModelPicker}}" bindtap="toggleModelPicker"></view>
+    </picker>
 
     <!-- 报价提示 -->
     <view class="quote-tip" wx:if="{{groupedParts.length > 0}}">勾选部位查看预估总额（元）</view>

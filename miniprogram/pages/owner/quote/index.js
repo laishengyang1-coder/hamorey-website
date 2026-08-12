@@ -27,6 +27,10 @@ function seriesName(name) {
   return (name || '').replace(/[0-9]+$/, '');
 }
 
+// 大类固定展示顺序：漆面保护膜 → 窗膜 → TPU改色膜 → 天窗冰甲
+const CAT_ORDER = ['ppf', 'window_film', 'color_ppf', 'sunroof_film'];
+const CAT_LABELS = { ppf: '漆面保护膜 / PPF', window_film: '汽车窗膜', color_ppf: 'TPU 改色膜', sunroof_film: '天窗膜' };
+
 Page({
   data: {
     loading: true,
@@ -36,7 +40,8 @@ Page({
     activeCategory: '',  // 当前选中的大类
     activeModel: '',     // 当前选中型号 code
     activeModelName: '', // 当前选中型号名
-    showModelPicker: false,
+    modelNames: [],      // 当前大类下的型号名列表（供 picker 下拉）
+    modelIndex: 0,       // picker 当前选中下标
     groupedParts: [],    // 分组部位 [{group, parts}]
     selectedParts: [],
     totalPrice: 0
@@ -75,12 +80,17 @@ Page({
       }
     });
 
-    const CAT_LABELS = { ppf: '漆面保护膜 / PPF', color_ppf: 'TPU 改色膜', window_film: '汽车窗膜', sunroof_film: '天窗膜' };
-    const categories = Object.keys(catMap).map(cat => ({
-      cat,
-      label: CAT_LABELS[cat] || cat,
-      models: Object.values(catMap[cat]),
-    }));
+    const categories = Object.keys(catMap)
+      .map(cat => ({
+        cat,
+        label: CAT_LABELS[cat] || cat,
+        models: Object.values(catMap[cat]),
+      }))
+      .sort((a, b) => {
+        const oa = CAT_ORDER.indexOf(a.cat);
+        const ob = CAT_ORDER.indexOf(b.cat);
+        return (oa < 0 ? 99 : oa) - (ob < 0 ? 99 : ob);
+      });
 
     const firstCat = categories[0];
     const firstModel = firstCat ? firstCat.models[0] : null;
@@ -91,6 +101,8 @@ Page({
       activeCategory: firstCat ? firstCat.cat : '',
       activeModel: firstModel ? firstModel.code : '',
       activeModelName: firstModel ? firstModel.name : '',
+      modelNames: firstCat ? firstCat.models.map(m => m.name) : [],
+      modelIndex: 0,
       loading: false,
     });
 
@@ -151,21 +163,20 @@ Page({
       activeCategory: cat,
       activeModel: firstModel ? firstModel.code : '',
       activeModelName: firstModel ? firstModel.name : '',
-      showModelPicker: false,
+      modelNames: catData.models.map(m => m.name),
+      modelIndex: 0,
     });
     if (firstModel) this.filterAndGroup(cat, firstModel.code);
   },
 
-  /** 打开/关闭型号选择器 */
-  toggleModelPicker() {
-    this.setData({ showModelPicker: !this.data.showModelPicker });
-  },
-
-  /** 点击型号 */
-  onPickModel(e) {
-    const { code, name } = e.currentTarget.dataset;
-    this.setData({ activeModel: code, activeModelName: name, showModelPicker: false });
-    this.filterAndGroup(this.data.activeCategory, code);
+  /** 微信内置下拉选择型号 */
+  onModelPickerChange(e) {
+    const idx = Number(e.detail.value);
+    const catData = this.data.categories.find(c => c.cat === this.data.activeCategory);
+    if (!catData || !catData.models[idx]) return;
+    const model = catData.models[idx];
+    this.setData({ activeModel: model.code, activeModelName: model.name, modelIndex: idx });
+    this.filterAndGroup(this.data.activeCategory, model.code);
   },
 
   /** 切换部位勾选 */
