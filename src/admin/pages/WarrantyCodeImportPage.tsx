@@ -99,8 +99,8 @@ export default function WarrantyCodeImportPage() {
 
   const downloadTemplate = () => {
     const template = [
-      { '质保编码': 'FH060207260001', '批次号': 'Batch001', '产品型号': 'PPF', '产品名称': '和御HY8' },
-      { '质保编码': 'FH060207260002', '批次号': 'Batch001', '产品型号': 'WL-70', '产品名称': '和光70' },
+      { '质保编码': 'FH060207260001', '批次号': 'Batch001', '产品型号': 'HX8', '产品名称': '和兴 HX8' },
+      { '质保编码': 'FH060207260002', '批次号': 'Batch001', '产品型号': 'WF-HG70', '产品名称': '和光70' },
     ];
     const ws = XLSX.utils.json_to_sheet(template);
     ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 16 }];
