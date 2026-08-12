@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const user = getAuthUser(context.data);
     const status = url.searchParams.get('status') || '';
-    const keyword = url.searchParams.get('keyword') || '';
+    const keyword = url.searchParams.get('keyword') || url.searchParams.get('q') || '';
     // 指定查看某归属的库存：省代自身 orgId 或下属门店 id（用于省代代门店上质保时选择码）
     const ownerId = (url.searchParams.get('owner_org_id') || '').trim();
     const transferable = url.searchParams.get('transferable') === '1';
