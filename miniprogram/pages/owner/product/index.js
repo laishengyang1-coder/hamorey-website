@@ -26,7 +26,7 @@ const SERIES_LIST = [
     image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/prod-ppf.png',
     desc: 'TPU 基材，抗划痕、自修复、耐黄变，为原厂漆面提供持久守护。',
     products: [
-      { name: '和兴 HX8', code: 'HX8', en: 'HEXING HX8', tech: 'TPU 基材·抗划痕', warranty: 5, highlight: '极致性价比·持久守护', price: 9800, specs: ['TPU 基材', '厚度 8.5mil', '抗划痕', '自修复涂层'] },
+      { name: '和兴 HX8', code: 'HX8', en: 'HEXING HX8', tech: 'TPU 基材·抗划痕', warranty: 6, highlight: '极致性价比·持久守护', price: 9800, specs: ['TPU 基材', '厚度 8.5mil', '抗划痕', '自修复涂层'] },
       { name: '和兴 HX9', code: 'HX9', en: 'HEXING HX9', tech: 'TPU 基材·增强涂层', warranty: 7, highlight: '进阶保护·亮度持久', price: 12800, specs: ['TPU 基材', '厚度 9mil', '增强抗划痕', '耐黄变'] },
       { name: '和旺 HW8', code: 'HW8', en: 'HEWANG HW8', tech: 'TPU 基材·高密度', warranty: 8, highlight: '全能防护·一步到位', price: 14800, specs: ['高密度 TPU', '厚度 8.5mil', '抗穿刺', '疏水自洁'] },
       { name: '和旺 HW9', code: 'HW9', en: 'HEWANG HW9', tech: 'TPU 基材·高亮版', warranty: 10, highlight: '旗舰防护·十年质保', price: 15800, specs: ['高亮 TPU', '厚度 9mil', '抗穿刺', '持久增亮'] },
