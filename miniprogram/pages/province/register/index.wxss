@@ -104,6 +104,22 @@
   font-weight: 500;
 }
 
+/* 门店选择：垂直居中 + 超长单行省略 */
+.picker-value {
+  display: flex;
+  align-items: center;
+}
+
+.picker-value-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: var(--font-md);
+}
+
 /* 质保码搜索下拉 */
 .code-dropdown {
   margin-top: 8rpx;

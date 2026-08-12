@@ -26,8 +26,8 @@
         <view class="form-group">
           <view class="form-label"><text class="required">*</text>选择门店</view>
           <picker mode="selector" range="{{storeNames}}" value="{{storeIndex}}" bindchange="onStoreChange">
-            <view class="form-input flex-row" style="align-items:center">
-              <text class="{{form.store_id ? '' : 'search-placeholder'}}">
+            <view class="form-input picker-value">
+              <text class="picker-value-text {{form.store_id ? '' : 'search-placeholder'}}">
                 {{selectedStoreName || '请选择下属门店'}}
               </text>
             </view>
