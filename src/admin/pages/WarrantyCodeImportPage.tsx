@@ -16,6 +16,35 @@ interface CheckResult {
   errorFileKey?: string;
 }
 
+// 导入模板「产品型号」列可选值（型号编码或显示名二选一填写，需与后台在产型号完全一致）
+const MODEL_HELP: Array<{ category: string; items: Array<[string, string]> }> = [
+  {
+    category: '隐形车衣',
+    items: [
+      ['HX8', '和兴 HX8'], ['HX9', '和兴 HX9'], ['HW8', '和旺 HW8'], ['HW9', '和旺 HW9'],
+      ['HY8', '和御 HY8'], ['YM-8', '和雅 HYM 哑光'], ['HZ', '和尊'], ['HD', '和鼎'],
+    ],
+  },
+  {
+    category: '窗膜',
+    items: [
+      ['WF-HG70', '和光70'], ['WF-HG25', '和光25'],
+      ['WF-HD70', '和盾70'], ['WF-HD10', '和盾10'], ['WF-HD35', '和盾35'],
+      ['WF-HH70', '和护70'], ['WF-HH15', '和护15'], ['WF-HH25', '和护25'],
+      ['WF-HZ75', '和真75'], ['WF-HZ15', '和真15'], ['WF-HZ35', '和真35'],
+      ['WF-HY75', '和原75'], ['WF-HY10', '和原10'], ['WF-HY35', '和原35'],
+    ],
+  },
+  {
+    category: 'TPU 改色车衣',
+    items: [['QCCY', '和膜和彩全彩车衣'], ['HCZY', '和粹']],
+  },
+  {
+    category: '天窗冰甲',
+    items: [['T1', '天窗冰甲 T1'], ['T2', '天窗冰甲 T2']],
+  },
+];
+
 export default function WarrantyCodeImportPage() {
   const [rows, setRows] = useState<Array<Record<string, string>>>([]);
   const [checkResult, setCheckResult] = useState<CheckResult | null>(null);
@@ -118,6 +147,36 @@ export default function WarrantyCodeImportPage() {
       } />
       {success && <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div>}
       {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
+
+      {/* 填写说明 */}
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-sm text-gray-700">
+        <p className="mb-2 font-semibold text-amber-900">填写说明</p>
+        <ul className="mb-3 list-inside list-disc space-y-1">
+          <li><strong>质保编码</strong>（必填）：要导入的质保码，不能与系统已有码重复，文件内也不能重复。</li>
+          <li><strong>批次号</strong>（必填）：本次导入的批次标识，如 Batch001。</li>
+          <li><strong>产品型号</strong>（必填）：填下方任一在产型号的「型号编码」或「显示名」均可（二选一，需与后台完全一致）。</li>
+          <li><strong>产品名称</strong>（可选）：可留空；填写后作为该批质保码的展示名称。</li>
+        </ul>
+        <p className="mb-1 font-semibold text-amber-900">可选型号（型号编码 / 显示名，二选一填写）</p>
+        <div className="space-y-1.5">
+          {MODEL_HELP.map((g) => (
+            <div key={g.category}>
+              <p className="text-xs font-medium text-amber-800/80">{g.category}</p>
+              <div className="grid grid-cols-1 gap-x-4 gap-y-0.5 md:grid-cols-2">
+                {g.items.map(([code, name]) => (
+                  <div key={code} className="flex justify-between border-b border-amber-100 py-0.5">
+                    <span className="font-mono text-xs">{code}</span>
+                    <span className="text-gray-600">{name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-amber-800/80">
+          提示：型号填错或已停用会提示「产品不存在或已停用」；建议先点「预检」确认无误后再「确认导入」。
+        </p>
+      </div>
 
       <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
         <FileUpload
