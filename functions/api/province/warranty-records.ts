@@ -239,6 +239,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { store_id: store.id, warranty_code: body.warranty_code, customer: body.customer_name, plate: body.plate_no },
       getClientIP(context.request));
 
+    // 质保码若来自省代自有库存，使用后自动划拨至目标门店（库存归属随货转移到门店，写审计）
+    if (wc.owner_org_id === user?.orgId) {
+      try {
+        await execute(
+          context.env.DB,
+          `UPDATE warranty_codes SET owner_org_id = ? WHERE id = ? AND owner_org_id = ?`,
+          store.id, wc.id, user?.orgId,
+        );
+        await execute(
+          context.env.DB,
+          `INSERT INTO code_allocations (id, warranty_code_id, from_org_id, to_org_id, action, operator_user_id, reason, created_at)
+           VALUES (?, ?, ?, ?, 'allocate', ?, ?, datetime('now'))`,
+          generateId(), wc.id, user?.orgId, store.id, user?.userId,
+          `省代代门店登记质保，质保码自动划拨至门店：${store.name}`,
+        );
+      } catch (allocErr) {
+        // 划拨失败不影响质保登记结果，仅记录错误
+        console.error('[province/warranty-records] auto-allocate failed', allocErr);
+      }
+    }
+
     return ok({ id: recordId }, '提交成功，等待审核');
   } catch (err) {
     console.error('[province/warranty-records POST]', err);
