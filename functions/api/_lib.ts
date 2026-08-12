@@ -85,6 +85,31 @@ export async function execute(
 }
 
 /**
+ * 判断组织是否被标记为「不参与积分/排行等活动」（points_exempt=1），
+ * 沿 parent_id 链向上逐级检查（门店 → 省代 → 总部，最多 8 层），
+ * 自身或任一上级被标记即视为豁免（豁免省代的下属门店同样豁免）。
+ */
+export async function isOrgPointsExempt(
+  db: D1Database,
+  orgId: string | null | undefined,
+): Promise<boolean> {
+  if (!orgId) return false;
+  let cur: string | null = orgId;
+  for (let i = 0; i < 8 && cur; i++) {
+    const row: { points_exempt: number | null; parent_id: string | null } | null = await queryFirst(
+      db,
+      `SELECT points_exempt, parent_id FROM organizations WHERE id = ?`,
+      cur,
+    );
+    if (!row) return false;
+    if (Number(row.points_exempt) === 1) return true;
+    if (!row.parent_id || row.parent_id === cur) return false;
+    cur = row.parent_id;
+  }
+  return false;
+}
+
+/**
  * 批量执行多条 SQL（用于事务）
  */
 export async function batch(

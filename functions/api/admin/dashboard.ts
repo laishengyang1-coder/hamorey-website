@@ -17,27 +17,35 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // 排行榜查询
     if (type === 'province-ranking') {
       const rows = await db.prepare(
-        `SELECT o.name, o.province, COUNT(wr.id) AS count FROM warranty_records wr
+        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+         SELECT o.name, o.province, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.province_org_id
-         WHERE wr.status = 'active' GROUP BY o.id ORDER BY count DESC LIMIT 10`
+         WHERE wr.status = 'active' AND wr.province_org_id NOT IN (SELECT id FROM excl)
+         GROUP BY o.id ORDER BY count DESC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
     if (type === 'store-ranking') {
       const rows = await db.prepare(
-        `SELECT o.name, o.province, o.city, COUNT(wr.id) AS count FROM warranty_records wr
+        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+         SELECT o.name, o.province, o.city, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.store_id
-         WHERE wr.status = 'active' GROUP BY o.id ORDER BY count DESC LIMIT 10`
+         WHERE wr.status = 'active' AND o.id NOT IN (SELECT id FROM excl)
+         GROUP BY o.id ORDER BY count DESC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
     if (type === 'product-ranking') {
       const rows = await db.prepare(
-        `SELECT COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品') AS name,
+        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+         SELECT COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品') AS name,
                 COUNT(wr.id) AS count
          FROM warranty_records wr
          LEFT JOIN product_models pm ON pm.id = wr.product_model_id
-         WHERE wr.status = 'active'
+         WHERE wr.status = 'active' AND wr.store_id NOT IN (SELECT id FROM excl)
          GROUP BY COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品')
          ORDER BY count DESC, name ASC
          LIMIT 10`
@@ -48,7 +56,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // 登记方质保积分排行榜（累计获得，不含兑换、人工调整、省代返利）
     if (type === 'points-ranking') {
       const rows = await db.prepare(
-        `SELECT o.name, o.province, o.city,
+        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+         SELECT o.name, o.province, o.city,
                 COALESCE(SUM(pl.points_change), 0) AS count
          FROM points_ledger pl
          JOIN organizations o ON o.id = pl.organization_id
@@ -56,6 +66,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          WHERE pl.change_type = 'award'
            AND pl.related_type = 'warranty'
            AND wr.status = 'active'
+           AND pl.organization_id NOT IN (SELECT id FROM excl)
          GROUP BY o.id
          ORDER BY count DESC, o.name ASC
          LIMIT 20`

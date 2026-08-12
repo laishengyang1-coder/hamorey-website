@@ -48,7 +48,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
     if (type === 'national-points-ranking') {
       const rows = await queryAll<{ name: string; count: number; province: string; city: string }>(db,
-        `SELECT o.name, o.province, o.city,
+        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+         SELECT o.name, o.province, o.city,
                 COALESCE(SUM(pl.points_change), 0) AS count
          FROM points_ledger pl
          JOIN organizations o ON o.id = pl.organization_id
@@ -56,6 +58,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          WHERE pl.change_type = 'award'
            AND pl.related_type = 'warranty'
            AND wr.status = 'active'
+           AND pl.organization_id NOT IN (SELECT id FROM excl)
          GROUP BY o.id
          ORDER BY count DESC, o.name ASC
          LIMIT 20`,

@@ -23,7 +23,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (type === 'national-points-ranking') {
       const [rows, myPointsRow] = await Promise.all([
         queryAll<{ name: string; count: number; province: string; city: string; org_id: string }>(db,
-          `SELECT o.name, o.province, o.city, o.id AS org_id,
+          `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+             UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+           SELECT o.name, o.province, o.city, o.id AS org_id,
                   COALESCE(SUM(pl.points_change), 0) AS count
            FROM points_ledger pl
            JOIN organizations o ON o.id = pl.organization_id
@@ -31,6 +33,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
            WHERE pl.change_type = 'award'
              AND pl.related_type = 'warranty'
              AND wr.status = 'active'
+             AND pl.organization_id NOT IN (SELECT id FROM excl)
            GROUP BY o.id
            ORDER BY count DESC, o.name ASC
            LIMIT 20`,
@@ -52,7 +55,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       let myRank = rows.length + 1; // 默认排在最末之后
       if (myPoints > 0) {
         const rankRow = await queryFirst<{ ranking_position: number }>(db,
-          `SELECT COUNT(*) + 1 AS ranking_position FROM (
+          `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
+             UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
+           SELECT COUNT(*) + 1 AS ranking_position FROM (
              SELECT o.id, COALESCE(SUM(pl.points_change), 0) AS pts
              FROM points_ledger pl
              JOIN organizations o ON o.id = pl.organization_id
@@ -60,6 +65,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
              WHERE pl.change_type = 'award'
                AND pl.related_type = 'warranty'
                AND wr.status = 'active'
+               AND pl.organization_id NOT IN (SELECT id FROM excl)
              GROUP BY o.id
              HAVING pts > ?
            ) AS ranked_stores`,

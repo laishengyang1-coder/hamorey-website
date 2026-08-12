@@ -8,7 +8,7 @@
 // 写审计日志、发放门店积分与省代返利。
 // ============================================================
 
-import { queryFirst, queryAll, execute, batch, generateId } from '../../functions/api/_lib.ts';
+import { queryFirst, queryAll, execute, batch, generateId, isOrgPointsExempt } from '../../functions/api/_lib.ts';
 import { createCertificateImage, type PartPriceItem } from '../../functions/api/_certificate.ts';
 import { getCertificateSeal } from '../../functions/api/_seal.ts';
 
@@ -117,7 +117,7 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
      ORDER BY effective_from DESC LIMIT 1`,
     record.product_model_id,
   );
-  const storePoints = pointsRule?.points ?? 0;
+  let storePoints = pointsRule?.points ?? 0;
 
   // 查询返利规则
   const rebateRule = await queryFirst<{ rebate_ratio: number }>(
@@ -130,7 +130,12 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   );
   const rebateRatio = rebateRule?.rebate_ratio ?? 0;
   // 省代返利：四舍五入取整；门店得分>=1 且返利比例>0 时保底返 1 分（避免 1 分奖品返利为 0）
-  const provincePoints = rebateRatio > 0 && storePoints > 0 ? Math.max(1, Math.round(storePoints * rebateRatio)) : 0;
+  let provincePoints = rebateRatio > 0 && storePoints > 0 ? Math.max(1, Math.round(storePoints * rebateRatio)) : 0;
+  // 豁免组织（如远方集团下属门店）：门店与省代均不发积分、不参与排行等活动
+  if (await isOrgPointsExempt(env.DB, record.store_id)) {
+    storePoints = 0;
+    provincePoints = 0;
+  }
 
   // 生成质保证书长图 PNG
   let certFileKey = '';

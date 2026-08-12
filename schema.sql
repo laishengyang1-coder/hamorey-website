@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS organizations (
     audit_reason   TEXT,
     audited_at     TEXT,
     audited_by     TEXT,
+    -- 不参与积分/排行等活动标记：1=该组织及其下属门店不发积分、不进任何排行
+    points_exempt  INTEGER NOT NULL DEFAULT 0 CHECK (points_exempt IN (0, 1)),
     created_by  TEXT,
     created_at  TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
