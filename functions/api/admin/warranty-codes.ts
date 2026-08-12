@@ -28,7 +28,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         ),
         queryAll<{ id: string; name: string; parent_id: string; province: string; city: string; total: number; available: number }>(
           context.env.DB,
-          `SELECT o.id, o.name, o.parent_id, o.province, o.city, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='STORE' GROUP BY o.id HAVING total > 0 ORDER BY total DESC`,
+          `SELECT o.id, o.name, o.parent_id, o.province, o.city, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='STORE' GROUP BY o.id ORDER BY total DESC, o.code ASC`,
         ),
       ]);
       // 按 parent_id 分组门店
