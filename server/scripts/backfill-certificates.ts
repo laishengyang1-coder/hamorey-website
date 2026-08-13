@@ -136,7 +136,11 @@ async function main() {
       const install = new Date(r.installation_date);
       install.setFullYear(install.getFullYear() + (r.warranty_years_snapshot || 5));
       const expiryDate = install.toISOString().split('T')[0];
-      const issueDate = r.approved_at ? r.approved_at.slice(0, 10) : new Date().toISOString().slice(0, 10);
+      const issueDate = r.approved_at
+        ? (typeof r.approved_at === 'string'
+            ? r.approved_at.slice(0, 10)
+            : new Date(r.approved_at).toISOString().slice(0, 10))
+        : new Date().toISOString().slice(0, 10);
 
       const data: CertificateData = {
         certificateNo: r.certificate_no,
