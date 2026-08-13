@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiRequest, uploadWarrantyPhoto } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { StepWizard } from '../../shared/components/StepWizard';
+import { StoreSearchSelect } from '../../shared/components/StoreSearchSelect';
 
 const STEPS = [
   { key: 'store-code', title: '门店与质保码', description: '选择门店并输入质保码' },
@@ -30,8 +31,8 @@ export default function WarrantyRegisterPage() {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoNames, setPhotoNames] = useState<string[]>([]);
 
-  // 门店列表
-  const [stores, setStores] = useState<StoreOption[]>([]);
+  // 门店（搜索选择，选中后记录名称用于展示）
+  const [selectedStoreName, setSelectedStoreName] = useState('');
   // 库存来源：'province' = 省代库存，'store' = 门店库存
   const [stockSource, setStockSource] = useState<'province' | 'store'>('province');
 
@@ -72,16 +73,16 @@ export default function WarrantyRegisterPage() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // 加载下属门店
-  useEffect(() => {
-    apiRequest<{ items: StoreOption[] }>('/province/organizations')
-      .then((res) => setStores(res.items || []))
-      .catch(() => setStores([]));
+  // 门店搜索（关键字联想）
+  const fetchStores = useCallback(async (kw: string) => {
+    const res = await apiRequest<{ items: StoreOption[] }>(`/province/organizations?keyword=${encodeURIComponent(kw)}&pageSize=20`);
+    return (res.items || []).map((s) => ({ id: s.id, name: `${s.name}（${s.code}）` }));
   }, []);
 
   // 切换门店或库存来源时清空已选质保码
-  const handleStoreChange = (storeId: string) => {
+  const handleStoreChange = (storeId: string, storeName: string) => {
     updateField('store_id', storeId);
+    setSelectedStoreName(storeId ? storeName : '');
     setCodeQuery('');
     setCodeOptions([]);
     updateField('warranty_code', '');
@@ -205,20 +206,15 @@ export default function WarrantyRegisterPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-6 min-h-[300px]">
           {step === 0 && (
             <div className="max-w-md space-y-4">
-              {/* 选择门店 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">选择门店 *</label>
-                <select
-                  value={form.store_id}
-                  onChange={(e) => handleStoreChange(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                >
-                  <option value="">请选择下属门店</option>
-                  {stores.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}（{s.code}）</option>
-                  ))}
-                </select>
-              </div>
+              {/* 选择门店（关键字搜索） */}
+              <StoreSearchSelect
+                value={form.store_id}
+                label="选择门店"
+                required
+                placeholder="输入门店名称/编号搜索"
+                fetchStores={fetchStores}
+                onSelect={handleStoreChange}
+              />
 
               {/* 库存来源 + 质保码搜索 */}
               {form.store_id && (
@@ -262,7 +258,7 @@ export default function WarrantyRegisterPage() {
                     )}
                   </div>
                   <p className="mt-2 text-xs text-gray-400">
-                    {stockSource === 'province' ? '从省代自有库存中选择可用质保码' : `从「${stores.find((s) => s.id === form.store_id)?.name || ''}」库存中选择可用质保码`}
+                    {stockSource === 'province' ? '从省代自有库存中选择可用质保码' : `从「${selectedStoreName || ''}」库存中选择可用质保码`}
                   </p>
                 </div>
               )}
@@ -338,7 +334,7 @@ export default function WarrantyRegisterPage() {
               <h3 className="text-sm font-semibold text-gray-900">请核对以下信息</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {[
-                  ['门店', stores.find((s) => s.id === form.store_id)?.name || form.store_id],
+                  ['门店', selectedStoreName || form.store_id],
                   ['质保码', form.warranty_code], ['车主', form.customer_name], ['电话', form.customer_phone],
                   ['车牌', form.plate_no], ['VIN', form.vin || '-'], ['品牌', form.vehicle_brand],
                   ['型号', form.vehicle_model], ['施工日期', form.installation_date],

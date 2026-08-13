@@ -10,6 +10,7 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
 import { ProtectedImage } from '../../shared/components/ProtectedImage';
+import { StoreSearchSelect } from '../../shared/components/StoreSearchSelect';
 
 interface PhotoItem { id: string; file_key: string; sort_order: number; }
 
@@ -56,8 +57,6 @@ export default function WarrantyRecordListPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [stores, setStores] = useState<Array<{ id: string; name: string }>>([]);
-  const [storeLoading, setStoreLoading] = useState(false);
   const [createForm, setCreateForm] = useState({
     store_id: '', warranty_code: '', customer_name: '', customer_phone: '',
     plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: ''
@@ -132,20 +131,18 @@ export default function WarrantyRecordListPage() {
     }
   };
 
-  const openCreate = async () => {
+  // 门店搜索（关键字联想）
+  const fetchStores = useCallback(async (kw: string) => {
+    const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&keyword=${encodeURIComponent(kw)}&pageSize=20`);
+    return res.items || [];
+  }, []);
+
+  const openCreate = () => {
     setCreateForm({
       store_id: '', warranty_code: '', customer_name: '', customer_phone: '',
       plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: ''
     });
     setCreateOpen(true);
-    if (stores.length === 0) {
-      setStoreLoading(true);
-      try {
-        const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&pageSize=999`);
-        setStores(res.items || []);
-      } catch { /* ignore */ }
-      finally { setStoreLoading(false); }
-    }
   };
 
   const handleCreateSubmit = async () => {
@@ -269,12 +266,14 @@ export default function WarrantyRecordListPage() {
       <DetailDrawer open={createOpen} onOpenChange={setCreateOpen} title="手动录入质保">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">所属门店 <span className="text-red-500">*</span></label>
-            <select value={createForm.store_id} onChange={(e) => setCreateForm({ ...createForm, store_id: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
-              <option value="">{storeLoading ? '加载中...' : '请选择门店'}</option>
-              {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+            <StoreSearchSelect
+              value={createForm.store_id}
+              label="所属门店"
+              required
+              placeholder="输入门店名称搜索"
+              fetchStores={fetchStores}
+              onSelect={(id) => setCreateForm({ ...createForm, store_id: id })}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">质保码 <span className="text-red-500">*</span></label>
