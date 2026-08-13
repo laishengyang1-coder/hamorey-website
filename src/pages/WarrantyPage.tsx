@@ -145,7 +145,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
           rows={[
             ['车主姓名', record.customer_name_snapshot || '-'],
             ['品牌车型', `${record.vehicle_brand_snapshot || '-'} ${record.vehicle_model_snapshot || ''}`.trim()],
-            ['车牌号码', record.plate_no_snapshot || '-'],
+            ['车牌号码', record.plate_no_snapshot || '临时车牌'],
             ['车架号码', record.vin_snapshot || '-'],
           ]}
         />
@@ -407,11 +407,9 @@ export default function WarrantyPage() {
                       <span className="text-base font-semibold text-content-primary">
                         {vehicle.brand} {vehicle.model}
                       </span>
-                      {vehicle.plate_no && (
-                        <span className="rounded bg-graphite px-2 py-0.5 text-xs font-medium text-content-secondary">
-                          {vehicle.plate_no}
-                        </span>
-                      )}
+                      <span className="rounded bg-graphite px-2 py-0.5 text-xs font-medium text-content-secondary">
+                        {vehicle.plate_no || '临时车牌'}
+                      </span>
                     </div>
                     {result.records
                       .filter((r) => r.plate_no_snapshot === vehicle.plate_no)

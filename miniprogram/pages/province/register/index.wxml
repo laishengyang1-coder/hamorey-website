@@ -110,10 +110,10 @@
       </view>
       <view class="section-body">
         <view class="form-group">
-          <view class="form-label"><text class="required">*</text>车牌号</view>
+          <view class="form-label">车牌号（选填）</view>
           <input
             class="form-input"
-            placeholder="例如：京A12345"
+            placeholder="新车未上牌可留空"
             placeholder-class="search-placeholder"
             value="{{form.plate_no}}"
             bindinput="onFieldInput"
@@ -121,10 +121,10 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">车架号（VIN）</view>
+          <view class="form-label"><text class="required">*</text>车架号（VIN）</view>
           <input
             class="form-input"
-            placeholder="请输入车架号（选填）"
+            placeholder="请输入 17 位车架号"
             placeholder-class="search-placeholder"
             value="{{form.vin}}"
             bindinput="onFieldInput"

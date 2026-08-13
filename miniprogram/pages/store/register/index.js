@@ -92,8 +92,8 @@ Page({
     }
 
     if (currentStep === 2) {
-      if (!form.plate_no.trim()) {
-        wx.showToast({ title: '请输入车牌号', icon: 'none' });
+      if (!form.vin.trim()) {
+        wx.showToast({ title: '请输入车架号（VIN）', icon: 'none' });
         return false;
       }
       if (!form.vehicle_brand.trim()) {

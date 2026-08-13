@@ -89,7 +89,7 @@ Page({
       owner_rows: [
         { label: '车主姓名', value: raw.customer_name_snapshot || '--' },
         { label: '品牌车型', value: `${raw.vehicle_brand_snapshot || ''} ${raw.vehicle_model_snapshot || ''}`.trim() || '--' },
-        { label: '车牌号码', value: raw.plate_no_snapshot || '--' },
+        { label: '车牌号码', value: raw.plate_no_snapshot || '临时车牌' },
         { label: '车架号码', value: raw.vin_snapshot || '--' }
       ],
       install_rows: [

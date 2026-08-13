@@ -126,7 +126,7 @@ export default function WarrantyRegisterPage() {
   const handleSubmit = async () => {
     const required: Array<[keyof typeof form, string]> = [
       ['store_id', '门店'], ['warranty_code', '质保码'], ['customer_name', '车主姓名'],
-      ['customer_phone', '联系电话'], ['plate_no', '车牌号'], ['vehicle_brand', '车辆品牌'],
+      ['customer_phone', '联系电话'], ['vin', '车架号（VIN）'], ['vehicle_brand', '车辆品牌'],
       ['vehicle_model', '车辆型号'], ['installation_date', '施工日期'],
     ];
     for (const [field, label] of required) {
@@ -287,13 +287,15 @@ export default function WarrantyRegisterPage() {
           {step === 2 && (
             <div className="max-w-md space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">车牌号 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">车牌号（选填）</label>
                 <input value={form.plate_no} onChange={(e) => updateField('plate_no', e.target.value)}
+                  placeholder="新车未上牌可留空"
                   className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">VIN（车架号）</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">车架号（VIN）*</label>
                 <input value={form.vin} onChange={(e) => updateField('vin', e.target.value)}
+                  placeholder="17 位车架号"
                   className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
               </div>
               <div>

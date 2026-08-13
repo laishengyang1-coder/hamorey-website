@@ -90,7 +90,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.warranty_code) errors.push({ field: 'warranty_code', message: '质保码不能为空' });
     if (!body.customer_name) errors.push({ field: 'customer_name', message: '车主姓名不能为空' });
     if (!body.customer_phone) errors.push({ field: 'customer_phone', message: '车主电话不能为空' });
-    if (!body.plate_no) errors.push({ field: 'plate_no', message: '车牌号不能为空' });
+    if (!body.vin) errors.push({ field: 'vin', message: '车架号（VIN）不能为空' });
     if (!body.vehicle_brand) errors.push({ field: 'vehicle_brand', message: '车辆品牌不能为空' });
     if (!body.vehicle_model) errors.push({ field: 'vehicle_model', message: '车辆型号不能为空' });
     if (!body.installation_date) errors.push({ field: 'installation_date', message: '施工日期不能为空' });
@@ -174,11 +174,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    // 查询/创建车辆
+    // 查询/创建车辆（VIN 必填，按 VIN 匹配车辆）
     let vehicle = await queryFirst<{ id: string }>(
       context.env.DB,
-      `SELECT id FROM vehicles WHERE plate_no = ? AND customer_id = ?`,
-      body.plate_no, customerId,
+      `SELECT id FROM vehicles WHERE vin = ? AND customer_id = ?`,
+      body.vin, customerId,
     );
     const vehicleId = vehicle?.id || generateId();
     if (!vehicle) {
@@ -186,7 +186,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         context.env.DB,
         `INSERT INTO vehicles (id, customer_id, plate_no, vin, brand, model, model_year, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-        vehicleId, customerId, body.plate_no, body.vin || null,
+        vehicleId, customerId, body.plate_no || null, body.vin,
         body.vehicle_brand, body.vehicle_model, body.vehicle_year || null,
       );
     }
@@ -206,7 +206,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         status, submitted_at, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'), datetime('now'), datetime('now'))`,
       recordId, wc.id, vehicleId, customerId,
-      body.customer_name, body.customer_phone, body.plate_no, body.vin || null,
+      body.customer_name, body.customer_phone, body.plate_no || null, body.vin,
       body.vehicle_brand, body.vehicle_model,
       store.id, store.name, user?.orgId,
       wc.product_model_id, product?.name_cn || '', model.display_name,

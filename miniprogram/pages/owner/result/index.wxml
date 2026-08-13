@@ -42,7 +42,7 @@
     >
       <!-- 车辆信息 -->
       <view class="vehicle-header">
-        <view class="vehicle-plate">{{item.plate_no_snapshot || '未登记车牌'}}</view>
+        <view class="vehicle-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
         <view class="vehicle-model">{{item.vehicle_brand_snapshot}} {{item.vehicle_model_snapshot}}</view>
       </view>
 
