@@ -18,7 +18,7 @@ interface WarrantyRecord {
 const COLUMNS: Column[] = [
   { key: 'warranty_code', title: '质保码', dataIndex: 'warranty_code' },
   { key: 'customer_name_snapshot', title: '车主', dataIndex: 'customer_name_snapshot' },
-  { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot' },
+  { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot', render: (v) => (v ? v : '临时车牌') },
   { key: 'model_name', title: '型号', dataIndex: 'model_name' },
   { key: 'current_reject_reason', title: '驳回原因', dataIndex: 'current_reject_reason' },
   { key: 'updated_at', title: '驳回时间', dataIndex: 'updated_at', render: (v) => (v as string)?.slice(0, 16) || '-' },

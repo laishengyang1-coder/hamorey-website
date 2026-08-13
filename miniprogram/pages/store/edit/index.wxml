@@ -74,9 +74,11 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">车牌号</view>
+          <view class="form-label">车牌号（选填）</view>
           <input
             class="form-input"
+            placeholder="新车未上牌可留空"
+            placeholder-class="search-placeholder"
             value="{{editForm.plate_no}}"
             bindinput="onEditInput"
             data-field="plate_no"
@@ -145,7 +147,7 @@
         <view class="section-body">
           <view class="info-row">
             <view class="info-row-label">车牌号</view>
-            <view class="info-row-value">{{record.plate_no_snapshot || '--'}}</view>
+            <view class="info-row-value">{{record.plate_no_snapshot || '临时车牌'}}</view>
           </view>
           <view class="info-row">
             <view class="info-row-label">车架号</view>

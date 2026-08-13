@@ -180,7 +180,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     const pngBytes = await createCertificateImage({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
-      plateNo: record.plate_no_snapshot,
+      plateNo: record.plate_no_snapshot || '临时车牌',
       vin: record.vin_snapshot || '-',
       vehicleBrand: record.vehicle_brand_snapshot,
       vehicleModel: record.vehicle_model_snapshot,

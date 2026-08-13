@@ -154,7 +154,7 @@ export default function WarrantyRecordListPage() {
     if (!f.warranty_code.trim()) { alert('请输入质保码'); return; }
     if (!f.customer_name.trim()) { alert('请输入车主姓名'); return; }
     if (!/^1\d{10}$/.test(f.customer_phone.trim())) { alert('请输入正确的手机号'); return; }
-    if (!f.plate_no.trim()) { alert('请输入车牌号'); return; }
+    if (!f.vin.trim()) { alert('请输入车架号（VIN）'); return; }
     if (!f.vehicle_brand.trim()) { alert('请输入车辆品牌'); return; }
     if (!f.vehicle_model.trim()) { alert('请输入车辆型号'); return; }
     if (!f.installation_date) { alert('请选择施工日期'); return; }
@@ -165,8 +165,8 @@ export default function WarrantyRecordListPage() {
         warranty_code: f.warranty_code.trim(),
         customer_name: f.customer_name.trim(),
         customer_phone: f.customer_phone.trim(),
-        plate_no: f.plate_no.trim(),
-        vin: f.vin.trim() || undefined,
+        plate_no: f.plate_no.trim() || undefined,
+        vin: f.vin.trim(),
         vehicle_brand: f.vehicle_brand.trim(),
         vehicle_model: f.vehicle_model.trim(),
         vehicle_year: f.vehicle_year.trim() || undefined,
@@ -244,7 +244,7 @@ export default function WarrantyRecordListPage() {
               {(['customer_name', 'customer_phone', 'plate_no', 'vin', 'vehicle_brand', 'vehicle_model'] as const).map((field) => (
                 <div key={field}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {{ customer_name: '车主姓名', customer_phone: '联系电话', plate_no: '车牌号', vin: 'VIN', vehicle_brand: '车辆品牌', vehicle_model: '车辆型号' }[field]}
+                    {{ customer_name: '车主姓名', customer_phone: '联系电话', plate_no: '车牌号（选填）', vin: '车架号（VIN）', vehicle_brand: '车辆品牌', vehicle_model: '车辆型号' }[field]}
                   </label>
                   <input value={editForm[field]} onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
@@ -285,7 +285,7 @@ export default function WarrantyRecordListPage() {
           {(['customer_name', 'customer_phone', 'plate_no', 'vin', 'vehicle_brand', 'vehicle_model', 'vehicle_year'] as const).map((field) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {{ customer_name: '车主姓名 *', customer_phone: '联系电话 *', plate_no: '车牌号 *', vin: 'VIN（选填）', vehicle_brand: '车辆品牌 *', vehicle_model: '车辆型号 *', vehicle_year: '年款（选填）' }[field]}
+                {{ customer_name: '车主姓名 *', customer_phone: '联系电话 *', plate_no: '车牌号（选填）', vin: '车架号（VIN）*', vehicle_brand: '车辆品牌 *', vehicle_model: '车辆型号 *', vehicle_year: '年款（选填）' }[field]}
               </label>
               <input
                 type={field === 'customer_phone' ? 'number' : 'text'}

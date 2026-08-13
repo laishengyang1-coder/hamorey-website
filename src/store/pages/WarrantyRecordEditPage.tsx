@@ -102,7 +102,7 @@ export default function WarrantyRecordEditPage() {
           {(['customer_name', 'customer_phone', 'plate_no', 'vin', 'vehicle_brand', 'vehicle_model'] as const).map((field) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {field === 'customer_name' ? '车主姓名' : field === 'customer_phone' ? '联系电话' : field === 'plate_no' ? '车牌号' : field === 'vin' ? 'VIN' : field === 'vehicle_brand' ? '车辆品牌' : '车辆型号'}
+                {field === 'customer_name' ? '车主姓名' : field === 'customer_phone' ? '联系电话' : field === 'plate_no' ? '车牌号（选填）' : field === 'vin' ? '车架号（VIN）' : field === 'vehicle_brand' ? '车辆品牌' : '车辆型号'}
               </label>
               <input value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                 disabled={!isRejected}

@@ -87,7 +87,7 @@ export default function SubRecordListPage() {
 
   const COLUMNS: Column[] = [
     { key: 'customer_name_snapshot', title: '车主', dataIndex: 'customer_name_snapshot' },
-    { key: 'plate_no_snapshot', title: '车牌号', dataIndex: 'plate_no_snapshot' },
+    { key: 'plate_no_snapshot', title: '车牌号', dataIndex: 'plate_no_snapshot', render: (v) => (v ? v : '临时车牌') },
     { key: 'product_name_snapshot', title: '产品', dataIndex: 'product_name_snapshot' },
     { key: 'store_name_snapshot', title: '施工门店', dataIndex: 'store_name_snapshot' },
     { key: 'installation_date', title: '施工日期', dataIndex: 'installation_date', render: (v) => (v as string)?.slice(0, 10) },
@@ -122,7 +122,7 @@ export default function SubRecordListPage() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
                 ['质保码', detail.record.warranty_code], ['车主', detail.record.customer_name_snapshot],
-                ['电话', detail.record.customer_phone_snapshot], ['车牌', detail.record.plate_no_snapshot],
+                ['电话', detail.record.customer_phone_snapshot], ['车牌', detail.record.plate_no_snapshot || '临时车牌'],
                 ['VIN', detail.record.vin_snapshot || '-'], ['品牌', detail.record.vehicle_brand_snapshot],
                 ['型号', detail.record.vehicle_model_snapshot || detail.record.model_name],
                 ['门店', detail.record.store_name_snapshot || detail.record.store_name],

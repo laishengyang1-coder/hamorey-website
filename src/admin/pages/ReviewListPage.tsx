@@ -139,7 +139,7 @@ export default function ReviewListPage() {
 const BASE_COLUMNS: Column[] = [
   { key: 'warranty_code', title: '质保码', dataIndex: 'warranty_code' },
   { key: 'customer_name_snapshot', title: '车主', dataIndex: 'customer_name_snapshot' },
-  { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot', className: 'whitespace-nowrap' },
+  { key: 'plate_no_snapshot', title: '车牌', dataIndex: 'plate_no_snapshot', className: 'whitespace-nowrap', render: (v) => (v ? v : '临时车牌') },
   { key: 'model_name', title: '型号', dataIndex: 'model_name', className: 'max-w-[120px] truncate' },
   { key: 'store_name', title: '门店', dataIndex: 'store_name', className: 'max-w-[140px] truncate' },
   { key: 'submitted_at', title: '提交时间', dataIndex: 'submitted_at', render: (v) => (v as string)?.slice(0, 16) || '-', className: 'whitespace-nowrap' },

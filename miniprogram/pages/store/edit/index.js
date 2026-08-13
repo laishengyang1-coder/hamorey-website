@@ -106,8 +106,8 @@ Page({
     if (!editForm.customer_name.trim()) {
       wx.showToast({ title: '请输入车主姓名', icon: 'none' }); return;
     }
-    if (!editForm.plate_no.trim()) {
-      wx.showToast({ title: '请输入车牌号', icon: 'none' }); return;
+    if (!editForm.vin.trim()) {
+      wx.showToast({ title: '请输入车架号（VIN）', icon: 'none' }); return;
     }
 
     this.setData({ submitting: true });
@@ -115,8 +115,8 @@ Page({
     const res = await api.put(`/store/warranty-records/${this.data.recordId}`, {
       customer_name: editForm.customer_name.trim(),
       customer_phone: editForm.customer_phone.trim(),
-      plate_no: editForm.plate_no.trim(),
-      vin: editForm.vin.trim() || undefined,
+      plate_no: editForm.plate_no.trim() || undefined,
+      vin: editForm.vin.trim(),
       vehicle_brand: editForm.vehicle_brand.trim(),
       vehicle_model: editForm.vehicle_model.trim(),
       installation_date: editForm.installation_date

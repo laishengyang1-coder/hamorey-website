@@ -52,7 +52,7 @@
       <view class="record-top">
         <view class="record-info">
           <view class="record-name">{{item.customer_name_snapshot || '--'}}</view>
-          <view class="record-plate">{{item.plate_no_snapshot || '--'}}</view>
+          <view class="record-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
         </view>
         <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
       </view>

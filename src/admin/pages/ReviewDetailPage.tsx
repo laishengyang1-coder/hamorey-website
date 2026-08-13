@@ -108,7 +108,7 @@ export default function ReviewDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <Field label="车主姓名" value={record.customer_name_snapshot} />
               <Field label="联系电话" value={record.customer_phone_snapshot} />
-              <Field label="车牌号" value={record.plate_no_snapshot} />
+              <Field label="车牌号" value={record.plate_no_snapshot || '临时车牌'} />
               <Field label="VIN" value={record.vin_snapshot} />
               <Field label="车辆品牌" value={record.vehicle_brand_snapshot} />
               <Field label="车辆型号" value={record.vehicle_model_snapshot} />
