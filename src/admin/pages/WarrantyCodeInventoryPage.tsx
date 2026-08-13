@@ -10,6 +10,7 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
+import { StoreSearchSelect } from '../../shared/components/StoreSearchSelect';
 
 interface WarrantyCode {
   id: string;
@@ -43,7 +44,6 @@ export default function WarrantyCodeInventoryPage() {
   const [orgs, setOrgs] = useState<Array<{ id: string; name: string; type: string }>>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [models, setModels] = useState<Array<{ id: string; model_code: string; display_name: string; usage_limit: number | null; product_name?: string }>>([]);
-  const [stores, setStores] = useState<Array<{ id: string; name: string }>>([]);
   const [createForm, setCreateForm] = useState({ code: '', product_model_id: '', store_id: '', batch_no: '', usage_limit: '' });
   const [creating, setCreating] = useState(false);
 
@@ -130,20 +130,20 @@ export default function WarrantyCodeInventoryPage() {
   const openCreate = async () => {
     setCreateForm({ code: '', product_model_id: '', store_id: '', batch_no: '', usage_limit: '' });
     setCreateOpen(true);
-    // 并行拉取型号 + 门店
+    // 拉取型号（门店改为搜索选择，无需预加载）
     if (models.length === 0) {
       try {
         const res = await apiRequest<{ items: Array<{ id: string; model_code: string; display_name: string; usage_limit: number | null; product_name?: string }> }>(`/admin/product-models?status=active`);
         setModels(res.items || []);
       } catch { /* ignore */ }
     }
-    if (stores.length === 0) {
-      try {
-        const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&pageSize=999`);
-        setStores(res.items || []);
-      } catch { /* ignore */ }
-    }
   };
+
+  // 门店搜索（关键字联想）
+  const fetchStores = useCallback(async (kw: string) => {
+    const res = await apiRequest<{ items: Array<{ id: string; name: string }> }>(`/admin/organizations?type=STORE&keyword=${encodeURIComponent(kw)}&pageSize=20`);
+    return res.items || [];
+  }, []);
 
   const handleCreateSubmit = async () => {
     const f = createForm;
@@ -249,12 +249,14 @@ export default function WarrantyCodeInventoryPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">所属门店 <span className="text-red-500">*</span></label>
-            <select value={createForm.store_id} onChange={(e) => setCreateForm({ ...createForm, store_id: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
-              <option value="">请选择门店（质保码将分配给该门店）</option>
-              {stores.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+            <StoreSearchSelect
+              value={createForm.store_id}
+              label="所属门店"
+              required
+              placeholder="输入门店名称搜索（质保码将分配给该门店）"
+              fetchStores={fetchStores}
+              onSelect={(id) => setCreateForm({ ...createForm, store_id: id })}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
