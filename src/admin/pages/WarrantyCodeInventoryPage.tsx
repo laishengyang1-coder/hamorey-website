@@ -145,6 +145,14 @@ export default function WarrantyCodeInventoryPage() {
     return res.items || [];
   }, []);
 
+  // 组织搜索（省代 + 门店，用于批量划拨接收方）
+  const fetchAllocateOrgs = useCallback(async (kw: string) => {
+    const res = await apiRequest<{ items: Array<{ id: string; name: string; type: string }> }>(`/admin/organizations?keyword=${encodeURIComponent(kw)}&pageSize=20`);
+    return (res.items || [])
+      .filter((o) => o.type !== 'HQ')
+      .map((o) => ({ id: o.id, name: `${o.name}（${o.type === 'PROVINCE' ? '省代' : '门店'}）` }));
+  }, []);
+
   const handleCreateSubmit = async () => {
     const f = createForm;
     if (!f.code.trim()) { alert('请输入质保码'); return; }
@@ -221,15 +229,14 @@ export default function WarrantyCodeInventoryPage() {
       <ConfirmDialog open={allocateOpen} onOpenChange={setAllocateOpen} title="批量划拨质保码"
         confirmText="确认划拨" onConfirm={handleAllocate} loading={operating}>
         <p className="text-sm text-gray-500">请选择要把 <b>{selected.size}</b> 个质保码划拨到的组织：</p>
-        <select value={toOrgId} onChange={(e) => setToOrgId(e.target.value)}
-          className="mt-4 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-[#5C1A1A] focus:outline-none focus:ring-1 focus:ring-[#5C1A1A]">
-          <option value="">请选择接收方</option>
-          {orgs.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.name} ({o.type === 'PROVINCE' ? '省代' : '门店'})
-            </option>
-          ))}
-        </select>
+        <div className="mt-4">
+          <StoreSearchSelect
+            value={toOrgId}
+            placeholder="输入省代/门店名称搜索"
+            fetchStores={fetchAllocateOrgs}
+            onSelect={(id) => setToOrgId(id)}
+          />
+        </div>
       </ConfirmDialog>
 
       <DetailDrawer open={createOpen} onOpenChange={setCreateOpen} title="手动新增质保码">
