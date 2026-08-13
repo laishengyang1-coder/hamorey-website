@@ -26,6 +26,7 @@ const PointsRulesPage = lazyWithRetry(() => import('../admin/pages/PointsRulesPa
 const RebateRulesPage = lazyWithRetry(() => import('../admin/pages/RebateRulesPage'));
 const PointsLedgerPage = lazyWithRetry(() => import('../admin/pages/PointsLedgerPage'));
 const OrgPointsPage = lazyWithRetry(() => import('../admin/pages/OrgPointsPage'));
+const StarPlanPage = lazyWithRetry(() => import('../admin/pages/StarPlanPage'));
 const RewardsPage = lazyWithRetry(() => import('../admin/pages/RewardsPage'));
 const RedemptionListPage = lazyWithRetry(() => import('../admin/pages/RedemptionListPage'));
 const ClaimPartsPage = lazyWithRetry(() => import('../admin/pages/ClaimPartsPage'));
@@ -85,6 +86,7 @@ const ADMIN_MENU: MenuItem[] = [
     path: '',
     children: [
       { key: 'org-points', label: '组织积分', path: '/admin/org-points' },
+      { key: 'star-plan', label: '繁星计划', path: '/admin/star-plan' },
       { key: 'points-rules', label: '积分规则', path: '/admin/points-rules' },
       { key: 'rebate-rules', label: '返利规则', path: '/admin/rebate-rules' },
       { key: 'rewards', label: '积分商城', path: '/admin/rewards' },
@@ -260,6 +262,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <OrgPointsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'star-plan',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <StarPlanPage />
           </Suspense>
         ),
       },
