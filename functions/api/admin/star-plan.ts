@@ -29,7 +29,7 @@ const DEFAULT_END = '2026-09-15';
 async function readConfig(db: D1Database): Promise<{ startDate: string; endDate: string }> {
   const rows = await queryAll<{ key: string; value: string | null }>(
     db,
-    `SELECT key, value FROM system_settings WHERE key IN (?, ?)`,
+    `SELECT \`key\`, \`value\` FROM system_settings WHERE \`key\` IN (?, ?)`,
     CFG_START, CFG_END,
   );
   const map: Record<string, string> = {};
@@ -41,11 +41,11 @@ async function readConfig(db: D1Database): Promise<{ startDate: string; endDate:
 }
 
 async function upsertSetting(db: D1Database, key: string, value: string, description: string, updatedBy: string | null) {
-  const existing = await queryFirst<{ id: string }>(db, `SELECT id FROM system_settings WHERE key = ?`, key);
+  const existing = await queryFirst<{ id: string }>(db, `SELECT id FROM system_settings WHERE \`key\` = ?`, key);
   if (existing) {
-    await execute(db, `UPDATE system_settings SET value = ?, updated_by = ?, updated_at = datetime('now') WHERE key = ?`, value, updatedBy, key);
+    await execute(db, `UPDATE system_settings SET \`value\` = ?, updated_by = ?, updated_at = datetime('now') WHERE \`key\` = ?`, value, updatedBy, key);
   } else {
-    await execute(db, `INSERT INTO system_settings (id, key, value, value_type, description, updated_by, updated_at) VALUES (?, ?, ?, 'string', ?, ?, datetime('now'))`, generateId(), key, value, description, updatedBy);
+    await execute(db, `INSERT INTO system_settings (id, \`key\`, \`value\`, value_type, description, updated_by, updated_at) VALUES (?, ?, ?, 'string', ?, ?, datetime('now'))`, generateId(), key, value, description, updatedBy);
   }
 }
 
