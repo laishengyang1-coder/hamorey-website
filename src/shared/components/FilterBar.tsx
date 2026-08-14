@@ -6,16 +6,64 @@
 //   2. children 模式：自定义子组件 + onSearch
 // ============================================================
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '../../lib/cn';
 
 export interface FilterField {
   key: string;
   label: string;
-  type: 'text' | 'select' | 'date-range';
+  type: 'text' | 'select' | 'search-select' | 'date-range';
   placeholder?: string;
   options?: Array<{ value: string; label: string }>;
   width?: string;
+}
+
+/** 可搜索下拉选择：输入关键字本地过滤 options，点选后回填 label */
+function SearchSelectField({ field, value, onChange, baseClass }: { field: FilterField; value: string; onChange: (v: string) => void; baseClass: string }) {
+  const [kw, setKw] = useState('');
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selected = (field.options || []).find((o) => o.value === value);
+  const filtered = (field.options || []).filter((o) => o.label.toLowerCase().includes(kw.trim().toLowerCase()));
+
+  return (
+    <div ref={boxRef} className="relative">
+      <input
+        className={cn(baseClass, 'w-full')}
+        placeholder={field.placeholder || field.label}
+        value={open ? kw : (selected?.label || '')}
+        onFocus={() => setOpen(true)}
+        onChange={(e) => { setKw(e.target.value); setOpen(true); }}
+      />
+      {open && (
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg max-h-56 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-gray-400">无匹配项</div>
+          ) : (
+            filtered.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => { onChange(o.value); setOpen(false); setKw(''); }}
+                className={`block w-full text-left px-3 py-2 text-sm hover:bg-[#5C1A1A]/5 ${o.value === value ? 'text-[#5C1A1A] font-medium' : 'text-gray-700'}`}
+              >
+                {o.label}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface FilterBarProps {
@@ -103,6 +151,13 @@ export function FilterBar({ fields, onFilter, onReset, initialValues = {}, class
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
+            ) : field.type === 'search-select' ? (
+              <SearchSelectField
+                field={field}
+                value={values[field.key] || ''}
+                onChange={(v) => handleChange(field.key, v)}
+                baseClass={baseClass}
+              />
             ) : (
               <input
                 type="text"

@@ -53,7 +53,7 @@ export default function WarrantyCodeInventoryPage() {
       { value: 'partial_used', label: '部分使用' }, { value: 'exhausted', label: '已用完' },
       { value: 'frozen', label: '已冻结' }, { value: 'voided', label: '已作废' },
     ]},
-    { key: 'owner_org_id', label: '当前归属', type: 'select', options: [
+    { key: 'owner_org_id', label: '当前归属', type: 'search-select', placeholder: '输入组织名称搜索', options: [
       { value: 'org-hq-001', label: '和膜 HAMOREY 总部' },
       ...orgs.map((org) => ({ value: org.id, label: `${org.name} (${org.type === 'PROVINCE' ? '省代' : '门店'})` })),
     ]},
