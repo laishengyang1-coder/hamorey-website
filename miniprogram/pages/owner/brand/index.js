@@ -40,7 +40,8 @@ Page({
     ]
   },
 
-  onSeriesTap() {
-    wx.switchTab({ url: '/pages/owner/product/index' });
+  onSeriesTap(e) {
+    const { key } = e.currentTarget.dataset || {};
+    wx.navigateTo({ url: '/pages/owner/product/index?series=' + (key || '') });
   }
 });

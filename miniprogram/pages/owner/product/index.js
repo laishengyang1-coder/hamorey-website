@@ -84,6 +84,6 @@ Page({
   },
 
   goStores() {
-    wx.switchTab({ url: '/pages/owner/stores/index' });
+    wx.navigateTo({ url: '/pages/owner/stores/index' });
   }
 });
