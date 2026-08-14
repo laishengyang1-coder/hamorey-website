@@ -50,20 +50,27 @@ export default function DashboardPage() {
   const [storeActivity, setStoreActivity] = useState<any[]>([]);
 
   useEffect(() => {
-    async function fetchData() {
+    const loadRankings = () => {
+      apiRequest<RankingItem[]>('/admin/dashboard?type=province-ranking').then(setProvinceRanking).catch(() => {});
+      apiRequest<RankingItem[]>('/admin/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
+      apiRequest<RankingItem[]>('/admin/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
+      apiRequest<RankingItem[]>('/admin/dashboard?type=points-ranking').then(setPointsRanking).catch(() => {});
+      apiRequest<{ date: string; count: number }[]>('/admin/dashboard?type=trend').then(setTrendData).catch(() => setTrendData([]));
+      apiRequest<any>('/admin/dashboard?type=code-lifecycle').then(setLifecycle).catch(() => {});
+      apiRequest<any[]>('/admin/dashboard?type=store-activity').then(setStoreActivity).catch(() => {});
+    };
+
+    (async () => {
       setLoading(true);
       try { setData(await apiRequest<DashboardData>('/admin/dashboard')); }
       catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
       finally { setLoading(false); }
-    }
-    fetchData();
-    apiRequest<RankingItem[]>('/admin/dashboard?type=province-ranking').then(setProvinceRanking).catch(() => {});
-    apiRequest<RankingItem[]>('/admin/dashboard?type=store-ranking').then(setStoreRanking).catch(() => {});
-    apiRequest<RankingItem[]>('/admin/dashboard?type=product-ranking').then(setProductRanking).catch(() => {});
-    apiRequest<RankingItem[]>('/admin/dashboard?type=points-ranking').then(setPointsRanking).catch(() => {});
-    apiRequest<{ date: string; count: number }[]>('/admin/dashboard?type=trend').then(d => { console.log('趋势数据:', d?.length, '条, 首:', d?.[0], '尾:', d?.[d.length-1]); setTrendData(d); }).catch(e => { console.error('趋势加载失败:', e); setTrendData([]); });
-    apiRequest<any>('/admin/dashboard?type=code-lifecycle').then(setLifecycle).catch(() => {});
-    apiRequest<any[]>('/admin/dashboard?type=store-activity').then(setStoreActivity).catch(() => {});
+    })();
+    loadRankings();
+
+    // 每 60 秒自动刷新排行榜与活跃度数据
+    const timer = window.setInterval(loadRankings, 60000);
+    return () => window.clearInterval(timer);
   }, []);
 
   if (loading) return (
