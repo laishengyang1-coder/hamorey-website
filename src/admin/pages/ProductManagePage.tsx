@@ -136,7 +136,7 @@ export default function ProductManagePage() {
   // 远方集团专属系列：型号编码以 WH / K 开头（如 WH6.5、K85），单独区块展示，所属分类为隐形车衣
   const YUANFANG_MODEL_PATTERN = /^(WH|K)\d/;
   const yuanfangModels = models.filter((model) => YUANFANG_MODEL_PATTERN.test(model.model_code));
-  const otherModels = models.filter((model) => model.product_category !== 'window_film' && !YUANFANG_MODEL_PATTERN.test(model.model_code));
+  const otherModels = models.filter((model) => model.product_category !== 'window_film' && model.product_category !== 'prismatic_film' && !YUANFANG_MODEL_PATTERN.test(model.model_code));
 
   const WINDOW_COLS: Column[] = [
     { key: 'seriesName', title: '产品名称', dataIndex: 'seriesName', render: (_v, record) => (
