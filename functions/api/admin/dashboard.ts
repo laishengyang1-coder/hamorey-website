@@ -41,12 +41,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const rows = await db.prepare(
         `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
            UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
-         SELECT COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品') AS name,
+         SELECT COALESCE(pm.display_name, NULLIF(wr.product_model_snapshot, ''), wr.product_name_snapshot, '未命名产品') AS name,
                 COUNT(wr.id) AS count
          FROM warranty_records wr
          LEFT JOIN product_models pm ON pm.id = wr.product_model_id
          WHERE wr.status = 'active' AND wr.store_id NOT IN (SELECT id FROM excl)
-         GROUP BY COALESCE(NULLIF(wr.product_model_snapshot, ''), pm.display_name, wr.product_name_snapshot, '未命名产品')
+         GROUP BY COALESCE(pm.display_name, NULLIF(wr.product_model_snapshot, ''), wr.product_name_snapshot, '未命名产品')
          ORDER BY count DESC, name ASC
          LIMIT 10`
       ).all();
