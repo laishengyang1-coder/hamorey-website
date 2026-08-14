@@ -16,12 +16,46 @@
     <!-- 收货地址 -->
     <view class="card-section">
       <view class="card-title">收货地址</view>
-      <view class="addr-row">
-        <view class="addr-cell"><input placeholder="收货人姓名" value="{{address.name}}" data-field="name" bindinput="onAddrChange" /></view>
-        <view class="addr-cell"><input placeholder="手机号" type="number" maxlength="11" value="{{address.phone}}" data-field="phone" bindinput="onAddrChange" /></view>
+
+      <!-- 已有地址列表 -->
+      <view class="addr-item {{item.id === selectedAddressId ? 'active' : ''}}" wx:for="{{addresses}}" wx:key="id" data-id="{{item.id}}" bindtap="tapAddress">
+        <view class="addr-radio">
+          <view class="addr-radio-dot" wx:if="{{item.id === selectedAddressId}}"></view>
+        </view>
+        <view class="addr-main">
+          <view class="addr-line1">
+            <text class="addr-name">{{item.recipient_name}}</text>
+            <text class="addr-phone">{{item.phone}}</text>
+            <text class="addr-default" wx:if="{{item.is_default}}">默认</text>
+          </view>
+          <view class="addr-line2">{{item.province}} {{item.city}} {{item.district || ''}} {{item.detail_address}}</view>
+        </view>
       </view>
-      <view class="addr-cell-full"><input placeholder="所在地区（如：浙江省杭州市滨江区）" value="{{address.region}}" data-field="region" bindinput="onAddrChange" /></view>
-      <view class="addr-cell-full"><input placeholder="详细地址（如：XX路XX号XX室）" value="{{address.detail}}" data-field="detail" bindinput="onAddrChange" /></view>
+
+      <view class="addr-empty" wx:if="{{addresses.length === 0}}">暂无收货地址，请先新增</view>
+
+      <!-- 新增地址表单 -->
+      <view class="addr-add-btn" bindtap="toggleAddrForm">{{showAddrForm ? '收起新增' : '+ 新增收货地址'}}</view>
+
+      <block wx:if="{{showAddrForm}}">
+        <view class="addr-form">
+          <view class="addr-row">
+            <view class="addr-cell"><input placeholder="收货人姓名" value="{{newAddr.name}}" data-field="name" bindinput="onAddrFormInput" /></view>
+            <view class="addr-cell"><input placeholder="手机号" type="number" maxlength="11" value="{{newAddr.phone}}" data-field="phone" bindinput="onAddrFormInput" /></view>
+          </view>
+          <view class="addr-row">
+            <view class="addr-cell"><input placeholder="省份（如：河北省）" value="{{newAddr.province}}" data-field="province" bindinput="onAddrFormInput" /></view>
+            <view class="addr-cell"><input placeholder="城市（如：廊坊市）" value="{{newAddr.city}}" data-field="city" bindinput="onAddrFormInput" /></view>
+          </view>
+          <view class="addr-cell-full"><input placeholder="区县（选填，如：广阳区）" value="{{newAddr.district}}" data-field="district" bindinput="onAddrFormInput" /></view>
+          <view class="addr-cell-full"><input placeholder="详细地址（如：XX路XX号XX室）" value="{{newAddr.detail}}" data-field="detail" bindinput="onAddrFormInput" /></view>
+          <view class="addr-default-row">
+            <text class="addr-default-label">设为默认地址</text>
+            <switch checked="{{newAddr.isDefault}}" bindchange="onDefaultChange" color="#5C1A1A" />
+          </view>
+          <view class="addr-save-btn {{savingAddr ? 'disabled' : ''}}" bindtap="saveAddress">{{savingAddr ? '保存中...' : '保存地址'}}</view>
+        </view>
+      </block>
     </view>
 
     <!-- 汇总 -->
