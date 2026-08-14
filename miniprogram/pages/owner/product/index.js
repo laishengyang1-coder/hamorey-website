@@ -32,8 +32,8 @@ const SERIES_LIST = [
       { name: '和旺 HW9', code: 'HW9', en: 'HEWANG HW9', tech: 'TPU 基材·高亮版', warranty: 10, highlight: '旗舰防护·十年质保', price: 15800, specs: ['高亮 TPU', '厚度 8.5mil', '抗穿刺', '持久增亮'] },
       { name: '和御 HY8', code: 'HY8', en: 'HEYU HY8', tech: 'TPU 基材·旗舰级', warranty: 10, highlight: '顶级旗舰·至尊守护', price: 16800, specs: ['旗舰级 TPU', '厚度 7.5mil', '顶级抗穿刺', '修复性能最强'] },
       { name: '和雅 HYM', code: 'YM-8', en: 'HEYA HYM', tech: 'TPU 基材·哑光版', warranty: 8, highlight: '哑光质感·低调奢华', price: 12800, specs: ['哑光 TPU', '厚度 7.5mil', '磨砂质感', '指纹不留痕'] },
-      { name: '和尊 HZ', code: 'HZ', en: 'HEZUN HZ', tech: 'TPU 基材·超长质保', warranty: 15, highlight: '十五年质保·尊享守护', price: 16800, specs: ['TPU 基材', '厚度 7.5mil', '自修复涂层', '高光泽'] },
-      { name: '和鼎 HD', code: 'HD', en: 'HEDING HD', tech: 'TPU 基材·旗舰增强', warranty: 15, highlight: '十五年质保·旗舰防护', price: 21800, specs: ['TPU 基材', '厚度 7.5mil', '自修复涂层', '高光泽'] }
+      { name: '和尊 HZ', code: 'HZ', en: 'HEZUN HZ', tech: '聚碳酸酯涂层·超长质保', warranty: 15, highlight: '十五年质保·尊享守护', price: 16800, specs: ['聚碳酸酯涂层', '厚度 7.5mil', '自修复', '高光泽'] },
+      { name: '和鼎 HD', code: 'HD', en: 'HEDING HD', tech: '聚碳酸酯基材·旗舰增强', warranty: 15, highlight: '十五年质保·旗舰防护', price: 21800, specs: ['聚碳酸酯基材', '双聚碳', '厚度 7.5mil', '高光泽'] }
     ]
   },
   {

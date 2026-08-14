@@ -147,6 +147,33 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         accountStatus, orgId);
     }
 
+    // 可选：修改门店登录账号 / 密码
+    if (body.username !== undefined || body.password !== undefined) {
+      const storeUser = await queryFirst<{ id: string }>(context.env.DB,
+        `SELECT id FROM users WHERE organization_id = ? AND role = 'STORE' LIMIT 1`, orgId);
+      if (!storeUser) return error('门店账号不存在', 404);
+
+      if (body.username !== undefined) {
+        const uname = String(body.username).trim();
+        if (!uname) return error('登录账号不能为空', 400);
+        const dup = await queryFirst(context.env.DB,
+          `SELECT id FROM users WHERE username = ? AND id != ?`, uname, storeUser.id);
+        if (dup) return error('该登录账号已被使用', 400);
+        await execute(context.env.DB,
+          `UPDATE users SET username = ?, updated_at = datetime('now') WHERE id = ?`, uname, storeUser.id);
+      }
+
+      if (body.password !== undefined) {
+        const pwd = String(body.password);
+        if (pwd && pwd.length < 8) return error('登录密码至少 8 位', 400);
+        if (pwd) {
+          const passwordHash = await hashPassword(pwd);
+          await execute(context.env.DB,
+            `UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`, passwordHash, storeUser.id);
+        }
+      }
+    }
+
     const profileFields: Record<string, string> = {
       name: 'public_name', province: 'province', city: 'city', address: 'address', phone: 'phone',
     };

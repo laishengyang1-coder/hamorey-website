@@ -111,7 +111,7 @@ Page({
     cases: HOME_CONFIG.cases,
     productSeries: HOME_CONFIG.productSeries,
     brand: HOME_CONFIG.brand,
-    version: 'v1.0.1'
+    version: 'v2.3.4'
   },
 
   onShow() {

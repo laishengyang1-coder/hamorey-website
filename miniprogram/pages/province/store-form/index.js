@@ -64,6 +64,7 @@ Page({
     if (!form.name.trim()) { wx.showToast({ title: '请输入门店名称', icon: 'none' }); return; }
     if (!isEdit && !form.username.trim()) { wx.showToast({ title: '请输入登录账号', icon: 'none' }); return; }
     if (!isEdit && form.password.length < 8) { wx.showToast({ title: '登录密码至少 8 位', icon: 'none' }); return; }
+    if (isEdit && form.password && form.password.length < 8) { wx.showToast({ title: '登录密码至少 8 位', icon: 'none' }); return; }
 
     this.setData({ submitting: true });
 
@@ -79,6 +80,10 @@ Page({
     if (!isEdit) {
       payload.username = form.username.trim();
       payload.password = form.password;
+    } else {
+      // 编辑：填写了才修改账号/密码
+      if (form.username.trim()) payload.username = form.username.trim();
+      if (form.password) payload.password = form.password;
     }
 
     let res;

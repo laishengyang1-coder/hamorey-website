@@ -88,16 +88,14 @@
           />
         </view>
 
-        <block wx:if="{{!isEdit}}">
-          <view class="form-group">
-            <view class="form-label"><text class="required">*</text>登录账号</view>
-            <input class="form-input" placeholder="门店登录账号" value="{{form.username}}" bindinput="onInput" data-field="username" />
-          </view>
-          <view class="form-group">
-            <view class="form-label"><text class="required">*</text>登录密码</view>
-            <input class="form-input" password placeholder="至少 8 位" value="{{form.password}}" bindinput="onInput" data-field="password" />
-          </view>
-        </block>
+        <view class="form-group">
+          <view class="form-label"><text class="required" wx:if="{{!isEdit}}">*</text>登录账号{{isEdit ? '（留空则不修改）' : ''}}</view>
+          <input class="form-input" placeholder="{{isEdit ? '留空则不修改' : '门店登录账号'}}" value="{{form.username}}" bindinput="onInput" data-field="username" />
+        </view>
+        <view class="form-group">
+          <view class="form-label"><text class="required" wx:if="{{!isEdit}}">*</text>登录密码{{isEdit ? '（留空则不修改）' : ''}}</view>
+          <input class="form-input" password placeholder="{{isEdit ? '留空则不修改（至少 8 位）' : '至少 8 位'}}" value="{{form.password}}" bindinput="onInput" data-field="password" />
+        </view>
 
         <view wx:if="{{isEdit}}" class="form-group">
           <view class="form-label">状态</view>

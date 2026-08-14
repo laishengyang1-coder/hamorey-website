@@ -46,7 +46,7 @@
   <view class="brand-footer">
     <image class="brand-footer-logo" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/logo.png" mode="aspectFit" />
     <view class="brand-footer-text">和膜 HAMOREY · 质保服务系统</view>
-    <view class="brand-footer-version">v1.0</view>
+    <view class="brand-footer-version">v2.3.4</view>
   </view>
 
   <!-- 底部安全区占位 -->
