@@ -16,7 +16,9 @@ const SERIES_LIST = [
       { name: '和盾', code: 'HD', en: 'FORTEX Armor', tech: '多层复合纳米陶瓷', warranty: 10, highlight: '超强防爆·安全堡垒', specs: ['可见光透射比 70%', '紫外线阻隔 99%', '太阳能总阻隔率 53%', '厚度 4mil'] },
       { name: '和护', code: 'HH', en: 'LUMIS UV400+', tech: '纳米陶瓷工艺', warranty: 8, highlight: '隔热耐用·贴心护肤', specs: ['可见光透射比 70%', '紫外线阻隔 99%', '太阳能总阻隔率 50%', '厚度 3mil'] },
       { name: '和真', code: 'HZ', en: 'CLARITY', tech: '高清原色', warranty: 5, highlight: '高清透光·自然视界', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 42%', '厚度 2mil'] },
-      { name: '和原', code: 'HY', en: 'PRIME', tech: '基础纳米', warranty: 5, highlight: '均衡隔热·舒适驾乘', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 38%', '厚度 2mil'] }
+      { name: '和原', code: 'HY', en: 'PRIME', tech: '基础纳米', warranty: 5, highlight: '均衡隔热·舒适驾乘', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 38%', '厚度 2mil'] },
+      { name: '冷光紫', code: 'LGZ', en: 'PRISMATIC LGZ', tech: '千层炫彩工艺', warranty: 10, highlight: '千层炫彩·流光溢彩', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 55%', '厚度 3mil'] },
+      { name: '苍穹青', code: 'CQY', en: 'PRISMATIC CQY', tech: '千层炫彩工艺', warranty: 10, highlight: '千层炫彩·苍穹之韵', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 55%', '厚度 3mil'] }
     ]
   },
   {
