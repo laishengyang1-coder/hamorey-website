@@ -124,7 +124,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         context.env.DB,
         `INSERT INTO vehicles (id, customer_id, plate_no, vin, brand, model, model_year, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-        vehicleId, customerId, body.plate_no || null, body.vin,
+        vehicleId, customerId, body.plate_no || '', body.vin,
         body.vehicle_brand, body.vehicle_model, body.vehicle_year || null,
       );
     }
@@ -144,7 +144,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         status, submitted_at, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'), datetime('now'), datetime('now'))`,
       recordId, wc.id, vehicleId, customerId,
-      body.customer_name, body.customer_phone, body.plate_no || null, body.vin,
+      body.customer_name, body.customer_phone, body.plate_no || '', body.vin,
       body.vehicle_brand, body.vehicle_model,
       body.store_id, store.name, store.parent_id || null,
       wc.product_model_id, product?.name_cn || '', model.display_name,
