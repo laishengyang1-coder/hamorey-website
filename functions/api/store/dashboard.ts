@@ -19,38 +19,35 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const type = url.searchParams.get('type');
 
-    // 全国积分排行（含自店排名）
+    // 全国积分排行（当前可用积分口径：含人工调整/兑换扣分，与门店积分余额一致；含自店排名）
     if (type === 'national-points-ranking') {
       const [rows, myPointsRow] = await Promise.all([
         queryAll<{ name: string; count: number; province: string; city: string; org_id: string }>(db,
           `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
              UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
            SELECT o.name, o.province, o.city, o.id AS org_id,
-                  COALESCE(SUM(pl.points_change), 0) AS count
+                  COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
+                                    WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+                                    ELSE 0 END), 0) AS count
            FROM points_ledger pl
            JOIN organizations o ON o.id = pl.organization_id
-           JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
-           WHERE pl.change_type = 'award'
-             AND pl.related_type = 'warranty'
-             AND wr.status = 'active'
+           WHERE o.type = 'STORE'
              AND pl.organization_id NOT IN (SELECT id FROM excl)
            GROUP BY o.id
            ORDER BY count DESC, o.name ASC
            LIMIT 20`,
         ),
         queryFirst<{ points: number }>(db,
-          `SELECT COALESCE(SUM(pl.points_change), 0) AS points
-           FROM points_ledger pl
-           JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
-           WHERE pl.change_type = 'award'
-             AND pl.related_type = 'warranty'
-             AND wr.status = 'active'
-             AND pl.organization_id = ?`,
+          `SELECT COALESCE(SUM(CASE WHEN change_type IN ('award','adjust','release') THEN points_change
+                                    WHEN change_type IN ('deduct','revoke','freeze') THEN -points_change
+                                    ELSE 0 END), 0) AS points
+           FROM points_ledger
+           WHERE organization_id = ?`,
           orgId,
         ),
       ]);
 
-      // 查询自店排名（有多少门店积分比我们高）
+      // 查询自店排名（有多少门店可用积分比我们高）
       const myPoints = myPointsRow?.points ?? 0;
       let myRank = rows.length + 1; // 默认排在最末之后
       if (myPoints > 0) {
@@ -58,13 +55,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
              UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
            SELECT COUNT(*) + 1 AS ranking_position FROM (
-             SELECT o.id, COALESCE(SUM(pl.points_change), 0) AS pts
+             SELECT o.id, COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
+                                           WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+                                           ELSE 0 END), 0) AS pts
              FROM points_ledger pl
              JOIN organizations o ON o.id = pl.organization_id
-             JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
-             WHERE pl.change_type = 'award'
-               AND pl.related_type = 'warranty'
-               AND wr.status = 'active'
+             WHERE o.type = 'STORE'
                AND pl.organization_id NOT IN (SELECT id FROM excl)
              GROUP BY o.id
              HAVING pts > ?

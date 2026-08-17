@@ -145,7 +145,7 @@ export default function DashboardPage() {
         <RankingSection title="省级质保排行" subtitle="各省质保登记总量" items={provinceRanking} />
         <RankingSection title="门店质保排行" subtitle="门店质保登记量" items={storeRanking} />
         <RankingSection title="产品质保排行" subtitle="产品型号分布" items={productRanking} showProgress />
-        <RankingSection title="全国积分排行" subtitle="不含兑换与返利" items={pointsRanking} valueLabel="积分" />
+        <RankingSection title="全国积分排行" subtitle="当前可用积分（含调整与兑换）" items={pointsRanking} valueLabel="积分" />
       </div>
 
       {/* 门店活跃度 */}
