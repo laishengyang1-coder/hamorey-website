@@ -86,7 +86,7 @@ export function Footer() {
           <p className="text-xs text-white/40">
             © {new Date().getFullYear()} {siteConfig.brandName} {siteConfig.brandNameEn}. All rights reserved.
           </p>
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/40 flex flex-wrap items-center gap-x-4 gap-y-1">
             {siteConfig.icpNumber && (
               <a
                 href="https://beian.miit.gov.cn/"
@@ -95,6 +95,16 @@ export function Footer() {
                 className="hover:text-white/70 transition-fast"
               >
                 {siteConfig.icpNumber}
+              </a>
+            )}
+            {siteConfig.gonganNumber && (
+              <a
+                href={`https://beian.mps.gov.cn/#/query/webSearch?code=${siteConfig.gonganCode}`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white/70 transition-fast"
+              >
+                {siteConfig.gonganNumber}
               </a>
             )}
           </p>

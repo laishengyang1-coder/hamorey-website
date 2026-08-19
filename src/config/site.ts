@@ -20,6 +20,10 @@ export const siteConfig = {
   siteUrl: 'https://hemoppf.cn',
   /** 工信部网站备案号 */
   icpNumber: '皖ICP备20013908号-8',
+  /** 公安部网站备案号 */
+  gonganNumber: '皖公网安备34182202342344号',
+  /** 公安部备案号数字部分（用于备案查询链接） */
+  gonganCode: '34182202342344',
   /** 联系方式 */
   contact: {
     phone: '',
