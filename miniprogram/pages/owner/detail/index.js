@@ -80,7 +80,7 @@ Page({
         { label: '车膜卷号', value: raw.warranty_code || '--' },
         { label: '型号规格', value: `${raw.product_name_snapshot || ''} ${raw.product_model_snapshot || ''}`.trim() || '--' },
         { label: '装贴部位', value: '整车' },
-        { label: '官方指导价', value: formatWarrantyPrice(raw.warranty_price_cents) },
+        { label: '装贴价格', value: formatWarrantyPrice(raw.warranty_price_cents) },
         {
           label: '质保期限',
           value: `${raw.warranty_years_snapshot || '--'} 年（${installDate} 至 ${expiryDate}）`

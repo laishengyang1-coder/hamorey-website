@@ -96,7 +96,7 @@ function buildSvg(data: CertificateData, sealBase64?: string | null): string {
     ['车膜卷号', data.warrantyCode || '-'],
     ['型号规格', `${data.productName} ${data.productModel}`],
     ['装贴部位', '整车'],
-    ['官方指导价', fmtPrice(data.warrantyPriceCents)],
+    ['装贴价格', fmtPrice(data.warrantyPriceCents)],
     ['质保期限', `${data.warrantyYears} 年（${fmtDate(data.installationDate)} 至 ${fmtDate(data.expiryDate)}）`],
   ]);
 

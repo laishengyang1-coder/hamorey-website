@@ -133,7 +133,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
             ['车膜卷号', record.warranty_code || '-'],
             ['型号规格', `${record.product_name} ${record.product_model}`.trim()],
             ['装贴部位', '整车'],
-            ['官方指导价', formatWarrantyPrice(record.warranty_price_cents)],
+            ['装贴价格', formatWarrantyPrice(record.warranty_price_cents)],
             [
               '质保期限',
               `${record.warranty_years} 年（${fmtDate(record.installation_date)} 至 ${fmtDate(record.warranty_expiry_date)}）`,
