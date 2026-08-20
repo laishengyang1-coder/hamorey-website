@@ -66,10 +66,11 @@
         </view>
         <view class="warranty-meta">
           <text class="warranty-date">施工日期：{{w.installation_date || '--'}}</text>
-          <text class="warranty-store">{{w.store_name_snapshot || '--'}}</text>
+          <text class="warranty-date">质保到期：{{w.warranty_expiry_date || '--'}}</text>
         </view>
         <view class="warranty-meta">
           <text class="warranty-date">质保价格：{{w.warranty_price_text || '--'}}</text>
+          <text class="warranty-store">{{w.store_name_snapshot || '--'}}</text>
         </view>
         <view class="warranty-arrow">›</view>
       </view>
