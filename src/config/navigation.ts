@@ -34,6 +34,7 @@ export const navItems: NavItem[] = [
   { label: '全车资产管家', href: '/service' },
   { label: '授权门店', href: '/stores' },
   { label: '百店计划', href: '/partner' },
+  { label: '营销物料中心', href: '/marketing' },
   { label: '电子质保', href: '/warranty', highlight: true },
 ];
 
@@ -56,6 +57,7 @@ export const footerNavGroups = [
       { label: '全车资产管家', href: '/service' },
       { label: '授权门店', href: '/stores' },
       { label: '百店计划', href: '/partner' },
+      { label: '营销物料中心', href: '/marketing' },
     ],
   },
   {

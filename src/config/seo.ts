@@ -92,6 +92,12 @@ export const seoConfig: Record<string, SeoMeta> = {
     description: '和膜电子质保条款与责任说明。',
     ogImage: DEFAULT_OG,
   },
+  marketing: {
+    title: '营销物料中心 — 和膜 HAMOREY',
+    description:
+      '和膜营销物料中心，汇聚海报、产品资料、门店物料、视频、销售工具与培训资料，供渠道伙伴下载使用。',
+    ogImage: DEFAULT_OG,
+  },
   contact: {
     title: '合作咨询 — 和膜 HAMOREY',
     description: '和膜招商与业务合作咨询入口，提交您的合作意向，我们将尽快与您联系。',
