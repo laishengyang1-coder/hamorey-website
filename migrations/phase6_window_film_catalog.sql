@@ -14,7 +14,7 @@ INSERT OR IGNORE INTO product_models (
   ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 18, 'active', 4),
   ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 36, 'active', 5),
   ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 18, 'active', 6),
-  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 18, 'active', 7),
+  ('pm-wf-hh35', 'prod-wf', 'WF-HH35', '和护35', 8, 18, 'active', 7),
   ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 36, 'active', 8),
   ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 18, 'active', 9),
   ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 18, 'active', 10),
@@ -27,7 +27,7 @@ SET status = 'active',
     updated_at = datetime('now')
 WHERE model_code IN (
   'WF-HG70', 'WF-HG25', 'WF-HD70', 'WF-HD10', 'WF-HD35',
-  'WF-HH70', 'WF-HH15', 'WF-HH25', 'WF-HZ75', 'WF-HZ15',
+  'WF-HH70', 'WF-HH15', 'WF-HH35', 'WF-HZ75', 'WF-HZ15',
   'WF-HZ35', 'WF-HY75', 'WF-HY10', 'WF-HY35'
 );
 
@@ -46,7 +46,7 @@ SET product_model_id = CASE
   WHEN imported_product_name LIKE '%和盾35%' THEN 'pm-wf-hd35'
   WHEN imported_product_name LIKE '%和护70%' THEN 'pm-wf-hh70'
   WHEN imported_product_name LIKE '%和护15%' THEN 'pm-wf-hh15'
-  WHEN imported_product_name LIKE '%和护25%' THEN 'pm-wf-hh25'
+  WHEN imported_product_name LIKE '%和护35%' THEN 'pm-wf-hh35'
   WHEN imported_product_name LIKE '%和真75%' THEN 'pm-wf-hz75'
   WHEN imported_product_name LIKE '%和真15%' THEN 'pm-wf-hz15'
   WHEN imported_product_name LIKE '%和真35%' THEN 'pm-wf-hz35'
@@ -100,7 +100,7 @@ INSERT OR IGNORE INTO claim_prices (
   ('cp-wf-hd35-side', 'pm-wf-hd35', 'cp-wf-side', 498000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
   ('cp-wf-hh70-front', 'pm-wf-hh70', 'cp-wf-front', 368000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
   ('cp-wf-hh15-side', 'pm-wf-hh15', 'cp-wf-side', 368000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
-  ('cp-wf-hh25-side', 'pm-wf-hh25', 'cp-wf-side', 368000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
+  ('cp-wf-hh35-side', 'pm-wf-hh35', 'cp-wf-side', 368000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
   ('cp-wf-hz75-front', 'pm-wf-hz75', 'cp-wf-front', 228000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
   ('cp-wf-hz15-side', 'pm-wf-hz15', 'cp-wf-side', 228000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),
   ('cp-wf-hz35-side', 'pm-wf-hz35', 'cp-wf-side', 228000, '2026-06-09', NULL, 'active', 'user-hq-admin-001', datetime('now')),

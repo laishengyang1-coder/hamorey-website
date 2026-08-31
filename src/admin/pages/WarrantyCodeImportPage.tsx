@@ -30,7 +30,7 @@ const MODEL_HELP: Array<{ category: string; items: Array<[string, string]> }> = 
     items: [
       ['WF-HG70', '和光70'], ['WF-HG25', '和光25'],
       ['WF-HD70', '和盾70'], ['WF-HD10', '和盾10'], ['WF-HD35', '和盾35'],
-      ['WF-HH70', '和护70'], ['WF-HH15', '和护15'], ['WF-HH25', '和护25'],
+      ['WF-HH70', '和护70'], ['WF-HH15', '和护15'], ['WF-HH35', '和护35'],
       ['WF-HZ75', '和真75'], ['WF-HZ15', '和真15'], ['WF-HZ35', '和真35'],
       ['WF-HY75', '和原75'], ['WF-HY10', '和原10'], ['WF-HY35', '和原35'],
     ],

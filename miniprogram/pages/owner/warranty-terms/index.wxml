@@ -82,7 +82,7 @@
         </view>
         <view class="table-row"><view class="table-col-name">和盾10 / 和盾35 / 和盾70</view><view class="table-col-period">10 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和光25 / 和光70</view><view class="table-col-period">10 年</view></view>
-        <view class="table-row"><view class="table-col-name">和护15 / 和护25 / 和护70</view><view class="table-col-period">8 年</view></view>
+        <view class="table-row"><view class="table-col-name">和护15 / 和护35 / 和护70</view><view class="table-col-period">8 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和真15 / 和真35 / 和真75</view><view class="table-col-period">8 年</view></view>
         <view class="table-row"><view class="table-col-name">和原10 / 和原35 / 和原75</view><view class="table-col-period">5 年</view></view>
       </view>

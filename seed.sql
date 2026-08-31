@@ -43,7 +43,7 @@ INSERT INTO product_models (id, product_id, model_code, display_name, warranty_y
   ('pm-wf-hd35', 'prod-wf', 'WF-HD35', '和盾35', 10, 498000, 18, 'active', 4),
   ('pm-wf-hh70', 'prod-wf', 'WF-HH70', '和护70', 8, 368000, 36, 'active', 5),
   ('pm-wf-hh15', 'prod-wf', 'WF-HH15', '和护15', 8, 368000, 18, 'active', 6),
-  ('pm-wf-hh25', 'prod-wf', 'WF-HH25', '和护25', 8, 368000, 18, 'active', 7),
+  ('pm-wf-hh35', 'prod-wf', 'WF-HH35', '和护35', 8, 368000, 18, 'active', 7),
   ('pm-wf-hz75', 'prod-wf', 'WF-HZ75', '和真75', 8, 228000, 36, 'active', 8),
   ('pm-wf-hz15', 'prod-wf', 'WF-HZ15', '和真15', 8, 228000, 18, 'active', 9),
   ('pm-wf-hz35', 'prod-wf', 'WF-HZ35', '和真35', 8, 228000, 18, 'active', 10),
