@@ -84,7 +84,7 @@ export const marketingCategories: MaterialCategory[] = [
         format: 'pdf',
         size: '9.5 MB',
         updatedAt: '2026-08-28',
-        downloadUrl: '/marketing/brand-visual/vi-manual.pdf',
+        downloadUrl: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/marketing/brand-visual/vi-manual.pdf',
         description: '和膜 / 安徽和和新材料公司介绍，含品牌背景、产地、产品线与品控体系。',
         tags: ['公司介绍', '品牌'],
       },
