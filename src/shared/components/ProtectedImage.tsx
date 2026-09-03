@@ -17,6 +17,17 @@ export function ProtectedImage({ fileKey, alt, className = '' }: ProtectedImageP
     setObjectUrl(null);
     setFailed(false);
 
+    if (fileKey.startsWith('static:')) {
+      const assetPath = fileKey.slice('static:'.length);
+      if (/^rewards\/[A-Za-z0-9._-]+$/.test(assetPath)) {
+        const encodedPath = assetPath.split('/').map(encodeURIComponent).join('/');
+        setObjectUrl(`/assets/${encodedPath}`);
+      } else {
+        setFailed(true);
+      }
+      return () => { active = false; };
+    }
+
     const encodedKey = fileKey.split('/').map(encodeURIComponent).join('/');
     fetchProtectedAsset(`/public/photos/${encodedKey}`)
       .then((blob) => {
@@ -30,7 +41,7 @@ export function ProtectedImage({ fileKey, alt, className = '' }: ProtectedImageP
 
     return () => {
       active = false;
-      if (nextUrl) URL.revokeObjectURL(nextUrl);
+      if (nextUrl?.startsWith('blob:')) URL.revokeObjectURL(nextUrl);
     };
   }, [fileKey]);
 

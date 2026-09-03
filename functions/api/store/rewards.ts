@@ -5,6 +5,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { getRewardCoverUrl, queryAll } from '../_lib';
 import { ok, error } from '../_middleware';
+import { getBundledRewardCoverUrl } from '../_reward-assets';
 
 interface Env {
   DB: D1Database;
@@ -18,10 +19,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return ok({
       items: items.map((item) => ({
         ...item,
-        cover_url: getRewardCoverUrl(
-          context.env.R2,
-          typeof item.cover_file_key === 'string' ? item.cover_file_key : null,
-        ),
+        cover_url: getBundledRewardCoverUrl(context.request, item.cover_file_key)
+          || getRewardCoverUrl(
+            context.env.R2,
+            typeof item.cover_file_key === 'string' ? item.cover_file_key : null,
+          ),
       })),
     });
   } catch (err) {

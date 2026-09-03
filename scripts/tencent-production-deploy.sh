@@ -283,6 +283,10 @@ npm config set registry https://registry.npmmirror.com
 install_build_dependencies false
 timeout 5m npm run build
 
+# Keep the four launch rewards reproducible on Tencent MySQL. The script is
+# idempotent and preserves any stock already changed by a real redemption.
+HAMOREY_ENV_FILE="$API_ENV_FILE" timeout 2m npm run seed:premium-rewards
+
 find "$API_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -R "$REPO_DIR/server/." "$API_ROOT/"
 
