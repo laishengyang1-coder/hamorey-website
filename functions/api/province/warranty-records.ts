@@ -53,7 +53,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          ${where} ORDER BY wr.created_at DESC LIMIT ? OFFSET ?`,
         ...params, pageSize, offset,
       ),
-      queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM warranty_records wr ${where}`, ...params),
+      queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM warranty_records wr JOIN warranty_codes wc ON wr.warranty_code_id = wc.id ${where}`, ...params),
     ]);
 
     return ok({ items, total: totalRow?.cnt ?? 0, page, pageSize });
