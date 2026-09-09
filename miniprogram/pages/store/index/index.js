@@ -72,6 +72,10 @@ Page({
     wx.navigateTo({ url: '/pages/store/register/index' });
   },
 
+  goFilmExchange() {
+    wx.navigateTo({ url: '/pages/store/film-exchange/index' });
+  },
+
   goRecords() {
     wx.switchTab({ url: '/pages/store/records/index' });
   },

@@ -17,6 +17,7 @@ const StoreListPage = lazyWithRetry(() => import('../admin/pages/StoreListPage')
 const StoreAuditPage = lazyWithRetry(() => import('../admin/pages/StoreAuditPage'));
 const ReviewListPage = lazyWithRetry(() => import('../admin/pages/ReviewListPage'));
 const ReviewDetailPage = lazyWithRetry(() => import('../admin/pages/ReviewDetailPage'));
+const FilmExchangePage = lazyWithRetry(() => import('../admin/pages/FilmExchangePage'));
 const WarrantyRecordListPage = lazyWithRetry(() => import('../admin/pages/WarrantyRecordListPage'));
 const ProductManagePage = lazyWithRetry(() => import('../admin/pages/ProductManagePage'));
 const WarrantyCodeImportPage = lazyWithRetry(() => import('../admin/pages/WarrantyCodeImportPage'));
@@ -52,6 +53,7 @@ const ADMIN_MENU: MenuItem[] = [
     path: '',
     children: [
       { key: 'reviews', label: '质保审核', path: '/admin/reviews' },
+      { key: 'film-exchange', label: '换膜无忧', path: '/admin/film-exchange' },
       { key: 'warranty-records', label: '质保记录', path: '/admin/warranty-records' },
       { key: 'warranty-codes', label: '质保码库存', path: '/admin/warranty-codes' },
       { key: 'code-allocation-history', label: '库存流转记录', path: '/admin/code-allocation-history' },
@@ -166,6 +168,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <ReviewDetailPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'film-exchange',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <FilmExchangePage />
           </Suspense>
         ),
       },

@@ -1,0 +1,62 @@
+<view class="page-container">
+  <!-- 状态筛选 -->
+  <view class="filter-bar">
+    <view class="filter-tabs">
+      <view
+        wx:for="{{statusTabs}}"
+        wx:key="value"
+        class="filter-tab {{activeStatus === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="switchStatus"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <!-- Error -->
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadList">重试</view>
+  </view>
+
+  <!-- 空 -->
+  <view wx:elif="{{!loading && records.length === 0}}" class="empty-state">
+    <view class="empty-state-icon"></view>
+    <view class="empty-state-text">暂无换膜申请</view>
+    <view class="empty-state-sub">点击下方按钮发起换膜申请</view>
+  </view>
+
+  <!-- 申请列表 -->
+  <view wx:else class="records-list">
+    <view wx:for="{{records}}" wx:key="id" class="record-card card">
+      <view class="record-top">
+        <view class="record-info">
+          <view class="record-name">{{item.customer_name_snapshot || '--'}}</view>
+          <view class="record-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
+        </view>
+        <view class="tag {{item.status_tag}}">{{item.status_label}}</view>
+      </view>
+      <view class="record-meta">
+        <text>{{item.product_model_snapshot || '--'}}<text wx:if="{{item.film_type_label}}"> · {{item.film_type_label}}</text></text>
+        <text>{{item.created_at_text}}</text>
+      </view>
+      <view wx:if="{{item.compensate_label}}" class="record-compensate">{{item.compensate_label}}</view>
+      <view wx:if="{{item.status === 'rejected' && item.reject_reason}}" class="record-note text-error">驳回原因：{{item.reject_reason}}</view>
+      <view wx:elif="{{item.review_note}}" class="record-note">审核备注：{{item.review_note}}</view>
+    </view>
+  </view>
+
+  <!-- 发起申请按钮 -->
+  <view class="float-btn safe-bottom" bindtap="goApply">
+    <text class="float-btn-text">+ 换膜申请</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && records.length > 0}}" class="load-more" bindtap="loadMore">
+    <text class="load-more-text">{{loadingMore ? '加载中...' : '加载更多'}}</text>
+  </view>
+</view>

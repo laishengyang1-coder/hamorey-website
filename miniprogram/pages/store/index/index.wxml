@@ -59,6 +59,10 @@
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-register.png" mode="aspectFit" />
         <view class="action-text">登记质保</view>
       </view>
+      <view class="action-item" bindtap="goFilmExchange">
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-warranty.png" mode="aspectFit" />
+        <view class="action-text">换膜无忧</view>
+      </view>
       <view class="action-item" bindtap="goRecords">
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-record-active.png" mode="aspectFit" />
         <view class="action-text">质保记录</view>

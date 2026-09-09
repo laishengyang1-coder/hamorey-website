@@ -22,6 +22,8 @@
     "pages/store/reward-checkout/index",
     "pages/store/reward-detail/index",
     "pages/store/orders/index",
+    "pages/store/film-exchange/index",
+    "pages/store/film-exchange-list/index",
     "pages/province/login/index",
     "pages/province/index/index",
     "pages/province/stores/index",

@@ -42,6 +42,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const ownerOrgId = object.customMetadata?.organizationId
       || fileKey.match(/^warranty-photos\/([^/]+)\//)?.[1]
+      || fileKey.match(/^film-exchange\/([^/]+)\//)?.[1]
       || '';
     let allowed = authUser.role === 'HQ_ADMIN';
     if (authUser.role === 'STORE') allowed = ownerOrgId === authUser.orgId;

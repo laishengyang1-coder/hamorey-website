@@ -1,0 +1,122 @@
+<view class="page-container">
+  <!-- 顶部说明 + 我的申请入口 -->
+  <view class="page-header">
+    <view class="page-header-tip">车衣/窗膜损坏，为客户提交换膜申请</view>
+    <view class="page-header-link" bindtap="goList">我的申请 ›</view>
+  </view>
+
+  <!-- 查询质保记录 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-title">查询质保记录</view>
+    </view>
+    <view class="section-body">
+      <view class="search-row">
+        <input
+          class="form-input search-input"
+          type="number"
+          maxlength="11"
+          placeholder="请输入客户手机号"
+          placeholder-class="search-placeholder"
+          value="{{phone}}"
+          bindinput="onPhoneInput"
+          bindconfirm="onSearch"
+        />
+        <view class="btn-primary btn-sm search-btn" bindtap="onSearch">查询</view>
+      </view>
+
+      <!-- 查询结果 -->
+      <view wx:if="{{searched && records.length === 0}}" class="lookup-empty">
+        <view class="empty-state-text">未查询到该客户的质保记录</view>
+      </view>
+
+      <view wx:if="{{records.length > 0}}" class="lookup-list">
+        <view
+          wx:for="{{records}}"
+          wx:key="id"
+          class="lookup-card {{selectedId === item.id ? 'selected' : ''}} {{item.exchanged ? 'disabled' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectRecord"
+        >
+          <view class="lookup-top">
+            <view class="lookup-info">
+              <view class="lookup-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
+              <view class="lookup-name">{{item.customer_name_snapshot || '--'}} · {{item.customer_phone_snapshot || '--'}}</view>
+            </view>
+            <view wx:if="{{item.exchanged}}" class="tag tag-info">已换膜</view>
+            <view wx:else class="lookup-radio {{selectedId === item.id ? 'checked' : ''}}"></view>
+          </view>
+          <view class="lookup-meta">
+            <text>{{item.model_display}}</text>
+            <text>施工 {{item.installation_date}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 选中后将更换的膜 -->
+  <view wx:if="{{selectedRecord}}" class="selected-bar">
+    <text class="selected-bar-label">将更换的膜</text>
+    <text class="selected-bar-value">{{selectedRecord.model_display}}</text>
+  </view>
+
+  <!-- 损坏信息 -->
+  <view wx:if="{{selectedRecord}}" class="section">
+    <view class="section-header">
+      <view class="section-title">损坏信息</view>
+    </view>
+    <view class="section-body">
+      <view class="form-group">
+        <view class="form-label">损坏部位（选填）</view>
+        <input
+          class="form-input"
+          placeholder="如：前保险杠左侧"
+          placeholder-class="search-placeholder"
+          value="{{damagePart}}"
+          data-field="damagePart"
+          bindinput="onFieldInput"
+        />
+      </view>
+      <view class="form-group" style="margin-bottom:0">
+        <view class="form-label">损坏说明（选填）</view>
+        <textarea
+          class="form-textarea"
+          placeholder="请简要描述损坏情况"
+          placeholder-class="search-placeholder"
+          value="{{description}}"
+          data-field="description"
+          bindinput="onFieldInput"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 上传照片/视频 -->
+  <view wx:if="{{selectedRecord}}" class="section">
+    <view class="section-header">
+      <view class="section-title">损坏照片/视频</view>
+      <view class="section-count">{{mediaList.length}}/{{maxMedia}}</view>
+    </view>
+    <view class="section-body">
+      <view class="photo-upload-area">
+        <view wx:for="{{mediaList}}" wx:key="index" class="photo-preview">
+          <image wx:if="{{item.thumb}}" class="photo-preview-img" src="{{item.thumb}}" mode="aspectFill" />
+          <view wx:else class="video-placeholder">视频</view>
+          <view wx:if="{{item.mediaType === 'video'}}" class="video-badge">▶</view>
+          <view wx:if="{{item.uploading}}" class="photo-uploading">上传中</view>
+          <view class="photo-delete" data-index="{{index}}" bindtap="onDeleteMedia">×</view>
+        </view>
+        <view wx:if="{{mediaList.length < maxMedia}}" class="photo-add" bindtap="onChooseMedia">
+          <view class="photo-add-icon">+</view>
+          <view class="photo-add-text">照片/视频</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交 -->
+  <view class="submit-footer safe-bottom">
+    <view class="btn-primary" bindtap="onSubmit">{{submitting ? '提交中...' : '提交申请'}}</view>
+  </view>
+</view>
