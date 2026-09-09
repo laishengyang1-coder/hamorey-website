@@ -170,15 +170,23 @@ function ProtectedMedia({ fileKey, mediaType, alt }: { fileKey: string; mediaTyp
 // ------------------------------------------------------------
 
 const FILTER_FIELDS: FilterField[] = [
-  { key: 'status', label: '状态', type: 'select', options: [
-    { value: 'pending', label: '待审核' },
-    { value: 'approved', label: '待发货' },
-    { value: 'shipped', label: '已发货' },
-    { value: 'completed', label: '已完成' },
-    { value: 'rejected', label: '已驳回' },
-  ]},
   { key: 'keyword', label: '搜索', type: 'text', placeholder: '客户/手机号/车牌/门店' },
 ];
+
+// 标签页：待处理（进行中）/ 历史记录（已完成+已驳回）/ 全部
+type ScopeTab = 'active' | 'history' | 'all';
+
+const SCOPE_TABS: { key: ScopeTab; label: string }[] = [
+  { key: 'active', label: '待处理' },
+  { key: 'history', label: '历史记录' },
+  { key: 'all', label: '全部' },
+];
+
+const SCOPE_PARAMS: Record<ScopeTab, { status?: string; sort?: string }> = {
+  active: { status: 'pending,approved,shipped' },
+  history: { status: 'completed,rejected', sort: 'updated' },
+  all: {},
+};
 
 type ActionType = 'approve-free' | 'approve-charge' | 'reject' | 'ship' | 'complete';
 
@@ -189,7 +197,8 @@ export default function FilmExchangePage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [filters, setFilters] = useState<Record<string, string>>({ status: 'pending' });
+  const [scope, setScope] = useState<ScopeTab>('active');
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   // 详情抽屉
   const [detailOpen, setDetailOpen] = useState(false);
@@ -205,17 +214,17 @@ export default function FilmExchangePage() {
   const [reviewNote, setReviewNote] = useState('');
   const [rejectReason, setRejectReason] = useState('');
 
-  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number) => {
+  const fetchData = useCallback(async (p: number, f: Record<string, string>, size: number, sc: ScopeTab) => {
     setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({ ...f, page: String(p), pageSize: String(size) });
+      const params = new URLSearchParams({ ...SCOPE_PARAMS[sc], ...f, page: String(p), pageSize: String(size) });
       const res = await apiRequest<{ items: FilmExchangeItem[]; total: number }>(`/admin/film-exchange?${params}`);
       setData(res.items); setTotal(res.total);
     } catch (err) { setError(err instanceof Error ? err.message : '加载失败'); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(page, filters, pageSize); }, [page, filters, pageSize, fetchData]);
+  useEffect(() => { fetchData(page, filters, pageSize, scope); }, [page, filters, pageSize, scope, fetchData]);
 
   const fetchDetail = useCallback(async (id: string) => {
     setDetailLoading(true); setDetailError(null);
@@ -276,7 +285,7 @@ export default function FilmExchangePage() {
       }
       closeAction();
       fetchDetail(detailId);
-      fetchData(page, filters, pageSize);
+      fetchData(page, filters, pageSize, scope);
     } catch (err) {
       alert(err instanceof Error ? err.message : '操作失败');
     } finally {
@@ -295,7 +304,9 @@ export default function FilmExchangePage() {
     { key: 'status', title: '状态', dataIndex: 'status', className: 'whitespace-nowrap', render: (v) => (
       <StatusBadge status={v as string} label={v === 'approved' ? '待发货' : undefined} />
     )},
-    { key: 'created_at', title: '提交时间', dataIndex: 'created_at', className: 'whitespace-nowrap', render: (v) => fmtTime(v as string) },
+    scope === 'history'
+      ? { key: 'updated_at', title: '处理时间', dataIndex: 'updated_at', className: 'whitespace-nowrap', render: (v) => fmtTime(v as string) }
+      : { key: 'created_at', title: '提交时间', dataIndex: 'created_at', className: 'whitespace-nowrap', render: (v) => fmtTime(v as string) },
   ];
 
   const record = detail?.record ?? null;
@@ -307,13 +318,31 @@ export default function FilmExchangePage() {
 
   return (
     <div>
-      <PageHeader title="换膜无忧" description="审核门店提交的换膜无忧补膜申请" />
+      <PageHeader title="换膜无忧" description="审核门店提交的换膜无忧补膜申请，历史记录可随时回看" />
+
+      {/* 范围标签页：待处理 / 历史记录 / 全部 */}
+      <div className="mb-4 inline-flex rounded-lg bg-gray-100 p-1">
+        {SCOPE_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => { setScope(tab.key); setPage(1); }}
+            className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+              scope === tab.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <FilterBar fields={FILTER_FIELDS} onFilter={(v) => { setFilters(v); setPage(1); }} initialValues={filters} className="mb-4" />
       <DataTable
         columns={COLUMNS} data={data as unknown as Record<string, unknown>[]} loading={loading} error={error}
         page={page} pageSize={pageSize} total={total}
         onPageChange={setPage} onPageSizeChange={setPageSize}
-        onRowClick={(r) => openDetail(r.id as string)} emptyText="暂无换膜无忧申请"
+        onRowClick={(r) => openDetail(r.id as string)}
+        emptyText={scope === 'history' ? '暂无历史记录' : scope === 'active' ? '暂无待处理申请' : '暂无换膜无忧申请'}
       />
 
       {/* 详情抽屉 */}
