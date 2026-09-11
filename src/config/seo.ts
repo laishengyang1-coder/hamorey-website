@@ -98,6 +98,12 @@ export const seoConfig: Record<string, SeoMeta> = {
       '和膜营销物料中心，汇聚海报、产品资料、门店物料、视频、销售工具与培训资料，供渠道伙伴下载使用。',
     ogImage: DEFAULT_OG,
   },
+  faq: {
+    title: '常见问题 — 和膜 HAMOREY',
+    description:
+      '和膜 HAMOREY 是什么品牌？产品怎么样、有哪些、怎么选？质保怎么查？门店怎么找？关于和膜品牌、产品选择、质保服务与门店合作的常见问题解答。',
+    ogImage: DEFAULT_OG,
+  },
   contact: {
     title: '合作咨询 — 和膜 HAMOREY',
     description: '和膜招商与业务合作咨询入口，提交您的合作意向，我们将尽快与您联系。',

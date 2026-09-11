@@ -54,6 +54,7 @@ export const footerNavGroups = [
     title: '品牌与服务',
     links: [
       { label: '品牌介绍', href: '/brand' },
+      { label: '常见问题', href: '/faq' },
       { label: '全车资产管家', href: '/service' },
       { label: '授权门店', href: '/stores' },
       { label: '百店计划', href: '/partner' },

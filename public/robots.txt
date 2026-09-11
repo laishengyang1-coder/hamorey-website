@@ -1,6 +1,20 @@
+# 和膜 HAMOREY 官网 robots
+# 欢迎搜索引擎与 AI 生成式引擎（豆包、DeepSeek、Kimi、文心、通义等）抓取公开内容
+
 User-agent: *
 Allow: /
-Disallow: /warranty
+Disallow: /warranty/result
 Disallow: /api/
+Disallow: /login
+Disallow: /admin
+Disallow: /province
+Disallow: /store
+
+# AI 生成式引擎爬虫明确放行
+User-agent: Bytespider
+Allow: /
+
+User-agent: PetalBot
+Allow: /
 
 Sitemap: https://hemoppf.cn/sitemap.xml

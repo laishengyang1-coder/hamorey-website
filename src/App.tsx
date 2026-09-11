@@ -19,6 +19,7 @@ import ContactPage from './pages/ContactPage'
 import PrivacyPage from './pages/PrivacyPage'
 import WarrantyTermsPage from './pages/WarrantyTermsPage'
 import MarketingMaterialsPage from './pages/MarketingMaterialsPage'
+import FaqPage from './pages/FaqPage'
 import NotFoundPage from './pages/NotFoundPage'
 import LoginHub from './pages/LoginHub'
 
@@ -59,6 +60,7 @@ const brandRouter = createBrowserRouter([
       { path: 'warranty/result', element: <WarrantyResultPage /> },
       { path: 'warranty/terms', element: <WarrantyTermsPage /> },
       { path: 'marketing', element: <MarketingMaterialsPage /> },
+      { path: 'faq', element: <FaqPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
       { path: '*', element: <NotFoundPage /> },
