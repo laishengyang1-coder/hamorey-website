@@ -21,6 +21,8 @@ const SMS_VERSION = '2021-01-11';
 const DEFAULT_REGION = 'ap-guangzhou';
 const DEFAULT_SIGN_NAME = 'HAMOREY和膜';
 const DEFAULT_TEMPLATE_ID = '2710739';
+/** 单次发送的硬超时（毫秒）。短信是附加能力，不能拖住审核主流程。 */
+const SMS_TIMEOUT_MS = 8000;
 
 interface SmsConfig {
   secretId: string;
@@ -158,36 +160,51 @@ async function sendSms(cfg: SmsConfig, phone: string, templateParamSet: string[]
 
   const authorization = `TC3-HMAC-SHA256 Credential=${cfg.secretId}/${credentialScope}, SignedHeaders=content-type;host, Signature=${signature}`;
 
-  const res = await fetch(`https://${SMS_HOST}`, {
-    method: 'POST',
-    headers: {
-      Authorization: authorization,
-      'Content-Type': 'application/json; charset=utf-8',
-      Host: SMS_HOST,
-      'X-TC-Action': action,
-      'X-TC-Timestamp': String(timestamp),
-      'X-TC-Version': SMS_VERSION,
-      'X-TC-Region': cfg.region,
-    },
-    body: payload,
-  });
-
-  const text = await res.text();
-  let data: any;
+  // 超时保护：Node 的 fetch 默认没有超时，一旦对端挂起就会拖住调用方。
+  // 自动审核是串行循环（每轮最多 50 条），人工审核则占用 HTTP 请求——都必须设上限。
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SMS_TIMEOUT_MS);
   try {
-    data = JSON.parse(text);
-  } catch {
-    return { ok: false, code: `HTTP_${res.status}`, message: text.slice(0, 200) };
+    const res = await fetch(`https://${SMS_HOST}`, {
+      method: 'POST',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json; charset=utf-8',
+        Host: SMS_HOST,
+        'X-TC-Action': action,
+        'X-TC-Timestamp': String(timestamp),
+        'X-TC-Version': SMS_VERSION,
+        'X-TC-Region': cfg.region,
+      },
+      body: payload,
+      signal: controller.signal,
+    });
+
+    const text = await res.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return { ok: false, code: `HTTP_${res.status}`, message: text.slice(0, 200) };
+    }
+    const body = data?.Response ?? data;
+    if (body?.Error) {
+      return { ok: false, code: body.Error.Code, message: body.Error.Message };
+    }
+    const first = body?.SendStatusSet?.[0];
+    if (!first || first.Code !== 'Ok') {
+      return { ok: false, code: first?.Code ?? 'EMPTY_SEND_STATUS', message: first?.Message ?? '未返回发送状态' };
+    }
+    return { ok: true, code: 'Ok', message: first.Message };
+  } catch (err) {
+    return {
+      ok: false,
+      code: 'NETWORK_ERROR',
+      message: err instanceof Error ? err.message : String(err),
+    };
+  } finally {
+    clearTimeout(timer);
   }
-  const body = data?.Response ?? data;
-  if (body?.Error) {
-    return { ok: false, code: body.Error.Code, message: body.Error.Message };
-  }
-  const first = body?.SendStatusSet?.[0];
-  if (!first || first.Code !== 'Ok') {
-    return { ok: false, code: first?.Code ?? 'EMPTY_SEND_STATUS', message: first?.Message ?? '未返回发送状态' };
-  }
-  return { ok: true, code: 'Ok', message: first.Message };
 }
 
 /**
