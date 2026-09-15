@@ -9,6 +9,7 @@ import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, ge
 import { ok, error, getClientIP } from '../_middleware';
 import { createCertificateImage, type PartPriceItem } from '../_certificate';
 import { getCertificateSeal } from '../_seal';
+import { notifyWarrantyActivated } from '../_sms';
 
 interface Env {
   DB: D1Database;
@@ -108,6 +109,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     province_org_id: string | null;
     product_model_id: string;
     customer_name_snapshot: string;
+    customer_phone_snapshot: string | null;
     plate_no_snapshot: string;
     vin_snapshot: string;
     vehicle_brand_snapshot: string;
@@ -285,6 +287,15 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
     if (certFileKey) await env.R2.delete(certFileKey).catch(() => undefined);
     throw err;
   }
+
+  // 审核通过后给车主发送质保激活短信。
+  // 短信是「尽力而为」的附加能力：notifyWarrantyActivated 内部吞掉全部异常，
+  // 未配置密钥或发送失败都只记日志，绝不阻塞/回滚审核结果。
+  await notifyWarrantyActivated({
+    recordId,
+    certNo,
+    phone: record.customer_phone_snapshot,
+  });
 
   return ok({ recordId, certNo, certFileKey }, '审核通过');
 }

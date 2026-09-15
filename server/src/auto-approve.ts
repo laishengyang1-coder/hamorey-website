@@ -11,6 +11,7 @@
 import { queryFirst, queryAll, execute, batch, generateId, isOrgPointsExempt } from '../../functions/api/_lib.ts';
 import { createCertificateImage, type PartPriceItem } from '../../functions/api/_certificate.ts';
 import { getCertificateSeal } from '../../functions/api/_seal.ts';
+import { notifyWarrantyActivated } from '../../functions/api/_sms.ts';
 
 /** 提交后超过多少分钟仍未审核则自动通过 */
 export const AUTO_APPROVE_MINUTES = 10;
@@ -29,6 +30,7 @@ interface PendingRecord {
   province_org_id: string | null;
   product_model_id: string;
   customer_name_snapshot: string;
+  customer_phone_snapshot: string | null;
   plate_no_snapshot: string;
   vin_snapshot: string;
   vehicle_brand_snapshot: string;
@@ -261,6 +263,13 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
     );
     throw err;
   }
+
+  // 自动通过同样通知车主（短信失败只记日志，不影响审核结果，也不会触发回滚）
+  await notifyWarrantyActivated({
+    recordId: record.id,
+    certNo,
+    phone: record.customer_phone_snapshot,
+  });
 
   return true;
 }
