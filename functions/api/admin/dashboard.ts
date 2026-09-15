@@ -151,12 +151,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE date(created_at) = date('now')`),
         queryFirst<{ cnt: number }>(
           db,
+          // 全平台累计发放积分：统计所有 change_type='award' 的流水（含质保审核发放与繁星计划等），不扣减兑换/调整
           `SELECT COALESCE(SUM(pl.points_change), 0) AS cnt
            FROM points_ledger pl
-           JOIN warranty_records wr ON wr.id = pl.related_id AND wr.store_id = pl.organization_id
-           WHERE pl.change_type = 'award'
-             AND pl.related_type = 'warranty'
-             AND wr.status = 'active'`
+           WHERE pl.change_type = 'award'`
         ),
       ]);
 
