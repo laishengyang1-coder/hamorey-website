@@ -30,6 +30,24 @@ export function formatDateTime(date: string | Date | null): string {
 }
 
 /**
+ * 格式化日期时间为 YYYY-MM-DD HH:mm（不做时区换算，只规整字符串）。
+ *
+ * 为什么不用 new Date().toLocaleString()：
+ * 后端 DATETIME 以「本地墙钟时间」入库（MySQL session tz = +08:00，NOW() 即北京时间），
+ * 但 mysql2 连接池配置了 timezone:'Z'，序列化后变成 2026-09-15T16:23:27.000Z —— 
+ * 数字是对的，末尾的 Z 是假的。若用 toLocaleString 再减 8 小时反而会错位。
+ * 所以这里只做「去掉 T、截到分钟」，与各页面原本的 slice(0,16) 语义一致且更统一。
+ */
+export function formatDateTimeShort(date: string | Date | null | undefined): string {
+  if (!date) return '-';
+  const text = date instanceof Date
+    ? (isNaN(date.getTime()) ? '' : date.toISOString())
+    : String(date);
+  if (!text) return '-';
+  return text.slice(0, 16).replace('T', ' ');
+}
+
+/**
  * 手机号脱敏：隐藏中间4位
  * 13800138000 → 138****8000
  */
