@@ -141,6 +141,42 @@ function inlinePaginationParams(sql: string, params: unknown[]): { sql: string; 
   return { sql: nextSql, params: nextParams };
 }
 
+const MYSQL_TYPE_JSON = 245;
+
+/**
+ * mysql2 会把 MySQL 的 JSON 列（类型码 245）自动解析成 JS 对象 / 数组，
+ * 而 Cloudflare D1 的 json_group_array() / json_object() 返回的是「字符串」。
+ *
+ * 上层 functions/ 代码是按 D1 语义写的：后端把 json_group_array(...) 取别名输出，
+ * 各端（admin / province / store / 微信小程序）拿到后再 JSON.parse 一次。
+ * 若这里不还原成字符串，JSON.parse(数组) 会抛 SyntaxError 并被各端的 try/catch 吞掉，
+ * 表现为「明细列永远是空」。
+ *
+ * 本项目生产库中没有任何 JSON 类型的表列（detail_json / snapshot_json 均为 text），
+ * 因此命中此分支的只会是 json_group_array 这类聚合表达式，还原是安全的。
+ */
+function restoreJsonColumns(
+  rows: Record<string, unknown>[],
+  fields: unknown,
+): Record<string, unknown>[] {
+  if (!Array.isArray(fields) || rows.length === 0) return rows;
+
+  const jsonColumns = (fields as Array<{ name?: string; type?: number }>)
+    .filter((field) => field && field.type === MYSQL_TYPE_JSON && typeof field.name === 'string')
+    .map((field) => field.name as string);
+  if (jsonColumns.length === 0) return rows;
+
+  for (const row of rows) {
+    for (const name of jsonColumns) {
+      const value = row[name];
+      if (value !== null && typeof value === 'object') {
+        row[name] = JSON.stringify(value);
+      }
+    }
+  }
+  return rows;
+}
+
 export class MySqlD1PreparedStatement {
   private params: unknown[] = [];
 
@@ -169,14 +205,17 @@ export class MySqlD1PreparedStatement {
 
   async first<T = Record<string, unknown>>(): Promise<T | null> {
     const { sql, params } = this.execution;
-    const [rows] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
-    return (rows[0] as T | undefined) ?? null;
+    const [rows, fields] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
+    const [row] = restoreJsonColumns(rows as unknown as Record<string, unknown>[], fields);
+    return (row as T | undefined) ?? null;
   }
 
   async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
     const { sql, params } = this.execution;
-    const [rows] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
-    return { results: rows as T[] };
+    const [rows, fields] = await this.executor.execute<RowDataPacket[]>(sql, params as ExecuteParams);
+    return {
+      results: restoreJsonColumns(rows as unknown as Record<string, unknown>[], fields) as unknown as T[],
+    };
   }
 
   async run(): Promise<D1RunResult> {

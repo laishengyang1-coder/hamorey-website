@@ -16,13 +16,24 @@ interface Redemption {
   id: string; organization_id: string; org_name: string;
   total_points: number; status: string; review_note: string | null;
   tracking_no: string | null; created_at: string; items_json?: string;
+  reviewed_at?: string | null; reviewed_by?: string | null;
 }
 
 const STATUS_MAP: Record<string, string> = { pending: '待审核', approved: '已通过', rejected: '已拒绝', shipped: '已发货', completed: '已完成' };
 
-function parseItems(json?: string): RedemptionItem[] {
+/**
+ * 明细解析：后端把 redemption_items 聚合成 JSON 输出。
+ * D1 返回字符串、MySQL 适配层已统一还原为字符串，
+ * 但为兼容两种运行时而同时接受「已是数组」的情况，避免静默降级成空列表。
+ */
+function parseItems(json?: unknown): RedemptionItem[] {
   if (!json) return [];
-  try { return JSON.parse(json) as RedemptionItem[]; } catch { return []; }
+  if (Array.isArray(json)) return json as RedemptionItem[];
+  if (typeof json === 'object') return [json as RedemptionItem];
+  try {
+    const parsed = JSON.parse(json as string);
+    return Array.isArray(parsed) ? (parsed as RedemptionItem[]) : [];
+  } catch { return []; }
 }
 
 export default function RedemptionListPage() {
@@ -70,7 +81,7 @@ export default function RedemptionListPage() {
   const COLUMNS: Column[] = [
     { key: 'org_name', title: '申请组织', dataIndex: 'org_name', className: 'max-w-[140px] truncate' },
     { key: 'items', title: '兑换商品', dataIndex: 'items_json', render: (v) => {
-      const items = parseItems(v as string);
+      const items = parseItems(v);
       if (items.length === 0) return '-';
       const summary = items.map(i => `${i.reward_name_snapshot}×${i.quantity}`).join(', ');
       return <span className="text-xs truncate block max-w-[200px]" title={summary}>{summary}</span>;
@@ -79,6 +90,7 @@ export default function RedemptionListPage() {
     { key: 'status', title: '状态', dataIndex: 'status', render: (v) => <StatusBadge status={STATUS_MAP[v as string] || (v as string)} />, className: 'whitespace-nowrap' },
     { key: 'tracking_no', title: '物流单号', dataIndex: 'tracking_no', render: (v) => v ? <span className="text-xs">{v as string}</span> : '-', className: 'whitespace-nowrap' },
     { key: 'created_at', title: '申请时间', dataIndex: 'created_at', render: (v) => (v as string)?.slice(0, 16), className: 'whitespace-nowrap' },
+    { key: 'reviewed_at', title: '处理时间', dataIndex: 'reviewed_at', render: (v) => v ? <span className="text-xs">{(v as string)?.slice(0, 16)}</span> : '-', className: 'whitespace-nowrap' },
     { key: 'actions', title: '操作', dataIndex: 'id', render: (_, r) => (
       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
         <button onClick={() => { setSelected(r); setDrawerOpen(true); }} className="text-xs text-gray-600 hover:text-gray-900">详情</button>
@@ -106,6 +118,7 @@ export default function RedemptionListPage() {
           <option value="rejected">已拒绝</option>
           <option value="completed">已完成</option>
         </select>
+        <span className="self-center text-xs text-gray-400">默认展示全部状态（含已通过 / 已拒绝的历史申请）</span>
       </FilterBar>
       <DataTable columns={COLUMNS} data={data as any} loading={loading} error={error} emptyText="暂无兑换记录"
         page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
@@ -117,22 +130,26 @@ export default function RedemptionListPage() {
             <div><span className="text-gray-500">申请组织：</span>{selected.org_name}</div>
             <div><span className="text-gray-500">状态：</span>{STATUS_MAP[selected.status] || selected.status}</div>
             <div><span className="text-gray-500">消耗积分：</span><span className="font-semibold text-[#5C1A1A]">{selected.total_points}</span></div>
-            {selectedItems.length > 0 && (
-              <div>
-                <span className="text-gray-500">兑换商品：</span>
-                <div className="mt-1 space-y-1">
-                  {selectedItems.map((item, i) => (
-                    <div key={i} className="flex justify-between rounded-lg bg-gray-50 px-3 py-2">
-                      <span>{item.reward_name_snapshot}</span>
-                      <span className="text-gray-500">×{item.quantity} ({item.points_per_item}/件)</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div>
+              <span className="text-gray-500">兑换商品：</span>
+              {selectedItems.length === 0
+                ? <span className="text-gray-400">无明细</span>
+                : (
+                  <div className="mt-1 space-y-1">
+                    {selectedItems.map((item, i) => (
+                      <div key={i} className="flex justify-between rounded-lg bg-gray-50 px-3 py-2">
+                        <span>{item.reward_name_snapshot}</span>
+                        <span className="text-gray-500">×{item.quantity} ({item.points_per_item}/件)</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
             {selected.tracking_no && <div><span className="text-gray-500">物流单号：</span><span className="font-mono text-xs">{selected.tracking_no}</span></div>}
             {selected.review_note && <div><span className="text-gray-500">审核备注：</span>{selected.review_note}</div>}
             <div><span className="text-gray-500">申请时间：</span>{selected.created_at?.slice(0, 16)}</div>
+            {selected.reviewed_at && <div><span className="text-gray-500">处理时间：</span>{selected.reviewed_at?.slice(0, 16)}</div>}
+            {selected.reviewed_by && <div><span className="text-gray-500">处理人：</span><span className="font-mono text-xs">{selected.reviewed_by}</span></div>}
           </div>
         )}
       </DetailDrawer>
