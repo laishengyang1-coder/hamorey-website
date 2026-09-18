@@ -501,6 +501,11 @@ CREATE TABLE IF NOT EXISTS redemptions (
     status              TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'shipped', 'completed')),
     review_note         TEXT,
     tracking_no         TEXT,
+    -- 收货地址快照：address_id 指向的 addresses 行可被门店改/删（MySQL 无外键保护），
+    -- 所以下单当时冻结一份，保证总部发货有据可依。
+    recipient_name_snapshot  TEXT,
+    recipient_phone_snapshot TEXT,
+    address_snapshot         TEXT,
     reviewed_by         TEXT REFERENCES users(id),
     reviewed_at         TEXT,
     created_at          TEXT NOT NULL DEFAULT (datetime('now')),

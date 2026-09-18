@@ -6,10 +6,43 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { batch, generateId, queryFirst, queryAll, execute, writeOperationLog, getAuthUser } from '../_lib';
+import { batch, composeAddressText, generateId, queryFirst, queryAll, execute, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
 
 interface Env { DB: D1Database; }
+
+/**
+ * 收货地址取「快照优先、实时兜底」，并标明来源：
+ * - `snapshot`：下单当时冻结的地址，权威；
+ * - `live`：这条单没有快照（历史数据），退回 addresses 表的**当前值** ——
+ *   addresses 在 MySQL 里没有外键保护、门店可改可删，所以前端必须提示「可能已被修改」。
+ */
+function withShippingAddress(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  return rows.map((row) => {
+    const snapshotAddress = (row.address_snapshot as string | null) || '';
+    const live = {
+      recipient_name: (row.addr_recipient_name as string | null) || null,
+      phone: (row.addr_phone as string | null) || null,
+      province: (row.addr_province as string | null) || null,
+      city: (row.addr_city as string | null) || null,
+      district: (row.addr_district as string | null) || null,
+      detail_address: (row.addr_detail as string | null) || null,
+    };
+    const hasLive = Boolean(live.recipient_name || live.province || live.detail_address);
+
+    // 丢掉只为兜底而查出来的 addr_* 中间列，避免响应里多出一堆冗余字段
+    const mapped: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(row)) {
+      if (!key.startsWith('addr_')) mapped[key] = value;
+    }
+
+    mapped.recipient_name = (row.recipient_name_snapshot as string | null) || live.recipient_name || null;
+    mapped.recipient_phone = (row.recipient_phone_snapshot as string | null) || live.phone || null;
+    mapped.address_text = snapshotAddress || composeAddressText(live) || null;
+    mapped.address_source = snapshotAddress ? 'snapshot' : (hasLive ? 'live' : null);
+    return mapped;
+  });
+}
 
 /** GET — 兑换列表 */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -27,19 +60,23 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (orgId) { conditions.push('r.organization_id = ?'); params.push(orgId); }
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const [items, totalRow] = await Promise.all([
-      queryAll(context.env.DB,
+    const [rawItems, totalRow] = await Promise.all([
+      queryAll<Record<string, unknown>>(context.env.DB,
         `SELECT r.*, o.name AS org_name,
+                a.recipient_name AS addr_recipient_name, a.phone AS addr_phone,
+                a.province AS addr_province, a.city AS addr_city,
+                a.district AS addr_district, a.detail_address AS addr_detail,
                 (SELECT json_group_array(json_object('reward_id',ri.reward_id,'quantity',ri.quantity,'points_per_item',ri.points_per_item,'reward_name_snapshot',ri.reward_name_snapshot))
                  FROM redemption_items ri WHERE ri.redemption_id = r.id) AS items_json
          FROM redemptions r
          LEFT JOIN organizations o ON o.id = r.organization_id
+         LEFT JOIN addresses a ON a.id = r.address_id
          ${where} ORDER BY r.created_at DESC LIMIT ? OFFSET ?`,
         ...params, pageSize, offset),
       queryFirst<{ cnt: number }>(context.env.DB,
         `SELECT COUNT(*) AS cnt FROM redemptions r ${where}`, ...params),
     ]);
-    return ok({ items, total: totalRow?.cnt ?? 0, page, pageSize });
+    return ok({ items: withShippingAddress(rawItems), total: totalRow?.cnt ?? 0, page, pageSize });
   } catch (err) {
     console.error('[admin/redemptions GET]', err);
     return error('获取兑换列表失败', 500);

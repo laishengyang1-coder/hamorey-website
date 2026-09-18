@@ -3,6 +3,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import {
   batch,
+  composeAddressText,
   generateId,
   getAuthUser,
   getOrgPoints,
@@ -130,9 +131,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const redemptionId = generateId();
     const statements: Array<{ sql: string; params: unknown[] }> = [
       {
-        sql: `INSERT INTO redemptions (id, organization_id, address_id, total_points, status, created_at, updated_at)
-              VALUES (?, ?, ?, ?, 'pending', datetime('now'), datetime('now'))`,
-        params: [redemptionId, user.orgId, address.id, totalPoints],
+        // 快照收货地址：addresses 表在 MySQL 里没有任何外键保护，门店可随时改/删自己的地址。
+        // 只存 address_id 的话，历史兑换单会指向被改过的地址或悬空 ID，总部就会发错货。
+        sql: `INSERT INTO redemptions (id, organization_id, address_id, total_points, status,
+                                       recipient_name_snapshot, recipient_phone_snapshot, address_snapshot,
+                                       created_at, updated_at)
+              VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, datetime('now'), datetime('now'))`,
+        params: [
+          redemptionId, user.orgId, address.id, totalPoints,
+          address.recipient_name, address.phone, composeAddressText(address),
+        ],
       },
     ];
 

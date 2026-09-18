@@ -460,22 +460,57 @@ export async function getOrgPoints(
   return row ?? { available: 0, frozen: 0 };
 }
 
-/** Resolve an address owned by an organization, supporting the mini program's `default` alias. */
+/** An organization shipping address as stored in `addresses`. */
+export interface OrganizationAddressRow {
+  id: string;
+  recipient_name: string;
+  phone: string;
+  province: string;
+  city: string;
+  district: string | null;
+  detail_address: string;
+}
+
+const ADDRESS_ROW_COLUMNS = 'id, recipient_name, phone, province, city, district, detail_address';
+
+/**
+ * Compose province/city/district + detail into one copy-friendly Chinese address line.
+ * Municipalities repeat the same value in `province` and `city` (北京市/北京市), so
+ * consecutive duplicates are collapsed — otherwise you get 「北京市北京市大兴区」.
+ */
+export function composeAddressText(a: {
+  province?: string | null;
+  city?: string | null;
+  district?: string | null;
+  detail_address?: string | null;
+}): string | null {
+  const parts = [a.province, a.city, a.district].filter((p): p is string => !!p && !!p.trim());
+  const region = parts.filter((p, i) => i === 0 || p !== parts[i - 1]).join('');
+  const text = `${region}${(a.detail_address || '').trim()}`.trim();
+  return text || null;
+}
+
+/**
+ * Resolve an address owned by an organization, supporting the mini program's `default` alias.
+ * Returns the whole row so callers can snapshot it onto business records — the `addresses`
+ * table has no foreign-key protection in MySQL, so stores can freely edit or delete a row
+ * that a historical record already points at.
+ */
 export async function resolveOrganizationAddress(
   db: D1Database,
   organizationId: string,
   requestedId: string,
-): Promise<{ id: string } | null> {
+): Promise<OrganizationAddressRow | null> {
   if (requestedId === 'default') {
-    return queryFirst<{ id: string }>(
+    return queryFirst<OrganizationAddressRow>(
       db,
-      `SELECT id FROM addresses WHERE organization_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1`,
+      `SELECT ${ADDRESS_ROW_COLUMNS} FROM addresses WHERE organization_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1`,
       organizationId,
     );
   }
-  return queryFirst<{ id: string }>(
+  return queryFirst<OrganizationAddressRow>(
     db,
-    `SELECT id FROM addresses WHERE id = ? AND organization_id = ?`,
+    `SELECT ${ADDRESS_ROW_COLUMNS} FROM addresses WHERE id = ? AND organization_id = ?`,
     requestedId,
     organizationId,
   );

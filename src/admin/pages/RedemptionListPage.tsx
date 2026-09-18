@@ -18,6 +18,9 @@ interface Redemption {
   total_points: number; status: string; review_note: string | null;
   tracking_no: string | null; created_at: string; items_json?: string;
   reviewed_at?: string | null; reviewed_by?: string | null;
+  // 收货地址：快照优先、实时兜底（见后端 withShippingAddress）
+  recipient_name?: string | null; recipient_phone?: string | null;
+  address_text?: string | null; address_source?: 'snapshot' | 'live' | null;
 }
 
 const STATUS_MAP: Record<string, string> = { pending: '待审核', approved: '已通过', rejected: '已拒绝', shipped: '已发货', completed: '已完成' };
@@ -50,6 +53,7 @@ export default function RedemptionListPage() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [actionType, setActionType] = useState<string>('');
   const [trackingInput, setTrackingInput] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -74,13 +78,31 @@ export default function RedemptionListPage() {
     } catch (err) { alert(err instanceof Error ? err.message : '操作失败'); }
   };
 
-  const openAction = (id: string, action: string) => {
-    setActionId(id); setActionType(action);
+  // 同时 setSelected：发货确认弹窗要展示这一单的收货地址，
+  // 若只传 id，弹窗就会显示上一次打开详情的那一单（错的地址）。
+  const openAction = (row: Redemption, action: string) => {
+    setSelected(row); setActionId(row.id); setActionType(action);
     if (action === 'ship') setTrackingInput('');
+  };
+
+  const copyAddress = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* 剪贴板不可用时静默，用户仍可手动选中复制 */ }
   };
 
   const COLUMNS: Column[] = [
     { key: 'org_name', title: '申请组织', dataIndex: 'org_name', className: 'max-w-[140px] truncate' },
+    { key: 'ship_to', title: '收货人', dataIndex: 'recipient_name', className: 'whitespace-nowrap', render: (v, r) => (
+      v ? (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs">{v as string}</span>
+          {r.recipient_phone && <span className="text-[10px] text-gray-400">{r.recipient_phone}</span>}
+        </div>
+      ) : <span className="text-gray-400">-</span>
+    )},
     { key: 'items', title: '兑换商品', dataIndex: 'items_json', render: (v) => {
       const items = parseItems(v);
       if (items.length === 0) return '-';
@@ -105,10 +127,10 @@ export default function RedemptionListPage() {
       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
         <button onClick={() => { setSelected(r); setDrawerOpen(true); }} className="text-xs text-gray-600 hover:text-gray-900">详情</button>
         {r.status === 'pending' && <>
-          <button onClick={() => openAction(r.id, 'approve')} className="text-xs text-green-600 hover:text-green-800">通过</button>
-          <button onClick={() => openAction(r.id, 'reject')} className="text-xs text-red-500 hover:text-red-700">拒绝</button>
+          <button onClick={() => openAction(r, 'approve')} className="text-xs text-green-600 hover:text-green-800">通过</button>
+          <button onClick={() => openAction(r, 'reject')} className="text-xs text-red-500 hover:text-red-700">拒绝</button>
         </>}
-        {r.status === 'approved' && <button onClick={() => openAction(r.id, 'ship')} className="text-xs text-[#C84444] hover:text-[#A03030]">发货</button>}
+        {r.status === 'approved' && <button onClick={() => openAction(r, 'ship')} className="text-xs text-[#C84444] hover:text-[#A03030]">发货</button>}
       </div>
     )},
   ];
@@ -155,6 +177,30 @@ export default function RedemptionListPage() {
                   </div>
                 )}
             </div>
+
+            {/* 收货信息 */}
+            <div className="border-t border-gray-100 pt-3">
+              <div><span className="text-gray-500">收货人：</span>{selected.recipient_name || <span className="text-gray-400">未记录</span>}</div>
+              <div className="mt-1"><span className="text-gray-500">联系电话：</span>{selected.recipient_phone || <span className="text-gray-400">未记录</span>}</div>
+              <div className="mt-1 flex items-start justify-between gap-2">
+                <span className="text-gray-500 shrink-0">收货地址：</span>
+                <span className="flex-1 whitespace-pre-wrap break-words">
+                  {selected.address_text || <span className="text-gray-400">未记录</span>}
+                </span>
+                {selected.address_text && (
+                  <button onClick={() => copyAddress(selected.address_text as string)}
+                    className="shrink-0 text-xs text-[#5C1A1A] hover:underline">
+                    {copied ? '已复制' : '复制'}
+                  </button>
+                )}
+              </div>
+              {selected.address_source === 'live' && (
+                <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  ⚠️ 该申请没有地址快照，以上是门店地址簿里的<strong>当前</strong>内容，可能已被门店修改或删除。发货前请与门店确认。
+                </p>
+              )}
+            </div>
+
             {selected.tracking_no && <div><span className="text-gray-500">物流单号：</span><span className="font-mono text-xs">{selected.tracking_no}</span></div>}
             {selected.review_note && <div><span className="text-gray-500">审核备注：</span>{selected.review_note}</div>}
             <div><span className="text-gray-500">申请时间：</span>{formatDateTimeShort(selected.created_at)}</div>
@@ -171,6 +217,13 @@ export default function RedemptionListPage() {
         variant={actionType === 'reject' ? 'danger' : 'default'}>
         {isShipAction ? (
           <div className="space-y-3">
+            {selected?.address_text && (
+              <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                <div className="text-gray-400">寄往</div>
+                <div className="mt-0.5">{selected.recipient_name} {selected.recipient_phone}</div>
+                <div className="mt-0.5 break-words">{selected.address_text}</div>
+              </div>
+            )}
             <p className="text-sm text-gray-500">请输入物流单号（可选）：</p>
             <input value={trackingInput} onChange={(e) => setTrackingInput(e.target.value)} placeholder="快递单号"
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#5C1A1A] focus:outline-none focus:ring-1 focus:ring-[#5C1A1A]" />
