@@ -13,6 +13,9 @@
 //      对外只暴露 notifyWarrantyActivated()，其内部吞掉全部异常。
 //   2. 未配置短信密钥时静默跳过（只打日志），便于本地/预览环境运行。
 //   3. 日志中手机号一律打码，不落明文。
+//   4. **总开关 SMS_ENABLED 默认关闭（fail-closed）**：只有显式设为 true 才发送。
+//      发短信会产生费用且直接触达车主，宁可漏发，也不要因为环境变量缺失/误配而误发。
+//      关闭期间不影响审核主流程，也不影响密钥留存（恢复时只需把开关改回 true）。
 // ============================================================
 
 const SMS_HOST = 'sms.tencentcloudapi.com';
@@ -56,6 +59,15 @@ async function getCrypto(): Promise<any> {
 function readEnv(name: string): string {
   const g = globalThis as unknown as { process?: { env?: Record<string, string | undefined> } };
   return (g.process?.env?.[name] || '').trim();
+}
+
+/**
+ * 短信总开关。**默认关闭**：只有 SMS_ENABLED 显式等于 'true'（忽略大小写）才发送。
+ * 这是一个业务开关，与「密钥是否配置」无关 —— 关闭时密钥仍保留在环境变量里，
+ * 重新打开只需把 SMS_ENABLED 改成 true 并重启进程，不必改代码。
+ */
+function isSmsEnabled(): boolean {
+  return readEnv('SMS_ENABLED').toLowerCase() === 'true';
 }
 
 /**
@@ -219,6 +231,12 @@ export async function notifyWarrantyActivated(input: {
 }): Promise<void> {
   const label = `[sms] warranty record=${input.recordId}${input.certNo ? ` cert=${input.certNo}` : ''}`;
   try {
+    // 总开关优先判断：这样日志能明确区分「被业务关闭」与「密钥没配好」，
+    // 避免以后看到「未配置密钥」去误修一个其实是被主动关掉的通道。
+    if (!isSmsEnabled()) {
+      console.log(`${label} 跳过短信：短信总开关已关闭（SMS_ENABLED != true）`);
+      return;
+    }
     const phone = normalizePhone(input.phone);
     if (!phone) {
       console.warn(`${label} 跳过短信：手机号缺失或非大陆手机号`);
