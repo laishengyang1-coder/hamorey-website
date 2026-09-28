@@ -82,10 +82,25 @@ function rewriteSystemSettingKey(sql: string): string {
     .replace(/\bSET\s+key\b/gi, 'SET `key`');
 }
 
+/**
+ * SQLite treats a backslash inside a string literal as a plain character, so
+ * `LIKE ? ESCAPE '\'` is valid there. MySQL treats `\'` as an escaped quote,
+ * which leaves the literal unterminated and raises ER_PARSE_ERROR (1064).
+ * Double the backslash so MySQL also reads the escape character as a backslash.
+ * Idempotent — an already-doubled `ESCAPE '\\'` no longer matches.
+ */
+function rewriteLikeEscape(sql: string): string {
+  return sql.replace(/ESCAPE\s+'\\'/gi, "ESCAPE '\\\\'");
+}
+
 function normalizeSql(sql: string): string {
   return rewriteSystemSettingKey(
     rewriteCollations(
-      rewriteInsertSyntax(rewriteScalarMinMax(rewriteJsonAggregates(rewriteDateFunctions(sql)))),
+      rewriteInsertSyntax(
+        rewriteLikeEscape(
+          rewriteScalarMinMax(rewriteJsonAggregates(rewriteDateFunctions(sql))),
+        ),
+      ),
     ),
   );
 }
