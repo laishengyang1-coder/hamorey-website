@@ -159,7 +159,9 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
     const pngBytes = await createCertificateImage({
       certificateNo: certNo,
       customerName: record.customer_name_snapshot,
-      plateNo: record.plate_no_snapshot,
+      // ⚠️ 兜底值须与 functions/api/admin/reviews-[id].ts#handleApprove 保持一致，
+      //    否则「自动审核」与「手动审核」出来的证书图对同一份数据会不一样（2026-09-30 统一为「临时车牌」）
+      plateNo: record.plate_no_snapshot || '临时车牌',
       vin: record.vin_snapshot || '-',
       vehicleBrand: record.vehicle_brand_snapshot,
       vehicleModel: record.vehicle_model_snapshot,
