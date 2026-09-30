@@ -28,6 +28,7 @@
 //   set -a; . /etc/hamorey/api.env; set +a
 //   node /opt/hamorey/scripts/regen-certificate.mjs --cert-no=HM-202609-EF1BB3BD [--dry-run]
 //   node ... --cert-no=HM-202609-EF1BB3BD --issue-date=2026-09-29
+//   node ... --restore --cert-no=HM-202609-EF1BB3BD [--backup-key=<key>] [--dry-run]
 // ============================================================
 
 import fs from 'node:fs';
@@ -57,22 +58,29 @@ function loadEnvFile(): void {
 loadEnvFile();
 
 const USAGE = [
-  '用法：regen-certificate.mjs --cert-no=<证书号> [--dry-run] [--issue-date=YYYY-MM-DD]',
+  '用法：',
+  '  regen-certificate.mjs --cert-no=<证书号> [--dry-run] [--issue-date=YYYY-MM-DD]',
+  '  regen-certificate.mjs --restore --cert-no=<证书号> [--backup-key=<key>] [--dry-run]',
   '',
   '  --cert-no=<证书号>       必填。唯一键，例如 HM-202609-EF1BB3BD',
-  '  --dry-run                只打印将要重出的字段，不写任何东西（含对象存储与数据库）',
+  '  --dry-run                只打印将要改动的 key/字段，不写任何东西（含对象存储与数据库）',
   '  --issue-date=YYYY-MM-DD  显式指定签发日期；默认沿用该证书「原本的生成日期」',
   '                           （取 certificate_files 最早一行的 created_at 日期，属更正语义）',
+  '  --restore                还原：把备份旧图写回 certificates/<证书号>.png；不改数据库任何一行',
+  '  --backup-key=<key>       仅与 --restore 一起用；不传时默认取该证书最早一份备份（原始 v1 原图）',
   '',
   '示例：',
   '  set -a; . /etc/hamorey/api.env; set +a',
   '  node /opt/hamorey/scripts/regen-certificate.mjs --cert-no=HM-202609-EF1BB3BD --dry-run',
+  '  node /opt/hamorey/scripts/regen-certificate.mjs --restore --cert-no=HM-202609-EF1BB3BD --dry-run',
 ].join('\n');
 
 interface Args {
   certNo: string;
   dryRun: boolean;
   issueDate?: string;
+  restore: boolean;
+  backupKey?: string;
 }
 
 function parseArgs(argv: string[]): Args | null {
@@ -80,11 +88,15 @@ function parseArgs(argv: string[]): Args | null {
   let certNo = '';
   let dryRun = false;
   let issueDate: string | undefined;
+  let restore = false;
+  let backupKey: string | undefined;
 
   for (let i = 0; i < positional.length; i += 1) {
     const arg = positional[i];
     if (arg === '--dry-run') {
       dryRun = true;
+    } else if (arg === '--restore') {
+      restore = true;
     } else if (arg.startsWith('--cert-no=')) {
       certNo = arg.slice('--cert-no='.length).trim();
     } else if (arg === '--cert-no') {
@@ -93,6 +105,10 @@ function parseArgs(argv: string[]): Args | null {
       issueDate = arg.slice('--issue-date='.length).trim();
     } else if (arg === '--issue-date') {
       issueDate = (positional[++i] || '').trim();
+    } else if (arg.startsWith('--backup-key=')) {
+      backupKey = arg.slice('--backup-key='.length).trim();
+    } else if (arg === '--backup-key') {
+      backupKey = (positional[++i] || '').trim();
     } else if (arg === '-h' || arg === '--help') {
       return null;
     } else {
@@ -102,11 +118,19 @@ function parseArgs(argv: string[]): Args | null {
   }
 
   if (!certNo) return null;
+  if (restore && issueDate) {
+    console.error('--restore 与 --issue-date 互斥，不能同时使用。');
+    return null;
+  }
+  if (backupKey && !restore) {
+    console.error('--backup-key 仅可与 --restore 一起使用。');
+    return null;
+  }
   if (issueDate && !/^\d{4}-\d{2}-\d{2}$/.test(issueDate)) {
     console.error(`--issue-date 需为 YYYY-MM-DD 格式，收到：${issueDate}`);
     return null;
   }
-  return { certNo, dryRun, issueDate };
+  return { certNo, dryRun, issueDate, restore, backupKey };
 }
 
 interface WarrantyRecordRow {
@@ -169,6 +193,8 @@ async function main(): Promise<void> {
   const R2 = apiEnv.R2 as any;
 
   const { certNo, dryRun, issueDate: issueDateOverride } = args;
+  const restore = args.restore;
+  const restoreBackupKeyOverride = args.backupKey;
   const fileKey = `certificates/${certNo}.png`;
 
   // ---------- 查记录（按当前数据库数据） ----------
@@ -196,6 +222,54 @@ async function main(): Promise<void> {
   const currentRow = certRows[certRows.length - 1] ?? null;   // 最新一行 = 当前对象
   const maxVersion = currentRow ? Number(currentRow.version) : 0;
   const newVersion = maxVersion + 1;
+
+  // ---------- --restore：把备份旧图写回对象存储（不改数据库） ----------
+  if (restore) {
+    // 默认取该证书最早一份备份 = 最初的 v1 原图（其 key 由最早一行 created_at 派生）
+    const derivedKey = originalRow ? `certificates/backup/${certNo}.${originalRow.ts_str}.png` : '';
+    const sourceKey = restoreBackupKeyOverride || derivedKey;
+    const sourceLabel = restoreBackupKeyOverride
+      ? '--backup-key 显式指定'
+      : '默认：该证书最早一份备份（原始 v1 原图）';
+
+    if (!sourceKey) {
+      console.error('错误：无 certificate_files 历史行，无法推断默认备份 key。请用 --backup-key=<key> 指定。');
+      process.exit(1);
+    }
+
+    const head = await R2.head(sourceKey);
+    if (!head) {
+      console.error(`错误：备份对象不存在：${sourceKey}。请用 --backup-key=<key> 指定正确的备份 key。`);
+      process.exit(1);
+    }
+
+    console.log('===== RESTORE（把备份旧图写回，不改数据库）=====');
+    console.log(`证书号    : ${certNo}`);
+    console.log(`来源备份  : ${sourceKey}  [${sourceLabel}]`);
+    console.log(`写回目标  : ${fileKey}（原地覆盖）`);
+    console.log('数据库    : 不改动任何一行（还原 = 撤销动作，不产生新版本行）');
+
+    if (dryRun) {
+      console.log('---- DRY-RUN：不写任何东西 ----');
+      console.log('==================================================');
+      console.log('dry-run 结束：未写入对象存储，未写入数据库。');
+      await shutdown();
+      return;
+    }
+
+    const backupObj = await R2.get(sourceKey);
+    if (!backupObj) {
+      console.error(`错误：读取备份对象失败：${sourceKey}`);
+      process.exit(1);
+    }
+    await R2.put(fileKey, backupObj.body, {
+      httpMetadata: { contentType: backupObj.httpMetadata?.contentType || 'image/png' },
+    });
+    console.log(`已写回 → ${fileKey}（${backupObj.body.length} 字节）`);
+    console.log('未改动 certificate_files / warranty_records / warranty_codes / points_ledger，无需重启 API。');
+    await shutdown();
+    return;
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const issueDate = issueDateOverride
