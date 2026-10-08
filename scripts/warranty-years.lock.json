@@ -1,0 +1,207 @@
+{
+  "generated_at": "2026-10-08T02:11:18.957Z",
+  "source": "production TDSQL-C hamorey.product_models.warranty_years (read-only SELECT; fetched via `ssh hamorey` mysql client)",
+  "model_count": 40,
+  "models": [
+    {
+      "model_code": "AURIS-DS",
+      "warranty_years": 10,
+      "status": "inactive"
+    },
+    {
+      "model_code": "FORTEX-AR",
+      "warranty_years": 10,
+      "status": "inactive"
+    },
+    {
+      "model_code": "HCZY",
+      "warranty_years": 12,
+      "status": "active"
+    },
+    {
+      "model_code": "HD",
+      "warranty_years": 15,
+      "status": "active"
+    },
+    {
+      "model_code": "HW8",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "HW9",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "HX8",
+      "warranty_years": 6,
+      "status": "active"
+    },
+    {
+      "model_code": "HX9",
+      "warranty_years": 7,
+      "status": "active"
+    },
+    {
+      "model_code": "HY8",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "HZ",
+      "warranty_years": 15,
+      "status": "active"
+    },
+    {
+      "model_code": "K65",
+      "warranty_years": 6,
+      "status": "active"
+    },
+    {
+      "model_code": "K75",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "K85",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "LUMIS-UV",
+      "warranty_years": 8,
+      "status": "inactive"
+    },
+    {
+      "model_code": "NEX5-CL",
+      "warranty_years": 8,
+      "status": "inactive"
+    },
+    {
+      "model_code": "PRF-CQY",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "PRF-LGZ",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "PUREX-OG",
+      "warranty_years": 5,
+      "status": "inactive"
+    },
+    {
+      "model_code": "QCCY",
+      "warranty_years": 6,
+      "status": "active"
+    },
+    {
+      "model_code": "T1",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "T2",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HD10",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HD35",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HD70",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HG25",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HG70",
+      "warranty_years": 10,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HH15",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HH35",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HH70",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HY10",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HY35",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HY75",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HZ15",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HZ35",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HZ75",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "WF-HZUN",
+      "warranty_years": 15,
+      "status": "inactive"
+    },
+    {
+      "model_code": "WH6.5",
+      "warranty_years": 5,
+      "status": "active"
+    },
+    {
+      "model_code": "WH7.5",
+      "warranty_years": 6,
+      "status": "active"
+    },
+    {
+      "model_code": "WH8.5",
+      "warranty_years": 8,
+      "status": "active"
+    },
+    {
+      "model_code": "YM-8",
+      "warranty_years": 10,
+      "status": "active"
+    }
+  ]
+}
