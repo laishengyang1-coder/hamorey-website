@@ -15,7 +15,7 @@ const SERIES_LIST = [
       { name: '和光', code: 'HG', en: 'AURIS Dual-Silver', tech: '磁控双银工艺', warranty: 10, highlight: '顶级隔热·奢享节能', specs: ['可见光透射比 70%', '紫外线阻隔 99%', '太阳能总阻隔率 58%', '厚度 3mil'] },
       { name: '和盾', code: 'HD', en: 'FORTEX Armor', tech: '多层复合纳米陶瓷', warranty: 10, highlight: '超强防爆·安全堡垒', specs: ['可见光透射比 70%', '紫外线阻隔 99%', '太阳能总阻隔率 53%', '厚度 4mil'] },
       { name: '和护', code: 'HH', en: 'LUMIS UV400+', tech: '纳米陶瓷工艺', warranty: 8, highlight: '隔热耐用·贴心护肤', specs: ['可见光透射比 70%', '紫外线阻隔 99%', '太阳能总阻隔率 50%', '厚度 3mil'] },
-      { name: '和真', code: 'HZ', en: 'CLARITY', tech: '高清原色', warranty: 5, highlight: '高清透光·自然视界', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 42%', '厚度 2mil'] },
+      { name: '和真', code: 'HZ', en: 'CLARITY', tech: '高清原色', warranty: 8, highlight: '高清透光·自然视界', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 42%', '厚度 2mil'] },
       { name: '和原', code: 'HY', en: 'PRIME', tech: '基础纳米', warranty: 5, highlight: '均衡隔热·舒适驾乘', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 38%', '厚度 2mil'] },
       { name: '冷光紫', code: 'LGZ', en: 'PRISMATIC LGZ', tech: '千层炫彩工艺', warranty: 10, highlight: '千层炫彩·流光溢彩', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 55%', '厚度 3mil'] },
       { name: '苍穹青', code: 'CQY', en: 'PRISMATIC CQY', tech: '千层炫彩工艺', warranty: 10, highlight: '千层炫彩·苍穹之韵', specs: ['可见光透射比 75%', '紫外线阻隔 99%', '太阳能总阻隔率 55%', '厚度 3mil'] }
@@ -33,7 +33,7 @@ const SERIES_LIST = [
       { name: '和旺 HW8', code: 'HW8', en: 'HEWANG HW8', tech: 'TPU 基材·高密度', warranty: 8, highlight: '全能防护·一步到位', price: 14800, specs: ['高密度 TPU', '厚度 7.5mil', '抗穿刺', '疏水自洁'] },
       { name: '和旺 HW9', code: 'HW9', en: 'HEWANG HW9', tech: 'TPU 基材·高亮版', warranty: 10, highlight: '旗舰防护·十年质保', price: 15800, specs: ['高亮 TPU', '厚度 8.5mil', '抗穿刺', '持久增亮'] },
       { name: '和御 HY8', code: 'HY8', en: 'HEYU HY8', tech: 'TPU 基材·旗舰级', warranty: 10, highlight: '顶级旗舰·至尊守护', price: 16800, specs: ['旗舰级 TPU', '厚度 7.5mil', '顶级抗穿刺', '修复性能最强'] },
-      { name: '和雅 HYM', code: 'YM-8', en: 'HEYA HYM', tech: 'TPU 基材·哑光版', warranty: 8, highlight: '哑光质感·低调奢华', price: 12800, specs: ['哑光 TPU', '厚度 7.5mil', '磨砂质感', '指纹不留痕'] },
+      { name: '和雅 HYM', code: 'YM-8', en: 'HEYA HYM', tech: 'TPU 基材·哑光版', warranty: 10, highlight: '哑光质感·低调奢华', price: 12800, specs: ['哑光 TPU', '厚度 7.5mil', '磨砂质感', '指纹不留痕'] },
       { name: '和尊 HZ', code: 'HZ', en: 'HEZUN HZ', tech: '聚碳酸酯涂层·超长质保', warranty: 15, highlight: '十五年质保·尊享守护', price: 16800, specs: ['聚碳酸酯涂层', '厚度 7.5mil', '自修复', '高光泽'] },
       { name: '和鼎 HD', code: 'HD', en: 'HEDING HD', tech: '聚碳酸酯基材·旗舰增强', warranty: 15, highlight: '十五年质保·旗舰防护', price: 21800, specs: ['聚碳酸酯基材', '双聚碳', '厚度 7.5mil', '高光泽'] }
     ]
@@ -45,7 +45,7 @@ const SERIES_LIST = [
     image: 'https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/prod-color.png',
     desc: '丰富的色彩选择，兼具改色与保护双重功能，满足个性化定制需求。',
     products: [
-      { name: '和彩 QCCY', code: 'QCCY', en: 'HECAI QCCY', tech: 'TPU 全彩改色', warranty: 8, highlight: '全彩焕新·保护随行', price: 16800, specs: ['TPU 基材', '厚度 8mil', '200+ 颜色可选', '保护+改色二合一'] }
+      { name: '和彩 QCCY', code: 'QCCY', en: 'HECAI QCCY', tech: 'TPU 全彩改色', warranty: 6, highlight: '全彩焕新·保护随行', price: 16800, specs: ['TPU 基材', '厚度 8mil', '200+ 颜色可选', '保护+改色二合一'] }
     ]
   },
   {
@@ -56,7 +56,7 @@ const SERIES_LIST = [
     desc: '专为天窗设计，高效隔热、防爆裂，降低车内温度，提升行车安全。',
     products: [
       { name: '天窗冰甲 T1', code: 'T1', en: 'ROOF T1', tech: '高清隔热·基础版', warranty: 5, highlight: '高清透光·基础隔热', price: 5000, specs: ['高清透光', '隔热率 85%', '防爆裂', '厚度 2mil'] },
-      { name: '天窗冰甲 T2', code: 'T2', en: 'ROOF T2', tech: '高清隔热·旗舰版', warranty: 8, highlight: '旗舰隔热·极致防护', price: 5000, specs: ['高清透光', '隔热率 92%', '防爆裂', '厚度 3mil'] }
+      { name: '天窗冰甲 T2', code: 'T2', en: 'ROOF T2', tech: '高清隔热·旗舰版', warranty: 5, highlight: '旗舰隔热·极致防护', price: 5000, specs: ['高清透光', '隔热率 92%', '防爆裂', '厚度 3mil'] }
     ]
   }
 ];

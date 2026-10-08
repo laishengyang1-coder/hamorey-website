@@ -164,7 +164,10 @@ export default function ProductManagePage() {
         <span>厚度 {record.thickness as string}</span>
       </div>
     ) },
-    { key: 'warrantyYears', title: '质保', dataIndex: 'warrantyYears', render: (v) => `${v}年` },
+    { key: 'warrantyYears', title: '质保', dataIndex: 'warrantyYears', render: (_v, record) => {
+      const dbModel = record.dbModel as ProductModel | undefined;
+      return dbModel ? `${dbModel.warranty_years}年` : '-';
+    } },
     { key: 'warrantyPrice', title: '质保价格', render: (_v, record) => {
       const dbModel = record.dbModel as ProductModel | undefined;
       const fallback = Number(record.warrantyPrice || 0) * 100;
