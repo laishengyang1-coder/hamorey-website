@@ -19,7 +19,7 @@ app.use(cors({
       callback(null, true);
       return;
     }
-    callback(new Error('CORS origin is not allowed'));
+    callback(null, false);
   },
 }));
 

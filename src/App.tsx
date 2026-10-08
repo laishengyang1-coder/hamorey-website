@@ -146,7 +146,7 @@ export default function App() {
     return <LazyProvinceApp />
   }
 
-  if (pathname.startsWith('/store')) {
+  if (pathname === '/store' || pathname.startsWith('/store/')) {
     return <LazyStoreApp />
   }
 
