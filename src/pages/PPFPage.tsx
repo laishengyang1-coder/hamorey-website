@@ -125,7 +125,7 @@ export default function PPFPage() {
           </h3>
           <p className="text-sm text-content-secondary leading-relaxed">
             和膜隐形车衣在授权门店施工后，可通过质保码登记电子质保。
-            审核通过后生成可查询的电子质保证书，最长享10年质保服务。
+            审核通过后生成可查询的电子质保证书，最长享15年质保服务。
             理赔时可通过官网质保查询查看13个部位的参考报价。
           </p>
         </div>

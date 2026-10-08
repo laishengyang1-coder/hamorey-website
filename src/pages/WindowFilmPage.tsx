@@ -1,6 +1,8 @@
 // ============================================================
 // 和膜 HAMOREY — 窗膜分类页 /products/window-film/
-// 5个系列：和光/和盾/和护/和真/和原
+// 系列区由 config.series 动态渲染；window_film 的系列（AURIS-DS/FORTEX-AR/
+// LUMIS-UV/NEX5-CL/PUREX-OG）在 DB 均为 inactive，series 为空，故不渲染系列区，
+// 仅展示下方型号参数表（型号级产品仍 active）。
 // ============================================================
 
 import { useSEO } from '../lib/seo';
@@ -47,57 +49,61 @@ export default function WindowFilmPage() {
         </div>
       </ScrollReveal>
 
-      {/* 5个系列 */}
-      <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="Series" title="窗膜五大系列" />
-      </ScrollReveal>
-
-      <div className="mt-8 flex flex-col gap-6">
-        {config.series.map((series, index) => (
-          <ScrollReveal key={series.code} delay={index * 80}>
-            <Card padding="lg" hover>
-              <div className="flex flex-col md:flex-row md:items-start gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-content-primary">
-                      {series.nameCn}
-                    </h3>
-                    <span className="text-sm text-content-brand">{series.nameEn}</span>
-                  </div>
-                  <p className="text-sm text-content-secondary mb-4">
-                    {series.tagline}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {series.highlights.map((h) => (
-                      <Badge key={h} variant="default">{h}</Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-6 text-sm">
-                    <div>
-                      <span className="text-content-muted">质保年限：</span>
-                      <span className="text-content-primary">
-                        {Math.max(...WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.warrantyYears))}年
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-content-muted">型号：</span>
-                      <span className="text-content-primary">
-                        {WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.modelName).join(' / ')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="md:w-48 flex-shrink-0">
-                  <div className="p-4 rounded bg-graphite border border-border-subtle text-center">
-                    <p className="text-xs text-content-muted">玻璃部位</p>
-                    <p className="text-sm text-content-primary mt-1">前挡 / 侧挡</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+      {/* 系列区：仅在存在启用系列时渲染；window_film 无启用系列时不渲染 */}
+      {config.series.length > 0 && (
+        <>
+          <ScrollReveal className="mt-16">
+            <SectionHeading subtitle="Series" title="窗膜系列" />
           </ScrollReveal>
-        ))}
-      </div>
+
+          <div className="mt-8 flex flex-col gap-6">
+            {config.series.map((series, index) => (
+              <ScrollReveal key={series.code} delay={index * 80}>
+                <Card padding="lg" hover>
+                  <div className="flex flex-col md:flex-row md:items-start gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-content-primary">
+                          {series.nameCn}
+                        </h3>
+                        <span className="text-sm text-content-brand">{series.nameEn}</span>
+                      </div>
+                      <p className="text-sm text-content-secondary mb-4">
+                        {series.tagline}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {series.highlights.map((h) => (
+                          <Badge key={h} variant="default">{h}</Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-6 text-sm">
+                        <div>
+                          <span className="text-content-muted">质保年限：</span>
+                          <span className="text-content-primary">
+                            {Math.max(...WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.warrantyYears))}年
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-content-muted">型号：</span>
+                          <span className="text-content-primary">
+                            {WINDOW_FILM_MODELS.filter((item) => item.seriesCode === series.code).map((item) => item.modelName).join(' / ')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="md:w-48 flex-shrink-0">
+                      <div className="p-4 rounded bg-graphite border border-border-subtle text-center">
+                        <p className="text-xs text-content-muted">玻璃部位</p>
+                        <p className="text-sm text-content-primary mt-1">前挡 / 侧挡</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </ScrollReveal>
+            ))}
+          </div>
+        </>
+      )}
 
       <ScrollReveal className="mt-16">
         <SectionHeading subtitle="Price Sheet" title="前挡与侧挡型号参数" />

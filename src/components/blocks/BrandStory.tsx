@@ -34,7 +34,7 @@ export function BrandStory() {
                 <p className="text-sm text-content-muted mt-1">级门店体系</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-content-brand">10年</p>
+                <p className="text-3xl font-bold text-content-brand">15年</p>
                 <p className="text-sm text-content-muted mt-1">最长质保</p>
               </div>
             </div>
