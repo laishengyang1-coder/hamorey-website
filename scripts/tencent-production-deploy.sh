@@ -9,6 +9,8 @@ API_ENV_FILE="${API_ENV_FILE:-/etc/hamorey/api.env}"
 LETSENCRYPT_WEBROOT="${LETSENCRYPT_WEBROOT:-/var/www/letsencrypt}"
 LETSENCRYPT_CERT_NAME="${LETSENCRYPT_CERT_NAME:-hamorey-cn}"
 FORMAL_SERVER_NAMES="hemoppf.cn www.hemoppf.cn system.hemoppf.cn api.hemoppf.cn"
+FORMAL_SERVER_NAMES_HTTPS="hemoppf.cn system.hemoppf.cn api.hemoppf.cn"
+WWW_SERVER_NAME="www.hemoppf.cn"
 
 retry_network_command() {
   local description="$1"
@@ -116,6 +118,8 @@ location ^~ /assets/ {
     add_header Cache-Control "public, max-age=31536000, immutable" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
     access_log off;
 }
 
@@ -124,6 +128,8 @@ location = /index.html {
     add_header Cache-Control "no-cache, no-store, must-revalidate" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
 }
 
 location / {
@@ -131,6 +137,8 @@ location / {
     add_header Cache-Control "no-cache" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
 }
 NGINX
   sudo mv /tmp/hamorey-app-locations.conf /etc/nginx/snippets/hamorey-app-locations.conf
@@ -155,12 +163,23 @@ server {
 server {
     listen 80 default_server;
     server_name _;
-    include /etc/nginx/snippets/hamorey-app-locations.conf;
+
+    # Keep ACME reachable so unknown-host probes are not swallowed by the
+    # redirect (a missing challenge file must still answer 404, not 301).
+    location ^~ /.well-known/acme-challenge/ {
+        root $LETSENCRYPT_WEBROOT;
+        default_type "text/plain";
+        try_files \$uri =404;
+    }
+
+    location / {
+        return 301 https://hemoppf.cn\$request_uri;
+    }
 }
 
 server {
     listen 443 ssl http2;
-    server_name $FORMAL_SERVER_NAMES;
+    server_name $FORMAL_SERVER_NAMES_HTTPS;
 
     ssl_certificate /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/privkey.pem;
@@ -169,6 +188,19 @@ server {
     ssl_session_cache shared:SSL:10m;
 
     include /etc/nginx/snippets/hamorey-app-locations.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name $WWW_SERVER_NAME;
+
+    ssl_certificate /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+
+    return 301 https://hemoppf.cn\$request_uri;
 }
 NGINX
   else
