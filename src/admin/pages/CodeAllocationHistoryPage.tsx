@@ -31,7 +31,8 @@ const FILTER_FIELDS: FilterField[] = [
       { value: 'adjust', label: '调整' },
     ],
   },
-  { key: 'keyword', label: '关键词', type: 'text', placeholder: '质保码、产品或组织名称', width: '260px' },
+  { key: 'date', label: '划拨日期', type: 'date-range', width: '320px' },
+  { key: 'keyword', label: '关键词', type: 'text', placeholder: '质保码、产品、组织、备注', width: '280px' },
 ];
 
 const ACTION_LABELS: Record<string, string> = {

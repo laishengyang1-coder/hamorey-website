@@ -103,7 +103,13 @@ export function FilterBar({ fields, onFilter, onReset, initialValues = {}, class
 
   const handleReset = useCallback(() => {
     const empty: Record<string, string> = {};
-    (fields || []).forEach((f) => { empty[f.key] = ''; });
+    (fields || []).forEach((f) => {
+      empty[f.key] = '';
+      if (f.type === 'date-range') {
+        empty[`${f.key}Start`] = '';
+        empty[`${f.key}End`] = '';
+      }
+    });
     setValues(empty);
     onReset?.();
   }, [fields, onReset]);
@@ -158,6 +164,23 @@ export function FilterBar({ fields, onFilter, onReset, initialValues = {}, class
                 onChange={(v) => handleChange(field.key, v)}
                 baseClass={baseClass}
               />
+            ) : field.type === 'date-range' ? (
+              // 产出 `${key}Start` / `${key}End` 两个值（YYYY-MM-DD），空值会被 handleSubmit 过滤掉
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  className={cn(baseClass, 'flex-1 min-w-0')}
+                  value={values[`${field.key}Start`] || ''}
+                  onChange={(e) => handleChange(`${field.key}Start`, e.target.value)}
+                />
+                <span className="shrink-0 text-xs text-gray-400">至</span>
+                <input
+                  type="date"
+                  className={cn(baseClass, 'flex-1 min-w-0')}
+                  value={values[`${field.key}End`] || ''}
+                  onChange={(e) => handleChange(`${field.key}End`, e.target.value)}
+                />
+              </div>
             ) : (
               <input
                 type="text"

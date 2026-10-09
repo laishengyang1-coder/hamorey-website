@@ -15,17 +15,37 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const keyword = url.searchParams.get('keyword')?.trim() || '';
     const action = url.searchParams.get('action') || '';
+    const dateStart = url.searchParams.get('dateStart')?.trim() || '';
+    const dateEnd = url.searchParams.get('dateEnd')?.trim() || '';
     const { page, pageSize, offset } = parsePagination(url);
 
     const conditions: string[] = [];
     const params: unknown[] = [];
 
+    // 只接受 YYYY-MM-DD，非法值直接忽略（避免拼出坏日期把整条查询打死）
+    const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+    const nextDay = (day: string) => {
+      const d = new Date(`${day}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + 1);
+      return d.toISOString().slice(0, 10);
+    };
+
     if (action) {
       conditions.push('ca.action = ?');
       params.push(action);
     }
+    // created_at 存的是本地墙钟，所以按 [当天 00:00:00, 次日 00:00:00) 取闭开区间
+    if (DATE_RE.test(dateStart)) {
+      conditions.push('ca.created_at >= ?');
+      params.push(`${dateStart} 00:00:00`);
+    }
+    if (DATE_RE.test(dateEnd)) {
+      conditions.push('ca.created_at < ?');
+      params.push(`${nextDay(dateEnd)} 00:00:00`);
+    }
     if (keyword) {
       const like = `%${keyword}%`;
+      // 2026-10-09 起也匹配「备注」与「内部批次号」，否则搜单据号/订货单日期一律搜不到
       conditions.push(`(
         wc.code LIKE ?
         OR wc.imported_product_name LIKE ?
@@ -33,8 +53,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         OR pm.display_name LIKE ?
         OR from_org.name LIKE ?
         OR to_org.name LIKE ?
+        OR ca.reason LIKE ?
+        OR wc.import_batch_id LIKE ?
+        OR wc.batch_no LIKE ?
       )`);
-      params.push(like, like, like, like, like, like);
+      params.push(like, like, like, like, like, like, like, like, like);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
