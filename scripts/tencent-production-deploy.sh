@@ -31,6 +31,52 @@ retry_network_command() {
   done
 }
 
+# Probe an HTTP health endpoint with a bounded backoff window. Every :80 server
+# block on this host now answers with a 301 to https (see write_nginx_config),
+# so probing http://127.0.0.1/api/health only observes a redirect, not the API —
+# the backend port must be probed directly. A probe counts as healthy only when
+# it returns HTTP 200 whose body carries '"ok": true'; anything else keeps
+# retrying until the window closes, which lets a cold PM2 restart finish without
+# a false failure while still failing loudly (and printing the last response) on
+# a real outage.
+probe_health_with_backoff() {
+  local description="$1"
+  local attempts="$2"
+  local interval="$3"
+  shift 3
+
+  local response_file stderr_file http_code attempt
+  response_file="$(mktemp)"
+  stderr_file="$(mktemp)"
+
+  for attempt in $(seq 1 "$attempts"); do
+    http_code="$(curl --silent --show-error --max-time 5 -o "$response_file" -w '%{http_code}' "$@" 2>"$stderr_file" || true)"
+
+    if [ "$http_code" = "200" ] && grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' "$response_file"; then
+      cat "$response_file"
+      rm -f "$response_file" "$stderr_file"
+      return 0
+    fi
+
+    echo "$description not ready (attempt $attempt/$attempts, http=${http_code:-000})."
+    if [ "$attempt" -lt "$attempts" ]; then
+      sleep "$interval"
+    fi
+  done
+
+  echo "$description failed after $attempts attempts (~$((attempts * interval))s window)."
+  echo "Last HTTP status: ${http_code:-000}"
+  echo "Last response body:"
+  cat "$response_file" 2>/dev/null || true
+  echo
+  if [ -s "$stderr_file" ]; then
+    echo "Last curl error:"
+    cat "$stderr_file"
+  fi
+  rm -f "$response_file" "$stderr_file"
+  return 1
+}
+
 install_build_dependencies() {
   local requires_vite="${1:-false}"
 
@@ -379,29 +425,22 @@ if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
   fi
 fi
 
-for attempt in $(seq 1 30); do
-  if curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health >/tmp/hamorey-health.json; then
-    break
-  fi
-  if [ "$attempt" -eq 30 ]; then
-    echo "API health check did not recover after deployment."
-    exit 1
-  fi
-  sleep 1
-done
+if ! probe_health_with_backoff "API health (backend :3001)" 16 3 "http://127.0.0.1:3001/api/health"; then
+  exit 1
+fi
 
 if [ "$TLS_READY" = "true" ]; then
-  curl \
-    --fail \
-    --silent \
-    --show-error \
-    --max-time 10 \
+  if ! probe_health_with_backoff "HTTPS health (api.hemoppf.cn)" 10 3 \
     --resolve "api.hemoppf.cn:443:127.0.0.1" \
-    https://api.hemoppf.cn/api/health >/tmp/hamorey-https-health.json
+    https://api.hemoppf.cn/api/health; then
+    exit 1
+  fi
 fi
 
 printf '%s\n' "$DEPLOY_COMMIT" >/opt/hamorey/apps/DEPLOYED_COMMIT
-curl --fail --silent --show-error --max-time 3 127.0.0.1/api/health
+if ! probe_health_with_backoff "API health (final, backend :3001)" 3 2 "http://127.0.0.1:3001/api/health"; then
+  exit 1
+fi
 echo
 if [ "$TLS_READY" = "true" ]; then
   echo "HAMOREY_HTTPS_READY $FORMAL_SERVER_NAMES"
