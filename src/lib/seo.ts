@@ -1,6 +1,6 @@
 // ============================================================
 // 和膜 HAMOREY — SEO Hook
-// 管理页面 title / description / og:image / noindex
+// 管理页面 title / description / og:image / noindex / canonical
 // ============================================================
 
 import { useEffect } from 'react';
@@ -46,6 +46,9 @@ export function useSEO(routeKey: string, overrides?: Partial<SeoMeta>): void {
     // 设置 og:url
     setMetaTag('property', 'og:url', `${siteConfig.siteUrl}${window.location.pathname}`);
 
+    // 设置 canonical（按当前路由动态生成，避免 SPA 所有页面共用同一个 canonical）
+    setLinkTag('canonical', `${siteConfig.siteUrl}${window.location.pathname}`);
+
     // 设置 og:site_name
     setMetaTag('property', 'og:site_name', `${siteConfig.brandName} ${siteConfig.brandNameEn}`);
   }, [routeKey, overrides?.title, overrides?.description, overrides?.ogImage, overrides?.noindex, seo.title, seo.description, seo.ogImage, seo.noindex]);
@@ -64,4 +67,19 @@ function setMetaTag(attr: 'name' | 'property', key: string, content: string): vo
   }
 
   element.setAttribute('content', content);
+}
+
+/**
+ * 设置或更新 link 标签
+ */
+function setLinkTag(rel: string, href: string): void {
+  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+
+  if (!element) {
+    element = document.createElement('link');
+    element.setAttribute('rel', rel);
+    document.head.appendChild(element);
+  }
+
+  element.setAttribute('href', href);
 }
