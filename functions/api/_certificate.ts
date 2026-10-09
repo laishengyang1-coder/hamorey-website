@@ -181,7 +181,8 @@ function buildSvg(data: CertificateData, sealBase64?: string | null): string {
   y += 6;
   const FOOTER_H = 52;
   parts.push(`<rect x="0" y="${y}" width="${W}" height="${FOOTER_H}" fill="${BRAND}"/>`);
-  parts.push(`<text x="${PAD}" y="${y + 30}" font-family="${FONT}" font-size="10" fill="#E8D5C5">质保卡生成于 ${esc(new Date().toLocaleString('zh-CN'))}</text>`);
+  // 页脚时间戳显式钉死 Asia/Shanghai：不依赖进程/容器时区（否则进程 TZ=UTC 会少 8h、其它时区会整体漂移）
+  parts.push(`<text x="${PAD}" y="${y + 30}" font-family="${FONT}" font-size="10" fill="#E8D5C5">质保卡生成于 ${esc(new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))}</text>`);
   parts.push(`<text x="${W - PAD}" y="${y + 30}" font-family="${FONT}" font-size="11" fill="${GOLD}" text-anchor="end">和膜品牌运营中心</text>`);
   y += FOOTER_H;
 
