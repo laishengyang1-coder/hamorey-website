@@ -4,6 +4,7 @@
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
@@ -89,6 +90,70 @@ export default function OrgPointsPage() {
     }
   };
 
+  // 导出：省代 + 门店 全部组织，按当前积分从高到低（不受当前 Tab / 搜索影响）
+  const handleExport = useCallback(() => {
+    const num = (v: unknown) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const all = items
+      .filter((o) => o.type === 'PROVINCE' || o.type === 'STORE')
+      .map((o) => ({
+        ...o,
+        balance: num(o.balance),
+        awarded: num(o.awarded),
+        redeemed: num(o.redeemed),
+        ledger_count: num(o.ledger_count),
+      }))
+      .sort((a, b) =>
+        b.balance - a.balance || b.awarded - a.awarded || a.name.localeCompare(b.name, 'zh-CN'));
+
+    if (all.length === 0) return;
+
+    const head = ['排名', '类型', '编码', '名称', '省份', '城市', '当前积分', '累计获得', '累计消耗', '流水数'];
+    const body = all.map((o, i) => [
+      i + 1,
+      o.type === 'PROVINCE' ? '省代' : '门店',
+      o.code || '',
+      o.name || '',
+      o.province || '',
+      o.city || '',
+      o.balance,
+      o.awarded,
+      o.redeemed,
+      o.ledger_count,
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([head, ...body]);
+    ws['!cols'] = [
+      { wch: 6 }, { wch: 8 }, { wch: 12 }, { wch: 34 }, { wch: 10 },
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 8 },
+    ];
+
+    const pCnt = all.filter((o) => o.type === 'PROVINCE').length;
+    const ws2 = XLSX.utils.aoa_to_sheet([
+      ['指标', '数值'],
+      ['导出时间', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })],
+      ['省代家数', pCnt],
+      ['门店家数', all.length - pCnt],
+      ['合计家数', all.length],
+      ['当前积分合计', all.reduce((s, o) => s + o.balance, 0)],
+      ['累计获得合计', all.reduce((s, o) => s + o.awarded, 0)],
+      ['累计消耗合计', all.reduce((s, o) => s + o.redeemed, 0)],
+    ]);
+    ws2['!cols'] = [{ wch: 16 }, { wch: 24 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '组织积分');
+    XLSX.utils.book_append_sheet(wb, ws2, '汇总');
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+    XLSX.writeFile(wb, `组织积分-省代+门店-${stamp}.xlsx`);
+  }, [items]);
+
   const list = items
     .filter((o) => o.type === tab)
     .filter((o) => {
@@ -143,12 +208,23 @@ export default function OrgPointsPage() {
               </button>
             ))}
           </div>
-          <input
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="搜索名称 / 编码 / 省份..."
-            className="w-full sm:w-64 rounded-lg border border-[var(--paper-border)] bg-white px-3 py-1.5 text-sm text-[var(--paper-text)] focus:outline-none focus:ring-2 focus:ring-[#5C1A1A]/25"
-          />
+          <div className="flex w-full sm:w-auto items-center gap-2">
+            <input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="搜索名称 / 编码 / 省份..."
+              className="w-full sm:w-64 rounded-lg border border-[var(--paper-border)] bg-white px-3 py-1.5 text-sm text-[var(--paper-text)] focus:outline-none focus:ring-2 focus:ring-[#5C1A1A]/25"
+            />
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={loading || items.length === 0}
+              title="导出全部省代 + 门店，按当前积分从高到低"
+              className="shrink-0 rounded-lg border border-[var(--paper-border)] bg-white px-3 py-1.5 text-sm font-medium text-[#5C1A1A] transition-colors hover:bg-[var(--burgundy-tint)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              导出表格
+            </button>
+          </div>
         </div>
 
         {loading ? (
