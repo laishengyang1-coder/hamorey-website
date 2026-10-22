@@ -38,15 +38,31 @@ Page({
   async fetchStores() {
     this.setData({ loading: true, error: '' });
 
-    // 拉取全部门店（不限制 pageSize）
-    const res = await api.get('/stores', { pageSize: 999 }, { auth: false, loading: false });
+    // 分页拉全：接口对 pageSize 有上限（当前 1000），不能靠一个大 pageSize 一次拿完。
+    // 门店数继续增长时会自动翻页，直到取够 total 或某页返回不足一页为止。
+    const PAGE_SIZE = 200;
+    const MAX_PAGES = 50;
+    let raw = [];
+    let total = 0;
+    let failed = '';
 
-    if (!res.ok) {
-      this.setData({ loading: false, error: res.message || '加载失败' });
-      return;
+    for (let page = 1; page <= MAX_PAGES; page += 1) {
+      const res = await api.get('/stores', { pageSize: PAGE_SIZE, page }, { auth: false, loading: false });
+      if (!res.ok) {
+        failed = res.message || '加载失败';
+        break;
+      }
+      const batch = (res.data && res.data.stores) ? res.data.stores : [];
+      if (res.data && typeof res.data.total === 'number') total = res.data.total;
+      raw = raw.concat(batch);
+      if (batch.length < PAGE_SIZE || raw.length >= total) break;
     }
 
-    const raw = (res.data && res.data.stores) ? res.data.stores : [];
+    // 一页都没拿到才算失败；已有部分数据时继续展示（避免少一家就整页报错）
+    if (failed && raw.length === 0) {
+      this.setData({ loading: false, error: failed });
+      return;
+    }
 
     // 转换门店名称、去除电话
     const list = raw.map(s => ({

@@ -98,7 +98,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const keyword = url.searchParams.get('keyword') || '';
   const level = url.searchParams.get('level') || '';
   const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
+  // 上限放宽到 1000：小程序「授权门店」是一次性取全量的（pageSize=999），
+  // 原来卡在 100 会导致门店超过 100 家后，排在后面的门店在小程序里永远看不到。
+  // 仍保留上限，防止有人传 pageSize=1e9 把全表拖下来。
+  const pageSize = Math.min(1000, Math.max(1, parseInt(url.searchParams.get('pageSize') || '20', 10)));
 
   let stores: StoreRow[] = [];
 
