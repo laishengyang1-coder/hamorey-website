@@ -107,28 +107,39 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   if (env.DB) {
     // 从 D1 查询
-    let sql = `SELECT * FROM store_public_profiles WHERE is_public = 1`;
+    // 只返回「门店本身在营且已审核」+「上级省代也在营且已审核」的门店。
+    // 不能只看 store_public_profiles.is_public：后台「停用」只会改 organizations.status，
+    // 不会回头改档案的 is_public，于是停用的店会继续出现在小程序和官网（2026-11-02 实例）。
+    // ⚠️ 下面所有过滤条件都要带 p. 前缀 —— organizations 也有 province/city/address 列，不写前缀会报 1052。
+    let sql = `SELECT p.* FROM store_public_profiles p
+               JOIN organizations o ON o.id = p.organization_id
+               LEFT JOIN organizations po ON po.id = o.parent_id
+               WHERE p.is_public = 1
+                 AND o.type = 'STORE'
+                 AND o.status = 'active'
+                 AND o.audit_status = 'approved'
+                 AND (o.parent_id IS NULL OR (po.status = 'active' AND po.audit_status = 'approved'))`;
     const params: unknown[] = [];
 
     if (province) {
-      sql += ` AND province = ?`;
+      sql += ` AND p.province = ?`;
       params.push(province);
     }
     if (city) {
-      sql += ` AND city = ?`;
+      sql += ` AND p.city = ?`;
       params.push(city);
     }
     if (keyword) {
-      sql += ` AND (public_name LIKE ? ESCAPE '\\' OR address LIKE ? ESCAPE '\\')`;
+      sql += ` AND (p.public_name LIKE ? ESCAPE '\\' OR p.address LIKE ? ESCAPE '\\')`;
       const kw = `%${escapeLike(keyword)}%`;
       params.push(kw, kw);
     }
     if (level) {
-      sql += ` AND auth_level = ?`;
+      sql += ` AND p.auth_level = ?`;
       params.push(level);
     }
 
-    sql += ` ORDER BY sort_order ASC, created_at DESC`;
+    sql += ` ORDER BY p.sort_order ASC, p.created_at DESC`;
 
     try {
       const stmt = env.DB.prepare(sql).bind(...params);
