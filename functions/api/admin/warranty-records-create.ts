@@ -1,11 +1,11 @@
 // ============================================================
 // POST /api/admin/warranty-records — 总部手动录入一条质保
-// 按普通上质保流程：创建为 pending 待审核，10 分钟未审核将自动通过；
+// 按普通上质保流程：创建为 pending 待审核，AUTO_APPROVE_MINUTES 分钟未审核将自动通过；
 // 也可在审核页手动通过。质保码必须属于所选门店且状态可登记。
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryFirst, execute, writeOperationLog, getAuthUser } from '../_lib';
+import { generateId, queryFirst, execute, writeOperationLog, getAuthUser, AUTO_APPROVE_MINUTES } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -164,7 +164,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { warranty_code: body.warranty_code, store_id: body.store_id, customer: body.customer_name, plate: body.plate_no },
       getClientIP(context.request));
 
-    return ok({ id: recordId }, '录入成功，已进入待审核（10分钟内无人审核将自动通过，也可在审核页手动通过）');
+    return ok({ id: recordId }, `录入成功，已进入待审核（${AUTO_APPROVE_MINUTES}分钟内无人审核将自动通过，也可在审核页手动通过）`);
   } catch (err) {
     console.error('[admin/warranty-records POST]', err);
     return error('录入质保记录失败', 500);

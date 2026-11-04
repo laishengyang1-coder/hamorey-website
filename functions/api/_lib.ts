@@ -4,6 +4,20 @@
 // 第二阶段增强：SHA-256 哈希、Session Token 管理、认证校验
 // ============================================================
 
+/**
+ * 质保「超时自动审核」的阈值（分钟）。
+ *
+ * ★ 唯一来源：`server/src/auto-approve.ts`（定时任务）和
+ *   `functions/api/admin/warranty-records-create.ts`（录入后的提示语）都从这里取，
+ *   改这一处即可，**别在别处再写死数字**。
+ *
+ * ⚠️ 前端还有一处独立文案：`src/admin/pages/WarrantyRecordListPage.tsx`（待审核页的说明文字），
+ *   打包链路不同、不能 import 这里，改这个常量时要一并改那边。
+ *
+ * 历史：原为 10 分钟，2026-11-04 业务方要求改为 3 分钟。
+ */
+export const AUTO_APPROVE_MINUTES = 3;
+
 /** 生成 UUID */
 export function generateId(): string {
   return crypto.randomUUID();

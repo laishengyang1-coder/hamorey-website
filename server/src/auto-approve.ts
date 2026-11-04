@@ -2,19 +2,19 @@
 // 质保记录自动审核（超时自动通过）
 // ------------------------------------------------------------
 // 门店提交质保登记后状态为 pending，需总部/省代手动审核。
-// 为减少人工负担，提交超过 AUTO_APPROVE_MINUTES（默认 10）分钟
+// 为减少人工负担，提交超过 AUTO_APPROVE_MINUTES 分钟
+// （取自 functions/api/_lib.ts，当前 3 分钟；原为 10 分钟）
 // 仍无人审核的记录，由本后台定时任务自动置为审核通过，
 // 流程与人工审核完全一致：生成证书、更新质保码用量、
 // 写审计日志、发放门店积分与省代返利。
 // ============================================================
 
-import { queryFirst, queryAll, execute, batch, generateId, isOrgPointsExempt } from '../../functions/api/_lib.ts';
+import { queryFirst, queryAll, execute, batch, generateId, isOrgPointsExempt, AUTO_APPROVE_MINUTES } from '../../functions/api/_lib.ts';
 import { createCertificateImage, type PartPriceItem } from '../../functions/api/_certificate.ts';
 import { getCertificateSeal } from '../../functions/api/_seal.ts';
 import { notifyWarrantyActivated } from '../../functions/api/_sms.ts';
 
-/** 提交后超过多少分钟仍未审核则自动通过 */
-export const AUTO_APPROVE_MINUTES = 10;
+/** 提交后超过多少分钟仍未审核则自动通过 —— 定义在 functions/api/_lib.ts（唯一来源） */
 
 interface EnvLike {
   DB: any;
@@ -213,7 +213,7 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   statements.push({
     sql: `INSERT INTO warranty_audit_logs (id, warranty_record_id, action, from_status, to_status, note, operator_user_id, created_at)
           VALUES (?, ?, 'approve', 'pending', 'active', ?, NULL, datetime('now'))`,
-    params: [auditLogId, record.id, '系统自动通过（提交后超过10分钟未有人审核）'],
+    params: [auditLogId, record.id, `系统自动通过（提交后超过${AUTO_APPROVE_MINUTES}分钟未有人审核）`],
   });
 
   if (certFileKey) {

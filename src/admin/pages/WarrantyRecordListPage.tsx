@@ -297,7 +297,8 @@ export default function WarrantyRecordListPage() {
             <input type="date" value={createForm.installation_date} onChange={(e) => setCreateForm({ ...createForm, installation_date: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
-          <p className="text-xs text-gray-400">提交后进入待审核，10 分钟内无人审核将自动通过；也可在「审核管理」手动通过。</p>
+          {/* ⚠️ 这里的分钟数须与 functions/api/_lib.ts 的 AUTO_APPROVE_MINUTES 保持一致（当前 3） */}
+          <p className="text-xs text-gray-400">提交后进入待审核，3 分钟内无人审核将自动通过；也可在「审核管理」手动通过。</p>
           <div className="pt-4 border-t border-gray-100">
             <button onClick={handleCreateSubmit} disabled={creating}
               className="w-full rounded-lg bg-[#5C1A1A] py-2.5 text-sm font-medium text-white hover:bg-[#7A2828] transition-colors disabled:opacity-50">
