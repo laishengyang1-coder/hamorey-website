@@ -4,7 +4,6 @@
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import * as XLSX from 'xlsx';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
@@ -125,33 +124,39 @@ export default function OrgPointsPage() {
       o.ledger_count,
     ]);
 
-    const ws = XLSX.utils.aoa_to_sheet([head, ...body]);
-    ws['!cols'] = [
-      { wch: 6 }, { wch: 8 }, { wch: 12 }, { wch: 34 }, { wch: 10 },
-      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 8 },
-    ];
-
     const pCnt = all.filter((o) => o.type === 'PROVINCE').length;
-    const ws2 = XLSX.utils.aoa_to_sheet([
-      ['指标', '数值'],
-      ['导出时间', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })],
-      ['省代家数', pCnt],
-      ['门店家数', all.length - pCnt],
-      ['合计家数', all.length],
-      ['当前积分合计', all.reduce((s, o) => s + o.balance, 0)],
-      ['累计获得合计', all.reduce((s, o) => s + o.awarded, 0)],
-      ['累计消耗合计', all.reduce((s, o) => s + o.redeemed, 0)],
-    ]);
-    ws2['!cols'] = [{ wch: 16 }, { wch: 24 }];
+    const totalBalance = all.reduce((s, o) => s + o.balance, 0);
+    const totalAwarded = all.reduce((s, o) => s + o.awarded, 0);
+    const totalRedeemed = all.reduce((s, o) => s + o.redeemed, 0);
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '组织积分');
-    XLSX.utils.book_append_sheet(wb, ws2, '汇总');
+    // CSV 单表导出（原 xlsx 的「汇总」页改由表尾三行承载，仍可用 Excel/WPS 直接看，
+    // 也能被脚本当普通行跳过或计入；导出时间同样写在文件名里）
+    const esc = (v: unknown) => {
+      const s = String(v ?? '');
+      // 含逗号 / 双引号 / 换行时必须加引号，内部双引号翻倍
+      return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows: Array<Array<string | number>> = [head, ...body];
+    rows.push([]);
+    rows.push(['汇总', `省代 ${pCnt} 家 · 门店 ${all.length - pCnt} 家 · 合计 ${all.length} 家`]);
+    rows.push(['积分合计', `当前 ${totalBalance} · 累计获得 ${totalAwarded} · 累计消耗 ${totalRedeemed}`]);
+    rows.push(['导出时间', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })]);
+
+    const csv = '\ufeff' + rows.map((r) => r.map(esc).join(',')).join('\r\n') + '\r\n';
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
 
     const pad = (n: number) => String(n).padStart(2, '0');
     const d = new Date();
     const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
-    XLSX.writeFile(wb, `组织积分-省代+门店-${stamp}.xlsx`);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `组织积分-省代+门店-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [items]);
 
   const list = items
@@ -219,10 +224,10 @@ export default function OrgPointsPage() {
               type="button"
               onClick={handleExport}
               disabled={loading || items.length === 0}
-              title="导出全部省代 + 门店，按当前积分从高到低"
+              title="导出 CSV（全部省代 + 门店，按当前积分从高到低）"
               className="shrink-0 rounded-lg border border-[var(--paper-border)] bg-white px-3 py-1.5 text-sm font-medium text-[#5C1A1A] transition-colors hover:bg-[var(--burgundy-tint)] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              导出表格
+              导出 CSV
             </button>
           </div>
         </div>
