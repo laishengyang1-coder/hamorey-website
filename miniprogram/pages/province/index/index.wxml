@@ -97,6 +97,10 @@
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png" mode="aspectFit" />
         <view class="action-text">质保码库存</view>
       </view>
+      <view class="action-item" bindtap="goInventory">
+        <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/tab-code-active.png" mode="aspectFit" />
+        <view class="action-text">门店库存</view>
+      </view>
       <view class="action-item" bindtap="goAllocate">
         <image class="action-icon" src="https://hamorey-prod-1435246474.cos.ap-guangzhou.myqcloud.com/miniprogram/icon-allocate.png" mode="aspectFit" />
         <view class="action-text">划拨质保码</view>

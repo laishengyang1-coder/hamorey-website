@@ -1,0 +1,52 @@
+<view class="page-container">
+  <nav-bar title="{{storeName}}" backUrl="/pages/province/inventory/index" />
+
+  <!-- 该店汇总 -->
+  <view class="kpi-row">
+    <view class="kpi-card">
+      <view class="kpi-value">{{summary.total || 0}}</view>
+      <view class="kpi-label">合计</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value">{{summary.in_stock || 0}}</view>
+      <view class="kpi-label">未用</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value">{{summary.partial_used || 0}}</view>
+      <view class="kpi-label">部分使用</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value muted">{{summary.exhausted || 0}}</view>
+      <view class="kpi-label">已用完</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value accent">{{summary.available || 0}}</view>
+      <view class="kpi-label">可用</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
+
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadDetail">重试</view>
+  </view>
+
+  <view wx:elif="{{codes.length === 0}}" class="empty-state">
+    <view class="empty-state-text">该门店名下暂无质保码</view>
+  </view>
+
+  <view wx:else class="code-list">
+    <view class="code-card card" wx:for="{{codes}}" wx:key="id">
+      <view class="code-top">
+        <view class="code-value">{{item.code}}</view>
+        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+      </view>
+      <view class="code-meta-row">
+        <text class="code-model">{{item.model_name}}</text>
+        <text class="code-used">已用 {{item.used_count}}/{{item.usage_limit}}</text>
+      </view>
+      <view class="code-batch">批次 {{item.batch_no}}</view>
+    </view>
+  </view>
+</view>

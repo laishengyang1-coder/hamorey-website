@@ -1,0 +1,81 @@
+<view class="page-container">
+  <nav-bar title="门店库存" backUrl="/pages/province/index/index" />
+
+  <!-- 汇总 -->
+  <view class="kpi-row">
+    <view class="kpi-card">
+      <view class="kpi-value">{{summary.store_count || 0}}</view>
+      <view class="kpi-label">下属门店</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value">{{summary.total || 0}}</view>
+      <view class="kpi-label">质保码合计</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value accent">{{summary.available || 0}}</view>
+      <view class="kpi-label">可用</view>
+    </view>
+    <view class="kpi-card">
+      <view class="kpi-value muted">{{summary.exhausted || 0}}</view>
+      <view class="kpi-label">已用完</view>
+    </view>
+  </view>
+
+  <view class="hint-line">点门店可查看每一支质保码的明细</view>
+
+  <view wx:if="{{loading}}" class="loading-container"><view class="loading-spinner"></view></view>
+
+  <view wx:elif="{{error}}" class="error-container">
+    <view class="error-text">{{error}}</view>
+    <view class="btn-primary btn-sm" style="width:240rpx" bindtap="loadData">重试</view>
+  </view>
+
+  <view wx:elif="{{stores.length === 0}}" class="empty-state">
+    <view class="empty-state-text">暂无下属门店</view>
+  </view>
+
+  <view wx:else class="store-list">
+    <view
+      class="store-item"
+      wx:for="{{stores}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      data-name="{{item.name}}"
+      bindtap="openStore"
+    >
+      <view class="store-top">
+        <view class="store-name">{{item.name}}</view>
+        <view class="store-arrow">›</view>
+      </view>
+      <view class="store-sub">
+        <text>{{item.city || '—'}}</text>
+        <text wx:if="{{item.audit_status !== 'approved'}}" class="tag-warning tag-inline">待审核</text>
+        <text wx:if="{{item.status === 'suspended'}}" class="tag-warning tag-inline">暂停</text>
+        <text wx:if="{{item.status === 'disabled'}}" class="tag-error tag-inline">已停用</text>
+      </view>
+
+      <view class="store-counts">
+        <view class="count-cell">
+          <view class="count-value">{{item.total}}</view>
+          <view class="count-label">总码数</view>
+        </view>
+        <view class="count-cell">
+          <view class="count-value accent">{{item.available}}</view>
+          <view class="count-label">可用</view>
+        </view>
+        <view class="count-cell">
+          <view class="count-value">{{item.in_stock}}</view>
+          <view class="count-label">未用</view>
+        </view>
+        <view class="count-cell">
+          <view class="count-value">{{item.partial_used}}</view>
+          <view class="count-label">部分使用</view>
+        </view>
+        <view class="count-cell">
+          <view class="count-value muted">{{item.exhausted}}</view>
+          <view class="count-label">已用完</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

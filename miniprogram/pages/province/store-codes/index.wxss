@@ -1,0 +1,65 @@
+.page-container { min-height: 100vh; background: var(--color-bg); padding-bottom: 40rpx; }
+
+/* 该店汇总 */
+.kpi-row {
+  display: flex;
+  gap: 10rpx;
+  padding: 20rpx 20rpx 8rpx;
+}
+.kpi-card {
+  flex: 1;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md, 16rpx);
+  padding: 18rpx 4rpx;
+  text-align: center;
+}
+.kpi-value {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+.kpi-value.accent { color: #1F6B45; }
+.kpi-value.muted { color: var(--color-text-light); }
+.kpi-label {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+}
+
+/* 码列表 */
+.code-list { padding: 16rpx 24rpx 0; }
+.code-card { margin-bottom: 12rpx; }
+.code-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.code-value {
+  font-size: var(--font-lg, 34rpx);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 2rpx;
+}
+/* 状态徽标基础样式（不依赖全局 .tag） */
+.code-card .tag {
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  color: #FFFFFF;
+}
+.code-meta-row {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+.code-model { font-weight: 500; }
+.code-used { font-variant-numeric: tabular-nums; }
+.code-batch {
+  margin-top: 6rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}

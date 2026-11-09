@@ -29,6 +29,8 @@
     "pages/province/stores/index",
     "pages/province/store-form/index",
     "pages/province/codes/index",
+    "pages/province/inventory/index",
+    "pages/province/store-codes/index",
     "pages/province/allocate/index",
     "pages/province/register/index",
     "pages/province/points/index",

@@ -53,6 +53,7 @@ Page({
 
   goStores() { wx.reLaunch({ url: '/pages/province/stores/index' }); },
   goCodes() { wx.reLaunch({ url: '/pages/province/codes/index' }); },
+  goInventory() { wx.navigateTo({ url: '/pages/province/inventory/index' }); },
   goPoints() { wx.reLaunch({ url: '/pages/province/points/index' }); },
   goAllocate() { wx.navigateTo({ url: '/pages/province/allocate/index' }); },
   goRewards() { wx.navigateTo({ url: '/pages/province/rewards/index' }); },

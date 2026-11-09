@@ -1,0 +1,97 @@
+.page-container { min-height: 100vh; background: var(--color-bg); padding-bottom: 40rpx; }
+
+/* 汇总卡 */
+.kpi-row {
+  display: flex;
+  gap: 12rpx;
+  padding: 20rpx 24rpx 8rpx;
+}
+.kpi-card {
+  flex: 1;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md, 16rpx);
+  padding: 20rpx 8rpx;
+  text-align: center;
+}
+.kpi-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+.kpi-value.accent { color: #1F6B45; }
+.kpi-value.muted { color: var(--color-text-light); }
+.kpi-label {
+  margin-top: 6rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.hint-line {
+  padding: 4rpx 32rpx 16rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+}
+
+/* 门店列表 */
+.store-list { padding: 0 24rpx; }
+.store-item {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md, 16rpx);
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+.store-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.store-name {
+  flex: 1;
+  font-size: var(--font-md, 30rpx);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.store-arrow {
+  font-size: 36rpx;
+  color: var(--color-text-light);
+  margin-left: 12rpx;
+}
+.store-sub {
+  margin-top: 6rpx;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+.tag-inline {
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+}
+
+/* 每店 5 个数字 */
+.store-counts {
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid var(--color-border, #EEE5E0);
+  display: flex;
+}
+.count-cell { flex: 1; text-align: center; }
+.count-value {
+  font-size: var(--font-md, 30rpx);
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.count-value.accent { color: #1F6B45; }
+.count-value.muted { color: var(--color-text-light); }
+.count-label {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--color-text-light);
+}
