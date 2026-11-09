@@ -106,7 +106,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       );
       if (!store) return error('该门店不属于当前省代，或不存在', 403);
 
-      const limit = Math.min(500, Math.max(1, Number(url.searchParams.get('pageSize') || 500)));
+      // ⚠️ 不能直接 Math.min(500, Math.max(1, Number(x)))：x 非数字时 Number 得 NaN，
+      //    层层传递仍是 NaN，最终拼成 `LIMIT NaN` 让 SQL 报错、接口 500。
+      const rawLimit = Number(url.searchParams.get('pageSize') || 500);
+      const limit = Number.isFinite(rawLimit) ? Math.min(500, Math.max(1, Math.floor(rawLimit))) : 500;
 
       const [aggRow, items] = await Promise.all([
         queryFirst<AggRow>(

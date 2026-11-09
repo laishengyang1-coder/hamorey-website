@@ -51,9 +51,14 @@
   font-size: var(--font-md, 30rpx);
   font-weight: 600;
   color: var(--color-text);
+  line-height: 1.35;
+  /* 门店名最长 20 字（如「辽宁省锦州市凌河区瑞丰汽车装饰用品经营店」）：
+     截成一行会认不出是哪家店，改为最多折两行 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
 }
 .store-arrow {
   font-size: 36rpx;

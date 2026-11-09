@@ -1,7 +1,7 @@
 <view class="page-container">
   <nav-bar title="{{storeName}}" backUrl="/pages/province/inventory/index" />
 
-  <!-- 该店汇总 -->
+  <!-- 该店汇总（标签保持 2 字，5 格挤在一行才放得下） -->
   <view class="kpi-row">
     <view class="kpi-card">
       <view class="kpi-value">{{summary.total || 0}}</view>
@@ -13,11 +13,11 @@
     </view>
     <view class="kpi-card">
       <view class="kpi-value">{{summary.partial_used || 0}}</view>
-      <view class="kpi-label">部分使用</view>
+      <view class="kpi-label">部分</view>
     </view>
     <view class="kpi-card">
       <view class="kpi-value muted">{{summary.exhausted || 0}}</view>
-      <view class="kpi-label">已用完</view>
+      <view class="kpi-label">用完</view>
     </view>
     <view class="kpi-card">
       <view class="kpi-value accent">{{summary.available || 0}}</view>

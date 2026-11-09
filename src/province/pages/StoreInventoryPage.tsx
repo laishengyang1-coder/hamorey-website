@@ -144,8 +144,18 @@ export default function StoreInventoryPage() {
       { key: 'in_stock', title: '未用', className: 'text-right', render: (_, r: StoreRow) => <span className="tabular-nums">{r.in_stock}</span> },
       { key: 'partial_used', title: '部分使用', className: 'text-right', render: (_, r: StoreRow) => <span className="tabular-nums">{r.partial_used}</span> },
       { key: 'exhausted', title: '已用完', className: 'text-right', render: (_, r: StoreRow) => <span className="tabular-nums text-gray-500">{r.exhausted}</span> },
+      // 冻结/作废的码也算「支货」，计入总码数；但不在上面三类里。
+      // 只有真存在时才显示这一列，否则「总码数 = 未用+部分+用完」看不出差额、会让人以为算错。
+      ...(summary && summary.frozen_voided > 0
+        ? [{
+            key: 'frozen_voided',
+            title: '冻结/作废',
+            className: 'text-right',
+            render: (_: unknown, r: StoreRow) => <span className="tabular-nums text-gray-400">{r.frozen_voided}</span>,
+          } as Column]
+        : []),
     ],
-    [],
+    [summary],
   );
 
   const paged = useMemo(() => stores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [stores, page]);
@@ -210,6 +220,9 @@ export default function StoreInventoryPage() {
                 { label: '部分使用', value: drawerCounts?.partial_used ?? 0 },
                 { label: '已用完', value: drawerCounts?.exhausted ?? 0 },
                 { label: '可用', value: drawerCounts?.available ?? 0 },
+                ...((drawerCounts?.frozen_voided ?? 0) > 0
+                  ? [{ label: '冻结/作废', value: drawerCounts?.frozen_voided ?? 0 }]
+                  : []),
               ].map((it) => (
                 <div key={it.label} className="rounded-lg bg-[var(--burgundy-tint)] px-3 py-2">
                   <div className="text-[11px] text-gray-500">{it.label}</div>

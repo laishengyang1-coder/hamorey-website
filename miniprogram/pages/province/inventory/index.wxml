@@ -9,7 +9,7 @@
     </view>
     <view class="kpi-card">
       <view class="kpi-value">{{summary.total || 0}}</view>
-      <view class="kpi-label">质保码合计</view>
+      <view class="kpi-label">总码数</view>
     </view>
     <view class="kpi-card">
       <view class="kpi-value accent">{{summary.available || 0}}</view>
@@ -57,7 +57,7 @@
       <view class="store-counts">
         <view class="count-cell">
           <view class="count-value">{{item.total}}</view>
-          <view class="count-label">总码数</view>
+          <view class="count-label">总计</view>
         </view>
         <view class="count-cell">
           <view class="count-value accent">{{item.available}}</view>
@@ -69,11 +69,16 @@
         </view>
         <view class="count-cell">
           <view class="count-value">{{item.partial_used}}</view>
-          <view class="count-label">部分使用</view>
+          <view class="count-label">部分</view>
         </view>
         <view class="count-cell">
           <view class="count-value muted">{{item.exhausted}}</view>
-          <view class="count-label">已用完</view>
+          <view class="count-label">用完</view>
+        </view>
+        <!-- 只有真存在冻结/作废码时才显示（它们也算支货，计入总计） -->
+        <view class="count-cell" wx:if="{{summary.frozen_voided > 0}}">
+          <view class="count-value muted">{{item.frozen_voided}}</view>
+          <view class="count-label">冻结</view>
         </view>
       </view>
     </view>
