@@ -72,6 +72,7 @@ export default function StoreInventoryPage() {
   const [open, setOpen] = useState(false);
   const [activeStore, setActiveStore] = useState<StoreRow | null>(null);
   const [codes, setCodes] = useState<CodeRow[]>([]);
+  const [codesSummary, setCodesSummary] = useState<Counts | null>(null);
   const [codesLoading, setCodesLoading] = useState(false);
   const [codesError, setCodesError] = useState<string | null>(null);
 
@@ -97,6 +98,7 @@ export default function StoreInventoryPage() {
     setActiveStore(store);
     setOpen(true);
     setCodes([]);
+    setCodesSummary(null);
     setCodesError(null);
     setCodesLoading(true);
     try {
@@ -104,6 +106,8 @@ export default function StoreInventoryPage() {
         `/province/store-inventory?store_id=${encodeURIComponent(store.id)}&pageSize=500`,
       );
       setCodes(res.items || []);
+      // 优先用后端汇总：明细有 500 条上限，门店码数一旦超过上限，前端自己数就会偏少
+      setCodesSummary(res.summary || null);
     } catch (err) {
       setCodesError(err instanceof Error ? err.message : '加载失败');
     } finally {
@@ -161,6 +165,8 @@ export default function StoreInventoryPage() {
   const paged = useMemo(() => stores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [stores, page]);
 
   const drawerCounts = useMemo<Counts | null>(() => {
+    // 后端汇总优先（它不受明细 500 条上限影响）；拿不到才退回按可见明细自己数
+    if (codesSummary) return codesSummary;
     if (!codes.length) return null;
     const c: Counts = { total: codes.length, in_stock: 0, partial_used: 0, exhausted: 0, frozen_voided: 0, available: 0 };
     for (const k of codes) {
@@ -171,7 +177,7 @@ export default function StoreInventoryPage() {
     }
     c.available = c.in_stock + c.partial_used;
     return c;
-  }, [codes]);
+  }, [codesSummary, codes]);
 
   return (
     <div>
