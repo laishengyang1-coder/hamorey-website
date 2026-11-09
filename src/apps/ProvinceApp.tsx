@@ -12,6 +12,7 @@ const LoginPage = lazyWithRetry(() => import('../province/pages/LoginPage'));
 const DashboardPage = lazyWithRetry(() => import('../province/pages/DashboardPage'));
 const StoreListPage = lazyWithRetry(() => import('../province/pages/StoreListPage'));
 const WarrantyCodeInventoryPage = lazyWithRetry(() => import('../province/pages/WarrantyCodeInventoryPage'));
+const StoreInventoryPage = lazyWithRetry(() => import('../province/pages/StoreInventoryPage'));
 const WarrantyCodeAllocatePage = lazyWithRetry(() => import('../province/pages/WarrantyCodeAllocatePage'));
 const WarrantyRegisterPage = lazyWithRetry(() => import('../province/pages/WarrantyRegisterPage'));
 const SubRecordListPage = lazyWithRetry(() => import('../province/pages/SubRecordListPage'));
@@ -32,6 +33,7 @@ const PROVINCE_MENU: MenuItem[] = [
   { key: 'stores', label: '下属门店', path: '/province/stores' },
   { key: 'warranty-register', label: '代门店登记质保', path: '/province/warranty-register' },
   { key: 'warranty-codes', label: '质保码库存', path: '/province/warranty-codes' },
+  { key: 'store-inventory', label: '门店库存', path: '/province/store-inventory' },
   { key: 'allocate', label: '质保码划拨', path: '/province/allocate' },
   { key: 'records', label: '下属质保记录', path: '/province/records' },
   { key: 'points', label: '我的积分', path: '/province/points' },
@@ -75,6 +77,7 @@ const router = createBrowserRouter([
       { path: 'stores', element: <Suspense fallback={<Loading />}><StoreListPage /></Suspense> },
       { path: 'warranty-register', element: <Suspense fallback={<Loading />}><WarrantyRegisterPage /></Suspense> },
       { path: 'warranty-codes', element: <Suspense fallback={<Loading />}><WarrantyCodeInventoryPage /></Suspense> },
+      { path: 'store-inventory', element: <Suspense fallback={<Loading />}><StoreInventoryPage /></Suspense> },
       { path: 'allocate', element: <Suspense fallback={<Loading />}><WarrantyCodeAllocatePage /></Suspense> },
       { path: 'records', element: <Suspense fallback={<Loading />}><SubRecordListPage /></Suspense> },
       { path: 'points', element: <Suspense fallback={<Loading />}><PointsPage /></Suspense> },
