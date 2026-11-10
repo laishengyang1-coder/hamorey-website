@@ -40,7 +40,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       if (!fileKey.startsWith(expectedPrefix) && !fileKey.startsWith(filmExchangePrefix))
         return error('上传路径无效', 403);
     } else if (user.role === 'HQ_ADMIN') {
-      if (!fileKey.startsWith('reward-covers/')) return error('上传路径无效', 403);
+      // 总部可传：积分商城封面 reward-covers/、首页轮播图 banners/
+      if (!fileKey.startsWith('reward-covers/') && !fileKey.startsWith('banners/'))
+        return error('上传路径无效', 403);
     } else {
       return error('无权上传', 403);
     }
@@ -66,12 +68,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     await context.env.R2.put(fileKey, file.stream(), {
-      // 商品封面使用不可变 UUID 文件名，可被客户端长期缓存；施工照片继续私有。
+      // 商品封面与轮播图都用不可变 UUID 文件名，可被客户端长期缓存；施工照片继续私有。
       httpMetadata: {
         contentType: file.type,
-        cacheControl: fileKey.startsWith('reward-covers/')
-          ? 'public, max-age=31536000, immutable'
-          : 'private, max-age=300',
+        cacheControl:
+          fileKey.startsWith('reward-covers/') || fileKey.startsWith('banners/')
+            ? 'public, max-age=31536000, immutable'
+            : 'private, max-age=300',
       },
       customMetadata: { organizationId: user.orgId, uploadedBy: user.userId },
     });

@@ -11,7 +11,7 @@
       indicator-color="rgba(255,255,255,0.35)"
       indicator-active-color="#C8A96E"
     >
-      <swiper-item wx:for="{{banners}}" wx:key="index">
+      <swiper-item wx:for="{{banners}}" wx:key="index" data-link="{{item.linkPage}}" bindtap="onBannerTap">
         <view class="banner-item">
           <image class="banner-image" src="{{item.image}}" mode="aspectFill" />
         </view>

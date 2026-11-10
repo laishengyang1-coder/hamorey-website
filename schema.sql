@@ -664,3 +664,20 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_setting_key ON system_settings(key);
+
+-- ============================================================
+-- 29. banners — 小程序首页轮播图
+-- ============================================================
+-- 图片只存 COS/R2 的 key（banners/<uuid>.jpg），不存绝对 URL。
+-- 小程序读 /api/public/banners（免登录），后台 /admin/banners 管理。
+CREATE TABLE IF NOT EXISTS banners (
+    id              TEXT PRIMARY KEY,
+    title           TEXT,
+    image_file_key  TEXT NOT NULL,
+    link_page       TEXT,
+    sort_order      INTEGER NOT NULL DEFAULT 0,
+    status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_banners_status_sort ON banners(status, sort_order);

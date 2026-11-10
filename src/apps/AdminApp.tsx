@@ -38,6 +38,7 @@ const ExportPage = lazyWithRetry(() => import('../admin/pages/ExportPage'));
 const CodeInventoryTreePage = lazyWithRetry(() => import('../admin/pages/CodeInventoryTreePage'));
 const OperationLogsPage = lazyWithRetry(() => import('../admin/pages/OperationLogsPage'));
 const SystemSettingsPage = lazyWithRetry(() => import('../admin/pages/SystemSettingsPage'));
+const BannersPage = lazyWithRetry(() => import('../admin/pages/BannersPage'));
 
 const Loading = () => (
   <div className="flex items-center justify-center h-full">
@@ -102,6 +103,7 @@ const ADMIN_MENU: MenuItem[] = [
     path: '',
     children: [
       { key: 'content', label: '官网内容', path: '/admin/content' },
+      { key: 'banners', label: '轮播图管理', path: '/admin/banners' },
       { key: 'export', label: '数据导出', path: '/admin/export' },
       { key: 'operation-logs', label: '操作日志', path: '/admin/operation-logs' },
       { key: 'system-settings', label: '系统设置', path: '/admin/system-settings' },
@@ -320,6 +322,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <StorePublicPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'banners',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <BannersPage />
           </Suspense>
         ),
       },
