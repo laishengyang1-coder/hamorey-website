@@ -9,6 +9,7 @@ const auth = require('../../../utils/auth');
 // 首页配置化数据（后续可接入 CMS 后台）
 const HOME_CONFIG = {
   banners: [
+    { image: '/images/banner/banner-summit-2027.jpg' },
     { image: '/images/banner/banner-brand.jpg' },
     { image: '/images/banner/banner-ppf.jpg' },
     { image: '/images/banner/banner-color.jpg' },
