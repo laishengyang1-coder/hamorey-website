@@ -160,3 +160,6 @@
 .v2-inner{margin:auto 0}
 /* 行程卡限高，超长屏也能完整看到且不压底栏 */
 .snow-card{width:auto;max-width:88%;max-height:62vh}
+
+/* 雪山章改用金色丝带行程图（1086×1448，竖构图），放宽限高 */
+.snow-card{max-height:78vh;max-width:92%}
