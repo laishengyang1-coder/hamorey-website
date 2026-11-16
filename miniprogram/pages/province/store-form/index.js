@@ -4,6 +4,7 @@
 
 const api = require('../../../utils/api');
 const auth = require('../../../utils/auth');
+const { PROVINCES, normalizeProvince } = require('../../../config/regions');
 
 Page({
   data: {
@@ -12,6 +13,8 @@ Page({
     loading: false,
     submitting: false,
     form: { code: '', name: '', province: '', city: '', address: '', contact_name: '', phone: '', username: '', password: '' },
+    provinces: PROVINCES,
+    provinceIndex: -1,
     statusOptions: ['运营中', '已停用'],
     statusIndex: 0
   },
@@ -32,11 +35,12 @@ Page({
     if (res.ok) {
       const store = (res.data.items || []).find(s => s.id === this.data.storeId);
       if (store) {
+        const province = normalizeProvince(store.province);
         this.setData({
           form: {
             code: store.code || '',
             name: store.name || '',
-            province: store.province || '',
+            province: province,
             city: store.city || '',
             address: store.address || '',
             contact_name: store.contact_name || '',
@@ -44,6 +48,7 @@ Page({
             username: '',
             password: ''
           },
+          provinceIndex: PROVINCES.indexOf(province),
           statusIndex: store.status === 'active' ? 0 : 1
         });
       }
@@ -55,6 +60,11 @@ Page({
     this.setData({ [`form.${field}`]: e.detail.value });
   },
 
+  onProvinceChange(e) {
+    const idx = Number(e.detail.value);
+    this.setData({ provinceIndex: idx, 'form.province': PROVINCES[idx] || '' });
+  },
+
   onStatusChange(e) {
     this.setData({ statusIndex: Number(e.detail.value) });
   },
@@ -62,6 +72,12 @@ Page({
   async handleSubmit() {
     const { form, isEdit, storeId } = this.data;
     if (!form.name.trim()) { wx.showToast({ title: '请输入门店名称', icon: 'none' }); return; }
+    // 开通质保账号必填（2026-11-16 起）：省份 / 城市 / 详细地址 / 联系人 / 电话
+    if (!String(form.province || '').trim()) { wx.showToast({ title: '请选择省份', icon: 'none' }); return; }
+    if (!String(form.city || '').trim()) { wx.showToast({ title: '请输入城市', icon: 'none' }); return; }
+    if (!String(form.address || '').trim()) { wx.showToast({ title: '请输入详细地址', icon: 'none' }); return; }
+    if (!String(form.contact_name || '').trim()) { wx.showToast({ title: '请输入联系人', icon: 'none' }); return; }
+    if (!String(form.phone || '').trim()) { wx.showToast({ title: '请输入电话', icon: 'none' }); return; }
     if (!isEdit && !form.username.trim()) { wx.showToast({ title: '请输入登录账号', icon: 'none' }); return; }
     if (!isEdit && form.password.length < 8) { wx.showToast({ title: '登录密码至少 8 位', icon: 'none' }); return; }
     if (isEdit && form.password && form.password.length < 8) { wx.showToast({ title: '登录密码至少 8 位', icon: 'none' }); return; }
@@ -70,7 +86,7 @@ Page({
 
     const payload = {
       name: form.name.trim(),
-      province: form.province.trim() || undefined,
+      province: normalizeProvince(form.province) || undefined,
       city: form.city.trim() || undefined,
       address: form.address.trim() || undefined,
       contact_name: form.contact_name.trim() || undefined,

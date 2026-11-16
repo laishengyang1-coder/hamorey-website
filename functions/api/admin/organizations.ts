@@ -8,6 +8,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { generateId, queryFirst, queryAll, execute, parsePagination, writeOperationLog, getAuthUser, deleteOrganizationWithDependencies, hashPassword } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
+import { normalizeProvince } from '../_regions';
 
 interface Env {
   DB: D1Database;
@@ -114,7 +115,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const requiresAccount = body.type === 'STORE' || wantsAccount;
     if (requiresAccount && !body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
     if (requiresAccount && (!body.password || body.password.length < 8)) errors.push({ field: 'password', message: '登录密码至少 8 位' });
+    // 开通质保账号必填（2026-11-16 起）：上级省代 / 省份 / 城市 / 详细地址 / 联系人 / 电话
+    if (body.type === 'STORE') {
+      if (!body.parent_id) errors.push({ field: 'parent_id', message: '请选择上级省代' });
+      if (!body.province) errors.push({ field: 'province', message: '请选择省份' });
+      if (!body.city) errors.push({ field: 'city', message: '城市不能为空' });
+      if (!body.address) errors.push({ field: 'address', message: '详细地址不能为空' });
+      if (!body.contact_name) errors.push({ field: 'contact_name', message: '联系人不能为空' });
+      if (!body.phone) errors.push({ field: 'phone', message: '电话不能为空' });
+    }
     if (errors.length > 0) return validationError(errors);
+    // 兼容旧客户端传来的简称（河北 / 江苏 / 内蒙古…）→ 统一成官方全称
+    const province = normalizeProvince(body.province);
 
     // 自动生成编码（如未提供）
     let code = body.code;
@@ -168,7 +180,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       body.type,
       body.parent_id || null,
       body.name,
-      body.province || null,
+      province,
       body.city || null,
       body.address || null,
       body.contact_name || null,
@@ -210,7 +222,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           profileId,
           id,
           body.name,
-          body.province || null,
+          province,
           body.city || null,
           body.address || null,
           body.phone || null,
@@ -287,7 +299,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     const params: unknown[] = [];
 
     if (body.name !== undefined) { updates.push('name = ?'); params.push(body.name); }
-    if (body.province !== undefined) { updates.push('province = ?'); params.push(body.province); }
+    if (body.province !== undefined) { updates.push('province = ?'); params.push(normalizeProvince(body.province)); }
     if (body.city !== undefined) { updates.push('city = ?'); params.push(body.city); }
     if (body.address !== undefined) { updates.push('address = ?'); params.push(body.address); }
     if (body.contact_name !== undefined) { updates.push('contact_name = ?'); params.push(body.contact_name); }
@@ -386,7 +398,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         const profileUpdates: string[] = [];
         const profileParams: unknown[] = [];
         if (body.name !== undefined) { profileUpdates.push('public_name = ?'); profileParams.push(body.name); }
-        if (body.province !== undefined) { profileUpdates.push('province = ?'); profileParams.push(body.province); }
+        if (body.province !== undefined) { profileUpdates.push('province = ?'); profileParams.push(normalizeProvince(body.province)); }
         if (body.city !== undefined) { profileUpdates.push('city = ?'); profileParams.push(body.city); }
         if (body.address !== undefined) { profileUpdates.push('address = ?'); profileParams.push(body.address); }
         if (body.phone !== undefined) { profileUpdates.push('phone = ?'); profileParams.push(body.phone); }
@@ -413,7 +425,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
           profileId,
           orgId,
           orgName,
-          body.province ?? null,
+          normalizeProvince(body.province) || null,
           body.city ?? null,
           body.address ?? null,
           body.phone ?? null,

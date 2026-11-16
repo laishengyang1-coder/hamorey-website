@@ -5,6 +5,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { generateId, queryFirst, queryAll, execute, batch, writeOperationLog, getAuthUser, hashPassword } from '../_lib';
 import { ok, error, getClientIP, validationError } from '../_middleware';
+import { normalizeProvince } from '../_regions';
 
 interface Env { DB: D1Database; }
 
@@ -59,7 +60,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!body.name) errors.push({ field: 'name', message: '门店名称不能为空' });
     if (!body.username) errors.push({ field: 'username', message: '登录账号不能为空' });
     if (!body.password || body.password.length < 8) errors.push({ field: 'password', message: '登录密码至少 8 位' });
+    // 开通质保账号必填（2026-11-16 起）：省份 / 城市 / 详细地址 / 联系人 / 电话
+    if (!body.province) errors.push({ field: 'province', message: '请选择省份' });
+    if (!body.city) errors.push({ field: 'city', message: '城市不能为空' });
+    if (!body.address) errors.push({ field: 'address', message: '详细地址不能为空' });
+    if (!body.contact_name) errors.push({ field: 'contact_name', message: '联系人不能为空' });
+    if (!body.phone) errors.push({ field: 'phone', message: '电话不能为空' });
     if (errors.length > 0) return validationError(errors);
+    // 兼容旧客户端传来的简称（河北 / 江苏 / 内蒙古…）→ 统一成官方全称
+    const province = normalizeProvince(body.province);
 
     // 自动生成门店编码 MD-xxx
     let code = body.code;
@@ -88,7 +97,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       {
         sql: `INSERT INTO organizations (id, code, type, parent_id, name, province, city, address, contact_name, phone, status, audit_status, created_by, created_at, updated_at)
               VALUES (?, ?, 'STORE', ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, datetime('now'), datetime('now'))`,
-        params: [id, code, user.orgId, body.name, body.province || null, body.city || null,
+        params: [id, code, user.orgId, body.name, province, body.city,
           body.address || null, body.contact_name || null, body.phone || null, user.userId],
       },
       {
@@ -100,7 +109,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         // 未审核通过的门店不在官网公开（is_public=0），总部审核通过后自动置 1
         sql: `INSERT INTO store_public_profiles (id, organization_id, public_name, auth_level, province, city, address, phone, is_public, sort_order, created_at, updated_at)
               VALUES (?, ?, ?, 'Service_Point', ?, ?, ?, ?, 0, 0, datetime('now'), datetime('now'))`,
-        params: [profileId, id, body.name, body.province || null, body.city || null, body.address || null, body.phone || null],
+        params: [profileId, id, body.name, province, body.city, body.address || null, body.phone || null],
       },
     ]);
 

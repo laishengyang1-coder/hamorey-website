@@ -9,6 +9,7 @@ import { FilterBar, type FilterField } from '../../shared/components/FilterBar';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
+import { PROVINCES } from '../../shared/constants/regions';
 
 interface Organization {
   id: string;
@@ -99,6 +100,17 @@ export default function StoreListPage() {
   };
 
   const handleSave = async () => {
+    // 开通质保账号必填（2026-11-16 起）
+    const missing: Array<[string, string]> = [
+      ['province', '省份'], ['city', '城市'], ['address', '详细地址'],
+      ['contact_name', '联系人'], ['phone', '电话'],
+    ];
+    for (const [key, label] of missing) {
+      if (!String(form[key as keyof typeof form] || '').trim()) {
+        alert(`请填写${label}`);
+        return;
+      }
+    }
     setSaving(true);
     try {
       if (selected) {
@@ -147,28 +159,32 @@ export default function StoreListPage() {
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">省份</label>
-            <input value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">省份 *</label>
+            <select value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400">
+              <option value="">请选择省份</option>
+              {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">城市</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">城市 *</label>
             <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+              placeholder="如：廊坊市"
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">详细地址 *</label>
             <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">联系人 *</label>
               <input value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">电话</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">电话 *</label>
               <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400" />
             </div>

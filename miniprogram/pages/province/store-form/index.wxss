@@ -15,3 +15,7 @@
 }
 
 .search-placeholder { color: var(--color-text-placeholder); font-size: var(--font-md); }
+
+/* 省份 picker（2026-11-16）：视觉上与普通 input 一致 */
+.picker-value { display: flex; align-items: center; }
+.picker-value.is-placeholder { color: #BBBBBB; }

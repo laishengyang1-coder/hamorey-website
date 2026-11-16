@@ -31,18 +31,13 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">省份</view>
-          <input
-            class="form-input"
-            placeholder="例如：广东省"
-            placeholder-class="search-placeholder"
-            value="{{form.province}}"
-            bindinput="onInput"
-            data-field="province"
-          />
+          <view class="form-label"><text class="required">*</text>省份</view>
+          <picker mode="selector" range="{{provinces}}" value="{{provinceIndex}}" bindchange="onProvinceChange">
+            <view class="form-input picker-value {{form.province ? '' : 'is-placeholder'}}">{{form.province || '请选择省份'}}</view>
+          </picker>
         </view>
         <view class="form-group">
-          <view class="form-label">城市</view>
+          <view class="form-label"><text class="required">*</text>城市</view>
           <input
             class="form-input"
             placeholder="例如：深圳市"
@@ -53,7 +48,7 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">详细地址</view>
+          <view class="form-label"><text class="required">*</text>详细地址</view>
           <input
             class="form-input"
             placeholder="请输入门店详细地址"
@@ -64,7 +59,7 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">联系人</view>
+          <view class="form-label"><text class="required">*</text>联系人</view>
           <input
             class="form-input"
             placeholder="请输入联系人姓名"
@@ -75,7 +70,7 @@
           />
         </view>
         <view class="form-group">
-          <view class="form-label">联系电话</view>
+          <view class="form-label"><text class="required">*</text>联系电话</view>
           <input
             class="form-input"
             type="number"
