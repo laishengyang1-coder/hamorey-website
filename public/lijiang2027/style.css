@@ -154,3 +154,9 @@
 @media(prefers-reduced-motion:reduce){
   .qa2 .a .gold-text,.rally-big{animation:none;background:none;-webkit-text-fill-color:var(--gold);color:var(--gold)}
 }
+
+/* 2026-11-16 修：内容超过一屏时不再溢出到固定底栏下（垂直居中的经典溢出问题） */
+.scene.v2{justify-content:flex-start}
+.v2-inner{margin:auto 0}
+/* 行程卡限高，超长屏也能完整看到且不压底栏 */
+.snow-card{width:auto;max-width:88%;max-height:62vh}
