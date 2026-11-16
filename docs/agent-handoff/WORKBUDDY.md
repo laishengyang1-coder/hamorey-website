@@ -414,3 +414,15 @@ bg-golden/title-guests/art-rally/card-snow/team-glow/info-when-where 等关键�
 
 ### 发布状态
 提交/推送 ✅ `bae7c6b`；网站部署 ✅ 并验证；小程序未动（无需改码）。
+
+---
+
+## 2026-11-16 邀请函两处修复（WorkBuddy · `8c95ebf` + `d1df8a5`）
+
+1. **雪山章溢出**（用户截图）：行程卡过高，flex 垂直居中导致内容溢出压到固定底栏。
+   修复：`.scene.v2` 改 `justify-content:flex-start` + `.v2-inner{margin:auto 0}`（不足一屏仍居中、超一屏自然撑高）+ 图片限高。
+2. **雪山章用图**（用户指定）：`card-snow.jpg`（行程卡）→ **`route-map.jpg`**（金色丝带行程图，即素材「ChatGPT 图像 2026年11月16日 10_18_46.png」），限高 78vh。
+
+⚠️ **过程注意**：GitHub Actions 两次运行排队 >10 分钟未起 runner（GitHub 侧问题，非构建失败）。
+为不阻塞用户，已将 `index.html` + `style.css` **scp 热更**到 `/opt/hamorey/apps/web/current/lijiang2027/` 并线上验证通过；
+CI 队列恢复后会自动部署 `d1df8a5` 与热更内容一致（幂等，无冲突风险）。`DEPLOYED_COMMIT` 在 CI 完成前暂显示旧值。
