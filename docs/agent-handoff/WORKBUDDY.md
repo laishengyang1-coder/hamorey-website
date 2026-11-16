@@ -314,3 +314,40 @@ tsc 无输出、build 通过（契约 62 → **64**）、WXML 校验通过、页
 
 ### 另记（内容层面，待业务确认）
 `INVITATION.md` 已注明：酒店名「丽江金茂隐逸酒店·凯悦臻选」来自用户参考截图，PDF 未指定 → **发布前需用户核对**。
+
+---
+
+## 2026-11-16 邀请函发布（WorkBuddy 执行 · 终点 `2b3e130`）
+
+用户确认「走发布」后由 WorkBuddy 执行提交与部署。**Codex 的邀请函文件与全部历史改动一并入库。**
+
+### 提交内容（`2b3e130`，20 个文件）
+- 新增：`public/lijiang2027/`（H5）、`miniprogram/pages/invitation/`（web-view 承载页）、`miniprogram/images/invitation-share.jpg`
+- 修改：`miniprogram/app.json`（注册邀请函页）、`miniprogram/pages/owner/query/index.js`（年会轮播 linkPage 兜底）
+- 入库：`AGENTS.md` + `docs/agent-handoff/`（按 INVITATION.md「发布顺序」第 2 条：纳入共享交接文档）
+
+### 发布状态
+| 渠道 | 状态 | 依据 |
+|---|---|---|
+| Git 提交 / 推送 | ✅ `2b3e130` = `origin/main` | 已推送 |
+| 网站部署（含 H5）| ✅ **已部署并验证** | 服务器 `DEPLOYED_COMMIT` = `2b3e130`；`/opt/hamorey/apps/web/current/lijiang2027/` 存在 |
+| 小程序体验版 / 审核 / 发布 | ❌ 仍未上传、未审核、未发布 | 承载页只在开发者工具可用 |
+
+### 线上实测（`https://hemoppf.cn`）
+| 检查 | 结果 |
+|---|---|
+| `/lijiang2027/` | **200 · text/html · 9610B**，`<title>` = 「和膜2027丽江年会邀请函」，含「丽江」7 处 |
+| 是否被 SPA 兜底 | **否**（页面内「页面未找到」出现 **0** 次）✓ —— 印证 `try_files $uri $uri/` 会命中目录 |
+| `style.css` / `app.js` | 200 · text/css 10780B / application/javascript 4762B ✓ |
+| 图片 ×3 | 200 · image/jpeg / webp / png，体积与本地一致 ✓ |
+| `conference.ics` | 200 · **application/octet-stream** · 494B ✓（页面用 `download` 属性下载，不需要特殊 MIME）|
+| 站点首页 / API 健康 | 200 / 200 ✓ **未受影响** |
+
+### 新增提醒（真机验证时注意）
+- 日历是 `<a download>` 下载：**微信 web-view 内下载文件常被拦截**，iOS 对 `download` 属性也不总生效。
+  真机若点「保存大会日程」无反应，属环境限制而非代码错误 → 用页面内的「复制链接」到系统浏览器打开即可。
+- 小程序需发版才能让真实用户看到承载页；发版时一次性覆盖此前的轮播读接口、省份选择器、多产品登记、
+  模糊查找、登记页间距与自动识别、省代撤回。
+
+### 遗留（业务侧）
+`INVITATION.md` 已注明酒店名来自参考截图、PDF 未指定 → 发布前请用户核对；报名收集无后台，未展示虚假报名成功。
