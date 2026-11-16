@@ -2,6 +2,7 @@
   'use strict';
   document.documentElement.classList.add('js');
   const sections = [...document.querySelectorAll('.scene')];
+  const total = sections.length;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let current = 0;
   const go = index => sections[index].scrollIntoView({behavior: reduced.matches ? 'auto' : 'smooth', block: 'start'});
@@ -12,9 +13,9 @@
         if (entry.isIntersecting) {
           entry.target.classList.add('seen');
           current = sections.indexOf(entry.target);
-          document.querySelector('#position').textContent = `${String(current+1).padStart(2,'0')} / 08`;
-          document.querySelector('#next').textContent = current === 7 ? '回到首页 ↑' : '下一章 ↑';
-          document.querySelector('#next').setAttribute('aria-label',current === 7 ? '回到首页' : '下一章节');
+          document.querySelector('#position').textContent = `${String(current+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+          document.querySelector('#next').textContent = current === total - 1 ? '回到首页 ↑' : '下一章 ↑';
+          document.querySelector('#next').setAttribute('aria-label',current === total - 1 ? '回到首页' : '下一章节');
         }
       });
     }, {rootMargin:'-25% 0px -35% 0px',threshold:0});
@@ -38,11 +39,64 @@
     try{await navigator.clipboard.writeText(url);document.querySelector('#copy-status').textContent='邀请链接已复制';}
     catch{const status=document.querySelector('#copy-status');status.textContent='请长按复制链接：'+url;status.style.overflowWrap='anywhere';}
   });
-  let context, master, timer, active=false, notes=0;
+
+  /* —— 首屏视差：滚动时雪山缓慢下沉（写入 CSS 变量）—— */
+  const landscape = document.querySelector('.hero-landscape');
+  if (landscape && !reduced.matches) {
+    let ticking = false;
+    const apply = () => {
+      const y = Math.min(window.innerHeight, window.scrollY || 0);
+      landscape.style.setProperty('--parallax', String(y * 0.22));
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+  }
+
+  /* —— 背景音乐：柔和的和弦分解 + 低音铺底，首次触摸自动开启 —— */
+  let context, master, timer, active=false, step=0;
   const sound=document.querySelector('#sound');
-  function chime(){if(!active||!context)return;const pitches=[261.63,329.63,392,523.25,440,392,329.63,293.66];const o=context.createOscillator(),g=context.createGain();o.type='sine';o.frequency.value=pitches[notes++%pitches.length];g.gain.setValueAtTime(0,context.currentTime);g.gain.linearRampToValueAtTime(.11,context.currentTime+.3);g.gain.exponentialRampToValueAtTime(.001,context.currentTime+3.3);o.connect(g);g.connect(master);o.start();o.stop(context.currentTime+3.5);o.onended=()=>{o.disconnect();g.disconnect();};}
+  const hint=document.querySelector('#music-hint');
+  // A 小调五声上行的分解和弦，配一个低八度长音铺底
+  const melody=[220,261.63,329.63,440,523.25,440,329.63,261.63];
+  const pads=[110,146.83];
+  function note(freq, when, dur, vol, type){
+    const o=context.createOscillator(), g=context.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(vol, when+0.35);
+    g.gain.exponentialRampToValueAtTime(0.0008, when+dur);
+    o.connect(g); g.connect(master);
+    o.start(when); o.stop(when+dur+0.1);
+    o.onended=()=>{o.disconnect();g.disconnect();};
+  }
+  function bar(){
+    if(!active||!context) return;
+    const t=context.currentTime+0.05;
+    note(melody[step%melody.length], t, 3.6, 0.085, 'sine');
+    note(melody[step%melody.length]*2, t, 2.6, 0.02, 'sine');
+    if(step%2===0) note(pads[(step>>1)%pads.length], t, 5.2, 0.05, 'triangle');
+    step++;
+  }
+  async function startSound(){
+    try{
+      const Audio=window.AudioContext||window.webkitAudioContext;
+      if(!Audio) throw Error('unsupported');
+      if(!context){context=new Audio();master=context.createGain();master.gain.value=.3;master.connect(context.destination);}
+      await context.resume();active=true;
+      sound.setAttribute('aria-pressed','true');sound.setAttribute('aria-label','关闭音乐');
+      bar();timer=setInterval(bar,2400);
+      if(hint) hint.classList.add('hide');
+    }catch{
+      const toast=document.querySelector('#toast');toast.textContent='当前浏览器暂不支持播放音乐';toast.hidden=false;setTimeout(()=>toast.hidden=true,3000);
+    }
+  }
   async function stopSound(){active=false;clearInterval(timer);sound.setAttribute('aria-pressed','false');sound.setAttribute('aria-label','开启音乐');if(context)await context.suspend();}
-  sound.addEventListener('click',async()=>{if(active){await stopSound();return;}try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw Error('unsupported');if(!context){context=new Audio();master=context.createGain();master.gain.value=.28;master.connect(context.destination);}await context.resume();active=true;sound.setAttribute('aria-pressed','true');sound.setAttribute('aria-label','关闭音乐');chime();timer=setInterval(chime,2100);}catch{const toast=document.querySelector('#toast');toast.textContent='当前浏览器暂不支持播放音乐';toast.hidden=false;setTimeout(()=>toast.hidden=true,3000);}});
+  sound.addEventListener('click',()=>{active?stopSound():startSound();});
+  // 首次触摸即开启音乐（浏览器禁止自动播放，所以绑定在第一次交互上）
+  const unlock=()=>{startSound();document.removeEventListener('pointerdown',unlock);};
+  document.addEventListener('pointerdown',unlock,{once:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stopSound();});
   window.addEventListener('pagehide',()=>{clearInterval(timer);if(context)context.close();});
 })();
