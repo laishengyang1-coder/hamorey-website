@@ -30,6 +30,8 @@ Page({
     },
     // 每个元素 = 一个产品（一个质保码 → 一条记录 → 一张证书）
     products: [{ code: '' }],
+    suggestions: [],
+    suggestIndex: -1,
     photos: [],
     photoKeys: []
   },
@@ -63,7 +65,37 @@ Page({
   // ---------- 产品行 ----------
   onProductInput(e) {
     const index = Number(e.currentTarget.dataset.index);
-    this.setData({ [`products[${index}].code`]: e.detail.value });
+    const value = e.detail.value;
+    this.setData({ [`products[${index}].code`]: value, suggestIndex: index });
+    this.searchCodes(value);
+  },
+
+  /** 质保码模糊查找：输入 2 个字符以上即搜（防抖 250ms）*/
+  searchCodes(keyword) {
+    const q = (keyword || '').trim();
+    if (this._searchTimer) clearTimeout(this._searchTimer);
+    if (q.length < 2) { this.setData({ suggestions: [] }); return; }
+    this._searchTimer = setTimeout(async () => {
+      const res = await api.get('/store/warranty-codes', { q: q, limit: 8 }, { loading: false });
+      if (res.ok && res.data) this.setData({ suggestions: res.data.items || [] });
+    }, 250);
+  },
+
+  /** 点选建议码 */
+  onPickCode(e) {
+    const sugIdx = Number(e.currentTarget.dataset.sug);
+    const rowIdx = this.data.suggestIndex;
+    const item = this.data.suggestions[sugIdx];
+    if (!item || rowIdx < 0) return;
+    this.setData({
+      [`products[${rowIdx}].code`]: item.code,
+      suggestions: [],
+      suggestIndex: -1
+    });
+  },
+
+  closeSuggest() {
+    this.setData({ suggestions: [], suggestIndex: -1 });
   },
 
   addProduct() {

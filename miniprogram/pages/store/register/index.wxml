@@ -19,7 +19,7 @@
   <!-- Step 1: 车主信息 -->
   <view wx:if="{{currentStep === 0}}" class="step-content">
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">车主信息</view>
         <view class="section-tip">下面多个产品共用这一份车主信息</view>
       </view>
@@ -55,7 +55,7 @@
   <!-- Step 2: 车辆信息 -->
   <view wx:if="{{currentStep === 1}}" class="step-content">
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">车辆信息</view>
       </view>
       <view class="section-body">
@@ -131,27 +131,43 @@
   <!-- Step 3: 产品与质保码（可加多个） -->
   <view wx:if="{{currentStep === 2}}" class="step-content">
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">产品与质保码</view>
         <view class="section-tip">一辆车贴几个产品就加几个，每个产品填一个质保码</view>
       </view>
       <view class="section-body">
-        <view wx:for="{{products}}" wx:key="index" class="product-row">
-          <view class="product-index">{{index + 1}}</view>
-          <input
-            class="form-input product-input"
-            placeholder="输入该产品的质保码"
-            placeholder-class="search-placeholder"
-            value="{{item.code}}"
-            bindinput="onProductInput"
-            data-index="{{index}}"
-          />
-          <view
-            wx:if="{{products.length > 1}}"
-            class="product-remove"
-            data-index="{{index}}"
-            bindtap="removeProduct"
-          >✕</view>
+        <view wx:for="{{products}}" wx:key="index" class="product-row-wrap">
+          <view class="product-row">
+            <view class="product-index">{{index + 1}}</view>
+            <input
+              class="form-input product-input"
+              placeholder="输入质保码，或输入几位数字查找"
+              placeholder-class="search-placeholder"
+              value="{{item.code}}"
+              bindinput="onProductInput"
+              data-index="{{index}}"
+            />
+            <view
+              wx:if="{{products.length > 1}}"
+              class="product-remove"
+              data-index="{{index}}"
+              bindtap="removeProduct"
+            >✕</view>
+          </view>
+          <view wx:if="{{suggestIndex === index && suggestions.length > 0}}" class="suggest-list">
+            <view
+              wx:for="{{suggestions}}"
+              wx:for-item="sug"
+              wx:for-index="si"
+              wx:key="id"
+              class="suggest-item"
+              data-sug="{{si}}"
+              bindtap="onPickCode"
+            >
+              <text class="suggest-code">{{sug.code}}</text>
+              <text class="suggest-model">{{sug.model_name || ''}}</text>
+            </view>
+          </view>
         </view>
 
         <view
@@ -170,7 +186,7 @@
   <!-- Step 4: 拍照 -->
   <view wx:if="{{currentStep === 3}}" class="step-content">
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">施工照片（选填）</view>
         <view class="section-tip">照片会同时挂到本次提交的所有产品上</view>
       </view>
@@ -197,7 +213,7 @@
   <!-- Step 5: 确认提交 -->
   <view wx:if="{{currentStep === 4}}" class="step-content">
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">确认信息</view>
       </view>
       <view class="section-body">
@@ -233,7 +249,7 @@
     </view>
 
     <view class="section">
-      <view class="section-header">
+      <view class="section-header stacked">
         <view class="section-title">本次登记的产品（{{products.length}} 个）</view>
       </view>
       <view class="section-body">

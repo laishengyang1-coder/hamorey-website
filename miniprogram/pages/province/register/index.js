@@ -20,6 +20,9 @@ Page({
     selectedStoreName: '',
     // 库存来源：province=省代库存 / store=门店库存
     stockSource: 'province',
+    // 本次登记的产品（每个 = 一个质保码 = 一条记录 = 一张证书）
+    products: [{ code: '' }],
+    maxProducts: 8,
     // 质保码搜索
     codeQuery: '',
     codeOptions: [],
@@ -72,7 +75,8 @@ Page({
       codeQuery: '',
       codeOptions: [],
       codeDropdownOpen: false,
-      'form.warranty_code': ''
+      'form.warranty_code': '',
+      products: [{ code: '' }]
     });
   },
 
@@ -85,7 +89,8 @@ Page({
       codeQuery: '',
       codeOptions: [],
       codeDropdownOpen: false,
-      'form.warranty_code': ''
+      'form.warranty_code': '',
+      products: [{ code: '' }]
     });
   },
 
@@ -122,15 +127,33 @@ Page({
     }
   },
 
-  /** 选择质保码 */
+  /** 选择质保码 = 加入本次产品列表（可继续搜下一个） */
   onSelectCode(e) {
     const code = e.currentTarget.dataset.code;
+    const products = this.data.products.filter((p) => (p.code || '').trim());
+    if (products.some((p) => p.code.toUpperCase() === code.toUpperCase())) {
+      wx.showToast({ title: '这个码已经加过了', icon: 'none' });
+      return;
+    }
+    if (products.length >= this.data.maxProducts) {
+      wx.showToast({ title: `一次最多 ${this.data.maxProducts} 个产品`, icon: 'none' });
+      return;
+    }
+    products.push({ code: code });
     this.setData({
-      codeQuery: code,
-      'form.warranty_code': code,
+      products: products,
+      codeQuery: '',
+      'form.warranty_code': '',
       codeOptions: [],
       codeDropdownOpen: false
     });
+  },
+
+  /** 移除已添加的产品 */
+  removeProduct(e) {
+    const idx = Number(e.currentTarget.dataset.index);
+    const products = this.data.products.filter((_, i) => i !== idx);
+    this.setData({ products: products.length > 0 ? products : [{ code: '' }] });
   },
 
   /** 关闭下拉 */
@@ -159,8 +182,13 @@ Page({
         wx.showToast({ title: '请选择门店', icon: 'none' });
         return false;
       }
-      if (!form.warranty_code.trim()) {
-        wx.showToast({ title: '请输入或选择质保码', icon: 'none' });
+      const picked = (this.data.products || []).map((p) => (p.code || '').trim()).filter(Boolean);
+      if (picked.length === 0) {
+        wx.showToast({ title: '请至少添加一个产品的质保码', icon: 'none' });
+        return false;
+      }
+      if (new Set(picked.map((c) => c.toUpperCase())).size !== picked.length) {
+        wx.showToast({ title: '同一个质保码不要重复添加', icon: 'none' });
         return false;
       }
     }
@@ -260,12 +288,18 @@ Page({
 
   /** 提交质保登记 */
   async handleSubmit() {
+    const picked = (this.data.products || []).map((p) => (p.code || '').trim()).filter(Boolean);
+    if (picked.length === 0) {
+      wx.showToast({ title: '请至少添加一个产品的质保码', icon: 'none' });
+      return;
+    }
+
     this.setData({ submitting: true });
 
     const form = this.data.form;
     const payload = {
       store_id: form.store_id,
-      warranty_code: form.warranty_code.trim(),
+      products: picked.map((code) => ({ warranty_code: code })),
       customer_name: form.customer_name.trim(),
       customer_phone: form.customer_phone.trim(),
       plate_no: form.plate_no.trim(),
@@ -277,7 +311,7 @@ Page({
       photo_keys: this.data.photoKeys.length > 0 ? this.data.photoKeys : undefined
     };
 
-    const res = await api.post('/province/warranty-records', payload, {
+    const res = await api.post('/province/warranty-records-batch', payload, {
       loading: true,
       loadingText: '提交中...'
     });

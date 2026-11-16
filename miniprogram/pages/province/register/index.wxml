@@ -59,8 +59,16 @@
               </view>
             </view>
           </view>
+          <view wx:if="{{products.length > 0 && products[0].code}}" class="picked-list">
+            <view class="picked-title">已添加 {{products.length}} 个产品（每个各出一张证书）</view>
+            <view wx:for="{{products}}" wx:key="index" class="picked-row">
+              <text class="picked-index">{{index + 1}}</text>
+              <text class="picked-code">{{item.code}}</text>
+              <text class="picked-remove" data-index="{{index}}" bindtap="removeProduct">移除</text>
+            </view>
+          </view>
           <view class="form-tip">
-            {{stockSource === 'province' ? '从省代自有库存中选择可用质保码' : '从所选门店库存中选择可用质保码'}}
+            {{stockSource === 'province' ? '从省代自有库存中搜索，点结果即加入；可连续加多个产品' : '从所选门店库存中搜索，点结果即加入；可连续加多个产品'}}
           </view>
         </view>
       </view>
@@ -213,7 +221,9 @@
         </view>
         <view class="info-row">
           <view class="info-row-label">质保码</view>
-          <view class="info-row-value">{{form.warranty_code}}</view>
+          <view class="info-row-value">
+            <view wx:for="{{products}}" wx:key="index" wx:if="{{item.code}}">{{index + 1}}. {{item.code}}</view>
+          </view>
         </view>
         <view class="info-row">
           <view class="info-row-label">车主姓名</view>
