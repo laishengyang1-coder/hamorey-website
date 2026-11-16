@@ -1,0 +1,2 @@
+<web-view wx:if="{{!failed}}" src="{{src}}" bindload="onWebLoad" binderror="onWebError" />
+<view wx:else class="error"><text class="title">邀请函暂时未能打开</text><text class="description">请检查网络后重试，也可以复制链接在浏览器打开。</text><button bindtap="retry">重新打开</button><button class="secondary" bindtap="copyLink">复制邀请链接</button></view>

@@ -10,7 +10,7 @@ const api = require('../../../utils/api');
 // 首页配置化数据（后续可接入 CMS 后台）
 const HOME_CONFIG = {
   banners: [
-    { image: '/images/banner/banner-summit-2027.jpg' },
+    { image: '/images/banner/banner-summit-2027.jpg', linkPage: '/pages/invitation/index/index' },
     { image: '/images/banner/banner-brand.jpg' },
     { image: '/images/banner/banner-ppf.jpg' },
     { image: '/images/banner/banner-color.jpg' },
@@ -136,7 +136,7 @@ Page({
         banners: items.map((b) => ({
           id: b.id,
           image: b.image_url || api.getPublicPhotoUrl(b.image_file_key),
-          linkPage: b.link_page || ''
+          linkPage: b.link_page || (b.title === '和膜品牌2027年度优秀经销商大会' ? '/pages/invitation/index/index' : '')
         }))
       });
     } catch (e) {

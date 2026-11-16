@@ -37,7 +37,8 @@
     "pages/province/points/index",
     "pages/province/rewards/index",
     "pages/province/reward-checkout/index",
-    "pages/province/reward-detail/index"
+    "pages/province/reward-detail/index",
+    "pages/invitation/index/index"
   ],
   "window": {
     "navigationBarBackgroundColor": "#5C1A1A",
