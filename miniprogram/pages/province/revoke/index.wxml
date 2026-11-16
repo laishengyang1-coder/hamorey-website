@@ -1,0 +1,66 @@
+<view class="page-container">
+  <nav-bar title="撤回质保码" backUrl="/pages/province/index/index" />
+
+  <!-- 说明 -->
+  <view class="tip-card">
+    <view class="tip-title">把划给门店的质保码收回省代</view>
+    <view class="tip-text">只列出下属门店名下、仍可使用的码；撤回不会作废，之后可重新划拨。已用完的码不会出现在这里。</view>
+  </view>
+
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索质保码 / 型号 / 门店名"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onInput"
+        confirm-type="search"
+        bindconfirm="search"
+      />
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="onClear">✕</view>
+    </view>
+  </view>
+
+  <!-- 工具条 -->
+  <view class="tool-bar" wx:if="{{items.length > 0}}">
+    <view class="tool-left">共 {{items.length}} 个可撤回</view>
+    <view class="tool-right" bindtap="toggleAll">{{selectedCount === items.length ? '取消全选' : '全选'}}</view>
+  </view>
+
+  <!-- 列表 -->
+  <view class="list" wx:if="{{items.length > 0}}">
+    <view
+      wx:for="{{items}}"
+      wx:key="id"
+      class="code-card {{item.checked ? 'checked' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="toggle"
+    >
+      <view class="code-check">{{item.checked ? '✓' : ''}}</view>
+      <view class="code-main">
+        <view class="code-line">
+          <text class="code-text">{{item.code}}</text>
+          <text class="code-model">{{item.model_name}}</text>
+        </view>
+        <view class="code-sub">{{item.store_name}}（{{item.store_code}}）· 已用 {{item.used_count}}/{{item.usage_limit}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空态 -->
+  <view wx:if="{{searched && !loading && items.length === 0}}" class="empty-box">
+    <view class="empty-text">{{keyword ? '没有匹配的质保码' : '本店代下属门店暂无可撤回的质保码'}}</view>
+    <view class="empty-sub" wx:if="{{keyword}}">换个关键词，或清空搜索看看全部</view>
+  </view>
+  <view wx:if="{{loading}}" class="empty-box"><view class="empty-text">加载中…</view></view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar" wx:if="{{items.length > 0}}">
+    <view class="bottom-info">已选 {{selectedCount}} 个</view>
+    <view class="btn-revoke {{selectedCount === 0 || submitting ? 'disabled' : ''}}" bindtap="handleRevoke">
+      {{submitting ? '撤回中...' : '撤回选中'}}
+    </view>
+  </view>
+</view>

@@ -32,6 +32,7 @@
     "pages/province/inventory/index",
     "pages/province/store-codes/index",
     "pages/province/allocate/index",
+    "pages/province/revoke/index",
     "pages/province/register/index",
     "pages/province/points/index",
     "pages/province/rewards/index",
