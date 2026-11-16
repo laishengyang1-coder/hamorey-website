@@ -62,12 +62,28 @@ export default function WarrantyRegistrationPage() {
     searchTimer.current = setTimeout(() => searchCodes(value), 200);
   };
 
-  const selectCode = (item: typeof codeOptions[0]) => {
-    setCodeQuery(item.code);
-    updateField('warranty_code', item.code);
+  // 2026-11-16：一辆车可同时登记多个产品，每个产品一个质保码（= 一条记录 = 一张证书）
+  const [productCodes, setProductCodes] = useState<string[]>([]);
+  const MAX_PRODUCTS = 8;
+
+  const addCode = (code: string) => {
+    const v = (code || '').trim();
+    if (!v) { setError('请输入或选择质保码'); return; }
+    if (productCodes.some((c) => c.toUpperCase() === v.toUpperCase())) {
+      setError('同一个质保码不要重复添加'); return;
+    }
+    if (productCodes.length >= MAX_PRODUCTS) { setError(`一次最多 ${MAX_PRODUCTS} 个产品`); return; }
+    setProductCodes([...productCodes, v]);
+    setCodeQuery('');
+    updateField('warranty_code', '');
     setDropdownOpen(false);
     setCodeOptions([]);
+    setError('');
   };
+
+  const removeCode = (code: string) => setProductCodes(productCodes.filter((c) => c !== code));
+
+  const selectCode = (item: typeof codeOptions[0]) => addCode(item.code);
 
   const [form, setForm] = useState({
     warranty_code: '',
@@ -89,9 +105,10 @@ export default function WarrantyRegistrationPage() {
 
   const handleSubmit = async () => {
     // 客户端校验
+    if (productCodes.length === 0) { setError('请至少添加一个产品（选择质保码）'); return; }
     const required: Array<[keyof typeof form, string]> = [
-      ['warranty_code', '质保码'], ['customer_name', '车主姓名'], ['customer_phone', '联系电话'],
-      ['customer_phone', '联系电话'], ['vin', '车架号（VIN）'], ['vehicle_brand', '车辆品牌'], ['vehicle_model', '车辆型号'],
+      ['customer_name', '车主姓名'], ['customer_phone', '联系电话'],
+      ['vin', '车架号（VIN）'], ['vehicle_brand', '车辆品牌'], ['vehicle_model', '车辆型号'],
       ['installation_date', '施工日期'],
     ];
     for (const [field, label] of required) {
@@ -100,10 +117,22 @@ export default function WarrantyRegistrationPage() {
 
     setLoading(true); setError('');
     try {
-      await apiRequest('/store/warranty-records', {
-        method: 'POST', body: JSON.stringify(form),
+      await apiRequest('/store/warranty-records-batch', {
+        method: 'POST',
+        body: JSON.stringify({
+          customer_name: form.customer_name,
+          customer_phone: form.customer_phone,
+          plate_no: form.plate_no,
+          vin: form.vin,
+          vehicle_brand: form.vehicle_brand,
+          vehicle_model: form.vehicle_model,
+          vehicle_year: form.vehicle_year || undefined,
+          installation_date: form.installation_date,
+          products: productCodes.map((code) => ({ warranty_code: code })),
+          photo_keys: form.photo_keys.length > 0 ? form.photo_keys : undefined,
+        }),
       });
-      setSuccess('质保登记已提交，等待总部审核');
+      setSuccess(`共 ${productCodes.length} 个产品的质保已提交，等待总部审核`);
     } catch (err) {
       const msg = (err as any)?.data?.errors
         ? (err as any).data.errors.map((e: { field: string; message: string }) => e.message).join('；')
@@ -142,7 +171,7 @@ export default function WarrantyRegistrationPage() {
         <p className="mt-2 text-gray-500">{success}</p>
         <div className="flex gap-3 mt-6">
           <button onClick={() => navigate('/store/records')} className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828]">查看记录</button>
-          <button onClick={() => { setSuccess(''); setCodeQuery(''); setCodeOptions([]); setStep(0); setPhotoNames([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
+          <button onClick={() => { setSuccess(''); setCodeQuery(''); setCodeOptions([]); setStep(0); setPhotoNames([]); setProductCodes([]); setForm({ warranty_code: '', customer_name: '', customer_phone: '', plate_no: '', vin: '', vehicle_brand: '', vehicle_model: '', vehicle_year: '', installation_date: '', photo_keys: [] }); }}
             className="rounded-lg border px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">继续登记</button>
         </div>
       </div>
@@ -183,7 +212,42 @@ export default function WarrantyRegistrationPage() {
                   </div>
                 )}
               </div>
-              <p className="mt-2 text-xs text-gray-400">输入质保码后自动匹配门店库存中的可用质保码</p>
+              <div className="mt-2 flex items-start gap-3">
+                <p className="text-xs text-gray-400 flex-1">输入质保码后自动匹配门店库存中的可用质保码</p>
+                <button
+                  type="button"
+                  onClick={() => addCode(codeQuery)}
+                  className="shrink-0 rounded-lg bg-[#5C1A1A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#7A2828]"
+                >
+                  ＋ 添加这个产品
+                </button>
+              </div>
+
+              {productCodes.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs text-gray-500">
+                    已添加 <strong>{productCodes.length}</strong> 个产品（每个产品各出一张质保证书）
+                  </p>
+                  {productCodes.map((code, i) => (
+                    <div
+                      key={code}
+                      className="flex items-center justify-between rounded-lg border border-[#E8D5B7] bg-[#FBF5EC] px-3 py-2"
+                    >
+                      <span className="text-sm">
+                        <span className="mr-2 font-semibold text-[#5C1A1A]">{i + 1}</span>
+                        <span className="font-mono">{code}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeCode(code)}
+                        className="text-xs text-gray-400 hover:text-red-600"
+                      >
+                        移除
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -256,12 +320,23 @@ export default function WarrantyRegistrationPage() {
               <h3 className="text-sm font-semibold text-gray-900">请核对以下信息</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {[
-                  ['质保码', form.warranty_code], ['车主', form.customer_name], ['电话', form.customer_phone],
+                  ['车主', form.customer_name], ['电话', form.customer_phone],
                   ['车牌', form.plate_no], ['VIN', form.vin || '-'], ['品牌', form.vehicle_brand],
                   ['型号', form.vehicle_model], ['施工日期', form.installation_date],
                 ].map(([label, val]) => (
                   <div key={label}><span className="text-gray-500">{label}</span><p className="text-gray-900 font-medium">{val || '-'}</p></div>
                 ))}
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-2">本次登记的产品（{productCodes.length} 个）</p>
+                <div className="space-y-1">
+                  {productCodes.map((code, i) => (
+                    <div key={code} className="text-sm text-gray-900">
+                      <span className="mr-2 font-semibold text-[#5C1A1A]">{i + 1}</span>
+                      <span className="font-mono">{code}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <button onClick={handleSubmit} disabled={loading || uploadingPhotos}
                 className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 mt-4">

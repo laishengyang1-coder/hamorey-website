@@ -100,10 +100,11 @@ import * as route98 from '../../../functions/api/store/upload-url.ts';
 import * as route99 from '../../../functions/api/store/warranty-codes.ts';
 import * as route100 from '../../../functions/api/store/warranty-lookup.ts';
 import * as route101 from '../../../functions/api/store/warranty-records-[id].ts';
-import * as route102 from '../../../functions/api/store/warranty-records.ts';
-import * as route103 from '../../../functions/api/store/warranty-records/[id].ts';
-import * as route104 from '../../../functions/api/stores.ts';
-import * as route105 from '../../../functions/api/warranty-search.ts';
+import * as route102 from '../../../functions/api/store/warranty-records-batch.ts';
+import * as route103 from '../../../functions/api/store/warranty-records.ts';
+import * as route104 from '../../../functions/api/store/warranty-records/[id].ts';
+import * as route105 from '../../../functions/api/stores.ts';
+import * as route106 from '../../../functions/api/warranty-search.ts';
 
 export type RouteSegment =
   | { kind: 'static'; value: string }
@@ -303,7 +304,7 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/store/warranty-records/:id",
     score: 103,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-records"},{"kind":"param","name":"id"}],
-    module: route103,
+    module: route104,
   },
   {
     path: "/api/public/certificates/:path*",
@@ -687,6 +688,12 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/store/warranty-records",
     score: 82,
     segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-records"}],
+    module: route103,
+  },
+  {
+    path: "/api/store/warranty-records-batch",
+    score: 82,
+    segments: [{"kind":"static","value":"store"},{"kind":"static","value":"warranty-records-batch"}],
     module: route102,
   },
   {
@@ -747,12 +754,12 @@ export const functionRoutes: FunctionRouteDefinition[] = [
     path: "/api/stores",
     score: 41,
     segments: [{"kind":"static","value":"stores"}],
-    module: route104,
+    module: route105,
   },
   {
     path: "/api/warranty-search",
     score: 41,
     segments: [{"kind":"static","value":"warranty-search"}],
-    module: route105,
+    module: route106,
   }
 ];

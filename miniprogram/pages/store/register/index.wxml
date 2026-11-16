@@ -16,34 +16,12 @@
     </view>
   </view>
 
-  <!-- Step 1: 输入质保码 -->
+  <!-- Step 1: 车主信息 -->
   <view wx:if="{{currentStep === 0}}" class="step-content">
     <view class="section">
       <view class="section-header">
-        <view class="section-title">输入质保码</view>
-      </view>
-      <view class="section-body">
-        <view class="form-group">
-          <view class="form-label"><text class="required">*</text>质保码</view>
-          <input
-            class="form-input"
-            placeholder="请输入质保码"
-            placeholder-class="search-placeholder"
-            value="{{form.warranty_code}}"
-            bindinput="onFieldInput"
-            data-field="warranty_code"
-          />
-        </view>
-        <view class="form-tip">请输入施工质保码，系统将自动校验产品型号</view>
-      </view>
-    </view>
-  </view>
-
-  <!-- Step 2: 填写车主信息 -->
-  <view wx:if="{{currentStep === 1}}" class="step-content">
-    <view class="section">
-      <view class="section-header">
         <view class="section-title">车主信息</view>
+        <view class="section-tip">下面多个产品共用这一份车主信息</view>
       </view>
       <view class="section-body">
         <view class="form-group">
@@ -74,8 +52,8 @@
     </view>
   </view>
 
-  <!-- Step 3: 填写车辆信息 -->
-  <view wx:if="{{currentStep === 2}}" class="step-content">
+  <!-- Step 2: 车辆信息 -->
+  <view wx:if="{{currentStep === 1}}" class="step-content">
     <view class="section">
       <view class="section-header">
         <view class="section-title">车辆信息</view>
@@ -150,11 +128,51 @@
     </view>
   </view>
 
+  <!-- Step 3: 产品与质保码（可加多个） -->
+  <view wx:if="{{currentStep === 2}}" class="step-content">
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">产品与质保码</view>
+        <view class="section-tip">一辆车贴几个产品就加几个，每个产品填一个质保码</view>
+      </view>
+      <view class="section-body">
+        <view wx:for="{{products}}" wx:key="index" class="product-row">
+          <view class="product-index">{{index + 1}}</view>
+          <input
+            class="form-input product-input"
+            placeholder="输入该产品的质保码"
+            placeholder-class="search-placeholder"
+            value="{{item.code}}"
+            bindinput="onProductInput"
+            data-index="{{index}}"
+          />
+          <view
+            wx:if="{{products.length > 1}}"
+            class="product-remove"
+            data-index="{{index}}"
+            bindtap="removeProduct"
+          >✕</view>
+        </view>
+
+        <view
+          wx:if="{{products.length < maxProducts}}"
+          class="product-add"
+          bindtap="addProduct"
+        >＋ 再添加一个产品</view>
+
+        <view class="form-tip">
+          每个质保码对应一个产品、出一张证书；车衣 / 前档 / 侧挡分别填各自的码。
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- Step 4: 拍照 -->
   <view wx:if="{{currentStep === 3}}" class="step-content">
     <view class="section">
       <view class="section-header">
         <view class="section-title">施工照片（选填）</view>
+        <view class="section-tip">照片会同时挂到本次提交的所有产品上</view>
       </view>
       <view class="section-body">
         <view class="photo-upload-area">
@@ -184,10 +202,6 @@
       </view>
       <view class="section-body">
         <view class="info-row">
-          <view class="info-row-label">质保码</view>
-          <view class="info-row-value">{{form.warranty_code}}</view>
-        </view>
-        <view class="info-row">
           <view class="info-row-label">车主姓名</view>
           <view class="info-row-value">{{form.customer_name}}</view>
         </view>
@@ -197,7 +211,7 @@
         </view>
         <view class="info-row">
           <view class="info-row-label">车牌号</view>
-          <view class="info-row-value">{{form.plate_no}}</view>
+          <view class="info-row-value">{{form.plate_no || '—'}}</view>
         </view>
         <view class="info-row">
           <view class="info-row-label">车辆品牌</view>
@@ -213,8 +227,21 @@
         </view>
         <view wx:if="{{photos.length > 0}}" class="info-row">
           <view class="info-row-label">施工照片</view>
-          <view class="info-row-value">{{photos.length}}张</view>
+          <view class="info-row-value">{{photos.length}} 张</view>
         </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">本次登记的产品（{{products.length}} 个）</view>
+      </view>
+      <view class="section-body">
+        <view wx:for="{{products}}" wx:key="index" class="info-row">
+          <view class="info-row-label">产品 {{index + 1}}</view>
+          <view class="info-row-value mono">{{item.code}}</view>
+        </view>
+        <view class="form-tip">提交后每个产品各出一张质保证书，审核通过后生效。</view>
       </view>
     </view>
 
