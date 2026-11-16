@@ -15,11 +15,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     // 组织积分余额汇总（省代/门店，供总部实时查看各组织积分）
     if (url.searchParams.get('type') === 'balances') {
+      // ⚠️ 必须按 change_type 判断方向，不能直接 SUM(points_change)：
+      //    freeze（兑换冻结）存的是**正数**，直接求和会被当成「获得」，导致余额虚高；
+      //    而真正扣分的是 freeze（deduct 的 points_change 是 0），
+      //    所以旧写法下「累计消耗」恒为 0。
+      // 口径：balance = 获得 − 消耗；awarded = 获得类；redeemed = 冻结占用净额（freeze − release）
       const rows = await queryAll(context.env.DB,
         `SELECT o.id, o.code, o.name, o.type, o.province, o.city, o.status,
-                COALESCE(SUM(pl.points_change), 0) AS balance,
-                COALESCE(SUM(CASE WHEN pl.points_change > 0 THEN pl.points_change ELSE 0 END), 0) AS awarded,
-                COALESCE(SUM(CASE WHEN pl.points_change < 0 THEN -pl.points_change ELSE 0 END), 0) AS redeemed,
+                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
+                                  WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+                                  ELSE 0 END), 0) AS balance,
+                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
+                                  ELSE 0 END), 0) AS awarded,
+                COALESCE(SUM(CASE WHEN pl.change_type = 'freeze' THEN pl.points_change
+                                  WHEN pl.change_type IN ('release','deduct','revoke') THEN -pl.points_change
+                                  ELSE 0 END), 0) AS redeemed,
                 COUNT(pl.id) AS ledger_count
          FROM organizations o
          LEFT JOIN points_ledger pl ON pl.organization_id = o.id
