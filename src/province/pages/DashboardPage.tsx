@@ -105,7 +105,7 @@ export default function DashboardPage() {
       <div className="mt-6">
         <RankingSection
           title="全国积分排行"
-          subtitle="当前可用积分（含调整与兑换）"
+          subtitle="累计获得积分（兑换使用不影响榜单）"
           items={pointsRanking}
           emptyText="暂无积分数据"
           valueLabel="积分"

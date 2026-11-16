@@ -103,7 +103,7 @@ export default function DashboardPage() {
             <h3 className="font-display text-base font-semibold text-[var(--paper-text)]">全国积分排行</h3>
           </div>
         </div>
-        <p className="text-xs text-[var(--paper-muted)] mb-4">当前可用积分（含调整与兑换）</p>
+        <p className="text-xs text-[var(--paper-muted)] mb-4">累计获得积分（兑换使用不影响榜单）</p>
 
         {/* 自店排名 */}
         {myRank && myRank.points > 0 && (

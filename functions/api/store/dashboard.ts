@@ -19,15 +19,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const type = url.searchParams.get('type');
 
-    // 全国积分排行（当前可用积分口径：含人工调整/兑换扣分，与门店积分余额一致；含自店排名）
+    // 全国积分排行（**累计获得**口径：只累加 award/adjust，兑换/冻结不影响榜单；含自店排名）
     if (type === 'national-points-ranking') {
       const [rows, myPointsRow] = await Promise.all([
         queryAll<{ name: string; count: number; province: string; city: string; org_id: string }>(db,
           `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
              UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
            SELECT o.name, o.province, o.city, o.id AS org_id,
-                  COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
-                                    WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+                  COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
                                     ELSE 0 END), 0) AS count
            FROM points_ledger pl
            JOIN organizations o ON o.id = pl.organization_id
@@ -38,8 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
            LIMIT 20`,
         ),
         queryFirst<{ points: number }>(db,
-          `SELECT COALESCE(SUM(CASE WHEN change_type IN ('award','adjust','release') THEN points_change
-                                    WHEN change_type IN ('deduct','revoke','freeze') THEN -points_change
+          `SELECT COALESCE(SUM(CASE WHEN change_type IN ('award','adjust') THEN points_change
                                     ELSE 0 END), 0) AS points
            FROM points_ledger
            WHERE organization_id = ?`,
@@ -55,8 +53,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
              UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
            SELECT COUNT(*) + 1 AS ranking_position FROM (
-             SELECT o.id, COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
-                                           WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+             SELECT o.id, COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
                                            ELSE 0 END), 0) AS pts
              FROM points_ledger pl
              JOIN organizations o ON o.id = pl.organization_id

@@ -53,14 +53,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows.results || []);
     }
 
-    // 门店积分排行榜（当前可用积分口径：含人工调整/兑换扣分，与门店积分余额一致）
+    // 门店积分排行榜（**累计获得**口径：只累加发放类流水 award/adjust，
+    // 不含冻结 freeze 与兑换扣减 deduct —— 兑换只影响余额，不应把榜单排名拉低）
     if (type === 'points-ranking') {
       const rows = await db.prepare(
         `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
            UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
          SELECT o.name, o.province, o.city,
-                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust','release') THEN pl.points_change
-                                  WHEN pl.change_type IN ('deduct','revoke','freeze') THEN -pl.points_change
+                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
                                   ELSE 0 END), 0) AS count
          FROM points_ledger pl
          JOIN organizations o ON o.id = pl.organization_id
