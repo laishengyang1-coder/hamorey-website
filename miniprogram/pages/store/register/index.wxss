@@ -261,3 +261,30 @@
   color: #999999;
   margin-left: 16rpx;
 }
+
+/* 2026-11-16 放宽间距（用户反馈拥挤） */
+.product-row-wrap {
+  margin-bottom: 28rpx;
+}
+.product-row-wrap:last-of-type {
+  margin-bottom: 16rpx;
+}
+
+/* 产品识别结果 */
+.product-model {
+  margin: 10rpx 0 0 60rpx;
+  font-size: 24rpx;
+  color: #1F6B45;
+}
+.product-model-bad {
+  color: #C0392B;
+}
+
+/* 「＋ 再添加一个产品」与下方说明之间留出呼吸感 */
+.product-add {
+  margin-top: 8rpx;
+  margin-bottom: 20rpx;
+}
+.product-row-wrap + .product-add {
+  margin-top: 4rpx;
+}

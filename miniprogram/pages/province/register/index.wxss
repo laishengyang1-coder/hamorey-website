@@ -271,3 +271,9 @@
   color: #BBBBBB;
   padding: 0 8rpx;
 }
+
+.picked-model {
+  font-size: 22rpx;
+  color: #8C817D;
+  margin-right: 16rpx;
+}

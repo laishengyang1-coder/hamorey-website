@@ -52,6 +52,7 @@
                 wx:key="id"
                 class="code-option"
                 data-code="{{item.code}}"
+                data-model="{{item.model_name}}"
                 bindtap="onSelectCode"
               >
                 <text class="code-option-code">{{item.code}}</text>
@@ -64,6 +65,7 @@
             <view wx:for="{{products}}" wx:key="index" class="picked-row">
               <text class="picked-index">{{index + 1}}</text>
               <text class="picked-code">{{item.code}}</text>
+              <text class="picked-model">{{item.model || ''}}</text>
               <text class="picked-remove" data-index="{{index}}" bindtap="removeProduct">移除</text>
             </view>
           </view>

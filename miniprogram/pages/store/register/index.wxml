@@ -141,10 +141,11 @@
             <view class="product-index">{{index + 1}}</view>
             <input
               class="form-input product-input"
-              placeholder="输入质保码，或输入几位数字查找"
+              placeholder="输入质保码，或输入几位查找"
               placeholder-class="search-placeholder"
               value="{{item.code}}"
               bindinput="onProductInput"
+              bindblur="onProductBlur"
               data-index="{{index}}"
             />
             <view
@@ -154,6 +155,8 @@
               bindtap="removeProduct"
             >✕</view>
           </view>
+          <view wx:if="{{item.model}}" class="product-model">✓ 已识别：{{item.model}}</view>
+          <view wx:elif="{{item.checked && item.code}}" class="product-model product-model-bad">✗ 本店库存里没有这个码，或可用次数已用完</view>
           <view wx:if="{{suggestIndex === index && suggestions.length > 0}}" class="suggest-list">
             <view
               wx:for="{{suggestions}}"
@@ -176,9 +179,7 @@
           bindtap="addProduct"
         >＋ 再添加一个产品</view>
 
-        <view class="form-tip">
-          每个质保码对应一个产品、出一张证书；车衣 / 前档 / 侧挡分别填各自的码。
-        </view>
+        <view class="form-tip">车衣 / 前档 / 侧挡各填一个码，每个码出一张证书。</view>
       </view>
     </view>
   </view>

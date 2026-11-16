@@ -21,7 +21,7 @@ Page({
     // 库存来源：province=省代库存 / store=门店库存
     stockSource: 'province',
     // 本次登记的产品（每个 = 一个质保码 = 一条记录 = 一张证书）
-    products: [{ code: '' }],
+    products: [{ code: '', model: '' }],
     maxProducts: 8,
     // 质保码搜索
     codeQuery: '',
@@ -76,7 +76,7 @@ Page({
       codeOptions: [],
       codeDropdownOpen: false,
       'form.warranty_code': '',
-      products: [{ code: '' }]
+      products: [{ code: '', model: '' }]
     });
   },
 
@@ -90,7 +90,7 @@ Page({
       codeOptions: [],
       codeDropdownOpen: false,
       'form.warranty_code': '',
-      products: [{ code: '' }]
+      products: [{ code: '', model: '' }]
     });
   },
 
@@ -130,6 +130,7 @@ Page({
   /** 选择质保码 = 加入本次产品列表（可继续搜下一个） */
   onSelectCode(e) {
     const code = e.currentTarget.dataset.code;
+    const modelName = e.currentTarget.dataset.model || '';
     const products = this.data.products.filter((p) => (p.code || '').trim());
     if (products.some((p) => p.code.toUpperCase() === code.toUpperCase())) {
       wx.showToast({ title: '这个码已经加过了', icon: 'none' });
@@ -139,7 +140,7 @@ Page({
       wx.showToast({ title: `一次最多 ${this.data.maxProducts} 个产品`, icon: 'none' });
       return;
     }
-    products.push({ code: code });
+    products.push({ code: code, model: modelName });
     this.setData({
       products: products,
       codeQuery: '',
@@ -153,7 +154,7 @@ Page({
   removeProduct(e) {
     const idx = Number(e.currentTarget.dataset.index);
     const products = this.data.products.filter((_, i) => i !== idx);
-    this.setData({ products: products.length > 0 ? products : [{ code: '' }] });
+    this.setData({ products: products.length > 0 ? products : [{ code: '', model: '' }] });
   },
 
   /** 关闭下拉 */

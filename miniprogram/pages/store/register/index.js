@@ -29,7 +29,7 @@ Page({
       installation_date: ''
     },
     // 每个元素 = 一个产品（一个质保码 → 一条记录 → 一张证书）
-    products: [{ code: '' }],
+    products: [{ code: '', model: '', resolved: false, checked: false }],
     suggestions: [],
     suggestIndex: -1,
     photos: [],
@@ -66,8 +66,35 @@ Page({
   onProductInput(e) {
     const index = Number(e.currentTarget.dataset.index);
     const value = e.detail.value;
-    this.setData({ [`products[${index}].code`]: value, suggestIndex: index });
+    this.setData({
+      [`products[${index}].code`]: value,
+      [`products[${index}].model`]: '',
+      [`products[${index}].resolved`]: false,
+      [`products[${index}].checked`]: false,
+      suggestIndex: index
+    });
     this.searchCodes(value);
+  },
+
+  /** 失焦时精确识别该码对应的产品 */
+  onProductBlur(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const code = (this.data.products[index] || {}).code;
+    if (code) this.resolveCode(index, code);
+  },
+
+  /** 精确识别：拿输入的码去本店库存里做全等匹配，命中就显示型号 */
+  async resolveCode(index, code) {
+    const v = (code || '').trim();
+    if (!v) return;
+    const res = await api.get('/store/warranty-codes', { q: v, limit: 5 }, { loading: false });
+    const items = (res.ok && res.data && res.data.items) || [];
+    const hit = items.find((x) => (x.code || '').toUpperCase() === v.toUpperCase());
+    this.setData({
+      [`products[${index}].model`]: hit ? (hit.model_name || '') : '',
+      [`products[${index}].resolved`]: !!hit,
+      [`products[${index}].checked`]: true
+    });
   },
 
   /** 质保码模糊查找：输入 2 个字符以上即搜（防抖 250ms）*/
@@ -89,6 +116,9 @@ Page({
     if (!item || rowIdx < 0) return;
     this.setData({
       [`products[${rowIdx}].code`]: item.code,
+      [`products[${rowIdx}].model`]: item.model_name || '',
+      [`products[${rowIdx}].resolved`]: true,
+      [`products[${rowIdx}].checked`]: true,
       suggestions: [],
       suggestIndex: -1
     });
@@ -104,13 +134,13 @@ Page({
       wx.showToast({ title: `一次最多 ${MAX_PRODUCTS} 个产品`, icon: 'none' });
       return;
     }
-    this.setData({ products: products.concat([{ code: '' }]) });
+    this.setData({ products: products.concat([{ code: '', model: '', resolved: false, checked: false }]) });
   },
 
   removeProduct(e) {
     const index = Number(e.currentTarget.dataset.index);
     const products = this.data.products.filter((item, i) => i !== index);
-    this.setData({ products: products.length > 0 ? products : [{ code: '' }] });
+    this.setData({ products: products.length > 0 ? products : [{ code: '', model: '', resolved: false, checked: false }] });
   },
 
   // ---------- 步骤校验 ----------
@@ -135,6 +165,15 @@ Page({
       if (codes.length === 0) { wx.showToast({ title: '请至少填一个质保码', icon: 'none' }); return false; }
       if (new Set(codes.map((c) => c.toUpperCase())).size !== codes.length) {
         wx.showToast({ title: '同一个质保码不要重复填', icon: 'none' });
+        return false;
+      }
+      // 每个码必须能识别出产品（不在本店库存 / 已用完的会识别失败）
+      const unresolved = products
+        .map((p, i) => ({ p: p, i: i }))
+        .filter((x) => (x.p.code || '').trim() && !x.p.resolved);
+      if (unresolved.length > 0) {
+        this.resolveCode(unresolved[0].i, unresolved[0].p.code);
+        wx.showToast({ title: `第 ${unresolved[0].i + 1} 个码未识别到产品，请核对`, icon: 'none' });
         return false;
       }
     }
