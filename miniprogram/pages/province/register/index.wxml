@@ -44,7 +44,6 @@
               placeholder-class="search-placeholder"
               value="{{codeQuery}}"
               bindinput="onCodeInput"
-              bindblur="closeDropdown"
             />
             <view wx:if="{{codeDropdownOpen && codeOptions.length > 0}}" class="code-dropdown">
               <view

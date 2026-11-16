@@ -32,6 +32,8 @@ Page({
     products: [{ code: '', model: '', resolved: false, checked: false }],
     suggestions: [],
     suggestIndex: -1,
+    suggestionLoading: false,
+    suggestionQuery: null,
     photos: [],
     photoKeys: []
   },
@@ -76,11 +78,26 @@ Page({
     this.searchCodes(value);
   },
 
-  /** 失焦时精确识别该码对应的产品 */
+  /** 输入长度像不像是完整质保码（避免打到半截就判"不存在"）*/
+  isCodeLike(v) {
+    const s = (v || '').trim();
+    return s.length >= 6 && /[0-9]/.test(s);
+  },
+
+  /** 失焦：只有完整码才做精确识别；半截输入不报错，等用户继续打字 */
   onProductBlur(e) {
     const index = Number(e.currentTarget.dataset.index);
-    const code = (this.data.products[index] || {}).code;
-    if (code) this.resolveCode(index, code);
+    const code = (this.data.products[index] || {}).code || '';
+    if (!code.trim()) return;
+    if (!this.isCodeLike(code)) {
+      this.setData({
+        [`products[${index}].model`]: '',
+        [`products[${index}].resolved`]: false,
+        [`products[${index}].checked`]: false
+      });
+      return;
+    }
+    this.resolveCode(index, code);
   },
 
   /** 精确识别：拿输入的码去本店库存里做全等匹配，命中就显示型号 */
@@ -97,15 +114,30 @@ Page({
     });
   },
 
-  /** 质保码模糊查找：输入 2 个字符以上即搜（防抖 250ms）*/
+  /**
+   * 质保码查找：
+   * - 有输入：1 个字符就开搜（防抖 200ms）
+   * - 空输入：直接列本店可用的前 8 个码（方便直接点选）
+   */
   searchCodes(keyword) {
     const q = (keyword || '').trim();
     if (this._searchTimer) clearTimeout(this._searchTimer);
-    if (q.length < 2) { this.setData({ suggestions: [] }); return; }
+    this.setData({ suggestionLoading: true });
     this._searchTimer = setTimeout(async () => {
-      const res = await api.get('/store/warranty-codes', { q: q, limit: 8 }, { loading: false });
-      if (res.ok && res.data) this.setData({ suggestions: res.data.items || [] });
-    }, 250);
+      const params = { limit: 8 };
+      if (q) params.q = q;
+      const res = await api.get('/store/warranty-codes', params, { loading: false });
+      const items = (res.ok && res.data && res.data.items) || [];
+      this.setData({ suggestions: items, suggestionLoading: false, suggestionQuery: q });
+    }, q ? 200 : 0);
+  },
+
+  /** 聚焦时就把候选列出来（空输入 = 本店可用码）*/
+  onProductFocus(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const code = (this.data.products[index] || {}).code || '';
+    this.setData({ suggestIndex: index });
+    this.searchCodes(code);
   },
 
   /** 点选建议码 */

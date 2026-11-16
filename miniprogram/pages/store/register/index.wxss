@@ -288,3 +288,9 @@
 .product-row-wrap + .product-add {
   margin-top: 4rpx;
 }
+
+.suggest-hint {
+  margin: 10rpx 0 0 60rpx;
+  font-size: 24rpx;
+  color: #8C817D;
+}

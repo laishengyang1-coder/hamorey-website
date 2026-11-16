@@ -141,10 +141,11 @@
             <view class="product-index">{{index + 1}}</view>
             <input
               class="form-input product-input"
-              placeholder="输入质保码，或输入几位查找"
+              placeholder="输入质保码，或点一下看本店可用码"
               placeholder-class="search-placeholder"
               value="{{item.code}}"
               bindinput="onProductInput"
+              bindfocus="onProductFocus"
               bindblur="onProductBlur"
               data-index="{{index}}"
             />
@@ -170,6 +171,10 @@
               <text class="suggest-code">{{sug.code}}</text>
               <text class="suggest-model">{{sug.model_name || ''}}</text>
             </view>
+          </view>
+          <view wx:if="{{suggestIndex === index && suggestionLoading}}" class="suggest-hint">正在查找本店质保码…</view>
+          <view wx:elif="{{suggestIndex === index && !suggestionLoading && suggestions.length === 0 && suggestionQuery !== null}}" class="suggest-hint">
+            {{suggestionQuery ? '没有匹配的可用质保码，换个关键词试试' : '本店暂无可用质保码，请先在后台入库'}}
           </view>
         </view>
 
