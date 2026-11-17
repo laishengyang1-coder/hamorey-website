@@ -16,6 +16,7 @@
           document.querySelector('#position').textContent = `${String(current+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
           document.querySelector('#next').textContent = current === total - 1 ? '回到首页 ↑' : '下一章 ↑';
           document.querySelector('#next').setAttribute('aria-label',current === total - 1 ? '回到首页' : '下一章节');
+          document.documentElement.style.setProperty('--progress', ((current + 1) / total * 100).toFixed(1) + '%');
         }
       });
     }, {rootMargin:'-25% 0px -35% 0px',threshold:0});
