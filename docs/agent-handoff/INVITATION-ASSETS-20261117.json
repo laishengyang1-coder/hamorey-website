@@ -1,0 +1,135 @@
+[
+  {
+    "source": "art-rally.png",
+    "before": 162673,
+    "after": 81878,
+    "pixels_identical": true,
+    "output": "art-rally-8d049a32.webp"
+  },
+  {
+    "source": "art-waiting.png",
+    "before": 165852,
+    "after": 111346,
+    "pixels_identical": true,
+    "output": "art-waiting-ff8ab474.webp"
+  },
+  {
+    "source": "gold-divider.png",
+    "before": 6237,
+    "after": 2648,
+    "pixels_identical": true,
+    "output": "gold-divider-f5a2f766.webp"
+  },
+  {
+    "source": "guest-li.png",
+    "before": 552213,
+    "after": 339134,
+    "pixels_identical": true,
+    "output": "guest-li-e3f6dea9.webp"
+  },
+  {
+    "source": "guest-pan.png",
+    "before": 508879,
+    "after": 321738,
+    "pixels_identical": true,
+    "output": "guest-pan-2659fa99.webp"
+  },
+  {
+    "source": "guest-s.png",
+    "before": 485771,
+    "after": 276150,
+    "pixels_identical": true,
+    "output": "guest-s-7c6d7dba.webp"
+  },
+  {
+    "source": "guest-zhang.png",
+    "before": 525306,
+    "after": 304846,
+    "pixels_identical": true,
+    "output": "guest-zhang-e6ccb750.webp"
+  },
+  {
+    "source": "hamorey-white.png",
+    "before": 16614,
+    "after": 7942,
+    "pixels_identical": true,
+    "output": "hamorey-white-177d169d.webp"
+  },
+  {
+    "source": "info-when-where.png",
+    "before": 23440,
+    "after": 10644,
+    "pixels_identical": true,
+    "output": "info-when-where-f87499c8.webp"
+  },
+  {
+    "source": "route-map2.png",
+    "before": 763778,
+    "after": 547602,
+    "pixels_identical": true,
+    "output": "route-map2-60df1286.webp"
+  },
+  {
+    "source": "snow-card.png",
+    "before": 294193,
+    "after": 168164,
+    "pixels_identical": true,
+    "output": "snow-card-3c47486c.webp"
+  },
+  {
+    "source": "team-glow.png",
+    "before": 721074,
+    "after": 433676,
+    "pixels_identical": true,
+    "output": "team-glow-3ce981ae.webp"
+  },
+  {
+    "source": "theme.png",
+    "before": 55166,
+    "after": 29580,
+    "pixels_identical": true,
+    "output": "theme-3dc51510.webp"
+  },
+  {
+    "source": "title-am.png",
+    "before": 231601,
+    "after": 149048,
+    "pixels_identical": true,
+    "output": "title-am-8a6913d2.webp"
+  },
+  {
+    "source": "title-guests.png",
+    "before": 334553,
+    "after": 211306,
+    "pixels_identical": true,
+    "output": "title-guests-a2d48cae.webp"
+  },
+  {
+    "source": "title-meeting.png",
+    "before": 291703,
+    "after": 194236,
+    "pixels_identical": true,
+    "output": "title-meeting-9c4e1779.webp"
+  },
+  {
+    "source": "title-mystery.png",
+    "before": 381790,
+    "after": 241574,
+    "pixels_identical": true,
+    "output": "title-mystery-3810695f.webp"
+  },
+  {
+    "source": "title-pm.png",
+    "before": 241982,
+    "after": 156674,
+    "pixels_identical": true,
+    "output": "title-pm-e052b484.webp"
+  },
+  {
+    "source": "title-venue.png",
+    "before": 339250,
+    "after": 230162,
+    "pixels_identical": true,
+    "output": "title-venue-73f2b02d.webp"
+  }
+]

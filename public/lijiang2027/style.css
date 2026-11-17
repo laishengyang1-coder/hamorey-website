@@ -315,3 +315,54 @@ body{scroll-snap-type:y mandatory}
   color:#d7dde6;margin:2px 0 0;letter-spacing:.02em}
 .hotel-en{width:100%;max-width:420px;text-align:left;font-size:11px;line-height:1.85;
   color:#7f8b9b;margin:2px 0 0;letter-spacing:.01em}
+
+/* 2026-11-17: replayable entrances; retain the approved 12-scene artwork/layout. */
+.bg-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* Intrinsic dimensions reserve image space without forcing an old HTML height. */
+.v2-inner img:not(.guest-grid img){height:auto}
+.js .scene.v2 .reveal{opacity:0;transform:none;transition:none;animation:none}
+.js .scene.v2.seen .reveal{animation:invite-rise .85s cubic-bezier(.16,1,.3,1) var(--d,.08s) both}
+.js .scene.v2.seen .art-title,
+.js .scene.v2.seen h1.reveal{animation-name:invite-title;animation-duration:1.05s}
+.js .scene.v2.seen .guest-grid figure:nth-child(odd){animation-name:invite-left}
+.js .scene.v2.seen .guest-grid figure:nth-child(even){animation-name:invite-right}
+.js .scene.v2.seen .team-glow,
+.js .scene.v2.seen .route-img,
+.js .scene.v2.seen .art-rally{animation-name:invite-image;animation-duration:1.15s}
+.js .scene.v2.seen .snow-card{animation-name:invite-left;animation-duration:1s}
+.js .scene.v2 .bg-cover{transform:scale(1);transition:none;animation:none}
+.js .scene.v2.seen .bg-cover{animation:invite-landscape 4s ease-out both}
+.qa2 .a .gold-text,.rally-big,.map-pin::after{animation-play-state:paused}
+.seen .a .gold-text,.seen .rally-big,.seen .map-pin::after{animation-play-state:running}
+.js .scene.v2.qa2.seen .a .gold-text::after{transform:scaleX(1)}
+.js .scene.v2.seen .panel-art{--d:.04s}
+.js .scene.v2.seen .ag2-list .reveal{animation-delay:calc(var(--d,0s) + .13s)}
+.map-disclaimer{position:absolute;bottom:8px;right:10px;font-size:9px;color:#b0bac8}
+#sound.playing{animation:music-breathe 2s ease-in-out infinite}
+#sound[aria-busy=true]{opacity:.55}
+.music-hint.hide{animation:none;opacity:0;visibility:hidden}
+@keyframes invite-rise{from{opacity:0;transform:translate3d(0,32px,0)}to{opacity:1;transform:none}}
+@keyframes invite-title{from{opacity:0;transform:translate3d(0,18px,0) scale(.86)}to{opacity:1;transform:none}}
+@keyframes invite-image{from{opacity:0;transform:translate3d(0,22px,0) scale(.94)}to{opacity:1;transform:none}}
+@keyframes invite-left{from{opacity:0;transform:translate3d(-32px,10px,0)}to{opacity:1;transform:none}}
+@keyframes invite-right{from{opacity:0;transform:translate3d(32px,10px,0)}to{opacity:1;transform:none}}
+@keyframes invite-landscape{from{transform:scale(1)}to{transform:scale(1.04)}}
+@keyframes music-breathe{50%{opacity:.6}}
+/* Respect safe areas and avoid the fixed logo covering short-screen chapter titles. */
+.scene.v2 .v2-inner{padding-top:max(88px,calc(76px + env(safe-area-inset-top)));padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+#agenda .v2-inner,#snow .v2-inner,#hotel .v2-inner{padding-top:max(88px,calc(76px + env(safe-area-inset-top)))}
+@media(max-height:700px){
+  /* Retired first-version rules imposed 740px even on a 568px phone. */
+  .scene.v2:not(.hero):not(.snow){min-height:100svh}
+  .scene.v2 .v2-inner,#agenda .v2-inner,#snow .v2-inner,#hotel .v2-inner{padding-top:calc(80px + env(safe-area-inset-top));padding-bottom:calc(76px + env(safe-area-inset-bottom));gap:10px}
+  .guest-grid img{height:clamp(94px,18svh,126px)}
+  #agenda .ag2-list li{padding-bottom:10px}
+  #agenda .tabs button{padding:10px 0}
+  #agenda .panel-art{width:58%}
+  .music-hint{bottom:calc(65px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){
+  .js .scene.v2 .reveal,.js .scene.v2.seen .reveal{opacity:1;transform:none;animation:none!important}
+  .js .scene.v2 .bg-cover{transform:none;animation:none!important}
+  .qa2 .a .gold-text::after{transform:scaleX(1)}
+}
