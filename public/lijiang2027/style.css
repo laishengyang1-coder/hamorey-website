@@ -366,3 +366,6 @@ body{scroll-snap-type:y mandatory}
   .js .scene.v2 .bg-cover{transform:none;animation:none!important}
   .qa2 .a .gold-text::after{transform:scaleX(1)}
 }
+
+/* 2026-11-17 用户要求：「查看路线」做成假按钮 —— 保留外观，点击无任何反应 */
+.map-route{cursor:default;-webkit-tap-highlight-color:transparent;user-select:none}
