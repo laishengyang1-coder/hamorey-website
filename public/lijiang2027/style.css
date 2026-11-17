@@ -300,3 +300,18 @@ body{scroll-snap-type:y mandatory}
   background:linear-gradient(120deg,#e8cf9e,#c9a86a);color:#3a2410;font-size:13.5px;font-weight:600;
   letter-spacing:.1em;text-decoration:none}
 @media(prefers-reduced-motion:reduce){.map-pin::after{animation:none}}
+
+/* ============================================================
+   2026-11-17 新增「酒店介绍」章
+   ============================================================ */
+#hotel .v2-inner{padding-top:52px;padding-bottom:104px;gap:14px}
+.hotel-head{text-align:left;width:100%;max-width:420px;border-left:3px solid var(--gold);padding-left:12px}
+.hotel-head h2{font-family:"Songti SC","Noto Serif CJK SC",SimSun,serif;font-size:24px;
+  color:var(--gold);margin:0;letter-spacing:.14em;line-height:1.2}
+.hotel-head p{font-size:9.5px;letter-spacing:.32em;color:var(--muted);margin:4px 0 0}
+.hotel-photo{display:block;width:100%;max-width:440px;height:auto;border-radius:10px;
+  box-shadow:0 14px 34px rgba(0,0,0,.55);border:1px solid rgba(222,194,141,.18)}
+.hotel-copy{width:100%;max-width:420px;text-align:left;font-size:13.5px;line-height:2.05;
+  color:#d7dde6;margin:2px 0 0;letter-spacing:.02em}
+.hotel-en{width:100%;max-width:420px;text-align:left;font-size:11px;line-height:1.85;
+  color:#7f8b9b;margin:2px 0 0;letter-spacing:.01em}
