@@ -253,3 +253,8 @@ body{scroll-snap-type:y mandatory}
    改用 drop-shadow 让阴影跟随人物/卡片轮廓，而不是矩形外框 */
 .snow-card{background:transparent!important;border:none!important;border-radius:0!important;
   box-shadow:none!important;filter:drop-shadow(0 14px 30px rgba(0,0,0,.55));max-height:72vh;max-width:94%}
+
+/* 2026-11-17 雪山章：删眉标后整体上移，压缩上下留白 */
+#snow .v2-inner{padding-top:40px;padding-bottom:92px;gap:8px;justify-content:flex-start}
+#snow .art-title{width:78%;margin:0 auto}
+#snow .snow-card{max-height:74vh;margin-top:-6px}
