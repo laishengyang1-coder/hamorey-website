@@ -203,3 +203,19 @@ body{scroll-snap-type:y mandatory}
 .guest-grid figure{background:transparent;border:none;border-radius:0;overflow:visible}
 .guest-grid img{aspect-ratio:auto;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 10px 26px rgba(0,0,0,.55))}
 .guest-grid figcaption{background:transparent;padding:6px 4px 0}
+
+/* ============================================================
+   2026-11-17 嘉宾页版式：标题收小 + 四人统一尺寸并各自对齐
+   ============================================================ */
+#guests .art-title{width:58%;margin-bottom:2px}
+
+.guest-grid{gap:10px 14px;align-items:end}
+.guest-grid figure{display:flex;flex-direction:column;align-items:center;height:100%}
+/* 四张透明 PNG 原始比例几乎一致，固定图片框高度即可做到人物大小一致、底边对齐 */
+.guest-grid img{height:172px;width:auto;max-width:100%;object-fit:contain;object-position:center bottom;
+  aspect-ratio:auto;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6))}
+.guest-grid figcaption{background:transparent;padding:8px 2px 0;min-height:46px;display:flex;flex-direction:column;justify-content:flex-start}
+.guest-grid strong{font-size:16px;letter-spacing:.1em;text-align:center;line-height:1.3}
+.guest-grid span{font-size:10px;letter-spacing:.04em;text-align:center;line-height:1.4;margin-top:3px}
+
+@media(max-width:370px){#guests .art-title{width:62%}.guest-grid img{height:150px}}
