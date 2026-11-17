@@ -219,3 +219,29 @@ body{scroll-snap-type:y mandatory}
 .guest-grid span{font-size:10px;letter-spacing:.04em;text-align:center;line-height:1.4;margin-top:3px}
 
 @media(max-width:370px){#guests .art-title{width:62%}.guest-grid img{height:150px}}
+
+/* ============================================================
+   2026-11-17 第三轮修正
+   ============================================================ */
+
+/* ① 神秘嘉宾剪影：去掉那圈可见边框（图上那个框是 border 造成的） */
+.team-glow{border:none!important;border-radius:0!important;background:transparent}
+
+/* ② 议程页：整体上移、标题与小标题收小、切换按钮加大 */
+#agenda .v2-inner{padding-top:58px;padding-bottom:104px;gap:12px}
+#agenda .art-title{width:62%;margin-bottom:0}
+#agenda .tabs{gap:12px;margin:6px 0 4px;width:100%;max-width:420px}
+#agenda .tabs button{padding:13px 0;font-size:15px;letter-spacing:.22em;border-radius:12px}
+#agenda .panel-art{width:64%;margin:4px auto 2px}
+#agenda .ag2-list{margin-top:4px}
+#agenda .ag2-list li{padding-bottom:14px}
+#agenda .evening-note{margin-top:10px}
+
+/* ③ 雪山行程图：新图，限高放宽一点，去掉外框 */
+.snow-card{border:none;box-shadow:none;max-height:72vh;max-width:94%}
+
+@media(max-width:370px){
+  #agenda .art-title{width:66%}
+  #agenda .panel-art{width:68%}
+  #agenda .tabs button{padding:11px 0;font-size:14px}
+}
