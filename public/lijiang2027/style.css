@@ -191,3 +191,10 @@ html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
 /* 兼容：部分 webview 的滚动容器是 body */
 body{scroll-snap-type:y mandatory}
 @media(prefers-reduced-motion:reduce){body{scroll-snap-type:none}}
+
+/* 2026-11-17 嘉宾照片统一为白底形象照：图注改为图下深色条，避免压在白色背景上 */
+.guest-grid figure{background:#0b1622}
+.guest-grid img{aspect-ratio:3/3.4;object-position:center 18%}
+.guest-grid figcaption{position:static;padding:10px 8px 12px;background:linear-gradient(#0b1622,#0a1420)}
+.guest-grid strong{text-align:center}
+.guest-grid span{text-align:center}
