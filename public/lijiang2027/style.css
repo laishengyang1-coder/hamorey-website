@@ -198,3 +198,8 @@ body{scroll-snap-type:y mandatory}
 .guest-grid figcaption{position:static;padding:10px 8px 12px;background:linear-gradient(#0b1622,#0a1420)}
 .guest-grid strong{text-align:center}
 .guest-grid span{text-align:center}
+
+/* 2026-11-17 嘉宾图为透明底 PNG：去掉卡片底色与边框，让人物直接落在深色背景上 */
+.guest-grid figure{background:transparent;border:none;border-radius:0;overflow:visible}
+.guest-grid img{aspect-ratio:auto;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 10px 26px rgba(0,0,0,.55))}
+.guest-grid figcaption{background:transparent;padding:6px 4px 0}
