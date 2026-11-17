@@ -258,3 +258,13 @@ body{scroll-snap-type:y mandatory}
 #snow .v2-inner{padding-top:40px;padding-bottom:92px;gap:8px;justify-content:flex-start}
 #snow .art-title{width:78%;margin:0 auto}
 #snow .snow-card{max-height:74vh;margin-top:-6px}
+
+/* ============================================================
+   2026-11-17 雪山章：行程卡叠在路线图左上角空白处（还原参考设计构图）
+   ============================================================ */
+#snow .snow-stack{position:relative;display:block;width:92%;max-width:430px;margin:0 auto}
+#snow .route-img{display:block;width:100%;height:auto;filter:drop-shadow(0 14px 30px rgba(0,0,0,.55))}
+#snow .snow-card{position:absolute;left:0;top:1.5%;width:37%;height:auto;max-height:none;max-width:none;
+  background:transparent!important;border:none!important;box-shadow:none!important;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.55))}
+@media(max-width:370px){#snow .snow-card{width:39%}}
