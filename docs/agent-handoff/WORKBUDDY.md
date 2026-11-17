@@ -522,3 +522,19 @@ WH7.5（表内 PPF-LT8）8 支 · 6 年；WH6.5（表内 PPF-LT7）2 支 · 5 �
 远方集团 10 支；全库 4655 → **4665**；重复码 0；10 条划拨流水一一对应。
 单据本身无客户/日期/单号字段，型号按「客户型号」口径（WH7.5/WH6.5）入库；
 两条 LT7 码（`HI5672514-*`）与 LT8 的 `HI5672004-*` 同批号族，已按单照录，建议按实物卷标复核。
+
+---
+
+## 2026-11-17 追加：「查看路线」改为假按钮（WorkBuddy · `07fc189` + `3cadb5e`）
+
+用户要求：「这个按钮做成假的，点上去没有反应的就行」。
+
+- `<a class="map-route" href="https://uri.amap.com/...">` → **`<span class="map-route" role="presentation">`**（无 href / 无 target / 无跳转）
+- 补 `.map-route{cursor:default; -webkit-tap-highlight-color:transparent; user-select:none}`
+  → 去掉手型光标与移动端点击高亮，视觉上就是不可点
+- 资源版本号 `?v=20261117-motion1` → `?v=20261117-fakebtn`，强制客户端重新取 CSS/JS
+- 线上验证：首页 200 · 16575B；`uri.amap.com` **0 处**；`map-route` 为 `<span>`；`target="_blank"` 0 处；`cursor:default` 已生效
+- ⚠️ CI 再次排队（`DEPLOYED_COMMIT` 仍为 `1b4da72`），本次为 **scp 热更**，CI 完成后幂等覆盖
+- 保留金色按钮外观与 `↗` 箭头（用户未要求去掉箭头）
+
+**同时**：把上一轮待入库的 WORKBUDDY 接收记录一并提交（`07fc189`），含客户资料脱敏（改为「沪牌客户 A/B」，保留证书号/产品/日期）与远方集团 10 支库存补记。
