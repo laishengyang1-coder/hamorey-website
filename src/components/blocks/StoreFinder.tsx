@@ -1,6 +1,6 @@
 // ============================================================
-// 和膜 HAMOREY — StoreFinder 门店查询区块
-// 用于首页和门店页，从 /api/stores 实时读取公开门店资料
+// 和膜 HAMOREY — StoreFinder 首页门店查询区块
+// 从 /api/stores 实时读取公开门店资料，自动过滤未完善空记录与空字段
 // ============================================================
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
@@ -48,26 +48,35 @@ export function StoreFinder() {
     };
   }, []);
 
-  const provinces = useMemo(
-    () => [...new Set(stores.map((s) => s.province).filter(Boolean))].sort() as string[],
+  // 过滤掉地址与电话均为空的待完善记录
+  const validStores = useMemo(
+    () =>
+      stores.filter(
+        (s) => s.is_public === 1 && Boolean((s.address && s.address.trim()) || (s.phone && s.phone.trim())),
+      ),
     [stores],
+  );
+
+  const provinces = useMemo(
+    () => [...new Set(validStores.map((s) => s.province).filter(Boolean))].sort() as string[],
+    [validStores],
   );
 
   const cities = useMemo(
     () =>
       [
         ...new Set(
-          stores
+          validStores
             .filter((s) => !province || s.province === province)
             .map((s) => s.city)
             .filter(Boolean),
         ),
       ].sort() as string[],
-    [stores, province],
+    [validStores, province],
   );
 
   const filteredStores = useMemo(() => {
-    let result = stores.filter((s) => s.is_public === 1);
+    let result = validStores;
     if (province) result = result.filter((s) => s.province === province);
     if (city) result = result.filter((s) => s.city === city);
     if (keyword.trim()) {
@@ -75,11 +84,12 @@ export function StoreFinder() {
       result = result.filter(
         (s) =>
           s.public_name.toLowerCase().includes(kw) ||
-          (s.address ?? '').toLowerCase().includes(kw),
+          (s.address ?? '').toLowerCase().includes(kw) ||
+          (s.city ?? '').toLowerCase().includes(kw),
       );
     }
     return result;
-  }, [stores, province, city, keyword]);
+  }, [validStores, province, city, keyword]);
 
   const visibleStores = useMemo(() => filteredStores.slice(0, 6), [filteredStores]);
 
@@ -89,38 +99,38 @@ export function StoreFinder() {
   }, []);
 
   return (
-    <section className="py-16 md:py-24 bg-carbon">
+    <section className="py-20 md:py-28 bg-carbon">
       <Container>
         <ScrollReveal>
           <SectionHeading
             subtitle="Authorized Stores"
-            title="授权门店"
-            description="查找和膜授权门店，获取正规施工与质保服务。"
+            title="全国授权门店"
+            description="覆盖全国多省市的授权施工服务网络，提供标准化贴装与官方电子质保录入。"
           />
         </ScrollReveal>
 
         {/* 筛选器 */}
         <div className="mt-8 md:mt-10 flex flex-col md:flex-row gap-3 md:gap-4">
           <Select
-            placeholder="选择省份"
+            placeholder="全部省份"
             value={province}
             onChange={(e) => handleProvinceChange(e.target.value)}
             options={provinces.map((p) => ({ value: p, label: p }))}
-            wrapperClassName="md:w-40"
+            wrapperClassName="md:w-44"
           />
           <Select
-            placeholder="选择城市"
+            placeholder="全部城市"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             options={cities.map((c) => ({ value: c, label: c }))}
-            wrapperClassName="md:w-40"
+            wrapperClassName="md:w-44"
           />
           <input
             type="text"
-            placeholder="搜索门店名称或地址"
+            placeholder="搜索门店名称、城市或地址"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="flex-1 h-11 px-4 rounded bg-elevated text-content-primary placeholder:text-content-muted border border-border-default transition-fast focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="flex-1 h-11 px-4 rounded bg-elevated text-sm text-content-primary placeholder:text-content-muted border border-border-default transition-fast focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </div>
 
@@ -148,53 +158,71 @@ export function StoreFinder() {
           <>
             {visibleStores.length > 0 ? (
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {visibleStores.map((store, index) => (
-                  <ScrollReveal key={store.id} delay={index * 100}>
-                    <Card hover padding="md" className="h-full flex flex-col">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-base font-semibold text-content-primary pr-2">
-                          {store.public_name}
-                        </h3>
-                        <Badge variant="brand">
-                          {AUTH_LEVEL_LABELS[store.auth_level] || store.auth_level}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-col gap-2 text-sm text-content-secondary flex-1">
-                        <p className="flex items-center gap-2">
-                          <span className="text-content-muted">城市：</span>
-                          {store.province} · {store.city}
-                        </p>
-                        <p className="flex items-start gap-2">
-                          <span className="text-content-muted shrink-0">地址：</span>
-                          {store.address || '-'}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <span className="text-content-muted">电话：</span>
-                          {store.phone || '-'}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <span className="text-content-muted">营业：</span>
-                          {store.business_hours || '-'}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {(store.service_products ?? '')
-                            .split(';')
-                            .filter(Boolean)
-                            .map((product) => (
-                              <Badge key={product} variant="default">
-                                {product}
-                              </Badge>
-                            ))}
+                {visibleStores.map((store, index) => {
+                  const products = (store.service_products ?? '').split(';').filter(Boolean);
+                  const region =
+                    store.province && store.city && store.province !== store.city
+                      ? `${store.province} · ${store.city}`
+                      : store.city || store.province || '';
+
+                  return (
+                    <ScrollReveal key={store.id} delay={index * 60}>
+                      <Card hover padding="md" className="h-full flex flex-col">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <h3 className="text-base font-semibold text-content-primary leading-snug">
+                            {store.public_name}
+                          </h3>
+                          <Badge variant="brand">
+                            {AUTH_LEVEL_LABELS[store.auth_level] || store.auth_level}
+                          </Badge>
                         </div>
-                      </div>
-                    </Card>
-                  </ScrollReveal>
-                ))}
+
+                        <div className="flex flex-col gap-2 text-sm text-content-secondary flex-1">
+                          {region && (
+                            <p className="flex items-center gap-2">
+                              <span className="text-content-muted shrink-0">区域：</span>
+                              <span>{region}</span>
+                            </p>
+                          )}
+                          {store.address && (
+                            <p className="flex items-start gap-2">
+                              <span className="text-content-muted shrink-0">地址：</span>
+                              <span className="leading-relaxed">{store.address}</span>
+                            </p>
+                          )}
+                          {store.phone && (
+                            <p className="flex items-center gap-2">
+                              <span className="text-content-muted shrink-0">电话：</span>
+                              <a href={`tel:${store.phone}`} className="hover:text-content-brand">
+                                {store.phone}
+                              </a>
+                            </p>
+                          )}
+                          {store.business_hours && (
+                            <p className="flex items-center gap-2">
+                              <span className="text-content-muted shrink-0">营业：</span>
+                              <span>{store.business_hours}</span>
+                            </p>
+                          )}
+                          {products.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {products.map((product) => (
+                                <Badge key={product} variant="default">
+                                  {product}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    </ScrollReveal>
+                  );
+                })}
               </div>
             ) : (
               <EmptyState
                 title="暂无匹配的门店"
-                description="请尝试更换筛选条件，或联系和膜总部获取更多信息。"
+                description="请尝试更换省份城市筛选条件，或查看完整门店列表。"
                 className="mt-8"
               />
             )}
@@ -202,9 +230,11 @@ export function StoreFinder() {
         )}
 
         {/* 查看全部门店 */}
-        <div className="mt-8 text-center">
+        <div className="mt-10 text-center">
           <Link to="/stores">
-            <Button variant="outline">查看全部门店</Button>
+            <Button variant="outline">
+              查看全部授权门店{validStores.length > 0 ? `（${validStores.length} 家）` : ''}
+            </Button>
           </Link>
         </div>
       </Container>

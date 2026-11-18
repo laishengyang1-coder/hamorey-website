@@ -10,7 +10,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
-import archFilmImg from '../assets/architectural-film.jpeg';
+import archFilmImg from '../assets/hamorey/product-architectural.jpg';
 
 const directions = [
   {
@@ -41,6 +41,7 @@ export default function ArchitecturalFilmPage() {
   return (
     <PageLayout
       hero
+      image={archFilmImg}
       subtitle="Architectural Film"
       title="建筑家居膜"
       description="将玻璃保护延伸到居住与商业空间。和膜建筑家居膜，为住宅和商业空间提供隔热、隐私、装饰和安全方向解决方案。"
@@ -50,29 +51,16 @@ export default function ArchitecturalFilmPage() {
         <div className="flex items-center gap-3 p-4 rounded-lg bg-status-warning/10 border border-status-warning/30">
           <Badge variant="warning">提示</Badge>
           <p className="text-sm text-content-secondary">
-            建筑家居膜暂不提供电子质保服务，V1仅做产品展示。
+            建筑家居膜暂未纳入电子质保系统，具体质保与施工方案请咨询和膜授权门店。
           </p>
         </div>
       </ScrollReveal>
 
       {/* 住宅和商业空间场景 */}
       <ScrollReveal className="mt-12">
-        <div className="relative aspect-[21/9] rounded-lg overflow-hidden">
-          <img
-            src={archFilmImg}
-            alt="和膜建筑家居膜"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-white">
-              住宅 · 商业 · 安全
-            </h2>
-            <p className="mt-2 text-sm text-white/70 max-w-xl">
-              将汽车膜的技术积累延伸到建筑玻璃，守护生活与工作空间。
-            </p>
-          </div>
+        <div className="border-l-2 border-brand pl-5 md:pl-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-content-primary">住宅 · 商业 · 安全</h2>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-content-secondary">将汽车膜的技术积累延伸到建筑玻璃，守护生活与工作空间。</p>
         </div>
       </ScrollReveal>
 

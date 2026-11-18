@@ -9,6 +9,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { navItems } from '../../config/navigation';
 import { siteConfig } from '../../config/site';
 import { cn } from '../../lib/cn';
+import logoPrimary from '../../assets/hamorey/logo-primary.png';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,20 +33,15 @@ export function Navbar() {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 h-nav flex items-center transition-normal',
-          scrolled
-            ? 'bg-carbon/95 backdrop-blur-lg border-b border-border-subtle shadow-sm'
-            : 'bg-transparent',
+          // 始终使用实底，避免在深色首屏上文字与背景同色而「隐形」
+          'bg-white/95 backdrop-blur-lg border-b border-border-subtle',
+          scrolled && 'shadow-sm',
         )}
       >
         <div className="mx-auto w-full max-w-content px-6 md:px-8 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="text-xl font-bold tracking-tight text-content-primary">
-              {siteConfig.brandName}
-            </span>
-            <span className="text-sm font-medium text-content-brand tracking-wider">
-              {siteConfig.brandNameEn}
-            </span>
+          <Link to="/" className="flex items-center" aria-label={`${siteConfig.brandName} ${siteConfig.brandNameEn} 首页`}>
+            <img src={logoPrimary} alt={`${siteConfig.brandNameEn} ${siteConfig.brandName}`} className="h-8 md:h-9 w-auto" />
           </Link>
 
           {/* 桌面端导航 */}

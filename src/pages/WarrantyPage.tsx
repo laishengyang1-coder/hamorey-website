@@ -1,25 +1,24 @@
 // ============================================================
 // 和膜 HAMOREY — 公开质保查询页 /warranty/
-// 单输入框智能识别 + 查询结果展示 + noindex
-// 结果区参考 shark 质保卡设计：品牌头 + 产品卡 + 商品/车主/施工
-// 信息分组 + 部位价值参考表 + 质保须知 + 除外情形 + 下载证书
+// 单输入框智能识别 + 查询结果展示 + 初始态三步核验指南与证书样张
 // ============================================================
 
 import { useState, useEffect, useCallback, type FormEvent, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useSEO } from '../lib/seo';
 import { PageLayout } from '../layouts/PageLayout';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Spinner } from '../components/ui/Spinner';
+import { WarrantySamplePreview } from '../components/blocks/WarrantySamplePreview';
 import { detectInput, getInputPlaceholder } from '../lib/detect';
 import { searchWarrantyByQuery } from '../lib/api';
 import { WARRANTY_INPUT_TYPE_LABELS } from '../types/enums';
 import { formatDate, warrantyStatusText } from '../lib/format';
 import { siteConfig } from '../config/site';
 import type { WarrantyCardData, WarrantyQueryResult } from '../types/api';
+import bannerImg from '../assets/hamorey/product-ppf.jpg';
 
 type QueryState = 'idle' | 'loading' | 'success' | 'error' | 'empty';
 
@@ -102,7 +101,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
           </div>
           <div className="text-right">
             <div className="text-[10px] tracking-[0.2em] text-[#C8A96E]">WARRANTY CERTIFICATE</div>
-            <div className="mt-2">
+            <div className="mt-2 flex justify-end">
               <Badge variant={record.status === 'active' ? 'success' : record.status === 'expired' ? 'error' : 'default'}>
                 {status.text}
               </Badge>
@@ -145,7 +144,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
           rows={[
             ['车主姓名', record.customer_name_snapshot || '-'],
             ['品牌车型', `${record.vehicle_brand_snapshot || '-'} ${record.vehicle_model_snapshot || ''}`.trim()],
-            ['车牌号码', record.plate_no_snapshot || '临时车牌'],
+            ['车牌号码', record.plate_no_snapshot || '暂未上牌'],
             ['车架号码', record.vin_snapshot || '-'],
           ]}
         />
@@ -229,16 +228,15 @@ export default function WarrantyPage() {
   const location = useLocation();
   const [query, setQuery] = useState('');
   const [detectedType, setDetectedType] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [state, setState] = useState<QueryState>('idle');
   const [result, setResult] = useState<WarrantyQueryResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // 从首页跳转来的查询结果
   const navState = location.state as
     | { query?: string; type?: string; result?: WarrantyQueryResult }
     | null;
 
-  // 如果有从首页传来的结果，直接展示
   useEffect(() => {
     if (navState?.result) {
       setResult(navState.result);
@@ -253,9 +251,10 @@ export default function WarrantyPage() {
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
+    setValidationError('');
     if (value.trim().length >= 2) {
-      const result = detectInput(value);
-      setDetectedType(result.label);
+      const detected = detectInput(value);
+      setDetectedType(detected.label);
     } else {
       setDetectedType('');
     }
@@ -264,10 +263,14 @@ export default function WarrantyPage() {
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-      if (!query.trim()) return;
+      if (!query.trim()) {
+        setValidationError('请输入登记手机号、车牌号、VIN 车架号或质保码');
+        return;
+      }
 
       setState('loading');
       setErrorMsg('');
+      setValidationError('');
 
       try {
         const data = await searchWarrantyByQuery(query);
@@ -289,63 +292,120 @@ export default function WarrantyPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="center 75%"
       subtitle="Warranty Search"
       title="电子质保查询"
-      description="输入手机号、车牌号、VIN 或质保码，查询和膜电子质保证书。系统自动识别输入类型，按车辆展示已生效质保。"
+      description="输入手机号、车牌号、VIN 车架号或和膜质保卷号，实时核验正品电子质保证书与部位理赔参考价值。"
     >
-      {/* 查询表单 */}
-      <form onSubmit={handleSubmit} className="max-w-2xl">
-        <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Input
-              type="text"
-              value={query}
-              onChange={handleInputChange}
-              placeholder={getInputPlaceholder()}
-              label="质保查询"
-              hint={detectedType ? `识别为：${detectedType}` : '支持手机号、车牌号、VIN（车架号）或质保码'}
-              className="text-base"
-              autoComplete="off"
-              autoCapitalize="characters"
-            />
-            {detectedType && (
-              <div className="absolute right-3 top-9">
-                <Badge variant="brand">{detectedType}</Badge>
-              </div>
-            )}
+      {/* 顶部浮起查询卡片 */}
+      <div className="rounded-xl bg-elevated border border-border-subtle p-6 md:p-8 shadow-sm">
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="warranty-search-input" className="block text-sm font-semibold text-content-primary mb-3">
+            输入任一凭证查询整车质保档案
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <input
+                id="warranty-search-input"
+                type="text"
+                value={query}
+                onChange={handleInputChange}
+                placeholder={getInputPlaceholder()}
+                autoComplete="off"
+                autoCapitalize="characters"
+                className="h-12 w-full rounded bg-carbon px-4 pr-24 text-base text-content-primary placeholder:text-content-muted border border-border-default transition-fast focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              />
+              {detectedType && (
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                  <Badge variant="brand">{detectedType}</Badge>
+                </div>
+              )}
+            </div>
+            <Button
+              type="submit"
+              size="lg"
+              loading={state === 'loading'}
+              className="h-12 px-8 shrink-0"
+            >
+              {state === 'loading' ? '查询中...' : '立即查询'}
+            </Button>
           </div>
-          <Button
-            type="submit"
-            size="lg"
-            loading={state === 'loading'}
-            disabled={!query.trim()}
-            className="w-full sm:w-auto sm:self-start"
-          >
-            {state === 'loading' ? '查询中...' : '立即查询'}
-          </Button>
-        </div>
-      </form>
+          {validationError && (
+            <p className="mt-2 text-xs text-status-error">{validationError}</p>
+          )}
+        </form>
 
-      {/* 支持类型 */}
-      <div className="mt-6 flex flex-wrap items-center gap-2 text-xs text-content-muted">
-        <span>支持输入类型：</span>
-        {Object.entries(WARRANTY_INPUT_TYPE_LABELS).map(([key, label]) => (
-          <Badge key={key} variant="default">
-            {label}
-          </Badge>
-        ))}
+        <div className="mt-4 pt-4 border-t border-border-subtle flex flex-wrap items-center justify-between gap-3 text-xs text-content-muted">
+          <div className="flex flex-wrap items-center gap-2">
+            <span>智能识别类型：</span>
+            {Object.entries(WARRANTY_INPUT_TYPE_LABELS).map(([key, label]) => (
+              <Badge key={key} variant="default">
+                {label}
+              </Badge>
+            ))}
+          </div>
+          <Link to="/warranty/terms" className="font-medium text-content-brand hover:underline">
+            查看《和膜有限质保条款》→
+          </Link>
+        </div>
       </div>
 
-      {/* 查询结果 */}
-      <div className="mt-12">
+      {/* 查询状态与结果 */}
+      <div className="mt-10 md:mt-12">
         {state === 'idle' && (
-          <div className="py-12 text-center">
-            <p className="text-sm text-content-muted">请输入查询内容后点击"立即查询"</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* 左侧：核验指引与说明 */}
+            <div className="lg:col-span-6 space-y-4">
+              <h2 className="text-xl font-bold text-content-primary">电子质保核验说明</h2>
+              <p className="text-sm text-content-secondary leading-relaxed">
+                每卷和膜产品在授权门店完成标准化施工并通过总部审核后，即生成唯一数字质保档案，保障车主正品权益与后续保险理赔定损。
+              </p>
+              <div className="space-y-3 pt-1">
+                {[
+                  {
+                    step: '01',
+                    title: '质保凭证在哪里找？',
+                    desc: '您可直接输入施工登记时预留的「手机号码」或「车牌号」；新车未上牌车主可输入行驶证/前挡左下角的 17 位「车架号（VIN）」或门店交付的「质保码」。',
+                  },
+                  {
+                    step: '02',
+                    title: '刚贴完膜暂时查不到？',
+                    desc: '门店提交施工照片与卷号后，一般会在 1–3 个工作日内完成审核建档。若超时未查到，请联系您的授权施工门店核对录入状态。',
+                  },
+                  {
+                    step: '03',
+                    title: '事故受损如何定损理赔？',
+                    desc: '查询成功后，证书下方会列出对应型号的车身各部位官方参考价值，并支持一键下载高清电子质保证书长图提交保险公司核验。',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className="flex gap-4 p-4 rounded-lg bg-elevated border border-border-subtle"
+                  >
+                    <span className="text-sm font-bold text-content-brand shrink-0 mt-0.5">
+                      {item.step}
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-content-primary">{item.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-content-secondary">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 右侧：电子质保证书样张预览 */}
+            <div className="lg:col-span-6">
+              <WarrantySamplePreview />
+            </div>
           </div>
         )}
 
         {state === 'loading' && (
-          <div className="flex flex-col items-center gap-4 py-12">
+          <div className="flex flex-col items-center gap-4 py-16">
             <Spinner size="lg" />
             <p className="text-sm text-content-secondary">正在查询质保信息...</p>
           </div>
@@ -368,14 +428,14 @@ export default function WarrantyPage() {
             title="未找到质保记录"
             description={
               <>
-                请核对输入内容是否正确。如需帮助，请联系施工门店或和膜总部：
-                <br />
-                电话：{siteConfig.contact.phone} | 邮箱：{siteConfig.contact.email}
+                请核对输入的手机号、车牌号、VIN 车架号或质保码是否正确。如需协助，请联系您的授权施工门店或发送邮件至{' '}
+                {siteConfig.contact.email}
+                {siteConfig.contact.phone ? `（电话：${siteConfig.contact.phone}）` : ''}。
               </>
             }
             action={
               <Button onClick={() => setState('idle')} variant="outline">
-                重新查询
+                返回重新查询
               </Button>
             }
           />
@@ -383,7 +443,6 @@ export default function WarrantyPage() {
 
         {state === 'success' && result && (
           <div className="flex flex-col gap-10">
-            {/* Mock 数据提示 */}
             {result.is_mock && (
               <div className="flex items-center gap-2 rounded border border-status-warning/30 bg-status-warning/10 p-3">
                 <Badge variant="warning">提示</Badge>
@@ -393,13 +452,11 @@ export default function WarrantyPage() {
               </div>
             )}
 
-            {/* 查询摘要 */}
             <div className="flex items-center gap-2 text-sm text-content-secondary">
               <span className="font-medium text-content-primary">查询结果</span>
               <span className="text-content-muted">共 {result.records.length} 张质保证书</span>
             </div>
 
-            {/* 按车辆分组渲染证书卡 */}
             {result.vehicles.length > 1
               ? result.vehicles.map((vehicle) => (
                   <div key={`${vehicle.plate_no}_${vehicle.vin || ''}`} className="flex flex-col gap-4">
@@ -408,7 +465,7 @@ export default function WarrantyPage() {
                         {vehicle.brand} {vehicle.model}
                       </span>
                       <span className="rounded bg-graphite px-2 py-0.5 text-xs font-medium text-content-secondary">
-                        {vehicle.plate_no || '临时车牌'}
+                        {vehicle.plate_no || '暂未上牌'}
                       </span>
                     </div>
                     {result.records

@@ -14,7 +14,7 @@ import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
 import { getCategoryConfig } from '../config/products';
 import { WINDOW_FILM_MODELS, WINDOW_FILM_POSITION_LABELS, formatWindowFilmPrice } from '../config/windowFilm';
-import windowFilmImg from '../assets/window-film.jpeg';
+import windowFilmImg from '../assets/hamorey/product-window.jpg';
 
 export default function WindowFilmPage() {
   useSEO('products/window-film');
@@ -24,28 +24,17 @@ export default function WindowFilmPage() {
   return (
     <PageLayout
       hero
+      image={windowFilmImg}
+      imagePosition="center 82%"
       subtitle="Window Film"
       title="窗膜"
-      description="隔热、清晰与舒适的长期平衡。和膜窗膜五大系列，满足不同车型与使用场景的隔热防护需求。"
+      description="隔热、清晰与舒适的长期平衡。和膜窗膜六大系列，满足不同车型与使用场景的隔热防护需求。"
     >
       {/* 核心价值 */}
       <ScrollReveal>
-        <div className="relative aspect-[21/9] rounded-lg overflow-hidden">
-          <img
-            src={windowFilmImg}
-            alt="和膜窗膜"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-white">
-              隔热 · 清晰 · 安全
-            </h2>
-            <p className="mt-2 text-sm text-white/70 max-w-xl">
-              高品质磁控溅射工艺，平衡隔热性能与信号通透。
-            </p>
-          </div>
+        <div className="border-l-2 border-brand pl-5 md:pl-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-content-primary">隔热 · 清晰 · 安全</h2>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-content-secondary">高品质磁控溅射工艺，平衡隔热性能与信号通透。</p>
         </div>
       </ScrollReveal>
 
@@ -166,7 +155,7 @@ export default function WindowFilmPage() {
             <ul className="flex flex-col gap-2 text-sm text-content-secondary">
               <li>· 可选择较低透光率，提升隐私与隔热</li>
               <li>· 注意信号通透性（ETC、GPS）</li>
-              <li>· 推荐和光25、和盾10/35、和护15/25、和真15/35、和原10/35</li>
+              <li>· 推荐和光25、和盾10/35、和护15/35、和真15/35、和原10/35</li>
             </ul>
           </Card>
         </div>

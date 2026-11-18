@@ -146,9 +146,9 @@ button {
 /* === 滚动入场动效 === */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateY(16px);
+  transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .reveal.reveal-visible {
@@ -159,9 +159,9 @@ button {
 /* 左滑入场 */
 .reveal-left {
   opacity: 0;
-  transform: translateX(-32px);
-  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateX(-16px);
+  transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .reveal-left.reveal-visible {
@@ -172,9 +172,9 @@ button {
 /* 右滑入场 */
 .reveal-right {
   opacity: 0;
-  transform: translateX(32px);
-  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateX(16px);
+  transition: opacity 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .reveal-right.reveal-visible {
@@ -216,7 +216,7 @@ button {
 @keyframes fade-in-up {
   0% {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(16px);
   }
   100% {
     opacity: 1;

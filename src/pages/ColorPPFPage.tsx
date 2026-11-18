@@ -1,6 +1,6 @@
 // ============================================================
 // 和膜 HAMOREY — TPU改色车衣分类页 /products/color-ppf/
-// 3D 选色展厅入口 + 首批20色拟真色板预览 + 材质与报价规则
+// 3D 选色展厅入口 + 首批20色拟真色板预览 + 真TPU对比PVC + 实装案例 + 13部位理赔
 // ============================================================
 
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
+import { CaseGallery } from '../components/blocks/CaseGallery';
 import { ppfClaimParts } from '../config/products';
 import {
   COLOR_STUDIO_SWATCHES,
@@ -21,13 +22,21 @@ import {
   type FilmFinishType,
 } from '../config/colorStudio';
 import { cn } from '../lib/cn';
-import colorPpfImg from '../assets/color-ppf.jpeg';
+import colorPpfImg from '../assets/hamorey/product-color.jpg';
 
 const finishTabs: Array<{ key: 'all' | FilmFinishType; label: string }> = [
   { key: 'all', label: '全部' },
   { key: 'crystal', label: '水晶单色' },
   { key: 'metallic', label: '金属' },
   { key: 'pearlescent', label: '珠光' },
+];
+
+const tpuVsPvc = [
+  { dim: '核心基材', tpu: '光学级脂肪族 TPU（8.0 mil）', pvc: '普通压延级 PVC 塑料膜（3–4 mil）' },
+  { dim: '漆面防护力', tpu: '兼具隐形车衣级抗碎石、防剐蹭能力', pvc: '薄且脆，几乎无抗刮抗石击保护' },
+  { dim: '划痕自修复', tpu: '带纳米热修复顶涂层，太阳纹受热自愈', pvc: '划痕永久残留，洗车数次即显旧' },
+  { dim: '色彩质感', tpu: '原厂车漆般饱满通透，无橘皮纹', pvc: '橘皮感明显，户外暴晒易褪色发白' },
+  { dim: '官方质保与撕除', tpu: '6 年电子质保，到期撕除不易留残胶', pvc: '通常仅 1–2 年，老化后极易留胶伤漆' },
 ];
 
 export default function ColorPPFPage() {
@@ -46,43 +55,43 @@ export default function ColorPPFPage() {
   return (
     <PageLayout
       hero
+      image={colorPpfImg}
+      imagePosition="center 75%"
       subtitle="Color PPF"
       title="TPU改色车衣"
-      description="个性表达与车漆保护同步完成。首批 20 款水晶单色、金属与珠光膜色支持全屏 3D 实时换色预览。"
+      description="和彩 QCCY 全彩车衣系列：200+ 潮流定制色号，8.0 mil 真 TPU 基材与 6 年官方电子质保，首批 20 款水晶单色、微晶金属与幻彩珠光支持全屏 3D 实时换色预览。"
     >
-      {/* 核心价值 */}
+      {/* 核心价值与关键指标 */}
       <ScrollReveal>
-        <div className="relative aspect-[21/9] rounded-lg overflow-hidden">
-          <img
-            src={colorPpfImg}
-            alt="和膜TPU改色车衣"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/70 via-[#3D0A0A]/25 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                改色 · 保护 · 个性
-              </h2>
-              <p className="mt-2 text-sm text-white/80 max-w-xl">
-                {HECAI_SPEC.modelName}（{HECAI_SPEC.thickness} 脂肪族光学级 TPU），既有原厂烤漆般高光质感，又有抗石击自修复保护。
-              </p>
-            </div>
-            <Link
-              to="/color-studio"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#1A1412] font-semibold text-sm hover:bg-white/90 transition-all shadow-lg self-start md:self-auto"
-            >
-              <Sparkles className="w-4 h-4 text-brand" />
-              <span>进入 3D 选色展厅</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 border-l-2 border-brand pl-5 md:pl-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-content-primary">
+              真 TPU 改色车衣，不止好看更能抗刮
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-content-secondary">
+              告别传统 PVC 改色膜易橘皮、易褪色、撕膜留胶的痛点。和膜「{HECAI_SPEC.modelName}」采用 {HECAI_SPEC.thickness} {HECAI_SPEC.substrate}结合高显色纳米色浆工艺，呈现媲美原厂定制车漆的镜面光泽与抗石击自修复防护。
+            </p>
+          </div>
+          <div className="lg:col-span-5 grid grid-cols-3 gap-3">
+            {[
+              { v: HECAI_SPEC.thickness, l: '真 TPU 防护厚度' },
+              { v: `${HECAI_SPEC.warrantyYears}年`, l: '官方电子质保' },
+              { v: '¥16,800', l: '整车建议零售价' },
+            ].map((item) => (
+              <div
+                key={item.l}
+                className="rounded-lg bg-elevated border border-border-subtle p-4 text-center"
+              >
+                <p className="text-xl md:text-2xl font-bold text-content-brand">{item.v}</p>
+                <p className="mt-1 text-xs text-content-secondary">{item.l}</p>
+              </div>
+            ))}
           </div>
         </div>
       </ScrollReveal>
 
       {/* 3D 在线选色展厅交互横幅 */}
-      <ScrollReveal className="mt-10">
+      <ScrollReveal className="mt-12">
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#14151a] via-[#1c1114] to-[#2e0c12] border border-brand/30 p-6 md:p-8 text-white shadow-xl">
           <div
             className="absolute -right-24 -top-24 w-72 h-72 rounded-full opacity-25 blur-3xl pointer-events-none"
@@ -130,11 +139,11 @@ export default function ColorPPFPage() {
       </ScrollReveal>
 
       {/* 颜色分类与材质分类 */}
-      <ScrollReveal className="mt-16">
+      <ScrollReveal className="mt-16 md:mt-20">
         <SectionHeading
           subtitle="Color Selection"
           title="首批 20 款色彩与表面工艺"
-          description="点击下方色块即可切换质感预览，并可一键跳转到 3D 扇形色卡与整车中深度对比。"
+          description="点击下方色块即可切换质感预览，并可一键跳转到 3D 流光样板廊与整车中深度对比。"
         />
       </ScrollReveal>
 
@@ -142,7 +151,6 @@ export default function ColorPPFPage() {
         {/* 色板选择 */}
         <ScrollReveal>
           <div className="flex flex-col gap-4">
-            {/* 材质分类标签 */}
             <div className="flex flex-wrap gap-2">
               {finishTabs.map((tab) => {
                 const count =
@@ -154,7 +162,7 @@ export default function ColorPPFPage() {
                     key={tab.key}
                     onClick={() => setActiveFinish(tab.key)}
                     className={cn(
-                      'px-3.5 py-1.5 rounded-sm text-sm transition-fast',
+                      'px-3.5 py-1.5 rounded-sm text-sm font-medium transition-fast',
                       activeFinish === tab.key
                         ? 'bg-brand text-white'
                         : 'bg-elevated text-content-secondary border border-border-subtle hover:border-border-default',
@@ -166,7 +174,6 @@ export default function ColorPPFPage() {
               })}
             </div>
 
-            {/* 色板网格 */}
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
               {filteredSwatches.map((swatch) => {
                 const active = selectedColor.code === swatch.code;
@@ -205,7 +212,7 @@ export default function ColorPPFPage() {
         </ScrollReveal>
 
         {/* 拟真膜面预览区 */}
-        <ScrollReveal delay={200}>
+        <ScrollReveal delay={150}>
           <Card padding="lg" className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -227,7 +234,6 @@ export default function ColorPPFPage() {
                   : selectedColor.hex,
               }}
             >
-              {/* 模拟车漆影棚高光流动 */}
               <div className="absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/30 pointer-events-none" />
               <div className="absolute -top-10 left-1/4 w-2/3 h-16 bg-white/25 blur-xl -rotate-12 pointer-events-none" />
 
@@ -245,7 +251,7 @@ export default function ColorPPFPage() {
 
             <div className="mt-4 pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-xs text-content-muted">
-                实际施工效果请到和膜授权门店对比实物样板。
+                门店配备完整色卡样册（200+ 色号持续更新），实际效果请以实物样板为准。
               </span>
               <Link
                 to={`/color-studio?code=${selectedColor.code}`}
@@ -259,38 +265,57 @@ export default function ColorPPFPage() {
         </ScrollReveal>
       </div>
 
-      {/* TPU材质保护价值 */}
-      <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="Material" title="TPU材质保护价值" />
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: '抗石击', desc: 'TPU材质具有优异的抗冲击性能，有效防止石子飞溅造成漆面损伤。' },
-            { title: '自修复', desc: '轻微划痕在常温或加热条件下可自动修复，保持表面光洁。' },
-            { title: '耐黄变', desc: '优质TPU基材抗紫外线老化，长期使用不易黄变。' },
-          ].map((item) => (
-            <Card key={item.title} padding="lg">
-              <h3 className="text-base font-semibold text-content-brand mb-2">
-                {item.title}
-              </h3>
-              <p className="text-sm text-content-secondary">{item.desc}</p>
-            </Card>
-          ))}
+      {/* 真 TPU 改色车衣 vs 传统 PVC 改色膜 */}
+      <ScrollReveal className="mt-16 md:mt-20">
+        <SectionHeading
+          subtitle="TPU vs PVC"
+          title="为什么选择真 TPU 改色车衣"
+          description="用一套车衣的预算，同时拥有个性车色与 6 年长效漆面保护。"
+        />
+        <div className="mt-8 overflow-x-auto rounded-lg border border-border-subtle bg-elevated">
+          <table className="w-full min-w-[640px] text-left border-collapse">
+            <thead>
+              <tr className="bg-[#1A0D0D] text-white text-xs uppercase tracking-wider">
+                <th className="py-4 px-5 font-semibold w-40">对比维度</th>
+                <th className="py-4 px-5 font-semibold text-[#E6C88A]">和膜 TPU 改色车衣（和彩 QCCY）</th>
+                <th className="py-4 px-5 font-semibold text-white/70">传统 PVC 改色膜</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle text-sm">
+              {tpuVsPvc.map((row) => (
+                <tr key={row.dim} className="hover:bg-graphite/60">
+                  <td className="py-3.5 px-5 font-semibold text-content-primary">{row.dim}</td>
+                  <td className="py-3.5 px-5 font-medium text-content-primary">{row.tpu}</td>
+                  <td className="py-3.5 px-5 text-content-muted">{row.pvc}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </ScrollReveal>
 
+      {/* 授权门店真实装贴案例 */}
+      <div className="mt-16 md:mt-20 -mx-6 md:-mx-8">
+        <CaseGallery />
+      </div>
+
       {/* 13个部位报价规则 */}
-      <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="Claim Parts" title="13个部位报价规则" />
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <ScrollReveal className="mt-16 md:mt-20">
+        <SectionHeading
+          subtitle="Claim Parts"
+          title="13 个车身部位独立理赔参考"
+          description="同享和膜电子质保体系，局部碰撞剐蹭可按单部位查询补膜理赔参考价。"
+        />
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           {ppfClaimParts.map((part, index) => (
             <div
               key={part}
-              className="flex items-center gap-2 p-3 rounded bg-elevated border border-border-subtle"
+              className="flex items-center gap-2.5 px-4 py-3 rounded bg-elevated border border-border-subtle min-w-[152px]"
             >
               <span className="flex-shrink-0 w-6 h-6 rounded-sm bg-brand/15 flex items-center justify-center text-xs font-bold text-content-brand">
-                {index + 1}
+                {String(index + 1).padStart(2, '0')}
               </span>
-              <span className="text-sm text-content-secondary">{part}</span>
+              <span className="text-sm font-medium text-content-primary">{part}</span>
             </div>
           ))}
         </div>

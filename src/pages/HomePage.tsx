@@ -11,7 +11,7 @@ import { ProductGrid } from '../components/blocks/ProductGrid';
 import { ServiceFlow } from '../components/blocks/ServiceFlow';
 import { WarrantySearch } from '../components/blocks/WarrantySearch';
 import { StoreFinder } from '../components/blocks/StoreFinder';
-import { QualitySystem } from '../components/blocks/QualitySystem';
+import { CaseGallery } from '../components/blocks/CaseGallery';
 import { StatsSection } from '../components/blocks/StatsSection';
 import { CTASection } from '../components/blocks/CTASection';
 import { ProductSeriesHighlight } from '../components/blocks/ProductSeriesHighlight';
@@ -24,14 +24,17 @@ export default function HomePage() {
       {/* 1. 首屏 Hero */}
       <Hero />
 
-      {/* 2. 品牌定义 */}
-      <BrandStory />
-
-      {/* 3. 产品体系 */}
+      {/* 2. 产品体系（深色） */}
       <ProductGrid />
+
+      {/* 3. 品牌定义 */}
+      <BrandStory />
 
       {/* 4. 产品系列精选 */}
       <ProductSeriesHighlight />
+
+      {/* 5. 真实施工案例 */}
+      <CaseGallery />
 
       {/* 5. 全车资产管家 */}
       <ServiceFlow />
@@ -41,9 +44,6 @@ export default function HomePage() {
 
       {/* 7. 授权门店预览 */}
       <StoreFinder />
-
-      {/* 8. 品牌实力 */}
-      <QualitySystem />
 
       {/* 9. 百店计划 */}
       <StatsSection />

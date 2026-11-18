@@ -32,6 +32,7 @@ import {
   type MaterialItem,
   type MaterialCategory,
 } from '../config/marketingMaterials';
+import bannerImg from '../assets/hamorey/product-color.jpg';
 
 /** 分类图标映射 */
 const iconMap: Record<string, LucideIcon> = {
@@ -199,6 +200,8 @@ export default function MarketingMaterialsPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="center"
       subtitle="Marketing Center"
       title="营销物料中心"
       description="汇聚和膜品牌的营销物料：海报、产品资料、门店物料、视频、销售工具与培训资料，供渠道伙伴下载使用。"

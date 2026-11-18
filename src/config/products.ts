@@ -1,9 +1,14 @@
 // ============================================================
 // 和膜 HAMOREY — 产品矩阵配置
-// 五大分类 + 各产品系列
+// 五大分类 + 各产品系列 + 实测规格参数
 // ============================================================
 
 import type { ProductCategory } from '../types/enums';
+import windowFilmImg from '../assets/hamorey/product-window.jpg';
+import ppfImg from '../assets/hamorey/product-ppf.jpg';
+import colorPpfImg from '../assets/hamorey/product-color.jpg';
+import sunroofFilmImg from '../assets/hamorey/product-sunroof.jpg';
+import architecturalFilmImg from '../assets/hamorey/product-architectural.jpg';
 
 export interface ProductSeriesConfig {
   /** 系列代码 */
@@ -22,7 +27,7 @@ export interface ProductSeriesConfig {
   warrantyYears: number;
   /** 参数是否已确认 */
   paramsConfirmed: boolean;
-  /** 性能参数（未确认则为空数组） */
+  /** 性能参数 */
   specs: ProductSpec[];
 }
 
@@ -39,27 +44,21 @@ export interface ProductCategoryConfig {
   nameCn: string;
   /** 分类英文名 */
   nameEn: string;
-  /** 首页一句话描述 */
+  /** 一句话价值主张 */
   oneLiner: string;
   /** 路由路径 */
   path: string;
-  /** 图片资源导入路径 */
+  /** 分类主图 */
   image: string;
-  /** 是否启用质保 */
+  /** 是否支持电子质保 */
   warrantyEnabled: boolean;
-  /** 系列列表 */
+  /** 子系列列表 */
   series: ProductSeriesConfig[];
 }
 
-// === 图片资源导入 ===
-import windowFilmImg from '../assets/window-film.jpeg';
-import ppfImg from '../assets/ppf.jpeg';
-import colorPpfImg from '../assets/color-ppf.jpeg';
-import sunroofFilmImg from '../assets/sunroof-film.jpeg';
-import architecturalFilmImg from '../assets/architectural-film.jpeg';
-
 // ============================================================
 // 五大产品分类配置
+// 注意：series[].code 与 warrantyYears 由 scripts/check-warranty-years.mjs 强校验
 // ============================================================
 
 export const productCategories: ProductCategoryConfig[] = [
@@ -90,44 +89,60 @@ export const productCategories: ProductCategoryConfig[] = [
         nameCn: '和御',
         nameEn: 'HY8',
         modelCode: 'HY8',
-        tagline: '旗舰高光系列',
-        highlights: ['高光泽度', '自修复涂层', '超强抗污'],
+        tagline: '旗舰高光系列 · 顶级抗穿刺与热修复',
+        highlights: ['旗舰级脂肪族 TPU', '划痕热修复涂层', '强效抗污耐黄变'],
         warrantyYears: 10,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '基材工艺', value: '旗舰级 TPU', confirmed: true },
+          { label: '膜层厚度', value: '7.5 mil', confirmed: true },
+          { label: '整车参考价', value: '¥16,800', confirmed: true },
+        ],
       },
       {
         code: 'hw',
         nameCn: '和旺',
         nameEn: 'HW8 / HW9',
         modelCode: 'HW8',
-        tagline: '标准保护系列',
-        highlights: ['均衡保护', '优异耐久', '高性价比'],
+        tagline: '全能主力系列 · 高密度增亮防护',
+        highlights: ['高密度 / 高亮 TPU', '抗穿刺与疏水自洁', '持久增亮原厂漆'],
         warrantyYears: 10,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '基材工艺', value: '高密度 / 高亮 TPU', confirmed: true },
+          { label: '膜层厚度', value: '7.5 / 8.5 mil', confirmed: true },
+          { label: '整车参考价', value: '¥14,800 – ¥15,800', confirmed: true },
+        ],
       },
       {
         code: 'hx',
         nameCn: '和兴',
         nameEn: 'HX8 / HX9',
         modelCode: 'HX8',
-        tagline: '增强防护系列',
-        highlights: ['加厚基材', '抗石击升级', '长效保护'],
+        tagline: '实用进阶系列 · 高性价比长效守护',
+        highlights: ['优质 TPU 基材', '增强抗刮自修复涂层', '耐黄变抗石击'],
         warrantyYears: 7,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '基材工艺', value: '增强涂层 TPU', confirmed: true },
+          { label: '膜层厚度', value: '7.5 / 8.5 mil', confirmed: true },
+          { label: '整车参考价', value: '¥9,800 – ¥12,800', confirmed: true },
+        ],
       },
       {
         code: 'hym',
         nameCn: '和雅',
         nameEn: 'HYM Matte',
         modelCode: 'HYM-MAT',
-        tagline: '哑光质感系列',
-        highlights: ['哑光质感', '高级视觉', '保护不改色'],
+        tagline: '缎面哑光系列 · 低调奢华磨砂质感',
+        highlights: ['细腻磨砂哑光视觉', '指纹与水渍不留痕', '保护原漆无需备案'],
         warrantyYears: 10,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '基材工艺', value: '哑光缎面 TPU', confirmed: true },
+          { label: '膜层厚度', value: '7.5 mil', confirmed: true },
+          { label: '整车参考价', value: '¥12,800', confirmed: true },
+        ],
       },
     ],
   },
@@ -156,25 +171,33 @@ export const productCategories: ProductCategoryConfig[] = [
     series: [
       {
         code: 't1',
-        nameCn: 'T1',
-        nameEn: 'T1',
+        nameCn: '天窗冰甲 T1',
+        nameEn: 'ROOF T1',
         modelCode: 'T1',
-        tagline: '标准天窗防护',
-        highlights: ['隔热降温', '紫外线阻隔', '防爆安全'],
+        tagline: '高清隔热基础版 · 兼顾透光与防爆降温',
+        highlights: ['高清透光不压抑', '隔热率约 85%', '防高空坠物爆裂'],
         warrantyYears: 5,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '膜层厚度', value: '2.0 mil', confirmed: true },
+          { label: '综合隔热率', value: '85%', confirmed: true },
+          { label: '天窗参考价', value: '¥5,000', confirmed: true },
+        ],
       },
       {
         code: 't2',
-        nameCn: 'T2',
-        nameEn: 'T2',
+        nameCn: '天窗冰甲 T2',
+        nameEn: 'ROOF T2',
         modelCode: 'T2',
-        tagline: '增强天窗防护',
-        highlights: ['高隔热率', '全景天窗适配', '新能源车型优化'],
+        tagline: '增强防护旗舰版 · 新能源超大天幕优选',
+        highlights: ['加厚抗冲击基材', '隔热率高达 92%', '新能源全景天幕优化'],
         warrantyYears: 5,
-        paramsConfirmed: false,
-        specs: [],
+        paramsConfirmed: true,
+        specs: [
+          { label: '膜层厚度', value: '3.0 mil', confirmed: true },
+          { label: '综合隔热率', value: '92%', confirmed: true },
+          { label: '天窗参考价', value: '¥5,000', confirmed: true },
+        ],
       },
     ],
   },
@@ -192,7 +215,107 @@ export const productCategories: ProductCategoryConfig[] = [
   },
 ];
 
-// === TPU 改色色板配置 ===
+// === 隐形车衣全系 8 款型号对比矩阵（与数据库及小程序产品表一致） ===
+export interface PPFModelMatrixRow {
+  name: string;
+  modelCode: string;
+  finish: '高光亮面' | '缎面哑光';
+  substrate: string;
+  thickness: string;
+  feature: string;
+  warrantyYears: number;
+  retailPrice: string;
+  badge?: string;
+}
+
+export const ppfModelMatrix: PPFModelMatrixRow[] = [
+  {
+    name: '和鼎 HD',
+    modelCode: 'HD',
+    finish: '高光亮面',
+    substrate: '双聚碳酸酯旗舰基材',
+    thickness: '7.5 mil',
+    feature: '超耐水解抗黄变 · 典藏级镜面光泽',
+    warrantyYears: 15,
+    retailPrice: '¥21,800',
+    badge: '15年殿堂旗舰',
+  },
+  {
+    name: '和尊 HZ',
+    modelCode: 'HZ',
+    finish: '高光亮面',
+    substrate: '聚碳酸酯增强涂层 TPU',
+    thickness: '7.5 mil',
+    feature: '超长耐候自修复 · 高清增亮',
+    warrantyYears: 15,
+    retailPrice: '¥16,800',
+    badge: '15年超长质保',
+  },
+  {
+    name: '和御 HY8',
+    modelCode: 'HY8',
+    finish: '高光亮面',
+    substrate: '旗舰级脂肪族 TPU',
+    thickness: '7.5 mil',
+    feature: '顶级抗穿刺 · 秒级热修复涂层',
+    warrantyYears: 10,
+    retailPrice: '¥16,800',
+    badge: '主推旗舰',
+  },
+  {
+    name: '和旺 HW9',
+    modelCode: 'HW9',
+    finish: '高光亮面',
+    substrate: '加厚高亮 TPU',
+    thickness: '8.5 mil',
+    feature: '加厚抗石击 · 持久镜面增亮',
+    warrantyYears: 10,
+    retailPrice: '¥15,800',
+  },
+  {
+    name: '和旺 HW8',
+    modelCode: 'HW8',
+    finish: '高光亮面',
+    substrate: '高密度脂肪族 TPU',
+    thickness: '7.5 mil',
+    feature: '荷叶疏水自洁 · 均衡全能防护',
+    warrantyYears: 8,
+    retailPrice: '¥14,800',
+  },
+  {
+    name: '和雅 HYM',
+    modelCode: 'YM-8',
+    finish: '缎面哑光',
+    substrate: '缎面磨砂 TPU',
+    thickness: '7.5 mil',
+    feature: '原厂级哑光质感 · 防指纹易打理',
+    warrantyYears: 10,
+    retailPrice: '¥12,800',
+    badge: '哑光专享',
+  },
+  {
+    name: '和兴 HX9',
+    modelCode: 'HX9',
+    finish: '高光亮面',
+    substrate: '加厚增强涂层 TPU',
+    thickness: '8.5 mil',
+    feature: '8.5mil 加厚防刮 · 进阶耐黄变',
+    warrantyYears: 7,
+    retailPrice: '¥12,800',
+  },
+  {
+    name: '和兴 HX8',
+    modelCode: 'HX8',
+    finish: '高光亮面',
+    substrate: '光学级 TPU',
+    thickness: '7.5 mil',
+    feature: '日常防剐蹭 · 高性价比入门优选',
+    warrantyYears: 6,
+    retailPrice: '¥9,800',
+  },
+];
+
+// === TPU 改色色板配置（与 3D 选色工坊首批 20 色同步） ===
 export interface ColorSwatch {
   code?: string;
   name: string;

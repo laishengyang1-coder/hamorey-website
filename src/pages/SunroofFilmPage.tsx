@@ -1,6 +1,6 @@
 // ============================================================
 // 和膜 HAMOREY — 天窗冰甲分类页 /products/sunroof-film/
-// T系列产品信息 + 全景天窗场景展示
+// T1 / T2 参数展示 + 全景天幕防护场景
 // ============================================================
 
 import { useSEO } from '../lib/seo';
@@ -11,7 +11,7 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
 import { getCategoryConfig } from '../config/products';
-import sunroofFilmImg from '../assets/sunroof-film.jpeg';
+import sunroofFilmImg from '../assets/hamorey/product-sunroof.jpg';
 
 export default function SunroofFilmPage() {
   useSEO('products/sunroof-film');
@@ -21,51 +21,48 @@ export default function SunroofFilmPage() {
   return (
     <PageLayout
       hero
+      image={sunroofFilmImg}
+      imagePosition="center 75%"
       subtitle="Sunroof Film"
       title="天窗冰甲"
-      description="面向全景天窗与新能源车型的顶部防护。隔热降温、防爆安全，T系列为您的天窗提供专业保护。"
+      description="面向全景天窗与新能源车型的顶部防护。高效反射红外热源、强韧防爆抗冲击，告别夏季头顶灼热感。"
     >
-      {/* 主视觉 */}
+      {/* 主视觉导语 */}
       <ScrollReveal>
-        <div className="relative aspect-[21/9] rounded-lg overflow-hidden">
-          <img
-            src={sunroofFilmImg}
-            alt="和膜天窗冰甲"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#3D0A0A]/60 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-white">
-              隔热 · 防爆 · 降温
-            </h2>
-            <p className="mt-2 text-sm text-white/70 max-w-xl">
-              专为全景天窗与新能源车型设计的顶部防护方案。
-            </p>
-          </div>
+        <div className="border-l-2 border-brand pl-5 md:pl-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-content-primary">隔热 · 防爆 · 降温</h2>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-content-secondary">
+            集窗膜的高效隔热与隐形车衣的抗冲击韧性于一体，专为大面积玻璃天幕研发，5 年官方电子质保。
+          </p>
         </div>
       </ScrollReveal>
 
       {/* 新能源和大尺寸天窗使用场景 */}
       <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="Use Cases" title="适用场景" />
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <SectionHeading subtitle="Use Cases" title="为什么全景天幕需要专用冰甲" />
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card padding="lg">
             <h3 className="text-lg font-semibold text-content-primary mb-3">
-              新能源车型
+              新能源超大天幕降温
             </h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              新能源车型普遍配备大面积全景天窗，夏季车内温度急剧升高。
-              天窗冰甲有效阻隔热量，降低空调能耗，延长续航里程。
+              新能源车型普遍取消物理遮阳帘，夏季头顶玻璃暴晒直烤。天窗冰甲从外部源头阻隔太阳辐射热，降低空调负荷与电耗。
             </p>
           </Card>
           <Card padding="lg">
             <h3 className="text-lg font-semibold text-content-primary mb-3">
-              大尺寸天窗
+              高空坠物与飞石防爆
             </h3>
             <p className="text-sm text-content-secondary leading-relaxed">
-              全景天窗、超大天幕玻璃面积大，紫外线直射影响驾乘舒适度。
-              天窗冰甲提供UV阻隔与隔热降温，提升乘坐体验。
+              高速石子飞溅或停车遭遇树枝、冰雹冲击时，高韧性防爆基材可吸收冲击能量并牢牢粘附碎裂玻璃，守护乘员安全。
+            </p>
+          </Card>
+          <Card padding="lg">
+            <h3 className="text-lg font-semibold text-content-primary mb-3">
+              99% 紫外线阻隔护内饰
+            </h3>
+            <p className="text-sm text-content-secondary leading-relaxed">
+              全天候阻隔 99% 以上有害紫外线，保护驾乘人员头面部肌肤免受晒伤，同时延缓真皮座椅与中控台老化褪色。
             </p>
           </Card>
         </div>
@@ -73,27 +70,39 @@ export default function SunroofFilmPage() {
 
       {/* T系列产品信息 */}
       <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="T Series" title="T系列产品" />
+        <SectionHeading subtitle="T Series" title="T 系列型号与参数" />
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           {config.series.map((series, index) => (
-            <ScrollReveal key={series.code} delay={index * 100}>
-              <Card padding="lg" hover className="h-full">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl font-bold text-content-primary">
-                      {series.nameCn}
-                    </h3>
-                    <span className="text-sm text-content-brand">{series.nameEn}</span>
+            <ScrollReveal key={series.code} delay={index * 80}>
+              <Card padding="lg" hover className="h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-xl font-bold text-content-primary">
+                        {series.nameCn}
+                      </h3>
+                      <span className="text-sm font-medium text-content-brand">{series.nameEn}</span>
+                    </div>
+                    <Badge variant="brand">{series.warrantyYears}年质保</Badge>
                   </div>
-                  <Badge variant="brand">{series.warrantyYears}年质保</Badge>
+                  <p className="text-sm text-content-secondary mb-4">{series.tagline}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {series.highlights.map((h) => (
+                      <Badge key={h} variant="default">{h}</Badge>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-sm text-content-secondary mb-3">{series.tagline}</p>
-                <div className="flex flex-wrap gap-2">
-                  {series.highlights.map((h) => (
-                    <Badge key={h} variant="default">{h}</Badge>
-                  ))}
-                </div>
-                <p className="text-xs text-status-warning mt-3">参数待补充</p>
+
+                {series.specs.length > 0 && (
+                  <dl className="mt-5 pt-4 border-t border-border-subtle grid grid-cols-3 gap-2 text-xs">
+                    {series.specs.map((sp) => (
+                      <div key={sp.label}>
+                        <dt className="text-content-muted">{sp.label}</dt>
+                        <dd className="mt-1 font-semibold text-content-primary">{sp.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
               </Card>
             </ScrollReveal>
           ))}
@@ -102,18 +111,18 @@ export default function SunroofFilmPage() {
 
       {/* 产品结构和核心价值 */}
       <ScrollReveal className="mt-16">
-        <SectionHeading subtitle="Structure" title="产品结构与核心价值" />
+        <SectionHeading subtitle="Structure" title="复合防护层结构" />
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { title: '隔热层', desc: '高效隔热涂层，阻隔红外线热量传递' },
-            { title: '防爆层', desc: '强化基材，防止玻璃碎裂飞溅' },
-            { title: 'UV阻隔层', desc: '阻隔99%以上紫外线，保护皮肤与内饰' },
+            { title: '纳米耐候自洁表层', desc: '疏水抗污易清洁，抵御雨水树胶与户外日晒腐蚀。' },
+            { title: '高隔热纳米陶瓷/光学层', desc: '高达 85%–92% 综合隔热表现，且不含金属层、不影响 5G 与 ETC/GPS 信号。' },
+            { title: '强韧防爆缓冲基材', desc: '2.0–3.0 mil 强化抗冲击层，降低天幕玻璃意外碎裂飞溅风险。' },
           ].map((item) => (
             <Card key={item.title} padding="lg">
               <h3 className="text-base font-semibold text-content-brand mb-2">
                 {item.title}
               </h3>
-              <p className="text-sm text-content-secondary">{item.desc}</p>
+              <p className="text-sm text-content-secondary leading-relaxed">{item.desc}</p>
             </Card>
           ))}
         </div>
@@ -122,12 +131,11 @@ export default function SunroofFilmPage() {
       {/* 整体天窗报价规则 */}
       <ScrollReveal className="mt-16">
         <div className="p-6 rounded-lg bg-elevated border border-border-subtle">
-          <h3 className="text-base font-semibold text-content-primary mb-3">
-            整体天窗报价规则
+          <h3 className="text-base font-semibold text-content-primary mb-2">
+            电子质保与理赔说明
           </h3>
           <p className="text-sm text-content-secondary leading-relaxed">
-            天窗冰甲理赔报价按整体计算，不拆分材料费与施工费。
-            具体价格以总部配置的报价表为准，可通过质保查询页面查看参考报价。
+            天窗冰甲在授权门店施工并通过审核后享 5 年电子质保；事故理赔报价按整块天窗综合价值核定，可通过官网或小程序「电子质保查询」实时调阅。
           </p>
         </div>
       </ScrollReveal>
