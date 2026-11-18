@@ -1,0 +1,54 @@
+// 和膜 HAMOREY — WXML 视图层格式化（WXS）
+// WXML 中不能直接调用 Page 上的 JS 方法（{{fn()}} 会渲染为空），
+// 状态文案 / 标签色 / 时间格式统一在此处理。
+
+var RECORD_STATUS = { pending: '待审核', active: '生效中', rejected: '已驳回', expired: '已过期', revoked: '已撤销', voided: '已作废' };
+var RECORD_TAG = { pending: 'tag-warning', active: 'tag-success', rejected: 'tag-error', expired: 'tag-info', revoked: 'tag-info', voided: 'tag-info' };
+
+var CODE_STATUS = { in_stock: '可用', partial_used: '部分使用', exhausted: '已用完', frozen: '已冻结', voided: '已作废' };
+var CODE_TAG = { in_stock: 'tag-success', partial_used: 'tag-warning', exhausted: 'tag-info', frozen: 'tag-error', voided: 'tag-info' };
+
+var ORDER_STATUS = { pending: '待审核', approved: '已通过', rejected: '已驳回', shipped: '已发货', completed: '已完成' };
+var ORDER_TAG = { pending: 'tag-warning', approved: 'tag-success', rejected: 'tag-error', shipped: 'tag-info', completed: 'tag-success' };
+
+var LOG_ACTION = { submit: '提交审核', resubmit: '重新提交', approve: '审核通过', reject: '审核驳回', revoke: '撤销' };
+
+var LEDGER = { award: '奖励积分', adjust: '积分调整', release: '解冻积分', deduct: '扣除积分', revoke: '撤销积分', freeze: '冻结积分', redemption: '兑换商品' };
+
+function pick(map, key, fallback) {
+  if (key && map[key]) return map[key];
+  return fallback === undefined ? (key || '--') : fallback;
+}
+
+module.exports = {
+  recordStatus: function (s) { return pick(RECORD_STATUS, s); },
+  recordTag: function (s) { return pick(RECORD_TAG, s, 'tag-info'); },
+  codeStatus: function (s) { return pick(CODE_STATUS, s); },
+  codeTag: function (s) { return pick(CODE_TAG, s, 'tag-info'); },
+  orderStatus: function (s) { return pick(ORDER_STATUS, s); },
+  orderTag: function (s) { return pick(ORDER_TAG, s, 'tag-info'); },
+  logAction: function (a) { return pick(LOG_ACTION, a, a || '操作'); },
+  ledger: function (t) { return pick(LEDGER, t, t || '积分变动'); },
+
+  // ISO 时间串 → YYYY-MM-DD HH:mm（与原 JS formatDate 一致：按字面取值，不做时区换算）
+  dateTime: function (iso) {
+    if (!iso) return '';
+    var s = iso + '';
+    if (s.length >= 16 && s.charAt(4) === '-' && s.charAt(7) === '-') {
+      return s.substring(0, 10) + ' ' + s.substring(11, 16);
+    }
+    return s;
+  },
+
+  // 按分隔符拆分为非空数组（兼容中英文分号、逗号、顿号）
+  splitTags: function (str) {
+    if (!str) return [];
+    var parts = (str + '').split(getRegExp('[;；,，、]'));
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i].trim();
+      if (p) out.push(p);
+    }
+    return out;
+  }
+};

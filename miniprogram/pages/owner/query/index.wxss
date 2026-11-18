@@ -191,9 +191,13 @@
   height: 84rpx;
 }
 
-/* 内容模块 */
+/* 内容模块（重置 app.wxss 全局 .section 白底卡片样式，模块直接铺在米色底上） */
 .section {
   margin: 36rpx 32rpx 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .section-header {
@@ -201,6 +205,8 @@
   align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 20rpx;
+  padding: 0;
+  border-bottom: none;
 }
 
 .section-header.center {

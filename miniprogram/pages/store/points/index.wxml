@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
   <!-- 红色头部 -->
   <view class="points-hero">
@@ -11,8 +12,8 @@
         <text class="points-hero-item-value">{{points.frozen || 0}}</text>
       </view>
       <view class="points-hero-item">
-        <text class="points-hero-item-label">累计获得</text>
-        <text class="points-hero-item-value">{{points.available + points.frozen || 0}}</text>
+        <text class="points-hero-item-label">账户总积分</text>
+        <text class="points-hero-item-value">{{(points.available || 0) + (points.frozen || 0)}}</text>
       </view>
     </view>
   </view>
@@ -43,8 +44,8 @@
     <view wx:else class="section-body">
       <view class="ledger-item" wx:for="{{ledger}}" wx:key="id">
         <view class="ledger-info">
-          <view class="ledger-desc">{{item.reason || ledgerLabel(item.change_type)}}</view>
-          <view class="ledger-time">{{formatDate(item.created_at)}}</view>
+          <view class="ledger-desc">{{item.reason || fmt.ledger(item.change_type)}}</view>
+          <view class="ledger-time">{{fmt.dateTime(item.created_at)}}</view>
         </view>
         <view class="ledger-amount {{item.points_change > 0 ? 'text-success' : ''}}">
           {{item.points_change > 0 ? '+' : ''}}{{item.points_change || 0}}

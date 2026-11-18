@@ -1,7 +1,8 @@
 .page-container {
   min-height: 100vh;
   background: var(--color-bg);
-  padding-bottom: 140rpx;
+  /* 底部 TabBar(100rpx + 安全区) + 悬浮登记按钮，避免末项被遮挡 */
+  padding-bottom: calc(260rpx + env(safe-area-inset-bottom));
 }
 
 /* 筛选栏 */
@@ -85,7 +86,8 @@
 /* 浮动按钮 */
 .float-btn {
   position: fixed;
-  bottom: 48rpx;
+  /* 位于自定义 TabBar（100rpx + 安全区）之上 */
+  bottom: calc(124rpx + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;

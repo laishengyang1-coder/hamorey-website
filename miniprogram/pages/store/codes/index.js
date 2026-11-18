@@ -91,8 +91,8 @@ Page({
 
     wx.showModal({
       title: '使用质保码',
-      content: `是否使用此质保（${code}）进行录入？`,
-      confirmText: '录入',
+      content: `是否使用质保码（${code}）登记质保？`,
+      confirmText: '去登记',
       cancelText: '取消',
       success: (res) => {
         if (res.confirm) {

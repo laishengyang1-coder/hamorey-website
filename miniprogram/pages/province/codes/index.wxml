@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
 <nav-bar title="质保码库存" backUrl="/pages/province/index/index" />
   <view class="filter-bar">
@@ -23,7 +24,7 @@
     <view wx:for="{{codes}}" wx:key="id" class="code-card card" data-id="{{item.id}}" data-checked="{{item.checked}}">
       <view class="code-top">
         <view class="code-value">{{item.code || '--'}}</view>
-        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+        <view class="tag {{fmt.codeTag(item.status)}}">{{fmt.codeStatus(item.status)}}</view>
       </view>
       <view class="code-meta">
         <text>型号：{{item.model_name || item.display_name || '--'}}</text>

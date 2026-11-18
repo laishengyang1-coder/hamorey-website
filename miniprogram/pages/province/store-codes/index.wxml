@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
   <nav-bar title="{{storeName}}" backUrl="/pages/province/inventory/index" />
 
@@ -40,7 +41,7 @@
     <view class="code-card card" wx:for="{{codes}}" wx:key="id">
       <view class="code-top">
         <view class="code-value">{{item.code}}</view>
-        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+        <view class="tag {{fmt.codeTag(item.status)}}">{{fmt.codeStatus(item.status)}}</view>
       </view>
       <view class="code-meta-row">
         <text class="code-model">{{item.model_name}}</text>

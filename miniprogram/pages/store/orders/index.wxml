@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
 <nav-bar title="兑换记录" />
   <!-- 状态筛选 -->
@@ -31,7 +32,7 @@
     >
       <view class="order-top">
         <view class="order-total">-{{item.total_points || 0}}积分</view>
-        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+        <view class="tag {{fmt.orderTag(item.status)}}">{{fmt.orderStatus(item.status)}}</view>
       </view>
       <view
         wx:for="{{item.items || []}}"
@@ -41,7 +42,7 @@
       >
         <text>{{oi.reward_name || '--'}} x{{oi.quantity || 1}}</text>
       </view>
-      <view class="order-time">{{item.created_at || ''}}</view>
+      <view class="order-time">{{fmt.dateTime(item.created_at)}}</view>
     </view>
   </view>
 </view>

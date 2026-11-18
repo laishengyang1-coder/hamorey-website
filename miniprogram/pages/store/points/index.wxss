@@ -3,7 +3,7 @@
 .page-container {
   min-height: 100vh;
   background: #FEFAF8;
-  padding-bottom: 120rpx;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
 /* 红色头部 */

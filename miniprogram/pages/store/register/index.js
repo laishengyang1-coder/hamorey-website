@@ -44,14 +44,16 @@ Page({
   },
 
   /**
-   * 从「我的质保码」带码进入：把码放进第一个产品，并直接跳到产品步骤（方便继续加）
+   * 从「我的质保码」带码进入：把码放进第一个产品并自动识别型号。
+   * 仍从第 1 步开始（车主、车辆为必填），到第 3 步时码已填好、可继续加产品。
+   * 之前直接跳到第 3 步且未识别型号，会卡在「未识别到产品」，最后提交时车主信息也是空的。
    */
   onLoad(options) {
     if (options && options.code) {
-      this.setData({
-        'products[0].code': decodeURIComponent(options.code),
-        currentStep: 2
-      });
+      const code = decodeURIComponent(options.code);
+      this.setData({ 'products[0].code': code, currentStep: 0 });
+      this.resolveCode(0, code);
+      wx.showToast({ title: '已带入质保码，请先填写车主信息', icon: 'none', duration: 2500 });
     }
   },
 

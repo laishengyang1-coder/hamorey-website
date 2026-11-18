@@ -58,7 +58,7 @@
         <view class="table-row"><view class="table-col-name">和御 HY8</view><view class="table-col-period">10 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和旺 HW8</view><view class="table-col-period">8 年</view></view>
         <view class="table-row"><view class="table-col-name">和旺 HW9</view><view class="table-col-period">10 年</view></view>
-        <view class="table-row alt"><view class="table-col-name">和雅 HYM 哑光</view><view class="table-col-period">8 年</view></view>
+        <view class="table-row alt"><view class="table-col-name">和雅 HYM 哑光</view><view class="table-col-period">10 年</view></view>
         <view class="table-row"><view class="table-col-name">和尊 HZ</view><view class="table-col-period">15 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和鼎 HD</view><view class="table-col-period">15 年</view></view>
       </view>
@@ -85,6 +85,7 @@
         <view class="table-row"><view class="table-col-name">和护15 / 和护35 / 和护70</view><view class="table-col-period">8 年</view></view>
         <view class="table-row alt"><view class="table-col-name">和真15 / 和真35 / 和真75</view><view class="table-col-period">8 年</view></view>
         <view class="table-row"><view class="table-col-name">和原10 / 和原35 / 和原75</view><view class="table-col-period">5 年</view></view>
+        <view class="table-row alt"><view class="table-col-name">冷光紫 LGZ / 苍穹青 CQY（千层炫彩）</view><view class="table-col-period">10 年</view></view>
       </view>
 
       <!-- 天窗膜 -->
@@ -138,6 +139,10 @@
       <view class="coverage-item">
         <view class="coverage-label">TPU 改色膜</view>
         <view class="coverage-desc">非人为造成的异常开裂、脱胶、分层、明显褪色或材料稳定性问题</view>
+      </view>
+      <view class="coverage-item">
+        <view class="coverage-label">天窗膜</view>
+        <view class="coverage-desc">非人为造成的明显起泡、脱胶、分层、褪色或影响正常使用的材料缺陷</view>
       </view>
       <view class="section-text">具体是否属于质保范围，应以产品类别、实际安装情况、使用环境、养护情况、电子质保证书记录及和膜审核结果为准。</view>
     </view>
@@ -222,7 +227,7 @@
         <view class="section-num">9</view>
         <view class="section-title">电子证书与数据说明</view>
       </view>
-      <view class="section-text">和膜电子质保证书是车主查询和售后沟通的重要凭证。页面可能会对 VIN 等敏感信息进行脱敏展示；用于售后、保险或打印存档的 PDF 证书可显示完整信息。</view>
+      <view class="section-text">和膜电子质保证书是车主查询和售后沟通的重要凭证。页面可能会对 VIN 等敏感信息进行脱敏展示；用于售后、保险或打印存档的电子证书图片可显示完整信息。</view>
       <view class="section-text">如纸质质保卡、口头承诺、聊天记录或其他渠道信息与和膜电子质保系统记录不一致，以和膜电子质保系统中的有效记录为准。</view>
     </view>
 

@@ -5,6 +5,7 @@
  */
 
 const api = require('../../../utils/api');
+const { warrantyStatus, installPosition } = require('../../../utils/warranty');
 
 function formatWarrantyPrice(cents) {
   if (cents === null || cents === undefined || cents === '') return '--';
@@ -56,7 +57,7 @@ Page({
   async loadData() {
     this.setData({ loading: true, error: '' });
 
-    const res = await api.get('/public/warranties', { id: this.data.recordId }, { loading: false });
+    const res = await api.get('/public/warranties', { id: this.data.recordId }, { auth: false, loading: false });
 
     if (!res.ok) {
       this.setData({ loading: false, error: res.message || '加载失败' });
@@ -72,14 +73,17 @@ Page({
     const raw = records[0];
     const installDate = fmtDate(raw.installation_date);
     const expiryDate = fmtDate(raw.warranty_expiry_date);
+    const st = warrantyStatus({ ...raw, warranty_expiry_date: expiryDate });
     const record = {
       ...raw,
+      statusText: st.text,
+      statusTag: st.tag,
       warranty_price_text: formatWarrantyPrice(raw.warranty_price_cents),
       // 商品/车主/施工分组行（与长图证书版式一致）
       product_rows: [
         { label: '车膜卷号', value: raw.warranty_code || '--' },
         { label: '型号规格', value: `${raw.product_name_snapshot || ''} ${raw.product_model_snapshot || ''}`.trim() || '--' },
-        { label: '装贴部位', value: '整车' },
+        { label: '装贴部位', value: installPosition(raw) },
         { label: '装贴价格', value: formatWarrantyPrice(raw.warranty_price_cents) },
         {
           label: '质保期限',
@@ -89,7 +93,7 @@ Page({
       owner_rows: [
         { label: '车主姓名', value: raw.customer_name_snapshot || '--' },
         { label: '品牌车型', value: `${raw.vehicle_brand_snapshot || ''} ${raw.vehicle_model_snapshot || ''}`.trim() || '--' },
-        { label: '车牌号码', value: raw.plate_no_snapshot || '临时车牌' },
+        { label: '车牌号码', value: raw.plate_no_snapshot || '暂未上牌' },
         { label: '车架号码', value: raw.vin_snapshot || '--' }
       ],
       install_rows: [

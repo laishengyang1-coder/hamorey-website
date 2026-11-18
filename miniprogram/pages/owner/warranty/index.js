@@ -28,6 +28,7 @@ Page({
     }
 
     const res = await api.get('/public/warranties', { q: kw }, {
+      auth: false,
       loading: true,
       loadingText: '查询中...'
     });

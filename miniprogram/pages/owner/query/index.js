@@ -128,7 +128,7 @@ Page({
    */
   async loadBanners() {
     try {
-      const res = await api.get('/public/banners', {}, { loading: false });
+      const res = await api.get('/public/banners', {}, { auth: false, loading: false });
       if (!res.ok) return;
       const items = (res.data && res.data.items) || [];
       if (items.length === 0) return;
@@ -179,6 +179,11 @@ Page({
   onSeriesTap(e) {
     const { key } = e.currentTarget.dataset;
     wx.navigateTo({ url: '/pages/owner/product/index?series=' + key });
+  },
+
+  /** 产品系列 → 全部 */
+  goProducts() {
+    wx.navigateTo({ url: '/pages/owner/product/index' });
   },
 
   /** 品牌介绍 / 关于 */

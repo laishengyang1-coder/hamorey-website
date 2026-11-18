@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
 <nav-bar title="质保详情" />
   <!-- Loading -->
@@ -15,7 +16,7 @@
   <block wx:else>
     <!-- 状态标签 -->
     <view class="status-bar">
-      <view class="tag {{statusTagClass(record.status)}}">{{statusLabel(record.status)}}</view>
+      <view class="tag {{fmt.recordTag(record.status)}}">{{fmt.recordStatus(record.status)}}</view>
       <text wx:if="{{record.status === 'rejected' && record.current_reject_reason}}" class="reject-reason">
         驳回原因：{{record.current_reject_reason}}
       </text>
@@ -147,7 +148,7 @@
         <view class="section-body">
           <view class="info-row">
             <view class="info-row-label">车牌号</view>
-            <view class="info-row-value">{{record.plate_no_snapshot || '临时车牌'}}</view>
+            <view class="info-row-value">{{record.plate_no_snapshot || '暂未上牌'}}</view>
           </view>
           <view class="info-row">
             <view class="info-row-label">车架号</view>
@@ -203,8 +204,8 @@
             wx:key="id"
             class="log-item"
           >
-            <view class="log-action">{{logActionLabel(item.action)}}</view>
-            <view class="log-meta">{{item.operator_name || '系统'}} · {{item.created_at}}</view>
+            <view class="log-action">{{fmt.logAction(item.action)}}</view>
+            <view class="log-meta">{{item.operator_name || '系统'}} · {{fmt.dateTime(item.created_at)}}</view>
           </view>
         </view>
       </view>

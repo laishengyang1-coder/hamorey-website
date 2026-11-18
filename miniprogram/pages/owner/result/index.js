@@ -4,6 +4,7 @@
  */
 
 const api = require('../../../utils/api');
+const { warrantyStatus } = require('../../../utils/warranty');
 
 function formatWarrantyPrice(cents) {
   if (cents === null || cents === undefined || cents === '') return '--';
@@ -59,7 +60,7 @@ Page({
     this.setData({ loading: true, error: '' });
 
     const kw = this.data.keyword.trim();
-    const res = await api.get('/public/warranties', { q: kw }, { loading: false });
+    const res = await api.get('/public/warranties', { q: kw }, { auth: false, loading: false });
 
     if (!res.ok) {
       this.setData({
@@ -69,12 +70,18 @@ Page({
       return;
     }
 
-    const records = (res.data.records || []).map((record) => ({
-      ...record,
-      warranty_price_text: formatWarrantyPrice(record.warranty_price_cents),
-      installation_date: fmtDate(record.installation_date),
-      warranty_expiry_date: fmtDate(record.warranty_expiry_date)
-    }));
+    const records = (res.data.records || []).map((record) => {
+      const r = {
+        ...record,
+        warranty_price_text: formatWarrantyPrice(record.warranty_price_cents),
+        installation_date: fmtDate(record.installation_date),
+        warranty_expiry_date: fmtDate(record.warranty_expiry_date)
+      };
+      const st = warrantyStatus(r);
+      r.statusText = st.text;
+      r.statusTag = st.tag;
+      return r;
+    });
 
     if (records.length === 0) {
       this.setData({

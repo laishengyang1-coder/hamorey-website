@@ -23,7 +23,7 @@
           </view>
           <view class="header-right">
             <view class="warranty-en">WARRANTY CERTIFICATE</view>
-            <view class="cert-status tag-success">保障中</view>
+            <view class="cert-status {{record.statusTag || 'tag-success'}}">{{record.statusText || '保障中'}}</view>
           </view>
         </view>
 

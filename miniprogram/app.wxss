@@ -110,6 +110,31 @@ picker, form, label {
   border-radius: var(--radius-sm);
 }
 
+/*
+ * 原生 <button> 兼容（app.json 开启了 "style": "v2"）：
+ * 微信内置 button:not([size='mini']) { width: 184px; margin: 0 auto } 优先级高于 .btn-primary，
+ * 会把主按钮缩成居中窄条，并带默认 ::after 边框。这里用更高优先级恢复通栏按钮。
+ */
+button.btn-primary:not([size='mini']),
+button.btn-outline:not([size='mini']) {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0 24rpx;
+  line-height: 1.2;
+}
+
+button.btn-primary::after,
+button.btn-outline::after,
+button.btn-ghost::after {
+  border: none;
+}
+
+button.btn-primary[disabled]:not([type]) {
+  background: var(--color-text-placeholder);
+  color: #FFFFFF;
+}
+
 /* ============= 通用卡片 ============= */
 .card {
   background: var(--color-bg-white);
@@ -246,6 +271,11 @@ picker, form, label {
 .tag-info {
   background: rgba(33, 150, 243, 0.1);
   color: var(--color-info);
+}
+
+.tag-expired {
+  background: rgba(153, 153, 153, 0.14);
+  color: var(--color-text-light);
 }
 
 /* ============= 状态占位 ============= */

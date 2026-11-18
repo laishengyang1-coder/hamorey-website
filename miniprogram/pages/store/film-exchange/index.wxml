@@ -40,7 +40,7 @@
         >
           <view class="lookup-top">
             <view class="lookup-info">
-              <view class="lookup-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
+              <view class="lookup-plate">{{item.plate_no_snapshot || '暂未上牌'}}</view>
               <view class="lookup-name">{{item.customer_name_snapshot || '--'}} · {{item.customer_phone_snapshot || '--'}}</view>
             </view>
             <view wx:if="{{item.exchanged}}" class="tag tag-info">已换膜</view>

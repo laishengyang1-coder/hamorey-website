@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="stores-page">
   <!-- 省份筛选 -->
   <scroll-view class="province-bar" scroll-x="true" enhanced="true" show-scrollbar="false">
@@ -13,7 +14,7 @@
 
   <!-- 统计信息 -->
   <view class="stores-count" wx:if="{{!loading && stores.length > 0}}">
-    共 {{stores.length}} 家授权门店
+    {{activeProvince ? activeProvince + ' · ' : ''}}共 {{visibleCount}} 家授权门店
   </view>
 
   <!-- 加载中 -->
@@ -69,7 +70,7 @@
         <view class="store-services" wx:if="{{item.service_products}}">
           <text
             class="service-tag"
-            wx:for="{{item.service_products.split(';')}}"
+            wx:for="{{fmt.splitTags(item.service_products)}}"
             wx:key="*this"
             wx:if="{{item}}"
           >{{item}}</text>

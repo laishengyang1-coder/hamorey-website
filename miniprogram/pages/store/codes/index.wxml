@@ -1,3 +1,4 @@
+<wxs src="/utils/format.wxs" module="fmt" />
 <view class="page-container">
   <!-- 搜索 + 筛选 -->
   <view class="filter-bar">
@@ -5,6 +6,7 @@
       <input
         class="filter-input"
         placeholder="搜索质保码"
+        confirm-type="search"
         placeholder-class="search-placeholder"
         value="{{keyword}}"
         bindinput="onKeywordInput"
@@ -52,14 +54,14 @@
     >
       <view class="code-top">
         <view class="code-value">{{item.code || '--'}}</view>
-        <view class="tag {{statusTagClass(item.status)}}">{{statusLabel(item.status)}}</view>
+        <view class="tag {{fmt.codeTag(item.status)}}">{{fmt.codeStatus(item.status)}}</view>
       </view>
       <view class="code-meta">
         <text>型号：{{item.model_name || item.display_name || '--'}}</text>
         <text>已用：{{item.used_count || 0}}/{{item.usage_limit || 1}}</text>
       </view>
       <view class="code-action">
-        <text wx:if="{{item.status === 'in_stock' || item.status === 'partial_used'}}">点击使用此码录入 ›</text>
+        <text wx:if="{{item.status === 'in_stock' || item.status === 'partial_used'}}">点击用此码登记质保 ›</text>
         <text wx:else>该码已不可用</text>
       </view>
     </view>

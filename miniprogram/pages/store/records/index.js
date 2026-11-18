@@ -27,7 +27,7 @@ function fmtRecord(r) {
 
 const STATUS_MAP = {
   pending: '待审核',
-  active: '已通过',
+  active: '生效中',
   rejected: '已驳回',
   expired: '已过期'
 };
@@ -44,7 +44,7 @@ Page({
     statusTabs: [
       { label: '全部', value: '' },
       { label: '待审核', value: 'pending' },
-      { label: '已通过', value: 'active' },
+      { label: '生效中', value: 'active' },
       { label: '已驳回', value: 'rejected' }
     ],
     activeStatus: '',

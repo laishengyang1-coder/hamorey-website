@@ -1,7 +1,8 @@
 .page-container {
   min-height: 100vh;
   background: var(--color-bg);
-  padding-bottom: 40rpx;
+  /* 预留自定义 TabBar（100rpx + 安全区）高度 */
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
 .filter-bar {

@@ -174,7 +174,7 @@
           </view>
           <view wx:if="{{suggestIndex === index && suggestionLoading}}" class="suggest-hint">正在查找本店质保码…</view>
           <view wx:elif="{{suggestIndex === index && !suggestionLoading && suggestions.length === 0 && suggestionQuery !== null}}" class="suggest-hint">
-            {{suggestionQuery ? '没有匹配的可用质保码，换个关键词试试' : '本店暂无可用质保码，请先在后台入库'}}
+            {{suggestionQuery ? '没有匹配的可用质保码，换个关键词试试' : '本店暂无可用质保码，请联系所属省代或总部配发'}}
           </view>
         </view>
 
@@ -184,7 +184,7 @@
           bindtap="addProduct"
         >＋ 再添加一个产品</view>
 
-        <view class="form-tip">车衣 / 前档 / 侧挡各填一个码，每个码出一张证书。</view>
+        <view class="form-tip">车衣 / 前挡 / 侧挡各填一个码，每个码出一张证书。</view>
       </view>
     </view>
   </view>

@@ -25,12 +25,13 @@
 .photos-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
+/* 内容区宽 638rpx：3 × 200 + 2 × 16 = 632rpx，保证一行 3 张 */
 .photo-item {
-  width: 210rpx;
-  height: 210rpx;
+  width: 200rpx;
+  height: 200rpx;
   border-radius: var(--radius-sm);
   background: var(--color-border-light);
 }

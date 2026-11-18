@@ -12,10 +12,10 @@ Page({
     roleText: '',
     menuItems: [
       { key: 'warranty', title: '质保查询', icon: '🔍', page: '/pages/owner/warranty/index' },
-      { key: 'quote', title: '产品报价', icon: '💎', page: '/pages/owner/quote/index' },
-      { key: 'store', title: '授权门店', icon: '🏪', page: '' },
-      { key: 'contact', title: '联系客服', icon: '📞', page: '' },
-      { key: 'about', title: '关于和膜', icon: 'ℹ️', page: '' }
+      { key: 'quote', title: '理赔报价', icon: '💎', page: '/pages/owner/quote/index' },
+      { key: 'terms', title: '质保条款', icon: '📄', page: '/pages/owner/warranty-terms/index' },
+      { key: 'store', title: '授权门店', icon: '🏪', page: '/pages/owner/stores/index' },
+      { key: 'about', title: '关于和膜', icon: '🏷️', page: '/pages/owner/brand/index' }
     ]
   },
 
@@ -42,16 +42,7 @@ Page({
 
   onMenuTap(e) {
     const { key, page } = e.currentTarget.dataset;
-    if (!page) {
-      if (key === 'store') {
-        wx.showToast({ title: '授权门店页面即将上线', icon: 'none' });
-      } else if (key === 'contact') {
-        wx.showToast({ title: '客服入口即将上线', icon: 'none' });
-      } else if (key === 'about') {
-        wx.showToast({ title: '关于页面即将上线', icon: 'none' });
-      }
-      return;
-    }
+    if (!page) return;
     wx.navigateTo({ url: page });
   },
 

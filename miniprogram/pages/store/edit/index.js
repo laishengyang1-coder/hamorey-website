@@ -5,7 +5,7 @@
 const api = require('../../../utils/api');
 const auth = require('../../../utils/auth');
 
-const STATUS_MAP = { pending: '待审核', active: '已通过', rejected: '已驳回', expired: '已过期' };
+const STATUS_MAP = { pending: '待审核', active: '生效中', rejected: '已驳回', expired: '已过期' };
 const STATUS_TAG = { pending: 'tag-warning', active: 'tag-success', rejected: 'tag-error', expired: 'tag-info' };
 const LOG_LABELS = { submit: '提交审核', resubmit: '重新提交', approve: '审核通过', reject: '审核驳回', revoke: '撤销' };
 

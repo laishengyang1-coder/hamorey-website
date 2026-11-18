@@ -43,7 +43,7 @@
     <view class="section-header">
       <view class="section-title">
         <text class="section-title-text">和膜案例</text>
-        <text class="section-title-en">SUPERFILM CASE</text>
+        <text class="section-title-en">HAMOREY CASE</text>
       </view>
       <view class="section-more" bindtap="goCases">
         <text>更多</text>
@@ -77,7 +77,7 @@
         <text class="section-title-text">产品系列</text>
         <text class="section-title-en">PRODUCT SERIES</text>
       </view>
-      <view class="section-more" bindtap="goBrandIntro">
+      <view class="section-more" bindtap="goProducts">
         <text>全部</text>
         <text class="section-more-arrow">›</text>
       </view>

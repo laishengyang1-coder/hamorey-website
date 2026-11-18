@@ -21,14 +21,13 @@
 
   <!-- Error -->
   <view wx:elif="{{error}}" class="error-container">
-    <view class="error-icon">😞</view>
-    <view class="error-text">{{error}}</view>
+        <view class="error-text">{{error}}</view>
     <view class="btn-primary btn-sm" style="width:240rpx" bindtap="onSearch">重试</view>
   </view>
 
   <!-- 无结果 -->
   <view wx:elif="{{!loading && vehicles.length === 0}}" class="empty-state">
-    <view class="empty-state-icon">📋</view>
+    <view class="empty-state-icon"></view>
     <view class="empty-state-text">未找到质保记录</view>
     <view class="empty-state-sub">请联系施工门店</view>
   </view>
@@ -42,7 +41,7 @@
     >
       <!-- 车辆信息 -->
       <view class="vehicle-header">
-        <view class="vehicle-plate">{{item.plate_no_snapshot || '临时车牌'}}</view>
+        <view class="vehicle-plate">{{item.plate_no_snapshot || '暂未上牌'}}</view>
         <view class="vehicle-model">{{item.vehicle_brand_snapshot}} {{item.vehicle_model_snapshot}}</view>
       </view>
 
@@ -61,7 +60,7 @@
             <view class="warranty-model">{{w.product_model_snapshot || w.model_name || ''}}</view>
           </view>
           <view class="warranty-status">
-            <view class="tag tag-success">保障中</view>
+            <view class="tag {{w.statusTag}}">{{w.statusText}}</view>
           </view>
         </view>
         <view class="warranty-meta">
@@ -70,7 +69,7 @@
         </view>
         <view class="warranty-meta">
           <text class="warranty-date">质保价格：{{w.warranty_price_text || '--'}}</text>
-          <text class="warranty-store">{{w.store_name_snapshot || '--'}}</text>
+          <text class="warranty-store">施工门店：{{w.store_name_snapshot || '--'}}</text>
         </view>
         <view class="warranty-arrow">›</view>
       </view>
