@@ -57,3 +57,9 @@
 - 新增公共文件 `miniprogram/utils/format.wxs`、`miniprogram/utils/warranty.js`，后续页面请复用，勿在 WXML 中直接调用 Page 方法。
 - `pages/store/orders` 现为门店 / 省代共用页（`?scope=province`）。
 - 未触碰邀请函（`pages/invitation`、`public/lijiang2027`）与省代兑换结算页。
+
+## 2026-11-18：第二批已按用户要求撤回
+
+- 曾在本地提交第二批视觉与导航统一（`40b68bf`：底栏、图标、配色、首页图片压缩、首页布局）。用户查看后表示不满意，要求改回。
+- 已 `git reset --hard 52c21f4` 撤回：第二批的代码、新增图片（`images/icons/`、`images/home/`）均已移除。该提交从未推送，`origin/main` 不受影响。
+- 当前保留：第一批（`52c21f4`，未推送）。
