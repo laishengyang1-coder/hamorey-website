@@ -1,0 +1,4 @@
+3D Car Model adapted from "Car Concept" by Eric Chadwick / Darmstadt Graphics Group GmbH, CC BY 4.0; Khronos Group trademarks/logos removed in runtime materials.
+Original source: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept
+Original CC0 base mesh by Unity Fan.
+License: https://creativecommons.org/licenses/by/4.0/

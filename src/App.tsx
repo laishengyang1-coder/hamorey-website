@@ -23,6 +23,8 @@ import FaqPage from './pages/FaqPage'
 import NotFoundPage from './pages/NotFoundPage'
 import LoginHub from './pages/LoginHub'
 
+const ColorStudioPage = React.lazy(() => import('./pages/ColorStudioPage'))
+
 const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
     <div className="text-center">
@@ -34,11 +36,48 @@ const LoadingScreen = () => (
   </div>
 )
 
+// 错误边界
+class ErrorBoundary extends React.Component<{ children: React.ReactNode; label: string }, { error: Error | null }> {
+  constructor(props: { children: React.ReactNode; label: string }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div className="max-w-md text-center">
+            <h1 className="text-lg font-bold text-red-600 mb-2">{this.props.label} 加载失败</h1>
+            <p className="text-sm text-gray-500 mb-4 break-all">{this.state.error.message || String(this.state.error)}</p>
+            <pre className="text-xs text-left text-gray-400 bg-gray-100 rounded-lg p-4 overflow-auto max-h-60">
+              {this.state.error.stack?.slice(0, 800)}
+            </pre>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 // 品牌官网路由
 const brandRouter = createBrowserRouter([
   {
     path: '/login',
     element: <LoginHub />,
+  },
+  {
+    path: '/color-studio',
+    element: (
+      <ErrorBoundary label="3D选色展厅">
+        <Suspense fallback={<LoadingScreen />}>
+          <ColorStudioPage />
+        </Suspense>
+      </ErrorBoundary>
+    ),
   },
   {
     path: '/',
@@ -67,33 +106,6 @@ const brandRouter = createBrowserRouter([
     ],
   },
 ])
-
-// 错误边界
-class ErrorBoundary extends React.Component<{ children: React.ReactNode; label: string }, { error: Error | null }> {
-  constructor(props: { children: React.ReactNode; label: string }) {
-    super(props)
-    this.state = { error: null }
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { error }
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <div className="max-w-md text-center">
-            <h1 className="text-lg font-bold text-red-600 mb-2">{this.props.label} 加载失败</h1>
-            <p className="text-sm text-gray-500 mb-4 break-all">{this.state.error.message || String(this.state.error)}</p>
-            <pre className="text-xs text-left text-gray-400 bg-gray-100 rounded-lg p-4 overflow-auto max-h-60">
-              {this.state.error.stack?.slice(0, 800)}
-            </pre>
-          </div>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
 
 // 后台懒加载路由器
 function LazyAdminApp() {

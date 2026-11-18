@@ -194,24 +194,34 @@ export const productCategories: ProductCategoryConfig[] = [
 
 // === TPU 改色色板配置 ===
 export interface ColorSwatch {
+  code?: string;
   name: string;
   hex: string;
-  category: '哑光' | '亮面' | '缎面' | '金属';
+  shiftHex?: string;
+  category: '水晶单色' | '金属' | '珠光' | '哑光' | '亮面' | '缎面';
 }
 
 export const colorPpfSwatches: ColorSwatch[] = [
-  { name: '魅影黑', hex: '#1A1A1A', category: '亮面' },
-  { name: '极光白', hex: '#F0F0F0', category: '亮面' },
-  { name: '勃艮第红', hex: '#5C1A1A', category: '亮面' },
-  { name: '深海蓝', hex: '#1B2838', category: '亮面' },
-  { name: '英国绿', hex: '#2A4A3A', category: '亮面' },
-  { name: '金属灰', hex: '#6A6A6A', category: '金属' },
-  { name: '香槟金', hex: '#C8A858', category: '金属' },
-  { name: '磨砂黑', hex: '#2A2A2A', category: '哑光' },
-  { name: '哑光白', hex: '#E8E8E8', category: '哑光' },
-  { name: '缎面银', hex: '#A8A8A8', category: '缎面' },
-  { name: '电光紫', hex: '#3A2A4A', category: '缎面' },
-  { name: '水泥灰', hex: '#8A8A8A', category: '哑光' },
+  { code: 'HC-01', name: '钢琴魅黑', hex: '#090A0D', category: '水晶单色' },
+  { code: 'HC-02', name: '冰川纯白', hex: '#EAECEF', category: '水晶单色' },
+  { code: 'HC-03', name: '岩岚水泥灰', hex: '#596068', category: '水晶单色' },
+  { code: 'HC-04', name: '瑚海蒂芙蓝', hex: '#0096B4', category: '水晶单色' },
+  { code: 'HC-05', name: '勃艮第胭脂红', hex: '#560E18', category: '水晶单色' },
+  { code: 'HC-06', name: '罗平竞速黄', hex: '#DDA206', category: '水晶单色' },
+  { code: 'HC-07', name: '英伦墨绿', hex: '#0D2E22', category: '水晶单色' },
+  { code: 'HC-08', name: '冷翠宝石蓝', hex: '#0A3D6E', category: '水晶单色' },
+  { code: 'HM-01', name: '液态金属银', hex: '#AEB6C2', shiftHex: '#F4F7FB', category: '金属' },
+  { code: 'HM-02', name: '星际枪灰', hex: '#2F343D', shiftHex: '#687382', category: '金属' },
+  { code: 'HM-03', name: '香槟钛金', hex: '#B3935E', shiftHex: '#F2DDA8', category: '金属' },
+  { code: 'HM-04', name: '林芝玫瑰粉', hex: '#B57080', shiftHex: '#F5C2CE', category: '金属' },
+  { code: 'HM-05', name: '远峰金属冰蓝', hex: '#577DA1', shiftHex: '#B6D6F5', category: '金属' },
+  { code: 'HM-06', name: '旷野祖母绿', hex: '#114A39', shiftHex: '#35A382', category: '金属' },
+  { code: 'HP-01', name: '极光白变金', hex: '#E6E2D8', shiftHex: '#F2C15A', category: '珠光' },
+  { code: 'HP-02', name: '冷光魅影紫', hex: '#2B1448', shiftHex: '#A855F7', category: '珠光' },
+  { code: 'HP-03', name: '苍穹青幻紫', hex: '#0D4A5B', shiftHex: '#7C4DFF', category: '珠光' },
+  { code: 'HP-04', name: '潋湾冰青珠光', hex: '#4CB39A', shiftHex: '#63B8F2', category: '珠光' },
+  { code: 'HP-05', name: '贝母樱花粉', hex: '#DCB2BE', shiftHex: '#A6B4FF', category: '珠光' },
+  { code: 'HP-06', name: '黑曜流金魅红', hex: '#14090C', shiftHex: '#B81D35', category: '珠光' },
 ];
 
 // === 车衣13个理赔部位 ===

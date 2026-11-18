@@ -4,6 +4,7 @@
 
 ## 当前执行与交接状态
 
+- 🚀 **2026-11-18 Antigravity：官网「3D 选色工坊 V2」与跨 AI 同步调用文档（[`COLOR-STUDIO.md`](COLOR-STUDIO.md)）准备提交推送并触发腾讯云自动部署**。基线 `09d303b`；仅改官网前端、静态模型、依赖与交接文档，未改动 `miniprogram/` 与后端接口；上线验证后将补记最终提交号与线上实测回执，详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
 - 🆕 **2026-11-18 Antigravity：小程序第一批优化（功能与内容纠错）已推送（`52c21f4`），未上传体验版；第二批已按用户要求撤回。本轮结束，可交接**。基线 `a6f783c`；仅改 `miniprogram/`（38 个文件 + 新增 `utils/format.wxs`、`utils/warranty.js`），未触碰邀请函与省代兑换结算页。详情、检查结果与第二/三批待办见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。其他执行方接手前请以该提交为基线重新核对。
 - 最新状态：**Codex 2026-11-17 邀请函优化已上线，可接力**。业务提交 `1b4da72`，自动部署成功；28 项线上资源与本地逐字节哈希一致，音乐 206 分段请求与 API 健康检查通过。小程序已生成开发预览码，仍未上传体验版/审核/正式发版。WorkBuddy 已读取、核对并追加接收记录。
 - WorkBuddy 本轮范围（已结束）：登记页 UI 修复、质保码模糊查找、省代代上质保多产品；**详情见 `WORKBUDDY.md`**。
@@ -47,6 +48,8 @@
 
 ## 日志入口
 
+- [3D高定选色工坊跨AI同步与调用文档](COLOR-STUDIO.md)
+- [Antigravity 工作记录](ANTIGRAVITY.md)
 - [邀请函首版交接](INVITATION.md)
 - [Codex 工作与接收记录](CODEX.md)
 - [WorkBuddy 工作与接收记录](WORKBUDDY.md)

@@ -68,3 +68,89 @@
 
 - 用户确认推送第一批。`git push origin main`：`a6f783c..bd087cf`（含 `52c21f4` 第一批 + `bd087cf` 撤回记录），提交均带 `[skip ci]`，不触发自动部署。
 - 状态：推送 ✅；网站 / API 部署不涉及；小程序体验版 / 审核 / 发布 ❌ 未执行。本轮到此结束，可交接。
+
+## 2026-11-18：官网 3D 在线选色展厅（Color Studio V1）本地开发与验收
+
+- **用户需求**：先在品牌官网上线 3D 改色选色器（复刻实体扇形色卡弯曲折光与 3D 整车换色质感，预留 `?embed=miniprogram` 参数供后续小程序 `<web-view>` 嵌入，本轮暂不改小程序），首批上线 **20 色**（水晶单色 8、金属 6、珠光 6），从零搭建合规 3D 车模与渲染方案。
+- **基线与分支**：`main` 分支 `09d303b`（= `origin/main`，开始时工作区干净）。
+- **范围约束**：仅新增/修改官网前端、静态模型资产与依赖，**未触碰** `miniprogram/`、`functions/`、`server/`、`migrations/`、`vite.config.ts` 与 `scripts/warranty-years.lock.json`。
+
+### 新增与改动文件清单
+
+| 类型 | 文件路径 | 用途说明 |
+|---|---|---|
+| 依赖 | `package.json`、`package-lock.json` | 安装 `three` (`^0.187.0` 实装 `0.187.0`) 与 `@types/three` |
+| 3D 模型 | `public/models/hamorey-gt.glb`、`public/models/ATTRIBUTION.txt` | 基于 CC-BY 4.0 `CarConcept.glb` 用 `@gltf-transform/cli` 做 `meshopt` + `webp` 压缩（约 2.36 MB）；运行期剥离原 Khronos 徽标与轮胎贴字，牌照替换为「和膜 · HAMOREY」 |
+| 色库配置 | `src/config/colorStudio.ts`、`src/config/products.ts` | 首批 20 色（`HC-01~08` 水晶单色、`HM-01~06` 金属、`HP-01~06` 珠光）物理材质参数与 `HECAI_SPEC`；同步 `products.ts` 中 `colorPpfSwatches` 字面量（保持 `productCategories` 原样不变） |
+| 3D 组件 | `src/components/color-studio/studioEnvironment.ts` | 程序化汽车影棚 HDR 环境贴图、256x256 金属颗粒法线贴图与定制展车牌照贴图（零外部 CDN/HDR 依赖） |
+| 3D 组件 | `src/components/color-studio/filmMaterial.ts` | 统一复用物理车漆材质控制器（Clearcoat、金属颗粒、自定义珠光菲涅尔双色折光着色器） |
+| 3D 组件 | `src/components/color-studio/swatchFanBuilder.ts` | 11 片扇形 3D 色卡、镀铬金属铆钉、动态握柄印刷贴图与无拉伸圆弧弯曲变形 |
+| 3D 组件 | `src/components/color-studio/ColorStudioCanvas.tsx` | 五模式 3D 舞台（色卡/整车/近景/微距/球体）、精确顶点包围盒落地、背景空间同色调联动、MeshoptDecoder 异步预加载 |
+| UI 组件 | `src/components/color-studio/ColorCatalogDrawer.tsx` | 选色抽屉（关键词搜索、系列卡片、HSL 彩虹光谱条筛选、表面工艺过滤、3 列视觉卡） |
+| UI 组件 | `src/components/color-studio/ColorCardModal.tsx` | 膜料参数详情、纯前端 Canvas 生成高清 PNG 选色单下载与授权门店入口 |
+| 页面路由 | `src/pages/ColorStudioPage.tsx`、`src/App.tsx` | 全屏 `/color-studio` 选色展厅路由（`React.lazy` 独立拆包，不增加首页主包体积） |
+| 官网联动 | `src/pages/ColorPPFPage.tsx`、`src/config/navigation.ts`、`src/config/seo.ts` | 改色车衣页新增 3D 选色展厅横幅与 20 色拟真预览；导航及页尾新增「3D在线选色」入口 |
+
+### 检查与浏览器实机验证结果
+
+- `npm run build`（全部 5 项门禁均在最终修改后通过）：
+  - `npm run test:contracts`：通过（65 个小程序 API 调用与跨端守卫验证通过）。
+  - `tsc -p tsconfig.functions.json --noEmit` & `tsc -b`：零报错通过。
+  - `node scripts/check-warranty-years.mjs`：通过（40 项与 lock 一致）。
+  - `vite build`：成功产出 `dist/`，`ColorStudioPage` 独立分包（719.73 kB / gzip 183.48 kB）。
+  - `node scripts/check-spa-build.mjs`：通过。
+- 本地浏览器实机验证（`http://127.0.0.1:5173`，桌面端 `1280x800` 与移动端 `390x844`）：
+  - 控制台报错 `0`，`/models/hamorey-gt.glb` 返回 HTTP `200`，零 `>=400` 请求。
+  - `/products/color-ppf` 4 组工艺筛选计数（全部 20 / 水晶单色 8 / 金属 6 / 珠光 6）与跳转 `/color-studio?code=...` 正常。
+  - `/color-studio` 五大模式（色卡翻页/弯曲/双击拿起、整车落地阴影与悬浮黑顶/全车同色切换、近景细节、微距颗粒、球体反光）、选色抽屉光谱筛选与选色单弹窗均验证通过；轮胎与车身无 Khronos 标识残留，牌照为「和膜 · HAMOREY」。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| 本地开发与构建 | ✅ 已完成并验证（工作区保留未提交改动，本地 `127.0.0.1:5173` Vite 预览运行中） |
+| Git 提交 | ❌ 未执行（等待用户预览确认） |
+| 推送 | ❌ 未执行 |
+| 网站 / API 部署 | ❌ 未执行 |
+| 小程序 | ❌ 本轮未改动 `miniprogram/` |
+
+### 对其他执行方的影响
+
+- 若需接入其他功能，请保留当前工作区新增的 `/color-studio`、`src/config/colorStudio.ts`、`src/components/color-studio/` 与 `public/models/` 未提交文件，勿清理工作区或覆盖 `src/pages/ColorPPFPage.tsx`、`src/App.tsx`。
+
+## 2026-11-18：官网 3D 选色展厅 V2 升级（原创流光样板廊 + 高定工坊 UI + 半浮点 HDR 车漆质感）
+
+- **用户反馈与改进方向**：去除与竞品同质化的「铆钉扇形色卡」与白底卡通小车画廊，原创品牌专属 3D 样板形态，全面拔高 UI 高奢质感，并提升漆面与清漆高光对比度。
+- **基线与分支**：同上（`main` 分支 `09d303b`，工作区接续 V1 未提交改动，仍未执行提交/推送/部署，**未触碰** `miniprogram/`、`functions/`、`server/`、`migrations/`、`vite.config.ts`、`scripts/warranty-years.lock.json`）。
+
+### V2 核心升级清单
+
+| 模块 | 文件路径 | 升级内容 |
+|---|---|---|
+| 3D 原创样板廊 | 新增 `src/components/color-studio/speedformBuilder.ts`（替换并删除 `swatchFanBuilder.ts`） | 原创「3D 悬浮流光曲率样板廊（Sculpted Speedform Atelier）」：超跑机盖中脊折线 + S 型双肩弧面 + 倒角折边 + 曜石黑香槟金铭牌底座；主样板居中配合左右 6 块景深侧翼样板呈弧形陈列，支持滑切/点选邻位、纵向曲率折光交互与双击特写 |
+| 真 HDR 与微晶纹理 | `src/components/color-studio/studioEnvironment.ts` | 改用 `THREE.DataTexture` + `THREE.HalfFloatType` 生成 16-bit 真高动态范围全景环境贴图（峰值亮度 `11.2~12.2`），并支持 **暗夜光廊 (`studio`) / 极昼展厅 (`gallery`) / 落日金辉 (`sunset`)** 三档实时切换；金属颗粒法线升级至 `512×512` 微米圆片纹理 + `LinearMipmapLinearFilter` (`anisotropy=8`) 消除噪点锯齿 |
+| 多层车漆物理材质 | `src/components/color-studio/filmMaterial.ts`、`src/components/color-studio/ColorStudioCanvas.tsx` | 压低分析光漫射消除泛白粉雾感、顶层清漆 `clearcoatRoughness` 降至 `0.012~0.015`；珠光平滑菲涅尔曲线 `smoothstep` 流光更通透；展台补充同色系地灯氛围光晕并放宽移动端 `OrbitControls.maxDistance` 至 `14.5` |
+| 色库与高定 UI | `src/config/colorStudio.ts`、`src/config/products.ts`、`src/pages/ColorStudioPage.tsx`、`src/components/color-studio/ColorCatalogDrawer.tsx`、`src/components/color-studio/ColorCardModal.tsx`、`src/pages/ColorPPFPage.tsx`、`src/index.css` | 精调 20 色高对比色值并新增 `optics` 光学指标与 7 大色系家族；重构为曜石黑 × 香槟金高定工坊界面（顶部五模式分段控制器 + 三档灯光胶囊、左侧光学铭牌卡、底部无滚动条「流光色珠胶片轨」、暗金立体漆面圆穹画廊弹窗） |
+| 跨 AI 同步文档 | 新增 `docs/agent-handoff/COLOR-STUDIO.md`、更新 `docs/agent-handoff/README.md` | 完整记录线上入口、URL Query 协议（`code`/`mode`/`embed=miniprogram`）、小程序 `<web-view>` 6 步接入指南、源码地图、扩展色号/换车模命令与构建红线 |
+
+### V2 构建与浏览器实机校验结果
+
+- `npm run build`（全部 5 项门禁在最终代码编辑后再次通过）：
+  - `npm run test:contracts`：通过（65 个小程序 API 调用与跨端守卫验证通过）。
+  - `tsc -p tsconfig.functions.json --noEmit` & `tsc -b`：零报错通过。
+  - `node scripts/check-warranty-years.mjs`：通过（40 项与 lock 一致）。
+  - `vite build`：成功产出 `dist/`，`ColorStudioPage` 独立分包（726.44 kB / gzip 185.63 kB）。
+  - `node scripts/check-spa-build.mjs`：通过。
+- `npm --prefix server run build`：通过（`dist/index.js` 398.4kb）。
+- 浏览器实机验收（`1280×800` 桌面端 & `390×844` 移动端）：
+  - 控制台报错 `0`，`/models/hamorey-gt.glb` HTTP `200`，无 `>=400` 请求。
+  - 验证全新雕塑样板与铭牌底座、三档灯光实时切换（暗夜/展厅/落日）、全车/黑顶切换、微距微晶颗粒、光影球体、暗金 7 色系典藏画廊与定制选色单均正常工作；移动端 `390×844` 样板视图、顶部 `(i)` 边距与无滚动条胶片轨均正常，整车在 `390px` 窄屏下与上下浮层无遮挡（前唇边缘贴近左边界，支持双指缩放/旋转查看）。
+
+### 当前发布状态
+
+| 项 | 状态 |
+|---|---|
+| 本地开发与构建 | ✅ V2 已完成并验证 |
+| Git 提交 / 推送 | ⏳ 准备提交并推送至 `origin/main` 触发腾讯云自动部署 |
+| 网站 / API 部署 | ⏳ 待 GitHub Actions 完成后实测验真 |
+| 小程序 | ❌ 本轮未改动 `miniprogram/`（接入指南见 `COLOR-STUDIO.md`） |

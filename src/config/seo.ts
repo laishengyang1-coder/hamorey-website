@@ -50,6 +50,12 @@ export const seoConfig: Record<string, SeoMeta> = {
       '和膜TPU改色车衣，个性表达与车漆保护同步完成，提供多种颜色与材质选择。',
     ogImage: DEFAULT_OG,
   },
+  'color-studio': {
+    title: '3D在线选色展厅 — 和膜 HAMOREY',
+    description:
+      '和膜 HAMOREY 3D 在线选色展厅，支持实体扇形色卡弯曲折光、水晶单色/金属/珠光质感预览与3D整车实时换色。',
+    ogImage: DEFAULT_OG,
+  },
   'products/sunroof-film': {
     title: '天窗冰甲 — 和膜 HAMOREY',
     description:
