@@ -34,3 +34,25 @@
 .submit-area { padding: 20rpx; padding-bottom: calc(20rpx + env(safe-area-inset-bottom)); background: #FFFFFF; border-top: 1rpx solid #EDE6E2; flex-shrink: 0; }
 .submit-btn { width: 100%; padding: 28rpx; background: linear-gradient(135deg, #5C1A1A, #7A2828); color: #FFFFFF; font-size: 34rpx; font-weight: 600; border-radius: 16rpx; text-align: center; }
 .submit-btn.disabled { opacity: 0.5; }
+
+/* 收货地址列表 */
+.addr-item { display: flex; align-items: flex-start; gap: 16rpx; padding: 22rpx; border-radius: 14rpx; border: 2rpx solid #EDE6E2; margin-bottom: 14rpx; background: #FAF7F5; }
+.addr-item.active { border-color: #5C1A1A; background: #5C1A1A08; }
+.addr-radio { width: 32rpx; height: 32rpx; border-radius: 50%; border: 2rpx solid #D6CCC4; flex-shrink: 0; margin-top: 4rpx; display: flex; align-items: center; justify-content: center; }
+.addr-item.active .addr-radio { border-color: #5C1A1A; }
+.addr-radio-dot { width: 18rpx; height: 18rpx; border-radius: 50%; background: #5C1A1A; }
+.addr-main { flex: 1; }
+.addr-line1 { display: flex; align-items: center; gap: 16rpx; margin-bottom: 6rpx; }
+.addr-name { font-size: 30rpx; font-weight: 600; color: #1A1412; }
+.addr-phone { font-size: 26rpx; color: #9E8A82; }
+.addr-default { font-size: 20rpx; color: #5C1A1A; background: #5C1A1A12; padding: 2rpx 12rpx; border-radius: 8rpx; }
+.addr-line2 { font-size: 26rpx; color: #6B5A52; line-height: 1.5; }
+.addr-empty { font-size: 26rpx; color: #9E8A82; text-align: center; padding: 24rpx 0; }
+
+/* 新增地址 */
+.addr-add-btn { margin-top: 8rpx; padding: 20rpx; border: 2rpx dashed #D6CCC4; border-radius: 14rpx; text-align: center; font-size: 28rpx; color: #5C1A1A; font-weight: 600; }
+.addr-form { margin-top: 20rpx; }
+.addr-default-row { display: flex; align-items: center; justify-content: space-between; padding: 8rpx 0 20rpx; }
+.addr-default-label { font-size: 28rpx; color: #4A3A34; }
+.addr-save-btn { padding: 24rpx; background: linear-gradient(135deg, #5C1A1A, #7A2828); color: #FFFFFF; font-size: 30rpx; font-weight: 600; border-radius: 14rpx; text-align: center; }
+.addr-save-btn.disabled { opacity: 0.5; }
