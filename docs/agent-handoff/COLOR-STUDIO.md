@@ -2,7 +2,7 @@
 
 > 文档日期：2026-11-18  
 > 适用范围：供 Codex、WorkBuddy、Antigravity 等后续 AI 接手或对接小程序、活动 H5、后台色库、3D 车模替换时直接查阅与调用。  
-> 部署状态：待本轮推送与线上验证回执补充（见文末状态栏及 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
+> 部署状态：✅ 官网与 3D 模型已上线（业务提交 `3dc537e`，见文末线上核验回执及 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
 
 ---
 
@@ -163,7 +163,12 @@
 
 ---
 
-## 七、 本轮线上发布与验证记录（待回执更新）
+## 七、 本轮线上发布与验证记录（2026-11-18）
 
-- **业务提交 SHA**：待提交生成
-- **上线检查**：待 GitHub Actions 运行与线上验证完成后写入（见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
+- **业务提交 SHA**：`3dc537ee8c89981d3d39b6ac817a6e405403de93`（短号 `3dc537e`）
+- **GitHub Actions 部署流水线**：Run `44269834351`（`Deploy to Tencent Cloud`）状态 `Success`
+- **线上实测验真**：
+  - `https://hemoppf.cn/color-studio` & `https://hemoppf.cn/products/color-ppf`：均返回 `HTTP/2 200`，HTML 入口脚本 `/assets/index-De8zAlv-.js`（271,622 B）与分包 `/assets/ColorStudioPage-DqC3vJNM.js`（726,445 B）均 `HTTP/2 200`。
+  - `https://hemoppf.cn/models/hamorey-gt.glb`：`HTTP/2 200`（`application/octet-stream`，2,356,744 B），SHA-256 `6f019704b7f91fc46f6a529c2a00a13220444a0fc358108a4f7160c69dc05bb5` 与本地逐字节一致。
+  - `https://api.hemoppf.cn/api/health`：`HTTP/2 200`（`api`/`mysql`/`cos` 均为 `ok`）。
+  - 小程序端：**本轮未改动 `miniprogram/`**，后续接入请严格按本文第三节执行。

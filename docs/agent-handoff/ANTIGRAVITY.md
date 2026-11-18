@@ -151,6 +151,12 @@
 | 项 | 状态 |
 |---|---|
 | 本地开发与构建 | ✅ V2 已完成并验证 |
-| Git 提交 / 推送 | ⏳ 准备提交并推送至 `origin/main` 触发腾讯云自动部署 |
-| 网站 / API 部署 | ⏳ 待 GitHub Actions 完成后实测验真 |
+| Git 提交 / 推送 | ✅ 已提交推送至 `origin/main`（业务提交 `3dc537e`） |
+| 网站 / API 部署 | ✅ GitHub Actions Run `44269834351`（`Success`），线上 `https://hemoppf.cn/color-studio`、`https://hemoppf.cn/products/color-ppf`、`/assets/ColorStudioPage-DqC3vJNM.js`、`/models/hamorey-gt.glb`（SHA-256 `6f019704...` 与本地一致）及 `https://api.hemoppf.cn/api/health` 均核验通过 |
 | 小程序 | ❌ 本轮未改动 `miniprogram/`（接入指南见 `COLOR-STUDIO.md`） |
+
+### 线上验证回执（2026-11-18）
+
+- 正式业务提交 `3dc537ee8c89981d3d39b6ac817a6e405403de93` 已由 GitHub Actions `44269834351` 自动构建发布至腾讯云 `https://hemoppf.cn`。
+- 线上实测 `/models/hamorey-gt.glb` 返回 `200`（2,356,744 B，SHA-256 `6f019704b7f91fc46f6a529c2a00a13220444a0fc358108a4f7160c69dc05bb5` 与本地完全一致），入口 `/assets/index-De8zAlv-.js` 与 3D 分包 `/assets/ColorStudioPage-DqC3vJNM.js` 均返回 `200`，API `/api/health` 返回 `mysql`/`cos` 全 `ok`。
+- 跨 AI 同步调用文档 [`COLOR-STUDIO.md`](COLOR-STUDIO.md) 已随同提交上线，本轮到此结束，可交接。
