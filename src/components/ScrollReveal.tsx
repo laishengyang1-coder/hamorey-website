@@ -61,15 +61,19 @@ export function ScrollReveal({
         });
       },
       {
-        rootMargin: '0px 0px -80px 0px',
-        threshold: 0.1,
+        // 提前进入视口前就开始显现，避免快速滚动时出现大片空白
+        rootMargin: '0px 0px 12% 0px',
+        threshold: 0,
       },
     );
 
     observer.observe(el);
+    // 兜底：无论观察器是否触发，1.2 秒后都显示（截图、打印、低端机型）
+    const fallback = window.setTimeout(() => setVisible(true), 1200);
 
     return () => {
       observer.disconnect();
+      window.clearTimeout(fallback);
     };
   }, []);
 

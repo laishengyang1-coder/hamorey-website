@@ -6,22 +6,16 @@ import { Link } from 'react-router-dom';
 import { footerNavGroups } from '../../config/navigation';
 import { siteConfig } from '../../config/site';
 import { Container } from '../ui/Container';
+import logoNegative from '../../assets/hamorey/logo-negative.png';
 
 export function Footer() {
   return (
-    <footer className="bg-[#3D0A0A] text-white/90 border-t border-white/10 mt-auto">
+    <footer className="bg-[#120909] text-white/90 border-t border-white/10 mt-auto">
       <Container className="py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12">
           {/* 品牌标识 */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">
-                {siteConfig.brandName}
-              </span>
-              <span className="text-sm font-medium text-white/70 tracking-wider">
-                {siteConfig.brandNameEn}
-              </span>
-            </div>
+            <img src={logoNegative} alt={`${siteConfig.brandNameEn} ${siteConfig.brandName}`} className="h-10 w-auto self-start" />
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
               {siteConfig.description}
             </p>

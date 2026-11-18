@@ -11,6 +11,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { ProductCard } from '../components/blocks/ProductCard';
 import { CTASection } from '../components/blocks/CTASection';
 import { productCategories } from '../config/products';
+import bannerImg from '../assets/hamorey/lifestyle-0.jpg';
 
 export default function ProductsPage() {
   useSEO('products');
@@ -18,6 +19,8 @@ export default function ProductsPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="center 80%"
       subtitle="Products"
       title="产品中心"
       description="五大产品体系，覆盖全车玻璃与漆面防护需求。从车窗到车漆，从改色到天窗，和膜以完整的产品矩阵守护您的爱车。"

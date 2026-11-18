@@ -202,6 +202,7 @@ export function PartnerForm() {
         <FormField label="当前业务类型" error={errors.business_type}>
           <Select
             placeholder="请选择业务类型"
+            disablePlaceholder
             value={form.business_type}
             onChange={(e) => handleChange('business_type', e.target.value)}
             options={businessTypeOptions}
@@ -221,6 +222,7 @@ export function PartnerForm() {
         <FormField label="意向合作类型" error={errors.intended_type}>
           <Select
             placeholder="请选择合作类型"
+            disablePlaceholder
             value={form.intended_type}
             onChange={(e) => handleChange('intended_type', e.target.value)}
             options={intendedTypeOptions}

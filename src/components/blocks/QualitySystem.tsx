@@ -93,14 +93,6 @@ export function QualitySystem() {
             </ScrollReveal>
           ))}
 
-          {/* 占位提示 */}
-          <ScrollReveal delay={400}>
-            <div className="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border border-dashed border-border-default h-full">
-              <p className="text-sm text-content-muted text-center">
-                资质图标与认证素材待品牌方提供后替换
-              </p>
-            </div>
-          </ScrollReveal>
         </div>
       </Container>
     </section>

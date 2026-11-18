@@ -16,6 +16,7 @@ import { Checkbox } from '../components/ui/Checkbox';
 import { submitContact } from '../lib/api';
 import { contactFormSchema } from '../lib/validation';
 import { siteConfig } from '../config/site';
+import bannerImg from '../assets/hamorey/lifestyle-1.jpg';
 
 interface FormState {
   name: string;
@@ -99,6 +100,8 @@ export default function ContactPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="center 75%"
       subtitle="Contact"
       title="合作咨询"
       description="和膜招商与业务合作咨询入口，提交您的合作意向，我们将尽快与您联系。"
@@ -112,16 +115,24 @@ export default function ContactPage() {
                 联系方式
               </h3>
               <div className="flex flex-col gap-4">
+                {siteConfig.contact.phone && (
+                  <div>
+                    <p className="text-xs text-content-muted mb-1">客服电话</p>
+                    <p className="text-lg font-medium text-content-brand">
+                      {siteConfig.contact.phone}
+                    </p>
+                  </div>
+                )}
                 <div>
-                  <p className="text-xs text-content-muted mb-1">客服电话</p>
-                  <p className="text-lg font-medium text-content-brand">
-                    {siteConfig.contact.phone}
+                  <p className="text-xs text-content-muted mb-1">商务与服务邮箱</p>
+                  <p className="text-sm font-medium text-content-primary">
+                    {siteConfig.contact.email}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-content-muted mb-1">邮箱</p>
-                  <p className="text-sm text-content-primary">
-                    {siteConfig.contact.email}
+                  <p className="text-xs text-content-muted mb-1">官方微信公众号</p>
+                  <p className="text-sm text-content-secondary">
+                    {siteConfig.social.wechat}
                   </p>
                 </div>
                 <div>

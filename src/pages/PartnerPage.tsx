@@ -10,6 +10,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { PartnerForm } from '../components/blocks/PartnerForm';
+import bannerImg from '../assets/hamorey/hero.jpg';
 
 const partnerSections = [
   {
@@ -47,6 +48,8 @@ export default function PartnerPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="65% center"
       subtitle="Hundred Stores Plan"
       title="和膜百店计划"
       description="以产品体系、数字质保、品牌物料和门店服务工具，支持区域伙伴建立长期经营能力。"

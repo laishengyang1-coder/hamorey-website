@@ -10,6 +10,7 @@ import { useSEO } from '../lib/seo';
 import { PageLayout } from '../layouts/PageLayout';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { SectionHeading } from '../components/ui/SectionHeading';
+import bannerImg from '../assets/hamorey/product-window.jpg';
 
 interface FaqItem {
   question: string;
@@ -98,6 +99,8 @@ export default function FaqPage() {
   return (
     <PageLayout
       hero
+      image={bannerImg}
+      imagePosition="center"
       subtitle="FAQ"
       title="常见问题"
       description="关于和膜品牌、产品选择、质保服务与门店合作的常见问题解答。"

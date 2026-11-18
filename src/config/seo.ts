@@ -35,7 +35,7 @@ export const seoConfig: Record<string, SeoMeta> = {
   'products/window-film': {
     title: '窗膜 — 和膜 HAMOREY',
     description:
-      '和膜窗膜五大系列：和光、和盾、和护、和真、和原，提供隔热、清晰、安全与紫外防护的长期平衡。',
+      '和膜窗膜六大系列：和光、和盾、和护、和真、和原与千层炫彩，提供隔热、清晰、安全与紫外防护的长期平衡。',
     ogImage: DEFAULT_OG,
   },
   'products/ppf': {

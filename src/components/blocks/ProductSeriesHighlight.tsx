@@ -1,9 +1,10 @@
 // ============================================================
 // 和膜 HAMOREY — ProductSeriesHighlight 产品系列精选
-// 分类标签切换，每次展示3-5个重点系列
+// 对称网格（4列 / 2列）+ 核心规格参数 + 详情直达
 // ============================================================
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Container } from '../ui/Container';
 import { SectionHeading } from '../ui/SectionHeading';
 import { ScrollReveal } from '../ScrollReveal';
@@ -12,77 +13,110 @@ import { productCategories, type ProductCategoryConfig } from '../../config/prod
 import { cn } from '../../lib/cn';
 
 export function ProductSeriesHighlight() {
-  // 只有有系列的分类才显示标签
   const categoriesWithSeries = productCategories.filter((c) => c.series.length > 0);
   const [activeCategory, setActiveCategory] = useState<ProductCategoryConfig>(
     categoriesWithSeries[0],
   );
 
+  const count = activeCategory.series.length;
+
   return (
-    <section className="py-16 md:py-24 bg-graphite">
+    <section className="py-20 md:py-28 bg-graphite">
       <Container>
         <ScrollReveal>
           <SectionHeading
             subtitle="Featured Series"
-            title="产品系列精选"
-            description="和膜不只是分类名称，每个产品体系都有明确的系列和型号。"
+            title="主力产品系列与参数"
+            description="从高光增亮、缎面哑光到新能源全景天窗隔热防爆，按保护等级与预算清晰分级。"
           />
         </ScrollReveal>
 
-        {/* 分类标签 */}
-        <div className="mt-8 md:mt-10 flex flex-wrap justify-center gap-2">
+        {/* 分类切换标签 */}
+        <div className="mt-8 md:mt-10 flex flex-wrap justify-center gap-2.5">
           {categoriesWithSeries.map((cat) => (
             <button
               key={cat.category}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                'px-4 py-2 rounded text-sm font-medium transition-fast',
+                'px-5 py-2.5 rounded text-sm font-medium transition-fast',
                 activeCategory.category === cat.category
-                  ? 'bg-brand text-white'
+                  ? 'bg-brand text-white shadow-sm'
                   : 'bg-elevated text-content-secondary hover:text-content-primary border border-border-subtle',
               )}
             >
               {cat.nameCn}
             </button>
           ))}
+          <Link
+            to="/products/window-film"
+            className="px-5 py-2.5 rounded text-sm font-medium bg-elevated text-content-secondary hover:text-content-brand border border-border-subtle transition-fast"
+          >
+            汽车窗膜参数表 →
+          </Link>
         </div>
 
-        {/* 系列卡片 */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* 系列卡片：4项用4列、2项用居中双列，消除孤立尾行 */}
+        <div
+          className={cn(
+            'mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5',
+            count >= 4 ? 'lg:grid-cols-4' : 'max-w-4xl mx-auto',
+          )}
+        >
           {activeCategory.series.map((series, index) => (
-            <ScrollReveal key={series.code} delay={index * 80}>
-              <div className="flex flex-col gap-3 p-6 rounded-lg bg-elevated border border-border-subtle transition-normal hover:border-border-default h-full">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-content-primary">
-                      {series.nameCn}
-                    </h3>
-                    <p className="text-sm text-content-brand mt-0.5">
-                      {series.nameEn}
-                    </p>
+            <ScrollReveal key={series.code} delay={index * 60}>
+              <div className="flex flex-col justify-between gap-4 p-6 rounded-lg bg-elevated border border-border-subtle transition-normal hover:border-brand/40 h-full">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-lg font-bold text-content-primary">
+                        {series.nameCn}
+                      </h3>
+                      <p className="text-xs font-medium tracking-wider text-content-brand mt-0.5 uppercase">
+                        {series.nameEn}
+                      </p>
+                    </div>
+                    <Badge variant="brand">{series.warrantyYears}年质保</Badge>
                   </div>
-                  <Badge variant="brand">{series.warrantyYears}年质保</Badge>
-                </div>
-                <p className="text-sm text-content-secondary">{series.tagline}</p>
-                <ul className="flex flex-col gap-1.5 mt-1">
-                  {series.highlights.map((highlight) => (
-                    <li
-                      key={highlight}
-                      className="flex items-center gap-2 text-sm text-content-secondary"
-                    >
-                      <span className="text-content-brand">·</span>
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-                {!series.paramsConfirmed && (
-                  <p className="text-xs text-content-muted mt-1">
-                    参数待补充
+
+                  <p className="text-sm text-content-secondary leading-relaxed">
+                    {series.tagline}
                   </p>
+
+                  <ul className="flex flex-col gap-1.5 pt-1">
+                    {series.highlights.map((highlight) => (
+                      <li
+                        key={highlight}
+                        className="flex items-center gap-2 text-sm text-content-secondary"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {series.specs.length > 0 && (
+                  <dl className="pt-4 mt-2 border-t border-border-subtle flex flex-col gap-1.5 text-xs">
+                    {series.specs.map((sp) => (
+                      <div key={sp.label} className="flex items-center justify-between gap-2">
+                        <dt className="text-content-muted">{sp.label}</dt>
+                        <dd className="font-semibold text-content-primary">{sp.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 )}
               </div>
             </ScrollReveal>
           ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            to={activeCategory.path}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-content-brand hover:gap-3 transition-all"
+          >
+            查看{activeCategory.nameCn}完整对比与理赔说明 →
+          </Link>
         </div>
       </Container>
     </section>
