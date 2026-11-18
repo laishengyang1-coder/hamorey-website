@@ -160,3 +160,51 @@
 - 正式业务提交 `3dc537ee8c89981d3d39b6ac817a6e405403de93` 已由 GitHub Actions `44269834351` 自动构建发布至腾讯云 `https://hemoppf.cn`。
 - 线上实测 `/models/hamorey-gt.glb` 返回 `200`（2,356,744 B，SHA-256 `6f019704b7f91fc46f6a529c2a00a13220444a0fc358108a4f7160c69dc05bb5` 与本地完全一致），入口 `/assets/index-De8zAlv-.js` 与 3D 分包 `/assets/ColorStudioPage-DqC3vJNM.js` 均返回 `200`，API `/api/health` 返回 `mysql`/`cos` 全 `ok`。
 - 跨 AI 同步调用文档 [`COLOR-STUDIO.md`](COLOR-STUDIO.md) 已随同提交上线，本轮到此结束，可交接。
+
+## 2026-11-18：品牌官网全站视觉改版与产品/质保/门店内容完善（上线部署）
+
+- **用户需求**：对标国际主流车膜官网（XPEL、STEK、龙膜、威固、圣科），全面重做和膜官网（`https://hemoppf.cn`）的视觉设计、移动端体验与缺失业务内容，随后直接部署上线、推送到 GitHub 并编写交接文档。
+- **时间与分支基线**：2026-11-18（Asia/Shanghai）。在独立工作树基于 `09d303b` 完成开发与全站视觉巡检后，拉取远端最新提交 `3fd5a09`（含 `3dc537e` 3D 高定选色工坊 V2），无损合并至共享主仓 `main` 分支生成业务提交 `6b5e12f`（`6b5e12fc6ceffc8cc2b230944e591ee701a727c3`）；临时工作树 `hamorey-website-redesign` 与本地预览服务已在推送后清理移除。
+- **范围约束**：仅修改/新增官网公众端 `src/` 与交接文档；**未改动** `miniprogram/`、`functions/`、`server/`、`migrations/`、`public/lijiang2027/`、`public/models/`、`src/components/color-studio/`、`src/pages/ColorStudioPage.tsx` 与 `scripts/warranty-years.lock.json`。
+
+### 新增与改动文件清单（共 58 个业务文件）
+
+| 模块 | 文件路径 | 改动与用途说明 |
+|---|---|---|
+| 纯净品牌视觉与实装图库 | 新增 `src/assets/hamorey/`（20 张：`logo-primary.png`、`logo-negative.png`、`hero.jpg`、`product-window.jpg`、`product-ppf.jpg`、`product-color.jpg`、`product-sunroof.jpg`、`product-architectural.jpg`、`lifestyle-0~3.jpg`、`cases/case-1~8.jpg`） | 替换原先带外部 `H&H` 贴字与裁切变形的橙色海报素材；提取官方勃艮第红主标与反白标，新增 8 张授权门店真实装贴案例图 |
+| 全局导航 / 页尾 / 子页头 | `src/components/blocks/Navbar.tsx`、`src/components/blocks/Footer.tsx`、`src/layouts/PageLayout.tsx` | 接入官方品牌 Logo；修复移动端顶部导航在深色首屏上深色字隐形的 Bug（统一实底毛玻璃导航栏）；`PageLayout` 支持全宽深色沉浸式头图与 `imagePosition` 焦点控制；完整保留 `3D在线选色`（`/color-studio`）导航与页尾入口 |
+| 首页核心区块重塑 | `src/pages/HomePage.tsx`、`src/components/blocks/Hero.tsx`、`ProductGrid.tsx`、`BrandStory.tsx`、`ProductSeriesHighlight.tsx`、`QualitySystem.tsx`、`CTASection.tsx`、新增 `CaseGallery.tsx` | 全屏深色质感首屏 + 底部 4 项核心数据信任条；暗黑杂志风五大产品矩阵（双层暗角渐变确保浅景头图文字高对比可读）；品牌故事补充母公司背景与交错实景双图；清理「参数待补充」「资质图标待品牌方提供后替换」等占位文案；新增真实装贴案例墙与三栏转化行动卡 |
+| 产品中心与五大品类页 | `src/config/products.ts`、`src/config/seo.ts`、`src/pages/ProductsPage.tsx`、`WindowFilmPage.tsx`、`PPFPage.tsx`、`ColorPPFPage.tsx`、`SunroofFilmPage.tsx`、`ArchitecturalFilmPage.tsx` | `products.ts` 补齐车衣与天窗冰甲实测参数及全系 **8 款隐形车衣对比矩阵**（含 15 年质保旗舰「和鼎 HD / 和尊 HZ」，严格保持 `check-warranty-years.mjs` 锁定的 6 项 `series` 年限不变），并同步保留 20 款 3D 改色色板；`WindowFilmPage` 修正「六大系列」与「和护15/35」；`PPFPage` 新增 8 型号参数价格表、五层结构解析与原厂漆对比；`ColorPPFPage` 融合 **3D 选色展厅交互入口 + 首批 20 色拟真预览** 与 **真 TPU 对比传统 PVC 表格 + 实装案例墙 + 13 部位理赔** |
+| 电子质保与条款体系 | `src/components/blocks/WarrantySearch.tsx`、新增 `WarrantySamplePreview.tsx`、`src/pages/WarrantyPage.tsx`、`WarrantyTermsPage.tsx`、`PrivacyPage.tsx` | 升级一体式质保查询框 + 三步核验指引 + 脱敏电子质保证书样张预览；将 `WarrantyTermsPage` 从 V1「待法务确认」占位草稿升级为正式 10 章电子质保条款（同步和雅 HYM 10 年、和鼎/和尊 15 年、冷光紫/苍穹青 10 年及天窗冰甲保障范围） |
+| 授权门店 / 招商 / 服务 / 物料 | `src/components/blocks/StoreFinder.tsx`、`PartnerForm.tsx`、`src/pages/StoresPage.tsx`、`PartnerPage.tsx`、`ServicePage.tsx`、`MarketingMaterialsPage.tsx`、`FaqPage.tsx`、`ContactPage.tsx` | 门店查询拉取上限提升至 500 家覆盖全国省份，自动过滤无地址且无电话的空白测试门店，隐藏空营业时间行，支持省/市/等级一键重置全部；升级百店计划、全车资产管家、FAQ 与合作咨询页版式 |
+| 基础 UI 组件与动效修复 | `src/components/ui/Select.tsx`、`Badge.tsx`、`ScrollReveal.tsx`、`src/index.css` | 将原生 `<select>` 重构为无障碍自定义按钮弹出下拉框，彻底修复 Chromium 双重下拉箭头重叠问题；`Badge` 增加 `w-fit shrink-0` 修复卡片内徽章被横向拉满；优化滚动入场速度并增加 1.2s 兜底显示防白屏，同时保留 `.no-scrollbar` 供 3D 选色工坊使用 |
+
+### 检查与线上验证结果
+
+- **构建与门禁全量通过**：
+  - `npm run test:contracts`：通过（65 个小程序 API 调用与跨端守卫验证通过）。
+  - `npm run build`：`tsc -p tsconfig.functions.json --noEmit`、`tsc -b`、`node scripts/check-warranty-years.mjs`（40 项一致）、`vite build`、`node scripts/check-spa-build.mjs` 全部零报错通过；确认 `dist/lijiang2027/index.html`、`dist/models/hamorey-gt.glb` 与 `dist/assets/ColorStudioPage-*.js` 均正常产出。
+  - `npm --prefix server run build`：通过（生成 109 条 API 路由，`dist/index.js` 398.4kb）。
+- **浏览器实机视觉验收**：
+  - 桌面端（`1440×900`）与移动端（`390×844`）逐页巡检首页、五大产品页、电子质保、质保条款、授权门店、百店计划、品牌介绍、全车资产管家、物料中心，浏览器 Console `error = 0`、`warning = 0`。
+- **腾讯云自动部署与线上巡检**：
+  - GitHub Actions `Deploy to Tencent Cloud` Run `44273441650`（对应提交 `6b5e12f`，`/opt/hamorey/apps/DEPLOYED_COMMIT` = `6b5e12fc6ceffc8cc2b230944e591ee701a727c3`）执行 `Success`。
+  - 线上实测 HTTP `200` 且新构建资源包已生效（`/assets/index--Wnpr_HV.js`、`/assets/index-Bv4y6bxG.css`、`/assets/ColorStudioPage-DaXFspA4.js`）：`https://hemoppf.cn/`、`https://hemoppf.cn/products/ppf`、`https://hemoppf.cn/products/color-ppf`、`https://hemoppf.cn/color-studio`、`https://hemoppf.cn/warranty`、`https://hemoppf.cn/warranty/terms`、`https://hemoppf.cn/stores`、`https://hemoppf.cn/lijiang2027/`、`https://hemoppf.cn/models/hamorey-gt.glb`、`https://system.hemoppf.cn/login/admin`、`https://api.hemoppf.cn/api/health`（`api`/`mysql`/`cos` 全 `ok`）。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| 本地修改与工作区状态 | ✅ 已完成，共享仓工作区干净，无未提交/未跟踪业务文件 |
+| Git 提交 | ✅ 已提交（业务提交 `6b5e12f`） |
+| GitHub 推送 | ✅ 已推送至 `origin/main` |
+| 网站 / API 生产部署 | ✅ 已验证（GitHub Actions Run `44273441650` 自动部署腾讯云成功，线上各路由与 API 核验通过） |
+| 小程序体验版上传 | ❌ 未执行（本轮仅改官网，小程序保持第一批 `52c21f4` 未发版状态） |
+| 小程序审核 / 正式发布 | ❌ 未执行 |
+
+### 未验证内容、已知问题与后续影响
+
+- **已知待办**：后端证书渲染 `functions/api/_certificate.ts` 与前端质保结果卡片的「装贴部位」仍固定显示「整车」，后续若需与小程序按产品分类动态显示「整车 / 车窗 / 天窗」对齐，需单独修改后端并验证。
+- **对其他执行方的影响与保护项**：
+  - 请保留 `src/assets/hamorey/` 新增品牌视觉图库、`CaseGallery.tsx`、`WarrantySamplePreview.tsx` 及重构后的自定义 `Select.tsx`。
+  - `src/pages/ColorPPFPage.tsx` 与 `src/config/products.ts` 已同时整合 3D 选色工坊 V2（`/color-studio`）与本次官网改版内容，后续修改改色车衣页时请勿回退任一侧功能，且勿改动 `products.ts` 中受 `warranty-years.lock.json` 校验的 `series` 年限字段。

@@ -4,6 +4,7 @@
 
 ## 当前执行与交接状态
 
+- ✅ **2026-11-18 Antigravity：品牌官网（`https://hemoppf.cn`）全站视觉改版与产品/质保/门店内容升级已推送并自动部署上线（业务提交 `6b5e12f`，Run `44273441650` Success），线上路由与 API 健康检查通过，可交接**。合并基线 `3fd5a09`（完整保留 `3dc537e` 3D 选色工坊 V2 `/color-studio` 与 `1b4da72` 邀请函 `/lijiang2027/`）；仅改官网公众端 `src/`（58 个文件，含 `src/assets/hamorey/` 20 张品牌与案例素材）与交接文档，未改动 `miniprogram/` 与后端接口。详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。
 - ✅ **2026-11-18 Antigravity：官网「3D 选色工坊 V2」与跨 AI 同步调用文档（[`COLOR-STUDIO.md`](COLOR-STUDIO.md)）已推送并自动部署上线（业务提交 `3dc537e`，Run `44269834351` Success），线上资源哈希与 API 健康检查通过，可交接**。基线 `09d303b`；仅改官网前端、静态模型、依赖与交接文档，未改动 `miniprogram/` 与后端接口；线上入口 `https://hemoppf.cn/color-studio` 与 `https://hemoppf.cn/products/color-ppf`，详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
 - 🆕 **2026-11-18 Antigravity：小程序第一批优化（功能与内容纠错）已推送（`52c21f4`），未上传体验版；第二批已按用户要求撤回。本轮结束，可交接**。基线 `a6f783c`；仅改 `miniprogram/`（38 个文件 + 新增 `utils/format.wxs`、`utils/warranty.js`），未触碰邀请函与省代兑换结算页。详情、检查结果与第二/三批待办见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。其他执行方接手前请以该提交为基线重新核对。
 - 最新状态：**Codex 2026-11-17 邀请函优化已上线，可接力**。业务提交 `1b4da72`，自动部署成功；28 项线上资源与本地逐字节哈希一致，音乐 206 分段请求与 API 健康检查通过。小程序已生成开发预览码，仍未上传体验版/审核/正式发版。WorkBuddy 已读取、核对并追加接收记录。
