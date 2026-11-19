@@ -376,10 +376,10 @@ export function SwatchFan({
     drag.lastX = e.clientX;
     drag.lastTime = now;
 
-    // 手指/鼠标 1:1 实时跟手推进扇面 + 平滑采样惯性速度
+    // 转轴在卡片下方，pos 增大时卡片向右；位移与脱手惯性同用指针方向。
     const p = physicsRef.current;
-    const nextPos = drag.startPos - dx / stepWidth;
-    const instantVel = -(stepDx / stepWidth) / dt;
+    const nextPos = drag.startPos + dx / stepWidth;
+    const instantVel = stepDx / stepWidth / dt;
     p.velocity = p.velocity * 0.45 + clamp(instantVel, -24, 24) * 0.55;
     p.pos = nextPos;
     p.target = nextPos;
