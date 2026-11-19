@@ -1,0 +1,76 @@
+.swatch-fan {
+  width:100%; height:100%; overflow:hidden; position:relative; isolation:isolate;
+  touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+  --ambient:rgba(190,165,123,.13); --secondary:rgba(110,125,157,.085);
+  --rim:rgba(255,247,223,.46);
+}
+.swatch-fan[data-lighting="gallery"] {
+  --ambient:rgba(219,229,245,.22); --secondary:rgba(173,192,213,.14);
+  --rim:rgba(236,246,255,.74);
+}
+.swatch-fan[data-lighting="sunset"] {
+  --ambient:rgba(225,148,75,.24); --secondary:rgba(159,78,91,.13);
+  --rim:rgba(255,213,153,.72);
+}
+.swatch-fan__room, .swatch-fan__cards {position:absolute;inset:0;pointer-events:none}
+.swatch-fan__room {
+  background:radial-gradient(ellipse 60% 71% at 54% 46%,var(--ambient),transparent 96%),
+    radial-gradient(ellipse 49% 62% at 13% 78%,var(--secondary),transparent 96%);
+}
+.swatch-fan__slot {
+  position:absolute;left:50%;top:var(--fan-top);width:var(--card-w);height:var(--card-h);
+  margin-left:calc(var(--card-w)*-.5);transform-origin:50% var(--pivot);
+  transform:rotate(calc(var(--grip-angle,var(--slot-angle)) + var(--drag-angle,0deg)));
+  transition:transform var(--turn-time) var(--turn-ease) var(--turn-delay,0ms);
+  will-change:transform;pointer-events:none;
+}
+.swatch-fan__card {
+  appearance:none;display:block;width:100%; height:100%;padding:0;border:0;background:transparent;
+  position:relative;pointer-events:auto;touch-action:none;cursor:grab;
+  color:var(--ink-top);font:inherit;text-align:left;-webkit-tap-highlight-color:transparent;
+  border-radius:calc(var(--card-w)*.064);outline-offset:4px;
+  transform:perspective(calc(var(--card-h)*2.2)) rotateX(var(--flex,0deg));transform-origin:50% 57%;
+  transition:transform .78s cubic-bezier(.2,.73,.18,1), opacity .58s ease;
+  -webkit-font-smoothing:antialiased;
+}
+.swatch-fan__card:focus-visible {outline:2px solid #edcf92}
+.swatch-fan__surface {
+  position:absolute;inset:0;display:block;border-radius:inherit;overflow:hidden;
+  box-shadow:inset 1px 1px 1px var(--rim),inset -1px -1px 1px rgba(5,6,8,.52),
+    0 0 0 .6px rgba(9,9,10,.72),2px 4px 9px rgba(2,2,3,.22);
+  /* The bevel is stationary ink on the card; rotation reuses the same raster. */
+}
+.swatch-fan__arc {
+  position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(circle at 50% var(--pivot),transparent calc(var(--ridge) - 1px),rgba(255,255,255,.145) var(--ridge),transparent calc(var(--ridge) + 1px));
+  box-shadow:inset 1px 1px 1px var(--rim),inset -1px -1px 1px rgba(0,0,0,.18);
+}
+.swatch-fan__brand,.swatch-fan__number,.swatch-fan__caption {position:absolute}
+.swatch-fan__brand {
+  left:8.8%;top:6.7%;writing-mode:vertical-rl;transform:rotate(180deg);
+  font:650 max(7px,calc(var(--card-w)*.041))/1 ui-monospace,"SFMono-Regular",Consolas,monospace;letter-spacing:.16em;
+}
+.swatch-fan__number {left:19%;top:5.4%;font:430 calc(var(--card-w)*.172)/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:-.065em}
+.swatch-fan__caption {left:9%;right:9%;bottom:6%;color:var(--ink-bottom);display:grid;gap:calc(var(--card-w)*.029)}
+.swatch-fan__caption strong {font-size:max(11px,calc(var(--card-w)*.094));font-weight:570;letter-spacing:.018em;line-height:1.15;overflow-wrap:anywhere}
+.swatch-fan__caption small {font:500 max(8px,calc(var(--card-w)*.048))/1.2 ui-monospace,"SFMono-Regular",Consolas,monospace;letter-spacing:.06em}
+
+.swatch-fan[data-picked-up="true"] .swatch-fan__slot:not([data-center="true"]) .swatch-fan__card {
+  transform:translateY(12%) scale(.91);opacity:.30;pointer-events:none;
+}
+.swatch-fan[data-picked-up="true"] .swatch-fan__slot[data-center="true"] .swatch-fan__card {
+  transform:perspective(calc(var(--card-h)*2.25)) translateY(6%) scale(1.17)
+    rotateX(calc(-6deg + var(--tilt-x,0deg))) rotateY(calc(-9deg + var(--tilt-y,0deg))) rotateZ(-2deg);
+}
+.swatch-fan[data-picked-up="true"] .swatch-fan__slot[data-center="true"] .swatch-fan__surface {
+  box-shadow:inset 1px 1px 1px var(--rim),inset -2px -1px 1px rgba(5,6,8,.53),
+    1px 1px 0 #706859,2px 2px 0 #292724,5px 15px 26px rgba(0,0,0,.36),9px 39px 53px rgba(0,0,0,.33);
+}
+.swatch-fan[data-settling="true"] .swatch-fan__slot {transition:transform .36s cubic-bezier(.16,.72,.23,1)}
+.swatch-fan[data-picked-up="true"] .swatch-fan__slot {transition:transform .72s cubic-bezier(.2,.73,.18,1)}
+.swatch-fan[data-dragging="true"] .swatch-fan__card {cursor:grabbing}
+.swatch-fan[data-dragging="true"] .swatch-fan__slot,
+.swatch-fan[data-dragging="true"] .swatch-fan__card {transition-duration:0s;transition-delay:0s}
+@media(prefers-reduced-motion:reduce) {
+  .swatch-fan__slot,.swatch-fan__card {transition-duration:0.01ms!important;transition-delay:0s!important}
+}

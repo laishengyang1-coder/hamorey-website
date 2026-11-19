@@ -1,0 +1,116 @@
+/* A shallow crown, a stationary pigment bed and a single independently moving softbox. */
+.fan-paint {
+  --paint-lamp: #f4f9ff;
+  --paint-wash: transparent;
+  --paint-hardness: 1;
+  --paint-softbox: url('/color-studio/paint/clearcoat.webp');
+  --paint-grain-image: none;
+  --paint-grain-strength: 0;
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+  contain: paint;
+  background-color: var(--paint-base);
+  background-image: linear-gradient(156deg, var(--paint-light) -7%, var(--paint-base) 36%,
+    var(--paint-mid) 62%, var(--paint-dark) 104%);
+}
+
+.fan-paint[data-light="gallery"] {
+  --paint-lamp: #e8f4ff;
+  --paint-wash: rgb(188 218 244 / 6%);
+}
+
+.fan-paint[data-light="sunset"] {
+  --paint-lamp: #ffcb91;
+  --paint-wash: rgb(247 143 76 / 10%);
+}
+
+.fan-paint[data-grain="metal"] {
+  --paint-grain-image: url('/color-studio/paint/metal-grain.webp');
+  --paint-grain-strength: .20;
+}
+
+.fan-paint[data-grain="pearl"] {
+  --paint-grain-image: url('/color-studio/paint/pearl-grain.webp');
+  --paint-grain-strength: .18;
+}
+
+.fan-paint[data-coat="satin"],
+.fan-paint[data-coat="matte"] {
+  --paint-softbox: url('/color-studio/paint/satin.webp');
+  --paint-hardness: .64;
+}
+
+.fan-paint[data-coat="matte"] {
+  --paint-hardness: .36;
+}
+
+.fan-paint[data-coat="carbon"] {
+  background-image: var(--paint-pattern);
+  background-size: cover;
+  background-position: center;
+}
+
+/* The thin roll at each edge is inside the paint; the parent owns the cut edge and shadow. */
+.fan-paint__pigment,
+.fan-paint__pigment::before,
+.fan-paint__pigment::after,
+.fan-paint__reflection::before,
+.fan-paint__reflection::after {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.fan-paint__pigment {
+  background:
+    linear-gradient(94deg, rgb(3 8 13 / 12%), rgb(255 255 255 / 13%) 1.2%, transparent 3.6%,
+      transparent 78%, rgb(5 11 16 / 4%) 90%, rgb(3 7 11 / 20%) 98.8%, rgb(255 255 255 / 9%)),
+    radial-gradient(ellipse 72% 69% at 104% 95%, rgb(3 10 17 / 20%), transparent 88%),
+    radial-gradient(ellipse 61% 77% at 6% 10%, rgb(255 251 243 / 7%), transparent 90%);
+}
+
+.fan-paint__pigment::before {
+  content: "";
+  background-image: var(--paint-grain-image);
+  background-size: 100% 100%;
+  opacity: var(--paint-grain-strength);
+}
+
+.fan-paint__pigment::after {
+  content: "";
+  background-color: var(--paint-wash);
+}
+
+.fan-paint__reflection {
+  position: absolute;
+  display: block;
+  inset: 0 -50%;
+  transform: translate3d(var(--fan-reflection, 0%), 0, 0);
+  transition: transform .62s cubic-bezier(.19, .67, .24, 1);
+}
+
+.fan-paint__reflection::before {
+  content: "";
+  background: radial-gradient(ellipse 33% 73% at 37% 52%, var(--paint-shift) 4%, transparent 92%);
+  opacity: var(--paint-flop);
+}
+
+.fan-paint__reflection::after {
+  content: "";
+  background-color: var(--paint-lamp);
+  -webkit-mask: var(--paint-softbox) center / 100% 100% no-repeat;
+  mask: var(--paint-softbox) center / 100% 100% no-repeat;
+  opacity: calc(var(--paint-specular) * var(--paint-hardness));
+}
+
+.swatch-fan[data-dragging="true"] .fan-paint__reflection {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan-paint__reflection { transition: none; }
+}
