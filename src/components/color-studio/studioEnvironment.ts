@@ -90,84 +90,81 @@ export function createAutomotiveStudioEnvMap(
       let g = 0.014;
       let b = 0.018;
 
+      // 地面半球：真实影棚深色地坪，令车身下半部与裙边自然压暗（真实感关键）
+      const floorShade = dy < 0 ? 0.35 + 0.65 * smoothstep(-0.35, 0.0, dy) : 1.0;
+
       if (preset === 'studio') {
-        // 1. 深邃影棚基底（上方极暗蓝灰 -> 地平微光 -> 地面极暗）
-        const skyFactor = smoothstep(-0.1, 0.55, dy);
-        r = 0.008 + skyFactor * 0.016;
-        g = 0.01 + skyFactor * 0.018;
-        b = 0.014 + skyFactor * 0.026;
+        // 1. 深灰影棚墙面基底（低亮度，不再大面积铺满高光）
+        const wall = smoothstep(-0.05, 0.65, dy);
+        r = 0.016 + wall * 0.022;
+        g = 0.017 + wall * 0.024;
+        b = 0.02 + wall * 0.028;
 
-        // 2. 顶部双排高反差软灯箱长条（峰值辐射 ~11.0，打造锐利镜面清漆灯带）
-        const topBar1 = sampleSoftboxStrip(dx, dy, dz, -0.22, 0.92, 0.32, 0.85, 0, 0.45, 1.35, 0.14, 0.06);
-        const topBar2 = sampleSoftboxStrip(dx, dy, dz, 0.28, 0.88, -0.38, 0.85, 0, 0.45, 1.25, 0.12, 0.06);
-        const topIntensity = topBar1 * 11.2 + topBar2 * 9.5;
-        r += topIntensity * 0.98;
-        g += topIntensity * 0.99;
-        b += topIntensity * 1.02;
+        // 2. 顶部单块有边界的大型柔光箱（矩形、羽化边缘）——车顶/机盖上一条干净的柔光带
+        const overhead = sampleSoftboxStrip(dx, dy, dz, 0.0, 1.0, 0.08, 1, 0, 0, 0.95, 0.34, 0.16);
+        r += overhead * 3.1;
+        g += overhead * 3.15;
+        b += overhead * 3.25;
 
-        // 3. 前上方 38° 斜向柔光主灯带（让直立流光样板与车头获得立体的流光掠影）
-        const frontKey = sampleSoftboxStrip(dx, dy, dz, 0.26, 0.48, 0.84, 0.92, 0.36, -0.15, 0.92, 0.16, 0.09);
-        r += frontKey * 6.8;
-        g += frontKey * 7.0;
-        b += frontKey * 7.3;
+        // 3. 左右 45° 竖向条形柔光（勾勒腰线与肩线）
+        const sideL = sampleSoftboxStrip(dx, dy, dz, -0.72, 0.42, 0.42, 0, 1, 0, 0.55, 0.11, 0.08);
+        const sideR = sampleSoftboxStrip(dx, dy, dz, 0.7, 0.4, -0.45, 0, 1, 0, 0.55, 0.11, 0.08);
+        r += sideL * 1.9 + sideR * 2.1;
+        g += sideL * 1.95 + sideR * 2.0;
+        b += sideL * 2.1 + sideR * 1.9;
 
-        // 4. 左右腰线冷暖轮廓光带
-        const leftRim = sampleSoftboxStrip(dx, dy, dz, -0.92, 0.24, 0.28, 0.1, 0.2, 0.95, 1.05, 0.09, 0.06);
-        r += leftRim * 2.6;
-        g += leftRim * 3.1;
-        b += leftRim * 3.8;
+        // 4. 前方低位柔光（车头 / 样板正面的柔和高光）
+        const frontKey = sampleSoftboxStrip(dx, dy, dz, 0.22, 0.3, 0.92, 1, 0.1, -0.2, 0.7, 0.16, 0.12);
+        r += frontKey * 1.6;
+        g += frontKey * 1.62;
+        b += frontKey * 1.68;
 
-        const rightRim = sampleSoftboxStrip(dx, dy, dz, 0.92, 0.22, -0.2, 0.1, -0.15, 0.96, 0.95, 0.09, 0.06);
-        r += rightRim * 3.2;
-        g += rightRim * 2.95;
-        b += rightRim * 2.65;
-
-        // 5. 地平线极细轮廓反光带
-        const horizonGlow = Math.exp(-Math.pow((dy - 0.02) / 0.045, 2)) * 0.18;
-        r += horizonGlow;
-        g += horizonGlow * 1.02;
-        b += horizonGlow * 1.08;
+        // 5. 极淡的地平线漫反射，避免下沿死黑
+        const horizon = Math.exp(-Math.pow((dy - 0.03) / 0.07, 2)) * 0.05;
+        r += horizon;
+        g += horizon;
+        b += horizon * 1.05;
       } else if (preset === 'gallery') {
-        // 极昼展厅：大面积白色建筑天窗 + 格栅轮廓反光
-        const baseSky = smoothstep(-0.2, 0.6, dy);
-        r = 0.045 + baseSky * 0.09;
-        g = 0.05 + baseSky * 0.095;
-        b = 0.06 + baseSky * 0.11;
+        // 极昼展厅：明亮但有层次的室内日光，天花漫射 + 两条天窗
+        const wall = smoothstep(-0.1, 0.7, dy);
+        r = 0.05 + wall * 0.07;
+        g = 0.052 + wall * 0.073;
+        b = 0.058 + wall * 0.08;
 
-        const ceilingPanelA = sampleSoftboxStrip(dx, dy, dz, 0, 0.96, 0.25, 1, 0, 0, 1.5, 0.22, 0.08);
-        const ceilingPanelB = sampleSoftboxStrip(dx, dy, dz, 0, 0.92, -0.35, 1, 0, 0, 1.5, 0.22, 0.08);
-        const frontWindow = sampleSoftboxStrip(dx, dy, dz, 0.18, 0.35, 0.92, 0.95, 0.2, -0.2, 1.2, 0.28, 0.12);
-        const sideWindow = sampleSoftboxStrip(dx, dy, dz, -0.94, 0.28, 0.15, 0, 0.1, 1, 1.2, 0.24, 0.1);
-
-        const lum = ceilingPanelA * 7.2 + ceilingPanelB * 6.5 + frontWindow * 5.2 + sideWindow * 4.4;
-        r += lum * 0.97;
-        g += lum * 0.99;
-        b += lum * 1.03;
+        const skylightA = sampleSoftboxStrip(dx, dy, dz, 0, 0.96, 0.26, 1, 0, 0, 1.1, 0.2, 0.14);
+        const skylightB = sampleSoftboxStrip(dx, dy, dz, 0, 0.93, -0.32, 1, 0, 0, 1.1, 0.2, 0.14);
+        const frontWindow = sampleSoftboxStrip(dx, dy, dz, 0.2, 0.3, 0.92, 0.95, 0.2, -0.2, 1.0, 0.26, 0.16);
+        const lum = skylightA * 2.6 + skylightB * 2.3 + frontWindow * 1.8;
+        r += lum * 0.99;
+        g += lum;
+        b += lum * 1.02;
       } else {
-        // sunset 落日金辉：暮蓝苍穹 + 低角度炽热暖金斜阳
-        const skyBlend = smoothstep(-0.15, 0.7, dy);
-        r = 0.02 + skyBlend * 0.055;
-        g = 0.024 + skyBlend * 0.085;
-        b = 0.045 + skyBlend * 0.22;
+        // 落日金辉：暮蓝天空 + 低角度暖金斜阳（有边界，不铺满）
+        const sky = smoothstep(-0.05, 0.75, dy);
+        r = 0.02 + sky * 0.04;
+        g = 0.024 + sky * 0.06;
+        b = 0.04 + sky * 0.13;
 
-        // 地平暖橘霞光
-        const horizonSunset = Math.exp(-Math.pow((dy - 0.06) / 0.18, 2)) * (0.4 + 0.6 * Math.max(0, dz));
-        r += horizonSunset * 0.78;
-        g += horizonSunset * 0.36;
-        b += horizonSunset * 0.14;
+        const horizonSunset =
+          Math.exp(-Math.pow((dy - 0.06) / 0.14, 2)) * (0.25 + 0.5 * Math.max(0, dz));
+        r += horizonSunset * 0.55;
+        g += horizonSunset * 0.27;
+        b += horizonSunset * 0.1;
 
-        // 炽热落日长焦光带（斜前方）
-        const sunStrip = sampleSoftboxStrip(dx, dy, dz, 0.42, 0.28, 0.86, 0.85, 0.15, -0.45, 0.68, 0.18, 0.1);
-        r += sunStrip * 12.2;
-        g += sunStrip * 6.4;
-        b += sunStrip * 2.1;
+        const sun = sampleSoftboxStrip(dx, dy, dz, 0.42, 0.24, 0.87, 0.85, 0.15, -0.45, 0.45, 0.14, 0.1);
+        r += sun * 5.2;
+        g += sun * 2.9;
+        b += sun * 1.1;
 
-        // 对侧冷蓝暮光轮廓光
-        const coolSky = sampleSoftboxStrip(dx, dy, dz, -0.82, 0.38, -0.4, 0.3, 0.1, 0.9, 1.1, 0.22, 0.12);
-        r += coolSky * 1.6;
-        g += coolSky * 2.5;
-        b += coolSky * 4.8;
+        const coolSky = sampleSoftboxStrip(dx, dy, dz, -0.82, 0.38, -0.4, 0.3, 0.1, 0.9, 0.9, 0.2, 0.14);
+        r += coolSky * 0.6;
+        g += coolSky * 0.95;
+        b += coolSky * 1.7;
       }
+
+      r *= floorShade;
+      g *= floorShade;
+      b *= floorShade;
 
       const idx = (y * width + x) * 4;
       data[idx] = THREE.DataUtils.toHalfFloat(r);

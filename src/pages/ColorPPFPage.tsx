@@ -26,9 +26,11 @@ import colorPpfImg from '../assets/hamorey/product-color.jpg';
 
 const finishTabs: Array<{ key: 'all' | FilmFinishType; label: string }> = [
   { key: 'all', label: '全部' },
-  { key: 'crystal', label: '水晶单色' },
+  { key: 'crystal', label: '水晶' },
   { key: 'metallic', label: '金属' },
   { key: 'pearlescent', label: '珠光' },
+  { key: 'chameleon', label: '双色·变色龙' },
+  { key: 'special', label: '镭射·炫彩·锻碳' },
 ];
 
 const tpuVsPvc = [
@@ -59,7 +61,7 @@ export default function ColorPPFPage() {
       imagePosition="center 75%"
       subtitle="Color PPF"
       title="TPU改色车衣"
-      description="和彩 QCCY 全彩车衣系列：200+ 潮流定制色号，8.0 mil 真 TPU 基材与 6 年官方电子质保，首批 20 款水晶单色、微晶金属与幻彩珠光支持全屏 3D 实时换色预览。"
+      description="和彩 QCCY 全彩车衣系列：2026 官方 103 款全系电子色卡，8.0 mil 真 TPU 基材与 6 年官方电子质保，覆盖水晶、金属、珠光、变色龙、镭射、炫彩与锻碳，支持 Model 3 / Model Y 全屏 3D 实时换色预览。"
     >
       {/* 核心价值与关键指标 */}
       <ScrollReveal>
@@ -104,16 +106,17 @@ export default function ColorPPFPage() {
                 <span>3D 在线选色展厅 · 选色从这里开始</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-                赏鉴 3D 流光雕塑样板，一键装上 3D 超跑实看
+                赏鉴 3D 流光雕塑样板，一键装上 Model 3 / Y 实看
               </h2>
               <p className="mt-2.5 text-sm text-white/70 leading-relaxed">
-                解决「色卡好看、上车拿不准」痛点：内置高动态 HDR 影棚环境光与三档灯光切换，支持在 3D 悬浮曲率样板廊、微距颗粒、光影球体与 360° 整车之间无缝对比。
+                解决「色卡好看、上车拿不准」痛点：收录 2026 官方电子色卡全系 {COLOR_STUDIO_SWATCHES.length} 款色号，内置柔光棚拍 HDR 与三档灯光切换，支持 3D 样板廊与 Model 3 / Model Y 360° 整车实时换色。
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/80">
-                <span className="px-3 py-1 rounded-full bg-white/10">8 款水晶单色</span>
-                <span className="px-3 py-1 rounded-full bg-white/10">6 款微晶金属</span>
-                <span className="px-3 py-1 rounded-full bg-white/10">6 款双色珠光</span>
-                <span className="px-3 py-1 rounded-full bg-white/10">整车 / 悬浮黑顶切换</span>
+                <span className="px-3 py-1 rounded-full bg-white/10">37 款水晶</span>
+                <span className="px-3 py-1 rounded-full bg-white/10">23 款金属</span>
+                <span className="px-3 py-1 rounded-full bg-white/10">27 款珠光</span>
+                <span className="px-3 py-1 rounded-full bg-white/10">16 款变色龙·镭射·炫彩·锻碳</span>
+                <span className="px-3 py-1 rounded-full bg-white/10">Model 3 / Y 双车型切换</span>
               </div>
             </div>
 
@@ -142,8 +145,8 @@ export default function ColorPPFPage() {
       <ScrollReveal className="mt-16 md:mt-20">
         <SectionHeading
           subtitle="Color Selection"
-          title="首批 20 款色彩与表面工艺"
-          description="点击下方色块即可切换质感预览，并可一键跳转到 3D 流光样板廊与整车中深度对比。"
+          title={`2026 全系 ${COLOR_STUDIO_SWATCHES.length} 款色彩与表面工艺`}
+          description="同步《2026 电子色卡》全系色号，点击下方色块即可切换质感预览，并一键跳转到 3D 样板廊与 Model 3 / Model Y 实车深度对比。"
         />
       </ScrollReveal>
 

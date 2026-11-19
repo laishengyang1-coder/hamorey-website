@@ -1,20 +1,21 @@
 # 和膜 HAMOREY — 3D 高定选色工坊（Color Studio）跨 AI 同步与调用文档
 
-> 文档日期：2026-11-18  
+> 文档日期：2026-11-19（V3 升级：2026 官方 103 色 + Model 3/Y 双车型 + 真实物理棚拍光影）  
 > 适用范围：供 Codex、WorkBuddy、Antigravity 等后续 AI 接手或对接小程序、活动 H5、后台色库、3D 车模替换时直接查阅与调用。  
-> 部署状态：✅ 官网与 3D 模型已上线（业务提交 `3dc537e`，见文末线上核验回执及 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
+> 部署状态：✅ 官网与双车型 3D 模型持续通过 GitHub Actions 自动部署至 `https://hemoppf.cn`（最新部署记录见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
 
 ---
 
 ## 一、 功能定位与线上正式入口
 
-本模块是和膜 **和彩 QCCY（8.0 mil 脂肪族光学级 TPU 改色车衣）** 的独立 3D 在线选色展厅（V2），已集成在品牌官网 React SPA 中：
+本模块是和膜 **和彩 QCCY（8.0 mil 脂肪族光学级 TPU 改色车衣）** 的独立 3D 在线选色展厅（V3），已集成在品牌官网 React SPA 中：
 
 | 入口名称 | 线上正式 URL | 说明 |
 |---|---|---|
-| **3D 高定选色工坊（全屏独立页面）** | `https://hemoppf.cn/color-studio` | 脱离官网白底页眉页脚，支持全屏 3D 展示与小程序 `<web-view>` 内嵌 |
-| **官网 TPU 改色车衣入口页** | `https://hemoppf.cn/products/color-ppf` | 含 3D 展厅横幅与首批 20 色拟真预览卡片，支持带色号直跳 `/color-studio` |
-| **3D 超跑模型资产（静态 CDN）** | `https://hemoppf.cn/models/hamorey-gt.glb` | 约 2.36 MB，`meshopt` + `webp` 压缩，零海外 CDN 依赖 |
+| **3D 高定选色工坊（全屏独立页面）** | `https://hemoppf.cn/color-studio` | 脱离官网白底页眉页脚，支持全屏 3D 展示、Model 3 / Model Y 双车型切换与小程序 `<web-view>` 内嵌 |
+| **官网 TPU 改色车衣入口页** | `https://hemoppf.cn/products/color-ppf` | 含 3D 展厅横幅与 2026 官方全系 103 色拟真预览卡片，支持带色号直跳 `/color-studio` |
+| **Model 3 焕新版 3D 资产** | `https://hemoppf.cn/models/tesla-model-3.glb` | 约 1.38 MB，`meshopt + webp` 压缩（保留完整平滑法线与原始材质槽，CC BY 4.0） |
+| **Model Y 焕新版 3D 资产** | `https://hemoppf.cn/models/tesla-model-y.glb` | 约 1.50 MB，`meshopt + webp` 压缩（2026 Juniper 贯穿灯带，运行期剥离 `transmission` 零卡顿） |
 
 ---
 
@@ -24,14 +25,16 @@
 
 | 参数名 | 可选值 / 示例 | 默认值 | 行为说明 |
 |---|---|---|---|
-| `code` | `HC-01` ~ `HC-08`、`HM-01` ~ `HM-06`、`HP-01` ~ `HP-06`（不区分大小写） | `HC-03` | 设定初始选中的色号；未传或未命中时回退至 `HC-03`（岩岚水泥灰）。页面内切色后会通过 `window.history.replaceState` 实时同步 URL 参数。 |
-| `mode` | `swatch` \| `car` \| `closeup` \| `macro` \| `sphere` | `swatch` | 设定初始 3D 视角：`swatch`（3D 悬浮流光曲率样板廊）、`car`（360° 超跑整车）、`closeup`（腰线近景）、`macro`（8mil 微距肌理）、`sphere`（光影球体）。 |
+| `code` | 2026 官方 103 色编码，如 `TPU-001S`、`TPU-028P`、`TPU-016M`、`TPU-CF`（不区分大小写） | `TPU-003S` | 设定初始选中的色号；未传或未命中时回退至 `TPU-003S`（纳多灰）。页面内切色后会通过 `window.history.replaceState` 实时同步 URL 参数。 |
+| `mode` | `swatch` \| `car` \| `closeup` \| `macro` \| `sphere` | `swatch` | 设定初始 3D 视角：`swatch`（3D 悬浮流光曲率样板廊）、`car`（360° 实车整车）、`closeup`（腰线近景）、`macro`（8mil 微距肌理）、`sphere`（光影球体）。 |
+| `car` | `model3` \| `modely` | `model3` | 设定初始展车车型：`model3`（Tesla Model 3 焕新版 Highland）、`modely`（Tesla Model Y 焕新版 Juniper）。按需懒加载并内存缓存，切换秒切。 |
 | `embed` | `miniprogram` | 无 | **微信小程序 `<web-view>` 专用内嵌开关**：开启后自动隐藏左上角「返回官网」按钮，并将「定制选色单」弹窗底部的跳官网门店链接替换为小程序友好确认按钮。 |
 
 ### 常用调用示例
 - 官网正常全屏访问：`https://hemoppf.cn/color-studio`
-- 直接展示苍穹青幻紫整车：`https://hemoppf.cn/color-studio?code=HP-03&mode=car`
-- 微信小程序内嵌调用：`https://hemoppf.cn/color-studio?embed=miniprogram&code=HC-05`
+- 直接看 Model Y 龙血红整车：`https://hemoppf.cn/color-studio?code=TPU-028P&mode=car&car=modely`
+- 直接看 Model 3 液态银整车：`https://hemoppf.cn/color-studio?code=TPU-016M&mode=car&car=model3`
+- 微信小程序内嵌调用：`https://hemoppf.cn/color-studio?embed=miniprogram&code=TPU-044S&car=modely`
 
 ---
 
@@ -109,13 +112,15 @@
 | `src/config/navigation.ts`、`src/config/seo.ts`、`src/index.css` | 顶部/页尾「3D在线选色」导航、SEO 元信息、`.no-scrollbar` 隐藏横向轨道滚动条样式 |
 | `public/models/hamorey-gt.glb`、`public/models/ATTRIBUTION.txt` | 2.36 MB 轻量化开源超跑模型及 CC-BY 4.0 署名文件 |
 
-### 首批 20 色号速查表
+### 2026 官方电子色卡 103 色分类速查表
 
-| 工艺分类 | 色号编码 | 中文色名 | 英文色名 | 主色 Hex |
+| 工艺分组（`finish`） | 官方系列（`seriesName`） | 数量 | 色号范围示例 | 材质特性 |
 |---|---|---|---|---|
-| 水晶单色 (8) | `HC-01` ~ `HC-08` | 钢琴魅黑、冰川纯白、岩岚水泥灰、瑚海蒂芙蓝、勃艮第胭脂红、罗平竞速黄、英伦墨绿、冷翠宝石蓝 | Jet Crystal Black ~ Cobalt Sapphire Blue | `#090A0D` 等 |
-| 微晶金属 (6) | `HM-01` ~ `HM-06` | 液态金属银、星际枪灰、香槟钛金、林芝玫瑰粉、远峰金属冰蓝、旷野祖母绿 | Liquid Titanium Silver ~ Emerald Metallic Green | `#AEB6C2` 等 |
-| 幻彩珠光 (6) | `HP-01` ~ `HP-06` | 极光白变金、冷光魅影紫、苍穹青幻紫、潋湾冰青珠光、贝母樱花粉、黑曜流金魅红 | Aurora White Gold Pearl ~ Obsidian Ruby Pearl | `#2B1448` 等 |
+| `crystal` | 水晶 Sole | 37 | `TPU-001S` ~ `TPU-049S` | 高清亮光单色（含 `TPU-035S 总裁黑`、`TPU-049S 超哑碳黑`） |
+| `metallic` | 金属 Metal | 23 | `TPU-001M` ~ `TPU-029M` | 微米金属颗粒 + 随角异色 flop（含亮光 / 丝缎 / 超哑） |
+| `pearlescent` | 珠光 Pearly | 27 | `TPU-001P` ~ `TPU-048P` | 保亮度掠射角折光（注：原 PPT 第 65 页朱雀红编为 `TPU-001P` 避免与 `TPU-002P 珍珠白` 重号） |
+| `chameleon` | 双色 Bicolor / 变色龙 Chameleon | 7 | `TPU-001B` ~ `TPU-006C` | 强双色 / 变色龙随角流转 |
+| `special` | 镭射 / 合金 / 炫彩 / 锻碳 / 碳纤维 | 9 | `TPU-001L` ~ `TPU-CF` | 镭射、炫彩、合金、锻碳与碳纤维特质 |
 
 ---
 

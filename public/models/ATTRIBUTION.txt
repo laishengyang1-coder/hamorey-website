@@ -1,4 +1,11 @@
-3D Car Model adapted from "Car Concept" by Eric Chadwick / Darmstadt Graphics Group GmbH, CC BY 4.0; Khronos Group trademarks/logos removed in runtime materials.
-Original source: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept
-Original CC0 base mesh by Unity Fan.
-License: https://creativecommons.org/licenses/by/4.0/
+1. Tesla Model 3 Highland (tesla-model-3.glb)
+   - Adapted from "MODEL 3 · Engineering Studio" (e96031413/TESLA-Model3)
+   - Original source: https://github.com/e96031413/TESLA-Model3/tree/main/public/models/highland
+   - License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+   - https://creativecommons.org/licenses/by/4.0/
+   - Optimized with meshopt & WebP compression for web 3D wrap preview.
+
+2. Tesla Model Y Juniper 2026 (tesla-model-y.glb)
+   - Adapted from "Tesla Infotainment Simulator" (jamesalmeida/tesla-infotainment)
+   - Original source: https://github.com/jamesalmeida/tesla-infotainment/tree/main/public/car-models
+   - Used for 3D automotive wrap color visualization. Tesla and related trademarks belong to Tesla, Inc.

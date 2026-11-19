@@ -41,6 +41,8 @@ export function ColorCatalogDrawer({
       crystal: COLOR_STUDIO_SWATCHES.filter((s) => s.finish === 'crystal').length,
       metallic: COLOR_STUDIO_SWATCHES.filter((s) => s.finish === 'metallic').length,
       pearlescent: COLOR_STUDIO_SWATCHES.filter((s) => s.finish === 'pearlescent').length,
+      chameleon: COLOR_STUDIO_SWATCHES.filter((s) => s.finish === 'chameleon').length,
+      special: COLOR_STUDIO_SWATCHES.filter((s) => s.finish === 'special').length,
     }),
     [],
   );
@@ -106,7 +108,7 @@ export function ColorCatalogDrawer({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={
                   lang === 'zh'
-                    ? `搜索 ${COLOR_STUDIO_SWATCHES.length} 款高定色彩（色名 / 色号 HC-05 / 工艺）`
+                    ? `搜索 ${COLOR_STUDIO_SWATCHES.length} 款 2026 官方色号（色名 / TPU-003S / 工艺）`
                     : `Search ${COLOR_STUDIO_SWATCHES.length} shades by name, code, or finish...`
                 }
                 className="w-full h-10 pl-10 pr-9 rounded-xl bg-white/[0.04] border border-white/12 text-sm text-[#F7F3EB] placeholder:text-white/35 focus:outline-none focus:border-[#C9A86A]/65"

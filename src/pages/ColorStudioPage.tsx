@@ -22,10 +22,12 @@ import {
   FINISH_FILTERS,
   HECAI_SPEC,
   LIGHTING_PRESETS,
+  STUDIO_VEHICLES,
   findColorSwatchByCode,
   type ColorFilmItem,
   type FilmFinishType,
   type StudioLightingPreset,
+  type StudioVehicleId,
   type StudioViewMode,
 } from '../config/colorStudio';
 import {
@@ -43,7 +45,7 @@ const VIEW_MODES: Array<{
   labelEn: string;
 }> = [
   { key: 'swatch', label: '流光样板', shortLabel: '样板', labelEn: 'Sculpture' },
-  { key: 'car', label: '超跑整车', shortLabel: '整车', labelEn: 'Vehicle' },
+  { key: 'car', label: '实车整车', shortLabel: '整车', labelEn: 'Vehicle' },
   { key: 'closeup', label: '腰线近景', shortLabel: '近景', labelEn: 'Detail' },
   { key: 'macro', label: '微距肌理', shortLabel: '微距', labelEn: 'Macro' },
   { key: 'sphere', label: '光影球体', shortLabel: '球体', labelEn: 'Sphere' },
@@ -74,12 +76,17 @@ export default function ColorStudioPage() {
     return 'swatch';
   }, []);
 
+  const initialVehicle = useMemo<StudioVehicleId>(() => {
+    const raw = searchParams.get('car');
+    return raw === 'modely' ? 'modely' : 'model3';
+  }, []);
+
   const [activeSwatch, setActiveSwatch] = useState<ColorFilmItem>(initialSwatch);
   const [viewMode, setViewMode] = useState<StudioViewMode>(initialMode);
   const [lightingPreset, setLightingPreset] =
     useState<StudioLightingPreset>('studio');
   const [railFinish, setRailFinish] = useState<'all' | FilmFinishType>('all');
-  const [twoToneRoof, setTwoToneRoof] = useState<boolean>(false);
+  const [vehicleId, setVehicleId] = useState<StudioVehicleId>(initialVehicle);
   const [lang, setLang] = useState<'zh' | 'en'>('zh');
   const [pickedUp, setPickedUp] = useState<boolean>(false);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -104,9 +111,10 @@ export default function ColorStudioPage() {
     const params = new URLSearchParams(window.location.search);
     params.set('code', activeSwatch.code);
     params.set('mode', viewMode);
+    params.set('car', vehicleId);
     const nextUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, '', nextUrl);
-  }, [activeSwatch.code, viewMode]);
+  }, [activeSwatch.code, viewMode, vehicleId]);
 
   const handleSelectSwatchByIndex = useCallback((idx: number) => {
     const len = COLOR_STUDIO_SWATCHES.length;
@@ -153,7 +161,7 @@ export default function ColorStudioPage() {
           activeSwatch={activeSwatch}
           viewMode={viewMode}
           lightingPreset={lightingPreset}
-          twoToneRoof={twoToneRoof}
+          vehicleId={vehicleId}
           lang={lang}
           pickedUp={pickedUp}
           onSelectSwatchByIndex={handleSelectSwatchByIndex}
@@ -171,13 +179,13 @@ export default function ColorStudioPage() {
             <Link
               to="/products/color-ppf"
               aria-label={lang === 'zh' ? '返回官网' : 'Back'}
-              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full bg-[#0a0b0f]/75 hover:bg-[#14161e] border border-white/12 text-xs text-white/80 backdrop-blur-xl transition-colors flex-shrink-0"
+              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full bg-[#0a0b0f]/92 hover:bg-[#14161e] border border-white/12 text-xs text-white/80 transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{lang === 'zh' ? '返回' : 'Back'}</span>
             </Link>
           )}
-          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#0a0b0f]/65 border border-white/10 backdrop-blur-xl">
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#0a0b0f]/92 border border-white/10">
             <span className="text-[11px] sm:text-xs md:text-sm font-bold tracking-[0.1em] text-[#F7F3EB]">
               和膜 <span className="text-[#C9A86A]">HAMOREY</span>
             </span>
@@ -191,7 +199,7 @@ export default function ColorStudioPage() {
         {/* 桌面端居中：5 大视角分段控制器 */}
         <nav
           aria-label="展示模式"
-          className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/80 border border-[#C9A86A]/25 backdrop-blur-2xl shadow-2xl pointer-events-auto"
+          className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/92 border border-[#C9A86A]/25 shadow-2xl pointer-events-auto"
         >
           {VIEW_MODES.map((m) => {
             const active = viewMode === m.key;
@@ -218,7 +226,7 @@ export default function ColorStudioPage() {
           <div
             role="group"
             aria-label={lang === 'zh' ? '影棚光影切换' : 'Studio Lighting'}
-            className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/80 border border-white/12 backdrop-blur-xl"
+            className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/92 border border-white/12"
           >
             {LIGHTING_PRESETS.map((preset) => {
               const active = lightingPreset === preset.key;
@@ -247,7 +255,7 @@ export default function ColorStudioPage() {
           <button
             type="button"
             onClick={() => setLang((prev) => (prev === 'zh' ? 'en' : 'zh'))}
-            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#090a0e]/80 hover:bg-[#14161e] border border-white/15 backdrop-blur-xl text-[11px] font-mono font-semibold flex items-center justify-center transition-colors"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#090a0e]/92 hover:bg-[#14161e] border border-white/15 text-[11px] font-mono font-semibold flex items-center justify-center transition-colors"
             aria-label="切换中英文"
           >
             {lang === 'zh' ? 'EN' : '中'}
@@ -256,7 +264,7 @@ export default function ColorStudioPage() {
           <button
             type="button"
             onClick={() => setCardModalOpen(true)}
-            className="h-8 w-8 sm:w-auto sm:px-3 md:h-9 md:px-3.5 rounded-full bg-[#090a0e]/85 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] text-xs font-semibold flex items-center justify-center gap-1.5 backdrop-blur-xl transition-all whitespace-nowrap"
+            className="h-8 w-8 sm:w-auto sm:px-3 md:h-9 md:px-3.5 rounded-full bg-[#090a0e]/92 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap"
             aria-label={lang === 'zh' ? '定制选色单' : 'Spec Card'}
           >
             <Info className="w-3.5 h-3.5" />
@@ -269,7 +277,7 @@ export default function ColorStudioPage() {
 
       {/* 3. 左侧高定色号铭牌卡（桌面端详细光学参数 / 移动端精简浮层） */}
       <aside className="absolute top-14 left-3.5 md:top-20 md:left-6 z-20 pointer-events-auto max-w-[74vw] md:w-72">
-        <div className="rounded-2xl bg-[#090a0e]/78 border border-[#C9A86A]/25 backdrop-blur-2xl p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl bg-[#090a0e]/92 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
           {/* 编号顶标 */}
           <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-[0.16em] text-[#C9A86A]">
             <span>
@@ -338,7 +346,7 @@ export default function ColorStudioPage() {
             </div>
           </div>
 
-          {/* 快捷动作：装车实看 / 全车同色与悬浮黑顶 */}
+          {/* 快捷动作：装车实看 / 双车型切换（Model 3 焕新版 / Model Y 焕新版） */}
           <div className="mt-2.5 md:mt-3.5 pt-2.5 md:pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
             {viewMode !== 'car' && viewMode !== 'closeup' ? (
               <button
@@ -347,34 +355,32 @@ export default function ColorStudioPage() {
                 className="w-full h-8 md:h-9 rounded-xl bg-white/10 hover:bg-[#C9A86A] hover:text-[#090A0D] border border-white/15 hover:border-[#C9A86A] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
               >
                 <Car className="w-3.5 h-3.5" />
-                <span>{lang === 'zh' ? '装车实看 3D 效果' : 'Preview on 3D GT'}</span>
+                <span>{lang === 'zh' ? '装车实看 3D 效果' : 'Preview on 3D Car'}</span>
               </button>
             ) : (
-              <div className="w-full grid grid-cols-2 p-0.5 rounded-xl bg-black/50 border border-white/12">
-                <button
-                  type="button"
-                  onClick={() => setTwoToneRoof(false)}
-                  className={cn(
-                    'py-1.5 rounded-lg text-[11px] font-medium transition-all',
-                    !twoToneRoof
-                      ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
-                      : 'text-white/65 hover:text-white',
-                  )}
-                >
-                  {lang === 'zh' ? '全车同色' : 'Full Wrap'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTwoToneRoof(true)}
-                  className={cn(
-                    'py-1.5 rounded-lg text-[11px] font-medium transition-all',
-                    twoToneRoof
-                      ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
-                      : 'text-white/65 hover:text-white',
-                  )}
-                >
-                  {lang === 'zh' ? '悬浮黑顶' : 'Black Roof'}
-                </button>
+              <div
+                role="group"
+                aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
+                className="w-full grid grid-cols-2 p-0.5 rounded-xl bg-black/50 border border-white/12"
+              >
+                {STUDIO_VEHICLES.map((vehicle) => {
+                  const active = vehicleId === vehicle.id;
+                  return (
+                    <button
+                      key={vehicle.id}
+                      type="button"
+                      onClick={() => setVehicleId(vehicle.id)}
+                      className={cn(
+                        'py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap',
+                        active
+                          ? 'bg-[#C9A86A] text-[#090A0D] font-semibold shadow'
+                          : 'text-white/65 hover:text-white',
+                      )}
+                    >
+                      {lang === 'zh' ? vehicle.name : vehicle.shortName}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -384,8 +390,8 @@ export default function ColorStudioPage() {
                   <Loader2 className="w-3 h-3 animate-spin" />
                   <span>
                     {lang === 'zh'
-                      ? `加载展车模型 ${modelProgress}%`
-                      : `Loading 3D GT ${modelProgress}%`}
+                      ? `加载${vehicleId === 'modely' ? ' Model Y ' : ' Model 3 '}模型 ${modelProgress}%`
+                      : `Loading ${vehicleId === 'modely' ? 'Model Y' : 'Model 3'} ${modelProgress}%`}
                   </span>
                 </div>
               )}
@@ -405,7 +411,7 @@ export default function ColorStudioPage() {
         {/* 小屏模式切换器 */}
         <nav
           aria-label="展示模式切换"
-          className="lg:hidden inline-flex items-center p-1 rounded-full bg-[#090a0e]/85 border border-[#C9A86A]/25 backdrop-blur-xl pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
+          className="lg:hidden inline-flex items-center p-1 rounded-full bg-[#090a0e]/92 border border-[#C9A86A]/25 pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
         >
           {VIEW_MODES.map((m) => {
             const active = viewMode === m.key;
@@ -428,7 +434,7 @@ export default function ColorStudioPage() {
         </nav>
 
         {/* 高定「流光色珠胶片轨」面板 */}
-        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/82 border border-white/12 backdrop-blur-2xl px-3 py-2.5 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
+        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/92 border border-white/12 px-3 py-2.5 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
           {/* 轨道顶排：工艺标签 + 操作指引 + 全系色谱典藏入口 */}
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/[0.08]">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
