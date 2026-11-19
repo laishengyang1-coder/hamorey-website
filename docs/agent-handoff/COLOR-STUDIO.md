@@ -180,7 +180,7 @@ npx @gltf-transform/cli optimize raw-car.glb candidate-model.glb \
 - 体积与加载：删除约 680 KB 未用资源；`/products/color-ppf` 改懒加载，官网首页主包 370.8 KB → 287.5 KB（gzip 97 → 80 KB）；`/models/` gzip + 7 天缓存，`/color-studio/paint/` 7 天缓存；样板页空闲预取 3D 分包与车模。
 - 功能：恢复「全系色谱典藏」连续彩虹色谱条。
 - 本机核验：`npm run build`、`npm --prefix server run build` 通过；浏览器拖动/甩动/停稳无跳帧，双击拿起放回正常，`/products/color-ppf` 懒加载正常，首页正常，控制台 0 错误。
-- 发布回执见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 2026-11-19 V4 条目。
+- 线上发布：业务提交 `f1ff80d`，Run `44495579649` Success；车模 gzip 生效（Model 3 968,912 B / Model Y 1,095,871 B）并缓存 7 天，首页主包 `index-DYKLqi8b.js` 287,523 B，各入口 200。详见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。
 
 ### 2026-11-19 扇形色卡正式发布与验收
 

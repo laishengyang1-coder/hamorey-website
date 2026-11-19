@@ -243,3 +243,42 @@
 | Git 提交与推送 | ✅ 已推送至 `origin/main`（业务提交 `b078bf1`） |
 | 网站 / API 生产部署 | ✅ 已验证（Run `44481110537` Success，线上新模型与页面资源已生效） |
 | 小程序体验版 / 审核 / 正式发布 | ❌ 本轮未改动 `miniprogram/` |
+
+## 2026-11-19：3D 高定选色工坊 V4 体验与性能优化（已上线）
+
+- **用户需求**：扇形样板动画僵硬、色卡有不存在的杂色、整体不够流畅、「全系色谱典藏」色谱条丢失、水晶与金属部分颜色失真；随后要求全面优化流畅度/质感/体积/加载速度并部署、写交接。
+- **基线**：`a3ba701`（含 Codex `95028f4` 扇形样板、`32d1738` 入口修复、`a3ba701` 交接）。**业务提交**：`f1ff80d`。
+- **范围**：仅官网前端、静态资源、Nginx 生成脚本与交接文档；未改 `miniprogram/`、`functions/`、`server/`、数据库。
+
+### 改动
+
+| 方向 | 内容 | 文件 |
+|---|---|---|
+| 动画 | rAF 弹簧阻尼物理（1:1 跟手、惯性吸附、滚轮/方向键、动态张合），静止自动休眠；位姿不走 React style，修复重渲染跳帧 | `SwatchFan.tsx`、`SwatchFan.css` |
+| 质感 | 停用原册色带混色（杂色根因）与拉伸颗粒/遮罩图，改主色纯亮度色阶 + CSS 柔光高光；去掉昂贵 `mask` 与大半径多层阴影 | `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css` |
+| 色彩 | 水晶 37 + 金属 23 色按原厂车漆资料交叉校准，`nameEn` 同步 | `src/config/colorStudio.ts` |
+| 功能 | 恢复「全系色谱典藏」连续彩虹色谱条（±26° 色相，与工艺/色系联动） | `ColorCatalogDrawer.tsx` |
+| 体积 | 删除未用 `fanFinishes.ts`、`speedformBuilder.ts`、`public/color-studio/finishes/`（103 张）、`paint/` 4 张（约 680 KB） | — |
+| 加载 | `/products/color-ppf` 改 `React.lazy`：首页主包 370.8 KB → 287.5 KB（gzip 97 → 80 KB）；样板页空闲预取 3D 分包与车模；车模 URL 加 `?v=20261119` | `src/App.tsx`、`ColorStudioPage.tsx`、`colorStudio.ts` |
+| 服务器 | `/models/` 启用 gzip + `max-age=604800, stale-while-revalidate`；`/color-studio/paint/` 同样缓存 | `scripts/tencent-production-deploy.sh` |
+
+### 检查与线上核验（17:41 Asia/Shanghai）
+
+- 本机：`npm run build`、`npm --prefix server run build` 通过；浏览器拖动/甩动/停稳无跳帧、双击拿起放回、产品页懒加载、首页均正常，控制台 0 错误。
+- GitHub Actions Run `44495579649`：**Success**（含 Codex 新增的 `/color-studio` 两种入口 HTML 检查）。
+- 线上：`/models/tesla-model-y.glb?v=20261119` 返回 `content-type: model/gltf-binary`、`content-encoding: gzip`、`cache-control: public, max-age=604800, stale-while-revalidate=2592000`；实际传输 Model 3 968,912 B（原 1,384,048）、Model Y 1,095,871 B（原 1,580,392），约省 30%。
+- 首页入口 `/assets/index-DYKLqi8b.js`（287,523 B）；`/color-studio?code=TPU-011S&mode=swatch`、`/color-studio/`、`/products/color-ppf`、`/` 均 200 且为应用 HTML；`/api/health` api/mysql/cos 全 `ok`。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| Git 提交 / 推送 | ✅ `f1ff80d` 已推送 `origin/main` |
+| 网站部署 | ✅ Run `44495579649` Success，线上核验通过 |
+| 小程序 | ❌ 未改动 |
+
+### 对其他执行方的影响
+
+- 替换 `public/models/` 同名模型时**必须**同步修改 `STUDIO_VEHICLES[].modelUrl` 的 `?v=`（服务器缓存 7 天）。
+- 色卡质感不要再引入原册色带取样混色，否则会再次出现杂色；新增色号只需在 `colorStudio.ts` 填准 `hex`/`shiftHex`/`finish`/`material.roughness`。
+- 微信真机表现仍待实测。
