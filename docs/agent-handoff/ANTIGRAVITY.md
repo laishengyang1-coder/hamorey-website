@@ -208,3 +208,38 @@
 - **对其他执行方的影响与保护项**：
   - 请保留 `src/assets/hamorey/` 新增品牌视觉图库、`CaseGallery.tsx`、`WarrantySamplePreview.tsx` 及重构后的自定义 `Select.tsx`。
   - `src/pages/ColorPPFPage.tsx` 与 `src/config/products.ts` 已同时整合 3D 选色工坊 V2（`/color-studio`）与本次官网改版内容，后续修改改色车衣页时请勿回退任一侧功能，且勿改动 `products.ts` 中受 `warranty-years.lock.json` 校验的 `series` 年限字段。
+
+
+## 2026-11-19：官网 3D 高定选色工坊 V3（Model 3/Y 双车型 + 2026 官方 103 色 + 真实棚拍光影与流畅度优化）
+
+- **用户需求**：将概念超跑替换为 Tesla Model 3 焕新版与 Model Y 焕新版并支持双车型切换；按桌面《副本2026 电子色卡.pptx》全量替换为 2026 官方色库；解决 Model Y 拖拽卡顿及强光泛白失真问题，并推送部署上线。
+- **基线与业务提交**：基于 `192e5b7`（= `origin/main`），业务提交 `b078bf1`（12 个文件改动），已推送并触发腾讯云自动部署。
+- **范围约束**：仅修改 `public/models/`、`src/config/colorStudio.ts`、`src/components/color-studio/`、`src/pages/ColorStudioPage.tsx`、`src/pages/ColorPPFPage.tsx` 及 `docs/agent-handoff/`；未改动 `miniprogram/`、`functions/`、`server/`、`migrations/` 与 `scripts/warranty-years.lock.json`。
+
+### 改动清单
+
+| 模块 | 文件路径 | 说明 |
+|---|---|---|
+| 双车型 3D 资产 | 新增 `public/models/tesla-model-3.glb`（1,384,048B）、`public/models/tesla-model-y.glb`（1,580,392B）；删除 `hamorey-gt.glb`；更新 `ATTRIBUTION.txt` | Model 3 Highland（CC BY 4.0，保留原始材质槽与平滑法线做 `meshopt + webp` 压缩）与 Model Y Juniper 2026，支持 `?car=model3\|modely` 懒加载与内存缓存秒切 |
+| 2026 官方 103 色库 | `src/config/colorStudio.ts`、`src/components/color-studio/ColorCatalogDrawer.tsx`、`src/pages/ColorPPFPage.tsx` | 从《2026 电子色卡》全量提取 103 色（水晶 37、金属 23、珠光 27、双色·变色龙 7、镭射·合金·炫彩·锻碳 9），区分亮光 / 丝缎 / 超哑 PBR 参数（注：原 PPT 第 65 页朱雀红编为 `TPU-001P` 避免与 `TPU-002P 珍珠白` 重号） |
+| 真实物理棚拍光影与流畅度 | `src/components/color-studio/filmMaterial.ts`、`studioEnvironment.ts`、`ColorStudioCanvas.tsx`、`src/pages/ColorStudioPage.tsx` | 消除泛白（`ior: 1.5` 真实 F0、去 `iridescence`/`sheen`、保亮度珠光偏色、金属随角异色 flop、`NeutralToneMapping`、有边界棚拍柔光箱 + 深色地坪、单面玻璃）；消除卡顿（剥离 Model Y 大灯 `KHR_materials_transmission` 避免二次离屏渲染、移除 WebGL 上方 9 处 `backdrop-blur`、自适应 DPR 1.0–1.75、静态车模按需刷新阴影） |
+| 跨 AI 文档 | `docs/agent-handoff/COLOR-STUDIO.md`、`ANTIGRAVITY.md`、`README.md` | 同步 V3 双车型参数、103 色分类与线上验证回执 |
+
+### 构建与线上部署核验结果
+
+- **本地门禁**：`npm run build`（`test:contracts` + `tsc` + `check-warranty-years.mjs` + `vite build` + `check-spa-build.mjs`）与 `npm --prefix server run build` 全量通过；本地浏览器实测白/红/蓝/金属银 4 色与拖拽流畅度 0 报错。
+- **腾讯云自动部署**：GitHub Actions `Deploy to Tencent Cloud` Run `44481110537`（提交 `b078bf1`）执行 **`Success`**。
+- **线上资产核验（2026-11-19 15:54 Asia/Shanghai）**：
+  - `https://hemoppf.cn/models/tesla-model-3.glb`：`HTTP/2 200`，`1,384,048` 字节（与本地逐字节一致）
+  - `https://hemoppf.cn/models/tesla-model-y.glb`：`HTTP/2 200`，`1,580,392` 字节（与本地逐字节一致）
+  - `https://hemoppf.cn/color-studio`：`HTTP/2 200`，新构建入口 `/assets/index-BB9S3O8G.js` 已生效
+  - `https://api.hemoppf.cn/api/health`：`{"ok":true,"checks":{"api":"ok","mysql":"ok","cos":"ok"}}`
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| 本地修改与工作区状态 | ✅ 已完成，本地临时 `5173` 服务已关闭 |
+| Git 提交与推送 | ✅ 已推送至 `origin/main`（业务提交 `b078bf1`） |
+| 网站 / API 生产部署 | ✅ 已验证（Run `44481110537` Success，线上新模型与页面资源已生效） |
+| 小程序体验版 / 审核 / 正式发布 | ❌ 本轮未改动 `miniprogram/` |
