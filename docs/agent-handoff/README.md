@@ -4,11 +4,15 @@
 
 ## 当前执行与交接状态
 
+**2026-11-19 · Codex · 流光样板可交接。** 官网 103 色已换为可张合、双击拾取的扇形色卡。业务版本 `95028f4`，深链修复 `32d1738`。桌面与触屏仿真已在正式域名验收。进入[流光样板](https://hemoppf.cn/color-studio?code=TPU-048P&mode=swatch)或查看[专题交接与发布回执](COLOR-STUDIO.md)。
+
+### 此前各轮交接（按当时状态记录）
+
 - ✅ **2026-11-19 Antigravity：官网「3D 高定选色工坊 V3」升级（Model 3/Y 双车型 + 2026 官方 103 色库 + 真实物理棚拍光影与流畅度优化）已推送并自动部署上线（业务提交 `b078bf1`，Run `44481110537` Success），线上双车模字节数与 API 健康检查通过，可交接**。基线 `192e5b7`；仅改动 `public/models/`、`src/config/colorStudio.ts`、`src/components/color-studio/`、`src/pages/ColorStudioPage.tsx`、`src/pages/ColorPPFPage.tsx` 与交接文档，未改动 `miniprogram/` 与后端接口。详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
 - ✅ **2026-11-18 Antigravity：品牌官网（`https://hemoppf.cn`）全站视觉改版与产品/质保/门店内容升级已推送并自动部署上线（业务提交 `6b5e12f`，Run `44273441650` Success），线上路由与 API 健康检查通过，可交接**。合并基线 `3fd5a09`（完整保留 `3dc537e` 3D 选色工坊 V2 `/color-studio` 与 `1b4da72` 邀请函 `/lijiang2027/`）；仅改官网公众端 `src/`（58 个文件，含 `src/assets/hamorey/` 20 张品牌与案例素材）与交接文档，未改动 `miniprogram/` 与后端接口。详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。
 - ✅ **2026-11-18 Antigravity：官网「3D 选色工坊 V2」与跨 AI 同步调用文档（[`COLOR-STUDIO.md`](COLOR-STUDIO.md)）已推送并自动部署上线（业务提交 `3dc537e`，Run `44269834351` Success），线上资源哈希与 API 健康检查通过，可交接**。基线 `09d303b`；仅改官网前端、静态模型、依赖与交接文档，未改动 `miniprogram/` 与后端接口；线上入口 `https://hemoppf.cn/color-studio` 与 `https://hemoppf.cn/products/color-ppf`，详情见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
 - 🆕 **2026-11-18 Antigravity：小程序第一批优化（功能与内容纠错）已推送（`52c21f4`），未上传体验版；第二批已按用户要求撤回。本轮结束，可交接**。基线 `a6f783c`；仅改 `miniprogram/`（38 个文件 + 新增 `utils/format.wxs`、`utils/warranty.js`），未触碰邀请函与省代兑换结算页。详情、检查结果与第二/三批待办见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)。其他执行方接手前请以该提交为基线重新核对。
-- 最新状态：**Codex 2026-11-17 邀请函优化已上线，可接力**。业务提交 `1b4da72`，自动部署成功；28 项线上资源与本地逐字节哈希一致，音乐 206 分段请求与 API 健康检查通过。小程序已生成开发预览码，仍未上传体验版/审核/正式发版。WorkBuddy 已读取、核对并追加接收记录。
+- 邀请函记录：**Codex 2026-11-17 邀请函优化已上线，可接力**。业务提交 `1b4da72`，自动部署成功；28 项线上资源与本地逐字节哈希一致，音乐 206 分段请求与 API 健康检查通过。小程序已生成开发预览码，仍未上传体验版/审核/正式发版。WorkBuddy 已读取、核对并追加接收记录。
 - WorkBuddy 本轮范围（已结束）：登记页 UI 修复、质保码模糊查找、省代代上质保多产品；**详情见 `WORKBUDDY.md`**。
 - WorkBuddy 本轮终点提交：**`f6f08a6`**（= `origin/main`；在 `bda83c7` 之后又追加了「登记页间距+自动识别」`5636af4` 和「质保码查找彻底修正」`5da2e36`，均**仅小程序改动**，详见 `WORKBUDDY.md` 末尾三条追加；`3e3d028` 为省代撤回；`2b3e130` 为邀请函上线；`490d26b` 为内容改版、`bae7c6b` 为**按参考截图整版重排**（整屏雪山+金色艺术字+素材图上墙））。
 - ⚠️ Codex 的核对基线原为 `bda83c7`；**再次接手前请以 `f6f08a6` 为基线重新核对**。

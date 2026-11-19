@@ -1,46 +1,46 @@
 # 和膜 HAMOREY — 3D 高定选色工坊（Color Studio）跨 AI 同步与调用文档
 
-> 文档日期：2026-11-19（V3 升级：2026 官方 103 色 + Model 3/Y 双车型 + 真实物理棚拍光影）  
-> 适用范围：供 Codex、WorkBuddy、Antigravity 等后续 AI 接手或对接小程序、活动 H5、后台色库、3D 车模替换时直接查阅与调用。  
-> 部署状态：✅ 官网与双车型 3D 模型持续通过 GitHub Actions 自动部署至 `https://hemoppf.cn`（最新部署记录见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md)）。
+> 2026-11-19。本文对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
 
----
+## 一、官网入口与选色方式
 
-## 一、 功能定位与线上正式入口
+和彩 QCCY 为 8.0 mil TPU 改色车衣。官网产品页和全屏选色工坊共用《2026 电子色卡》的 103 个产品色号。
 
-本模块是和膜 **和彩 QCCY（8.0 mil 脂肪族光学级 TPU 改色车衣）** 的独立 3D 在线选色展厅（V3），已集成在品牌官网 React SPA 中：
+| 入口 | 用途 |
+|---|---|
+| [高定选色工坊](https://hemoppf.cn/color-studio) | 默认进入「流光样板」，首张为纳多灰 `TPU-003S`。可切换整车、近景、微距和球体四种展示。 |
+| [TPU 改色车衣产品页](https://hemoppf.cn/products/color-ppf) | 浏览全系色板，携带当前色号进入工坊。 |
 
-| 入口名称 | 线上正式 URL | 说明 |
-|---|---|---|
-| **3D 高定选色工坊（全屏独立页面）** | `https://hemoppf.cn/color-studio` | 脱离官网白底页眉页脚，支持全屏 3D 展示、Model 3 / Model Y 双车型切换与小程序 `<web-view>` 内嵌 |
-| **官网 TPU 改色车衣入口页** | `https://hemoppf.cn/products/color-ppf` | 含 3D 展厅横幅与 2026 官方全系 103 色拟真预览卡片，支持带色号直跳 `/color-studio` |
-| **Model 3 焕新版 3D 资产** | `https://hemoppf.cn/models/tesla-model-3.glb` | 约 1.38 MB，`meshopt + webp` 压缩（保留完整平滑法线与原始材质槽，CC BY 4.0） |
-| **Model Y 焕新版 3D 资产** | `https://hemoppf.cn/models/tesla-model-y.glb` | 约 1.50 MB，`meshopt + webp` 压缩（2026 Juniper 贯穿灯带，运行期剥离 `transmission` 零卡顿） |
+### 流光样板
 
----
+- **轮转。** 默认浏览全部 103 色，在选定工艺后只循环该组色卡。自动播放约每 3.2 秒前进一色。停稳时卡片共用转轴、相邻间隔 15°；轮转时近邻沿转向依次晚 50 毫秒起动，形成先张开、再收拢的动作。左右滑动或点选邻卡都能切换颜色。
+- **拿起看漆面。** 双击中央或侧边的卡片可拿起指定颜色，也可点「拿起色卡」。拿起时暂停轮转，拖动可改变卡片角度与高光位置，双击、点「放回色卡」或按 Esc 可以放回。键盘焦点在样板上时，左右键切色，回车或空格拿起或放回。
+- **暂停与恢复。** 打开全系色谱、定制选色单、拿起卡片或切到后台都会暂时停止自动前进。放回或直接关闭弹层后延续先前的播放状态。从色谱或底部色轨主动选色、切换工艺后保持暂停，点播放键可继续。系统开启「减少动态效果」时初始为暂停。
+- **材质。** 卡面结合官网主色、原册四色带和材质粗糙度表现亮光、丝缎、哑光、金属颗粒、珠光偏色与碳纹。底色、颗粒和独立反光层分别绘制，拖动时移动图层。钢琴黑的原册色带与天鹅白重复，钢琴黑和总裁黑使用各自的官网黑色作为底色。柔光、展厅、落日三档照明使用同一个选色状态。
+
+### 首屏与 3D 加载
+
+默认样板用 HTML/CSS 图层呈现。进入 `swatch` 只加载工坊页面和样板素材。切到 `car`、`closeup`、`macro` 或 `sphere` 才加载 Three.js 舞台；其中仅整车、腰线近景需要加载所选车型的 GLB。已载车型可在当前 3D 舞台内复用。直接打开带 `mode` 的链接会进入指定视图。
 
 ## 二、 URL Query 调用协议（深链与外呼规范）
 
-其他页面、营销海报二维码、微信公众号菜单或微信小程序 `<web-view>` 可通过以下 URL 参数直接控制选色工坊的初始状态：
+其他页面、二维码、分享链接或小程序可指定以下参数。页面切换色号、视图或车型后会用 `history.replaceState` 同步地址。
 
-| 参数名 | 可选值 / 示例 | 默认值 | 行为说明 |
-|---|---|---|---|
-| `code` | 2026 官方 103 色编码，如 `TPU-001S`、`TPU-028P`、`TPU-016M`、`TPU-CF`（不区分大小写） | `TPU-003S` | 设定初始选中的色号；未传或未命中时回退至 `TPU-003S`（纳多灰）。页面内切色后会通过 `window.history.replaceState` 实时同步 URL 参数。 |
-| `mode` | `swatch` \| `car` \| `closeup` \| `macro` \| `sphere` | `swatch` | 设定初始 3D 视角：`swatch`（3D 悬浮流光曲率样板廊）、`car`（360° 实车整车）、`closeup`（腰线近景）、`macro`（8mil 微距肌理）、`sphere`（光影球体）。 |
-| `car` | `model3` \| `modely` | `model3` | 设定初始展车车型：`model3`（Tesla Model 3 焕新版 Highland）、`modely`（Tesla Model Y 焕新版 Juniper）。按需懒加载并内存缓存，切换秒切。 |
-| `embed` | `miniprogram` | 无 | **微信小程序 `<web-view>` 专用内嵌开关**：开启后自动隐藏左上角「返回官网」按钮，并将「定制选色单」弹窗底部的跳官网门店链接替换为小程序友好确认按钮。 |
+| 参数 | 可选值 | 默认值与行为 |
+|---|---|---|
+| `code` | 任一官方色号，如 `TPU-010S`、`TPU-028P`、`TPU-CF` | 不区分大小写。缺省或未命中时选纳多灰 `TPU-003S`。 |
+| `mode` | `swatch` 流光样板、`car` 实车整车、`closeup` 腰线近景、`macro` 微距肌理、`sphere` 光影球体 | 默认 `swatch`。切换视图会保留当前所选颜色。 |
+| `car` | `model3`、`modely` | 默认 `model3`。在样板页预选车型，进入整车或近景时加载对应模型。 |
+| `embed` | `miniprogram` | 默认使用官网界面。内嵌时隐藏「返回官网」，选色单的门店动作改用内嵌页面提示。 |
 
-### 常用调用示例
-- 官网正常全屏访问：`https://hemoppf.cn/color-studio`
-- 直接看 Model Y 龙血红整车：`https://hemoppf.cn/color-studio?code=TPU-028P&mode=car&car=modely`
-- 直接看 Model 3 液态银整车：`https://hemoppf.cn/color-studio?code=TPU-016M&mode=car&car=model3`
-- 微信小程序内嵌调用：`https://hemoppf.cn/color-studio?embed=miniprogram&code=TPU-044S&car=modely`
-
----
+- [云山蓝的扇形样板](https://hemoppf.cn/color-studio?code=TPU-010S&mode=swatch)
+- [Model Y 龙血红整车](https://hemoppf.cn/color-studio?code=TPU-028P&mode=car&car=modely)
+- [Model 3 液态银整车](https://hemoppf.cn/color-studio?code=TPU-016M&mode=car&car=model3)
+- [小程序内嵌参数示例](https://hemoppf.cn/color-studio?embed=miniprogram&code=TPU-044S&car=modely)
 
 ## 三、 微信小程序 `<web-view>` 后续接入指南
 
-> 当前状态：本轮仅上线官网端，**`miniprogram/` 目录尚未改动**。后续负责小程序的 AI 请按以下步骤直接接入，写法可直接参照仓库内既有的 `miniprogram/pages/invitation/index/` 承载页。
+> 本提交仅更新官网，未增设或发布选色工坊小程序承载页。以下是后续接入方案，可参考已有的 `miniprogram/pages/invitation/index/`。
 
 1. **新建承载页四件套**（缺任一后缀都会导致 `npm run test:contracts` 失败）：
    - `miniprogram/pages/owner/color-studio/index.js`
@@ -63,6 +63,7 @@
        const params = ['embed=miniprogram'];
        if (options && options.code) params.push(`code=${encodeURIComponent(options.code)}`);
        if (options && options.mode) params.push(`mode=${encodeURIComponent(options.mode)}`);
+       if (options && options.car) params.push(`car=${encodeURIComponent(options.car)}`);
        this.setData({ src: `${BASE_URL}?${params.join('&')}` });
      },
      onShow() {
@@ -94,23 +95,22 @@
 
 ---
 
-## 四、 核心源码与资产地图
+## 四、核心源码与资产
 
-| 文件路径 | 职责说明 |
+| 文件或目录 | 当前职责 |
 |---|---|
-| `src/config/colorStudio.ts` | 唯一主配置库：定义 `COLOR_STUDIO_SWATCHES`（首批 20 色）、`HECAI_SPEC`（8.0 mil / 6 年质保）、三档灯光预设 `LIGHTING_PRESETS`、7 大色系分组 `HUE_GROUPS` 与各色号 `optics` / PBR 材质参数 |
-| `src/config/products.ts` | 保持官网 `productCategories` 原有结构，同步维护纯字面量 `colorPpfSwatches`（供兼容旧引用与静态检查） |
-| `src/components/color-studio/studioEnvironment.ts` | 纯前端程序化生成 16-bit `HalfFloatType` 真 HDR 全景环境光（`studio` 暗夜光廊 / `gallery` 极昼展厅 / `sunset` 落日金辉）、`512×512` 微晶圆片法线贴图与「和膜 · HAMOREY」展车牌照贴图 |
-| `src/components/color-studio/filmMaterial.ts` | 统一复用 `MeshPhysicalMaterial` 控制器（`clearcoatRoughness: 0.012~0.015`）+ 自定义珠光菲涅尔双色折光 GLSL 注入 |
-| `src/components/color-studio/speedformBuilder.ts` | 原创「3D 悬浮流光曲率样板廊」几何构建（超跑中脊折线 + 双曲肩线 + 倒角折边 + 曜石金铭牌底座）与实时弯曲变形器 |
-| `src/components/color-studio/ColorStudioCanvas.tsx` | 五视角 WebGL 舞台、精准世界顶点包围盒落地计算、`MeshoptDecoder` 异步加载、轮胎去标识清洗与响应式镜头控制 |
-| `src/components/color-studio/ColorCatalogDrawer.tsx` | 曜石黑金「和彩全系色谱典藏」抽屉弹窗（搜索、工艺过滤、7 色系家族胶囊、立体漆面圆穹卡） |
-| `src/components/color-studio/ColorCardModal.tsx` | 膜料参数说明、纯前端 Canvas 一键导出 900×1200 高清 PNG 选色单图片、授权门店转化按钮 |
-| `src/pages/ColorStudioPage.tsx` | 全屏 `/color-studio` 交互页面（顶部导航、三档灯光、左侧光学铭牌卡、底部无滚动条流光色珠胶片轨） |
-| `src/App.tsx` | 使用 `React.lazy` 注册 `/color-studio` 独立异步路由分包（不增加官网首页主包体积） |
-| `src/pages/ColorPPFPage.tsx` | 官网 `/products/color-ppf` 页面：接入 3D 展厅入口横幅与 20 色拟真预览联动 |
-| `src/config/navigation.ts`、`src/config/seo.ts`、`src/index.css` | 顶部/页尾「3D在线选色」导航、SEO 元信息、`.no-scrollbar` 隐藏横向轨道滚动条样式 |
-| `public/models/hamorey-gt.glb`、`public/models/ATTRIBUTION.txt` | 2.36 MB 轻量化开源超跑模型及 CC-BY 4.0 署名文件 |
+| `src/config/colorStudio.ts` | `COLOR_STUDIO_SWATCHES` 保存 103 色名称、色号、主色、偏色和物理材质参数，同时定义产品规格、灯光、色系和车型。 |
+| `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioFanLayout.css` | 维护共享色号、灯光、语言、工艺、选色单和深链，按视图区分扇形首屏与 WebGL 舞台。 |
+| `src/components/color-studio/SwatchFan.tsx`、`SwatchFan.css` | 按可见范围绘制扇形，控制错时轮转、手势、拾取、放回和键盘操作。 |
+| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`、`fanFinishes.ts`（同一组件目录） | 按色号映射原册四色带和原始材质图路径，组合卡面颜料与反射层。`public/color-studio/finishes/` 留存原册材质切片，`public/color-studio/paint/` 提供渲染用的清漆、颗粒、丝缎与碳纹素材。 |
+| `src/components/color-studio/ColorStudioCanvas.tsx`、`studioEnvironment.ts`、`filmMaterial.ts` | 后四种视图使用 WebGL、程序生成的棚拍环境光和按色号更新的物理车漆。金属随角变色、珠光亮度与清漆粗糙度由材质代码及色号参数控制。 |
+| `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱支持按名称、工艺或色系找色；定制选色单支持本地生成 900×1200 PNG 和门店入口。 |
+| `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊使用独立异步路由。产品页直接读取官方 103 色，按当前色号进入样板或整车。 |
+| `src/config/products.ts` | 保留原产品结构及早期 `HC/HM/HP` 20 色兼容数组。现行选色页和产品页统一读取 `colorStudio.ts`。 |
+| `src/config/navigation.ts`、`src/config/seo.ts`、`src/index.css` | 维护官网导航、页尾入口、页面元信息及色轨公共样式。 |
+| `public/models/tesla-model-3.glb`、`tesla-model-y.glb`、`ATTRIBUTION.txt` | 两个 Tesla 模型及各自来源和署名。Model 3 为 1,384,048 字节，Model Y 为 1,580,392 字节。 |
+
+`speedformBuilder.ts` 留存前版曲面雕塑生成器。当前首屏入口指向 `SwatchFan`。
 
 ### 2026 官方电子色卡 103 色分类速查表
 
@@ -127,26 +127,24 @@
 ## 五、 后续扩展指引（加色号 / 换车模）
 
 ### 1. 扩充新色号
-1. 打开 `src/config/colorStudio.ts`，按既有结构向 `COLOR_STUDIO_SWATCHES` 数组追加新色号对象（`finish` 选 `'crystal'` / `'metallic'` / `'pearlescent'`，填好 `hex`、`shiftHex`、`hueGroup`、`optics`、`material`）。
-2. 同步在 `src/config/products.ts` 的 `colorPpfSwatches` 末尾追加纯字面量对象以保持两处对齐。
-3. 无需修改 3D 组件，UI 计数、顶部编号总数、色珠轨道、典藏画廊与选色单导出全部自动更新。
 
-### 2. 更换或新增 3D `.glb` 车模
-1. **建模材质命名规范**（供 `ColorStudioCanvas.tsx` 自动识别与换色）：
-   - 全车主要改色漆面材质名以 `Paint 1` 开头（如 `Paint 1 Body`）；
-   - 车顶/侧裙等可切「悬浮黑顶」的拼接漆面材质名以 `Paint 2` 开头；
-   - 车窗玻璃命名为 `Glass`、刹车卡钳命名为 `Brake`、车牌命名为 `License`。
-2. **压缩规范（禁止依赖海外 CDN）**：
-   - 中国大陆用户访问必须零海外 CDN 依赖，**严禁改用指向 `gstatic.com` 的 `DRACOLoader` 或外链 `.hdr`**；
-   - 统一使用 `meshopt` 压缩（前端已内置 `three/examples/jsm/libs/meshopt_decoder.module.js` 本地解码），且压缩时务必关闭 `--simplify` 与 `--palette` 以免丢失材质名：
-     ```bash
-     npx @gltf-transform/cli optimize raw-car.glb public/models/hamorey-gt.glb \
-       --compress meshopt --texture-compress webp --texture-size 1024 \
-       --simplify false --palette false
-     ```
-   - `ColorStudioCanvas.tsx` 会通过真实世界坐标顶点自动计算精确包围盒，确保不同尺寸或带旋转节点的模型四轮均能严丝合缝贴合 `y = 0` 地面。
+1. 按原册核对唯一色号和中文名，将完整 `ColorFilmItem` 加入 `src/config/colorStudio.ts` 的 `COLOR_STUDIO_SWATCHES`。工艺可取 `crystal`、`metallic`、`pearlescent`、`chameleon` 或 `special`。
+2. 提取该色的原册四色带及材质切片，在 `fanFinishes.ts` 按同一色号登记。新增特殊纹理时同步检查 `SwatchFanMaterial.tsx` 的工艺分支和 `public/color-studio/paint/` 的素材。
+3. 核对产品页、工坊底部色轨、全系色谱、选色单、扇形卡面与整车深链是否指向同一官方色号。
 
----
+### 2. 更换或新增 3D 车模
+
+现用 Model 3 Highland 和 Model Y Juniper 各自使用原模型材质名。更换时核对 `src/config/colorStudio.ts` 中的车型配置，以及 `ColorStudioCanvas.tsx` 的车型资源和材质适配分支。Model 3 的车漆材质名为 `Geohoodsub00021Mtl`，Model Y 为 `paint`。玻璃、灯罩、轮胎等有独立处理，需逐车检查。模型来源与许可见 `public/models/ATTRIBUTION.txt`。
+
+模型沿用本地 Meshopt 解码和 WebP 贴图，保留材质槽与平滑法线。制作新资产时可用下例输出候选文件，核验模型比例、落地位置、整车与近景后再替换正式资产。
+
+```bash
+npx @gltf-transform/cli optimize raw-car.glb candidate-model.glb \
+  --compress meshopt --texture-compress webp --texture-size 1024 \
+  --simplify false --palette false
+```
+
+大陆访问沿用站内模型、解码器与程序化灯光资源。接手时保留现有加载方式。
 
 ## 六、 构建门禁与避坑红线（所有 AI 必读）
 
@@ -168,7 +166,26 @@
 
 ---
 
-## 七、 本轮线上发布与验证记录（2026-11-18）
+## 七、验证记录
+
+### 2026-11-19 扇形色卡正式发布与验收
+
+1. 业务提交 [95028f4](https://github.com/laishengyang1-coder/hamorey-website/commit/95028f491a67af1c445816ed22acb621fdaf796e) 通过[腾讯云部署](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44489370935)，北京时间 16:59 完成。第一次实站验收发现，`/color-studio` 会跳转到同名素材目录并返回 403。17:01 将页面路径精确映射到单页应用入口，保留子目录静态文件，校验配置并平滑加载。
+2. 持久化修复为 [32d1738](https://github.com/laishengyang1-coder/hamorey-website/commit/32d1738b73db43ba13f840056700eb1763e1d3bd)。`scripts/tencent-production-deploy.sh` 负责生成路由配置，`.github/workflows/tencent-production.yml` 会同时检查带色号与带末尾斜杠的地址确实返回应用 HTML。17:10 腾讯云完成重新发布，新增的两项页面入口检查均通过。[路由修复部署记录](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44492616977)。
+3. 正式域名上，样板深链、带斜杠入口及 TPU 产品页全部返回 200。核对 103 张色带切片、7 张漆面纹理和 2 个车模的 SHA-256，共 112 份与业务提交一致。生产 API、MySQL、COS 健康检查均为 `ok`。
+4. 17:02–17:03 使用全新 Chrome 会话，在桌面 1440×900 和手机触屏仿真 390×844 验证云山蓝、星云紫深链、103 色、自动轮转、双击侧卡拾取、拖动反光与放回。桌面打开 Model Y 整车正常。两种屏幕均无横向溢出或资源请求错误。线上页面与 3D 分包分别为 `ColorStudioPage-DVzJxkRc.js`、`ColorStudioCanvas-2CFjQycS.js`。
+
+### 2026-11-19 扇形交互与本机性能
+
+对应功能提交 `95028f4`。本机桌面 Chrome 和手机触屏仿真核验了自动轮转、筛选、弹层、拾取侧卡、拖动漆面反光、放回与视图切换。减少动态效果开启时，样板默认保持静止。微信真机表现仍待验证。
+
+在同一台 M4 Mac、Chrome 158、60 Hz、未限制 CPU 的条件下，对两个 3.02 秒自动轮转区间采样。桌面帧间隔第 95 百分位从 66.6 毫秒降到 16.7 毫秒，超过 50 毫秒的间隔从 12 次降到 0 次；模拟手机尺寸为 33.3 毫秒降至 16.7 毫秒。两个方向实测相邻卡片夹角都从 15.00° 张开至 17.06°，再回到 15.00°。这些数值仅对应上述设备与采样区间。
+
+### 2026-11-19 双车型及 103 色库历史发布（V3）
+
+业务提交 `b078bf1`，腾讯云部署任务 [44481110537](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44481110537) 成功。当天核验了官网入口、双车型资产字节数和 API 健康状态。详见 [Antigravity 发布记录](ANTIGRAVITY.md)。
+
+### 2026-11-18 曲面样板廊历史发布（V2）
 
 - **业务提交 SHA**：`3dc537ee8c89981d3d39b6ac817a6e405403de93`（短号 `3dc537e`）
 - **GitHub Actions 部署流水线**：Run `44269834351`（`Deploy to Tencent Cloud`）状态 `Success`
