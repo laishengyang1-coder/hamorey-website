@@ -3,7 +3,8 @@
 // 色系家族筛选 + 工艺过滤 + 搜索 + 立体双曲流光漆面圆穹预览卡
 // ============================================================
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Check, Search, Sparkles, X } from 'lucide-react';
 import {
   COLOR_STUDIO_SWATCHES,
@@ -34,6 +35,35 @@ export function ColorCatalogDrawer({
   const [query, setQuery] = useState('');
   const [finishFilter, setFinishFilter] = useState<'all' | FilmFinishType>('all');
   const [hueGroup, setHueGroup] = useState<ColorHueGroup>('all');
+  // 连续彩虹色谱筛选：null = 全部；'neutral' = 黑白灰；0..360 = 指定色相角（±26°）
+  const [spectrumPick, setSpectrumPick] = useState<null | 'neutral' | number>(null);
+  const [spectrumPos, setSpectrumPos] = useState<number>(0);
+  const spectrumBarRef = useRef<HTMLDivElement | null>(null);
+
+  const updateSpectrumFromClientX = (clientX: number) => {
+    const bar = spectrumBarRef.current;
+    if (!bar) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / Math.max(1, rect.width)));
+    setSpectrumPos(ratio);
+    setHueGroup('all');
+    if (ratio <= 0.13) {
+      setSpectrumPick('neutral');
+    } else {
+      const hueDeg = Math.round(((ratio - 0.13) / 0.87) * 360) % 360;
+      setSpectrumPick(hueDeg);
+    }
+  };
+
+  const handleSpectrumPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    updateSpectrumFromClientX(e.clientX);
+  };
+
+  const handleSpectrumPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.buttons === 0 && !e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    updateSpectrumFromClientX(e.clientX);
+  };
 
   const countsByFinish = useMemo(
     () => ({
@@ -51,7 +81,16 @@ export function ColorCatalogDrawer({
     const q = query.trim().toLowerCase();
     return COLOR_STUDIO_SWATCHES.filter((item) => {
       if (finishFilter !== 'all' && item.finish !== finishFilter) return false;
-      if (!matchesHueGroup(item, hueGroup)) return false;
+      if (spectrumPick === 'neutral') {
+        if (!item.isNeutral) return false;
+      } else if (typeof spectrumPick === 'number') {
+        if (item.isNeutral) return false;
+        const diff = Math.abs(item.hue - spectrumPick);
+        const dist = Math.min(diff, 360 - diff);
+        if (dist > 26) return false;
+      } else if (!matchesHueGroup(item, hueGroup)) {
+        return false;
+      }
       if (!q) return true;
       return (
         item.name.toLowerCase().includes(q) ||
@@ -61,7 +100,7 @@ export function ColorCatalogDrawer({
         item.finishLabelEn.toLowerCase().includes(q)
       );
     });
-  }, [query, finishFilter, hueGroup]);
+  }, [query, finishFilter, hueGroup, spectrumPick]);
 
   if (!open) return null;
 
@@ -151,15 +190,67 @@ export function ColorCatalogDrawer({
             </div>
           </div>
 
-          {/* 七大高定色系家族筛选胶囊 */}
-          <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+          {/* 连续彩虹光谱条：按颜色浏览 */}
+          <div className="mt-3.5">
+            <div className="flex items-center justify-between text-[11px] mb-1.5">
+              <span className="text-white/60">
+                {lang === 'zh' ? '按颜色浏览（拖动或点击色谱精准筛选）' : 'Browse by Color Spectrum'}
+              </span>
+              {spectrumPick !== null && (
+                <button
+                  type="button"
+                  onClick={() => setSpectrumPick(null)}
+                  className="text-[#C9A86A] hover:text-[#f0d8a8] font-medium transition-colors"
+                >
+                  {lang === 'zh' ? '清除色谱筛选' : 'Clear spectrum'}
+                </button>
+              )}
+            </div>
+            <div
+              ref={spectrumBarRef}
+              role="slider"
+              aria-label={lang === 'zh' ? '按颜色浏览彩虹色谱条' : 'Color spectrum slider'}
+              aria-valuemin={0}
+              aria-valuemax={360}
+              aria-valuenow={typeof spectrumPick === 'number' ? spectrumPick : 0}
+              tabIndex={0}
+              onPointerDown={handleSpectrumPointerDown}
+              onPointerMove={handleSpectrumPointerMove}
+              className="relative h-8 md:h-9 w-full rounded-xl overflow-hidden cursor-ew-resize touch-none border border-white/15 shadow-inner select-none"
+              style={{
+                background:
+                  'linear-gradient(90deg, #111216 0%, #7d828a 6.5%, #eef0f3 12.6%, #ff2a2a 13%, #ff8c00 26%, #ffe600 39%, #22dd44 52%, #00d4ff 65%, #2b55ff 78%, #9b30ff 90%, #ff2a9d 100%)',
+              }}
+            >
+              {/* 黑白灰与彩色分界微线 */}
+              <div className="absolute top-0 bottom-0 left-[13%] w-px bg-black/50 pointer-events-none" />
+              {spectrumPick !== null && (
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full border-2 border-white shadow-[0_0_0_2px_rgba(0,0,0,0.65),0_4px_12px_rgba(0,0,0,0.6)] pointer-events-none"
+                  style={{
+                    left: `${(spectrumPos * 100).toFixed(1)}%`,
+                    backgroundColor:
+                      spectrumPick === 'neutral'
+                        ? '#8d95a0'
+                        : `hsl(${spectrumPick} 90% 55%)`,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* 七大高定色系家族快捷胶囊 */}
+          <div className="mt-2.5 flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar">
             {HUE_GROUPS.map((group) => {
-              const active = hueGroup === group.key;
+              const active = spectrumPick === null && hueGroup === group.key;
               return (
                 <button
                   key={group.key}
                   type="button"
-                  onClick={() => setHueGroup(group.key)}
+                  onClick={() => {
+                    setSpectrumPick(null);
+                    setHueGroup(group.key);
+                  }}
                   className={cn(
                     'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-all',
                     active
@@ -190,6 +281,7 @@ export function ColorCatalogDrawer({
                   setQuery('');
                   setFinishFilter('all');
                   setHueGroup('all');
+                  setSpectrumPick(null);
                 }}
                 className="mt-3 px-4 py-1.5 rounded-full border border-[#C9A86A]/40 text-xs text-[#C9A86A] hover:bg-[#C9A86A]/10"
               >

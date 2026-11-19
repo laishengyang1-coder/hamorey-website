@@ -36,8 +36,40 @@ import { ColorCatalogDrawer } from '../components/color-studio/ColorCatalogDrawe
 import { ColorCardModal } from '../components/color-studio/ColorCardModal';
 import { cn } from '../lib/cn';
 
-const ColorStudioCanvas = lazy(() => import('../components/color-studio/ColorStudioCanvas')
+const loadColorStudioCanvas = () => import('../components/color-studio/ColorStudioCanvas');
+const ColorStudioCanvas = lazy(() => loadColorStudioCanvas()
   .then(module => ({ default: module.ColorStudioCanvas })));
+
+/**
+ * 用户在扇形样板页浏览时，利用浏览器空闲时间预取 3D 引擎分包与当前车型模型，
+ * 点击「装车预览」时近乎秒开。省流量模式 / 2G 网络下跳过。
+ */
+function prefetchStudio3D(modelUrl: string): () => void {
+  const nav = navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  };
+  if (nav.connection?.saveData || /(^|-)2g$/.test(nav.connection?.effectiveType ?? '')) {
+    return () => {};
+  }
+  let cancelled = false;
+  const run = () => {
+    if (cancelled) return;
+    loadColorStudioCanvas().catch(() => {});
+    fetch(modelUrl, { credentials: 'same-origin' }).catch(() => {});
+  };
+  const w = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    cancelIdleCallback?: (id: number) => void;
+  };
+  const timer = window.setTimeout(() => {
+    if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 4000 });
+    else run();
+  }, 2500);
+  return () => {
+    cancelled = true;
+    window.clearTimeout(timer);
+  };
+}
 
 const VIEW_MODES: Array<{
   key: StudioViewMode;
@@ -118,6 +150,12 @@ export default function ColorStudioPage() {
     const nextUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, '', nextUrl);
   }, [activeSwatch.code, viewMode, vehicleId]);
+
+  useEffect(() => {
+    if (viewMode !== 'swatch') return;
+    const vehicle = STUDIO_VEHICLES.find((v) => v.id === vehicleId) ?? STUDIO_VEHICLES[0];
+    return prefetchStudio3D(vehicle.modelUrl);
+  }, [viewMode, vehicleId]);
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');

@@ -1,7 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent } from 'react';
-import { COLOR_STUDIO_SWATCHES, type ColorFilmItem, type StudioLightingPreset } from '../../config/colorStudio';
-import { fanFinishes } from './fanFinishes';
+import type { CSSProperties, PointerEvent, WheelEvent } from 'react';
+import {
+  COLOR_STUDIO_SWATCHES,
+  type ColorFilmItem,
+  type StudioLightingPreset,
+} from '../../config/colorStudio';
 import { SwatchFanMaterial } from './SwatchFanMaterial';
 import './SwatchFan.css';
 
@@ -17,66 +20,121 @@ interface SwatchFanProps {
 }
 
 type Variables = CSSProperties & Record<`--${string}`, string | number>;
-type Touch = {
-  pointer: number; x: number; y: number; code?: string;
-  moved: boolean; tiltX: number; tiltY: number;
-};
-type PendingTap = { x: number; y: number; when: number; code: string };
-const wrap = (n: number, length: number) => ((n % length) + length) % length;
-const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
-const numbers = new Map(COLOR_STUDIO_SWATCHES.map((s, i) => [s.code, String(i + 1).padStart(2, '0')]));
-const angle = 15;
-const turnInterval = 3200;
-const turnDuration = 1730;
-const neighboringDelay = 50;
 
-function lettering(first: string, last: string, mix = 0) {
-  const rgb = (hex: string) => [1, 3, 5].map(i => Number.parseInt(hex.slice(i, i + 2), 16) / 255);
-  const b = rgb(last);
-  const [r, g, blue] = rgb(first).map((c, i) => {
-    const channel = c + (b[i] - c) * mix;
-    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+interface DragState {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  lastX: number;
+  lastTime: number;
+  startPos: number;
+  moved: boolean;
+  code?: string;
+  tiltX: number;
+  tiltY: number;
+}
+
+interface PendingTap {
+  x: number;
+  y: number;
+  when: number;
+  code: string;
+}
+
+const wrap = (n: number, length: number) => ((n % length) + length) % length;
+const clamp = (value: number, low: number, high: number) =>
+  Math.max(low, Math.min(high, value));
+
+const numbers = new Map(
+  COLOR_STUDIO_SWATCHES.map((s, i) => [s.code, String(i + 1).padStart(2, '0')]),
+);
+
+const BASE_ANGLE = 13.5;
+const AUTO_TURN_MS = 3400;
+const VISIBLE_REACH = 5;
+
+function letteringColor(hex: string): string {
+  const clean = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const ch = Number.parseInt(clean.slice(i, i + 2), 16) / 255;
+    return ch <= 0.04045 ? ch / 12.92 : ((ch + 0.055) / 1.055) ** 2.4;
   });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * blue > .21 ? '#141518' : '#fffaf1';
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.24 ? '#141518' : '#fffaf1';
 }
 
 export function SwatchFan({
-  swatches, activeSwatch, lightingPreset, lang, pickedUp, paused, onSelect, onPickedUpChange,
+  swatches,
+  activeSwatch,
+  lightingPreset,
+  lang,
+  pickedUp,
+  paused,
+  onSelect,
+  onPickedUpChange,
 }: SwatchFanProps) {
-  const stage = useRef<HTMLDivElement>(null);
-  const pointer = useRef<Touch | null>(null);
-  const pending = useRef<PendingTap | null>(null);
-  const tapTimer = useRef(0);
-  const lastDouble = useRef(-Infinity);
-  const holdUntil = useRef(0);
-  const firstTurn = useRef(true);
-  const settleTimer = useRef(0);
-  const dragFrame = useRef(0);
-  const tilt = useRef({ x: 0, y: 0 });
+  const stageRef = useRef<HTMLDivElement>(null);
+  const slotRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const dragRef = useRef<DragState | null>(null);
+  const pendingTapRef = useRef<PendingTap | null>(null);
+  const tapTimerRef = useRef(0);
+  const lastDoubleRef = useRef(-Infinity);
+  const holdUntilRef = useRef(0);
+  const wheelAccumRef = useRef(0);
+  const wheelTimerRef = useRef(0);
+  const tiltRef = useRef({ x: 0, y: 0 });
+
+  const n = swatches.length;
+  const activeIdx = Math.max(
+    0,
+    swatches.findIndex((c) => c.code === activeSwatch.code),
+  );
+
+  // 连续物理弹簧状态（pos / target / velocity 均以卡片槽位为单位，零 React 帧内重绘）
+  const physicsRef = useRef({
+    list: swatches,
+    pos: activeIdx,
+    target: activeIdx,
+    velocity: 0,
+    dragging: false,
+    renderCenter: activeIdx,
+  });
+  // 物理循环静止即休眠（不空转 rAF、不耗电），任何输入或目标变化时唤醒
+  const wakeRef = useRef<() => void>(() => {});
+  const poseSlotRef = useRef<(slotIndex: number, el: HTMLDivElement) => void>(() => {});
+
+  const [renderCenter, setRenderCenter] = useState(activeIdx);
   const [interacting, setInteracting] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const active = Math.max(0, swatches.findIndex(color => color.code === activeSwatch.code));
-  // Absolute card positions keep each physical card moving in the same direction at the loop seam.
-  const anchor = useRef({ list: swatches, slot: active, direction: 1, adjacent: true });
-  const n = swatches.length;
-  const previous = anchor.current;
-  let center = active;
-  if (previous.list === swatches && n) {
-    const delta = wrap(active - previous.slot + Math.floor(n / 2), n) - Math.floor(n / 2);
-    center = previous.slot + delta;
-  }
-  const displacement = center - previous.slot;
-  const direction = Math.sign(displacement) || previous.direction;
-  const adjacent = swatches === previous.list &&
-    (displacement === 0 ? previous.adjacent : Math.abs(displacement) === 1);
+
+  const handlersRef = useRef({ onSelect, onPickedUpChange, pickedUp, swatches });
   useLayoutEffect(() => {
-    anchor.current = { list: swatches, slot: center, direction, adjacent };
-  }, [swatches, center, direction, adjacent]);
-  const handlers = useRef({ onSelect, onPickedUpChange, pickedUp, swatches });
-  useLayoutEffect(() => { handlers.current = { onSelect, onPickedUpChange, pickedUp, swatches }; });
+    handlersRef.current = { onSelect, onPickedUpChange, pickedUp, swatches };
+  });
+
+  // 外部切色（点击底栏色珠 / 抽屉选色 / 切换工艺）时，走最短弧线平滑弹簧滑过去
   useLayoutEffect(() => {
-    const el = stage.current;
+    const p = physicsRef.current;
+    if (p.list !== swatches) {
+      p.list = swatches;
+      p.pos = activeIdx;
+      p.target = activeIdx;
+      p.velocity = 0;
+      p.renderCenter = activeIdx;
+      setRenderCenter(activeIdx);
+      return;
+    }
+    if (p.dragging || !n) return;
+    const currentWrapped = wrap(Math.round(p.target), n);
+    if (currentWrapped !== activeIdx) {
+      const delta = wrap(activeIdx - currentWrapped + Math.floor(n / 2), n) - Math.floor(n / 2);
+      p.target = Math.round(p.target) + delta;
+    }
+    wakeRef.current();
+  }, [swatches, activeIdx, n]);
+
+  useLayoutEffect(() => {
+    const el = stageRef.current;
     if (!el) return;
     const resize = () => setBox({ w: el.clientWidth, h: el.clientHeight });
     resize();
@@ -84,220 +142,409 @@ export function SwatchFan({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
     document.addEventListener('visibilitychange', update);
     return () => {
       document.removeEventListener('visibilitychange', update);
-      window.clearTimeout(tapTimer.current);
-      window.clearTimeout(settleTimer.current);
-      window.cancelAnimationFrame(dragFrame.current);
+      window.clearTimeout(tapTimerRef.current);
+      window.clearTimeout(wheelTimerRef.current);
     };
   }, []);
+
+  // 自动温和轮播（仅在用户开启播放且未交互、未拾起时生效）
   useEffect(() => {
     if (paused || pickedUp || interacting || !visible || n < 2) return;
+    const delay = Math.max(AUTO_TURN_MS, holdUntilRef.current - performance.now());
     const timer = window.setTimeout(() => {
-      if (document.hidden || pointer.current) return;
-      firstTurn.current = false;
-      handlers.current.onSelect(swatches[wrap(active + 1, n)]);
-    }, Math.max(firstTurn.current ? 1200 : turnInterval, holdUntil.current - performance.now()));
+      if (document.hidden || dragRef.current) return;
+      const p = physicsRef.current;
+      p.target = Math.round(p.target) + 1;
+      wakeRef.current();
+      const nextIdx = wrap(Math.round(p.target), n);
+      handlersRef.current.onSelect(swatches[nextIdx]);
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [paused, pickedUp, interacting, visible, n, active, swatches]);
+  }, [paused, pickedUp, interacting, visible, n, activeIdx, swatches]);
 
   function clearTap() {
-    window.clearTimeout(tapTimer.current);
-    pending.current = null;
+    window.clearTimeout(tapTimerRef.current);
+    pendingTapRef.current = null;
   }
+
   useEffect(() => {
     clearTap();
-    if (!stage.current) return;
-    tilt.current = { x: 0, y: 0 };
-    stage.current.style.removeProperty('--tilt-x');
-    stage.current.style.removeProperty('--tilt-y');
-    stage.current.style.removeProperty('--inspection-reflection');
-    stage.current.style.removeProperty('--flex');
+    const el = stageRef.current;
+    if (!el) return;
+    tiltRef.current = { x: 0, y: 0 };
+    el.style.removeProperty('--tilt-x');
+    el.style.removeProperty('--tilt-y');
+    el.style.removeProperty('--inspection-reflection');
+    el.style.removeProperty('--flex');
   }, [pickedUp, activeSwatch.code, swatches]);
+
   useEffect(() => {
     if (!pickedUp) return;
-    const key = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !document.querySelector('[role="dialog"],dialog[open]')) {
-        handlers.current.onPickedUpChange(false);
+        handlersRef.current.onPickedUpChange(false);
       }
     };
-    window.addEventListener('keydown', key);
-    return () => window.removeEventListener('keydown', key);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [pickedUp]);
 
-  const cardHeight = Math.min(box.h * .77, box.w * (box.w < box.h ? .83 : .54));
-  const cardWidth = cardHeight * .46;
-  const stepWidth = Math.max(50, Math.sin(angle * Math.PI / 180) * cardHeight * 1.94);
+  // 单一 60–120fps 物理弹簧循环：直接写 transform，静止后自动休眠
+  useEffect(() => {
+    let rafId = 0;
+    let running = false;
+    let lastTime = performance.now();
+
+    const poseSlot = (slotIndex: number, slotEl: HTMLDivElement) => {
+      const p = physicsRef.current;
+      const isPicked = handlersRef.current.pickedUp;
+      const speedSpread = clamp(Math.abs(p.velocity) * 0.42, 0, 3.2);
+      const spacing = BASE_ANGLE + speedSpread;
+      const rel = slotIndex - p.pos;
+      const absRel = Math.abs(rel);
+      const liftY = isPicked ? 0 : Math.min(28, absRel * absRel * 1.45);
+      const scale = isPicked ? 1 : 1 - Math.min(0.08, absRel * 0.014);
+      slotEl.style.transform = `translate3d(0, ${liftY.toFixed(2)}px, 0) rotate(${(-rel * spacing).toFixed(3)}deg) scale(${scale.toFixed(4)})`;
+      const nearest = Math.round(p.pos);
+      slotEl.style.zIndex = String(isPicked && slotIndex === nearest ? 50 : 30 - Math.round(absRel * 3));
+      const refl = clamp(-rel * 13 + p.velocity * 1.8, -36, 36);
+      slotEl.style.setProperty('--fan-reflection', `var(--inspection-reflection, ${refl.toFixed(1)}%)`);
+    };
+    poseSlotRef.current = poseSlot;
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.032, Math.max(0.001, (now - lastTime) / 1000));
+      lastTime = now;
+      const p = physicsRef.current;
+      if (!handlersRef.current.swatches.length) {
+        running = false;
+        return;
+      }
+
+      let settled = false;
+      if (!p.dragging) {
+        // 丝滑弹簧阻尼器（stiffness 165, damping 21 → 轻盈顺滑、自然收尾）
+        const disp = p.target - p.pos;
+        const accel = disp * 165 - p.velocity * 21;
+        p.velocity += accel * dt;
+        p.pos += p.velocity * dt;
+        if (Math.abs(disp) < 0.0008 && Math.abs(p.velocity) < 0.004) {
+          p.pos = p.target;
+          p.velocity = 0;
+          settled = true;
+        }
+      }
+
+      const nearestSlot = Math.round(p.pos);
+      if (nearestSlot !== p.renderCenter) {
+        p.renderCenter = nearestSlot;
+        setRenderCenter(nearestSlot);
+      }
+      for (const [slotIndex, slotEl] of slotRefs.current.entries()) poseSlot(slotIndex, slotEl);
+
+      if (settled) {
+        running = false;
+        return;
+      }
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    const wake = () => {
+      if (running) return;
+      running = true;
+      lastTime = performance.now();
+      rafId = window.requestAnimationFrame(tick);
+    };
+    wakeRef.current = wake;
+    wake();
+    return () => {
+      running = false;
+      window.cancelAnimationFrame(rafId);
+      wakeRef.current = () => {};
+    };
+  }, []);
+
+  // 拿起 / 放回、舞台尺寸变化时重新摆位一次
+  useEffect(() => {
+    wakeRef.current();
+  }, [pickedUp, box.w, box.h]);
+
+  const cardHeight = Math.min(box.h * 0.76, box.w * (box.w < box.h ? 0.82 : 0.53));
+  const cardWidth = cardHeight * 0.46;
+  const stepWidth = Math.max(58, Math.sin((BASE_ANGLE * Math.PI) / 180) * cardHeight * 1.85);
+
   const variables: Variables = {
-    '--card-h': `${cardHeight}px`, '--card-w': `${cardWidth}px`,
-    '--fan-top': `${Math.max(0, (box.h - cardHeight) * .37)}px`,
-    '--pivot': `${cardHeight * 2.35}px`, '--ridge': `${cardHeight * 1.86}px`,
-    '--turn-time': `${adjacent ? turnDuration : 480}ms`,
-    '--turn-ease': adjacent ? 'cubic-bezier(.81,0,.22,.99)' : 'cubic-bezier(.2,.74,.24,1)',
+    '--card-h': `${cardHeight}px`,
+    '--card-w': `${cardWidth}px`,
+    '--fan-top': `${Math.max(0, (box.h - cardHeight) * 0.36)}px`,
+    '--pivot': `${cardHeight * 2.38}px`,
+    '--ridge': `${cardHeight * 1.88}px`,
   };
 
-  function sample(code: string) {
-    return handlers.current.swatches.find(s => s.code === code);
+  function sampleByCode(code: string) {
+    return handlersRef.current.swatches.find((s) => s.code === code);
   }
+
   function lift(code: string) {
-    const color = sample(code);
+    const color = sampleByCode(code);
     if (!color) return;
     clearTap();
-    holdUntil.current = performance.now() + 5000;
-    if (!handlers.current.pickedUp) handlers.current.onSelect(color);
-    handlers.current.onPickedUpChange(!handlers.current.pickedUp);
-    lastDouble.current = performance.now();
+    holdUntilRef.current = performance.now() + 5000;
+    if (!handlersRef.current.pickedUp) handlersRef.current.onSelect(color);
+    handlersRef.current.onPickedUpChange(!handlersRef.current.pickedUp);
+    lastDoubleRef.current = performance.now();
   }
-  function tap(code: string, x: number, y: number) {
-    const last = pending.current, now = performance.now();
-    if (last && now - last.when < 375 && Math.hypot(last.x - x, last.y - y) < 28) {
+
+  function handleTap(code: string, x: number, y: number) {
+    const last = pendingTapRef.current;
+    const now = performance.now();
+    if (last && now - last.when < 320 && Math.hypot(last.x - x, last.y - y) < 28) {
       lift(last.code);
       return;
     }
     clearTap();
-    pending.current = { x, y, when: now, code };
-    // Keep the side card under the finger until a possible second tap arrives.
-    tapTimer.current = window.setTimeout(() => {
-      const hit = sample(code);
-      if (hit && !handlers.current.pickedUp) handlers.current.onSelect(hit);
-      pending.current = null;
-    }, 375);
+    pendingTapRef.current = { x, y, when: now, code };
+    tapTimerRef.current = window.setTimeout(() => {
+      const hit = sampleByCode(code);
+      if (hit && !handlersRef.current.pickedUp) {
+        handlersRef.current.onSelect(hit);
+      }
+      pendingTapRef.current = null;
+    }, 240);
   }
+
   function onDown(e: PointerEvent<HTMLDivElement>) {
-    if (!e.isPrimary || e.button !== 0 || pointer.current) return;
+    if (!e.isPrimary || e.button !== 0 || dragRef.current) return;
     const button = (e.target as Element).closest<HTMLButtonElement>('button[data-fan-code]');
-    pointer.current = {
-      pointer: e.pointerId, x: e.clientX, y: e.clientY, code: button?.dataset.fanCode,
-      moved: false, tiltX: tilt.current.x, tiltY: tilt.current.y,
+    const p = physicsRef.current;
+    dragRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastTime: performance.now(),
+      startPos: p.pos,
+      moved: false,
+      code: button?.dataset.fanCode,
+      tiltX: tiltRef.current.x,
+      tiltY: tiltRef.current.y,
     };
-    holdUntil.current = performance.now() + 5200;
+    holdUntilRef.current = performance.now() + 5200;
     setInteracting(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   }
+
   function onMove(e: PointerEvent<HTMLDivElement>) {
-    const touch = pointer.current;
-    if (!touch || e.pointerId !== touch.pointer) return;
-    const dx = e.clientX - touch.x, dy = e.clientY - touch.y;
-    if (!touch.moved && Math.hypot(dx, dy) < 7) return;
+    const drag = dragRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+
     const el = e.currentTarget;
-    if (!touch.moved) {
+    if (!drag.moved) {
       clearTap();
-      if (!pickedUp) {
-        // If the user catches a moving fan, grab the current pose, not its destination.
-        const slots = [...el.querySelectorAll<HTMLElement>('.swatch-fan__slot')];
-        const angles = slots.map(slot => {
-          const matrix = new DOMMatrixReadOnly(getComputedStyle(slot).transform);
-          return Math.atan2(matrix.b, matrix.a) * 180 / Math.PI;
-        });
-        slots.forEach((slot, i) => slot.style.setProperty('--grip-angle', angles[i] + 'deg'));
-      }
-      touch.moved = true;
+      drag.moved = true;
       el.dataset.dragging = 'true';
-    }
-    // Coalesce pointer samples at display refresh rate. Each update moves cached layers.
-    window.cancelAnimationFrame(dragFrame.current);
-    dragFrame.current = window.requestAnimationFrame(() => {
-      if (pointer.current !== touch) return;
-      if (pickedUp) {
-        const x = clamp(touch.tiltX - dy / Math.max(1,cardHeight) * 67, -26, 26);
-        const y = clamp(touch.tiltY + dx / Math.max(1,cardWidth) * 64, -47, 47);
-        tilt.current = { x, y };
-        el.style.setProperty('--tilt-x', x + 'deg');
-        el.style.setProperty('--tilt-y', y + 'deg');
-        el.style.setProperty('--inspection-reflection', clamp(y * .65 - x * .35, -35, 35) + '%');
-      } else {
-        el.style.setProperty('--drag-angle', clamp(dx / stepWidth, -2, 2) * angle + 'deg');
-        el.style.setProperty('--flex', clamp(-dy / Math.max(1,cardHeight) * 29, -10, 10) + 'deg');
+      if (!pickedUp) {
+        physicsRef.current.dragging = true;
       }
-    });
-  }
-  function onUp(e: PointerEvent<HTMLDivElement>, cancelled = false) {
-    const touch = pointer.current;
-    if (!touch || e.pointerId !== touch.pointer) return;
-    pointer.current = null;
-    setInteracting(false);
-    const el = e.currentTarget;
-    window.cancelAnimationFrame(dragFrame.current);
-    if (touch.moved && !pickedUp) {
-      el.dataset.settling = 'true';
-      window.clearTimeout(settleTimer.current);
-      settleTimer.current = window.setTimeout(() => { delete el.dataset.settling; }, 400);
-      el.querySelectorAll<HTMLElement>('.swatch-fan__slot').forEach(slot => slot.style.removeProperty('--grip-angle'));
     }
+
+    if (pickedUp) {
+      const x = clamp(drag.tiltX - (dy / Math.max(1, cardHeight)) * 62, -24, 24);
+      const y = clamp(drag.tiltY + (dx / Math.max(1, cardWidth)) * 58, -44, 44);
+      tiltRef.current = { x, y };
+      el.style.setProperty('--tilt-x', `${x.toFixed(2)}deg`);
+      el.style.setProperty('--tilt-y', `${y.toFixed(2)}deg`);
+      el.style.setProperty(
+        '--inspection-reflection',
+        `${clamp(y * 0.72 - x * 0.35, -36, 36).toFixed(1)}%`,
+      );
+      return;
+    }
+
+    const now = performance.now();
+    const dt = Math.max(0.004, (now - drag.lastTime) / 1000);
+    const stepDx = e.clientX - drag.lastX;
+    drag.lastX = e.clientX;
+    drag.lastTime = now;
+
+    // 手指/鼠标 1:1 实时跟手推进扇面 + 平滑采样惯性速度
+    const p = physicsRef.current;
+    const nextPos = drag.startPos - dx / stepWidth;
+    const instantVel = -(stepDx / stepWidth) / dt;
+    p.velocity = p.velocity * 0.45 + clamp(instantVel, -24, 24) * 0.55;
+    p.pos = nextPos;
+    p.target = nextPos;
+    wakeRef.current();
+
+    // 垂直轻拉呈现微妙的 3D 俯仰角
+    el.style.setProperty('--flex', `${clamp((-dy / Math.max(1, cardHeight)) * 22, -9, 9).toFixed(2)}deg`);
+  }
+
+  function onUp(e: PointerEvent<HTMLDivElement>, cancelled = false) {
+    const drag = dragRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    dragRef.current = null;
+    setInteracting(false);
+
+    const el = e.currentTarget;
     delete el.dataset.dragging;
-    el.style.removeProperty('--drag-angle');
     el.style.removeProperty('--flex');
     if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
-    if (cancelled) { clearTap(); return; }
-    const distance = (e.clientX - touch.x) / stepWidth;
-    if (touch.moved) {
-      if (!pickedUp && n > 1 && Math.abs(distance) > .16) {
-        const steps = Math.sign(distance) * clamp(Math.round(Math.abs(distance)), 1, 2);
-        onSelect(swatches[wrap(active + steps, n)]);
+
+    const p = physicsRef.current;
+    p.dragging = false;
+    wakeRef.current();
+
+    if (cancelled) {
+      clearTap();
+      p.target = Math.round(p.pos);
+      return;
+    }
+
+    if (drag.moved) {
+      if (!pickedUp && n > 1) {
+        // 惯性滑行：根据脱手速度顺势滑过 1~5 张色卡并精准吸附中心槽位
+        const projected = p.pos + clamp(p.velocity * 0.16, -5, 5);
+        const snapped = Math.round(projected);
+        p.target = snapped;
+        const targetIdx = wrap(snapped, n);
+        if (targetIdx !== activeIdx) {
+          onSelect(swatches[targetIdx]);
+        }
       }
-    } else if (touch.code) {
-      tap(touch.code, e.clientX, e.clientY);
+      return;
+    }
+
+    if (drag.code) {
+      handleTap(drag.code, e.clientX, e.clientY);
     } else {
-      // A still-rotating card can move out from under the second tap.
-      const last = pending.current;
-      if (last && performance.now() - last.when < 375 && Math.hypot(last.x - e.clientX, last.y - e.clientY) < 28) lift(last.code);
+      const last = pendingTapRef.current;
+      if (
+        last &&
+        performance.now() - last.when < 320 &&
+        Math.hypot(last.x - e.clientX, last.y - e.clientY) < 28
+      ) {
+        lift(last.code);
+      }
     }
   }
 
-  // Mirror the physical fan in both directions, including when browsing just one finish family.
-  const reach = n > 1 ? Math.min(6, Math.max(3, Math.ceil(box.w / (stepWidth * 1.4)) + 1)) : 0;
+  function onWheel(e: WheelEvent<HTMLDivElement>) {
+    if (pickedUp || n < 2) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(delta) < 2) return;
+    holdUntilRef.current = performance.now() + 4500;
+    wheelAccumRef.current += delta;
+    if (Math.abs(wheelAccumRef.current) >= 42) {
+      const steps = Math.sign(wheelAccumRef.current);
+      wheelAccumRef.current = 0;
+      const p = physicsRef.current;
+      p.target = Math.round(p.target) + steps;
+      wakeRef.current();
+      onSelect(swatches[wrap(Math.round(p.target), n)]);
+    }
+    window.clearTimeout(wheelTimerRef.current);
+    wheelTimerRef.current = window.setTimeout(() => {
+      wheelAccumRef.current = 0;
+    }, 160);
+  }
+
+  const reach = n > 1 ? Math.min(VISIBLE_REACH, Math.max(3, Math.ceil(box.w / (stepWidth * 1.5)))) : 0;
   const cards = [];
+
   for (let offset = -reach; n && offset <= reach; offset++) {
-    const slot = center + offset, swatch = swatches[wrap(slot, n)];
-    const isCurrent = offset === 0, isLifted = pickedUp && isCurrent;
-    const stops = fanFinishes[swatch.code]?.stops;
-    const deepBlack = swatch.code === 'TPU-002S' || swatch.code === 'TPU-035S';
-    const base = swatch.hex;
-    const top = deepBlack ? base : stops?.[0] ?? base;
-    const bottom = deepBlack ? base : stops?.[3] ?? base;
+    const slot = renderCenter + offset;
+    const swatch = swatches[wrap(slot, n)];
+    const isCurrent = offset === 0;
     const printedName = lang === 'zh' ? swatch.name : swatch.nameEn;
-    // The leading card departs first. A 50 ms lag per neighbour opens the fan at
-    // peak speed and closes it as the followers settle on the same 15° spacing.
-    const delay = adjacent ? (3 + clamp(offset * direction, -3, 3)) * neighboringDelay : 0;
+    const ink = letteringColor(swatch.hex);
+
     const style: Variables = {
-      '--turn-delay': `${delay}ms`,
-      '--fan-reflection': `var(--inspection-reflection, ${clamp(-offset * 11, -32, 32)}%)`,
-      '--slot-angle': `${-offset * angle}deg`,
-      '--ink-top': lettering(base, top, .43), '--ink-bottom': lettering(base, bottom, .63),
-      zIndex: isLifted ? 50 : 20 - offset,
+      '--ink-top': ink,
+      '--ink-bottom': ink,
     };
+
     cards.push(
-      <div key={swatch.code + '/' + Math.floor(slot/n)} className="swatch-fan__slot" data-center={isCurrent} style={style}>
-        <button type="button" className="swatch-fan__card" data-fan-code={swatch.code}
-          aria-label={`${printedName} ${swatch.code}`} aria-pressed={isCurrent} tabIndex={isCurrent ? 0 : -1}
-          onClick={e => { if (e.detail === 0) lift(swatch.code); }}>
+      <div
+        key={slot}
+        ref={(node) => {
+          if (node) {
+            if (!slotRefs.current.has(slot)) {
+              slotRefs.current.set(slot, node);
+              // 新挂载的卡片立即按当前物理位姿摆放，避免出现一帧跳位
+              poseSlotRef.current(slot, node);
+            }
+          } else {
+            slotRefs.current.delete(slot);
+          }
+        }}
+        className="swatch-fan__slot"
+        data-center={isCurrent}
+        style={style}
+      >
+        <button
+          type="button"
+          className="swatch-fan__card"
+          data-fan-code={swatch.code}
+          aria-label={`${printedName} ${swatch.code}`}
+          aria-pressed={isCurrent}
+          tabIndex={isCurrent ? 0 : -1}
+          onClick={(e) => {
+            if (e.detail === 0) lift(swatch.code);
+          }}
+        >
           <span className="swatch-fan__surface" aria-hidden="true">
             <SwatchFanMaterial swatch={swatch} lightingPreset={lightingPreset} />
-            <span className="swatch-fan__arc" />
             <span className="swatch-fan__brand">HAMOREY</span>
             <span className="swatch-fan__number">{numbers.get(swatch.code)}</span>
-            <span className="swatch-fan__caption"><strong>{printedName}</strong><small>{swatch.code}</small></span>
+            <span className="swatch-fan__caption">
+              <strong>{printedName}</strong>
+              <small>{swatch.code}</small>
+            </span>
           </span>
         </button>
-      </div>
+      </div>,
     );
   }
 
   return (
-    <div ref={stage} style={variables} className="swatch-fan" data-swatch-fan=""
-      data-lighting={lightingPreset} data-picked-up={pickedUp}
-      role="region" tabIndex={-1} aria-label={lang === 'zh' ? '流光色卡，左右键选色，回车拿起或放回' : 'Film samples. Arrow keys browse, Enter lifts or returns a sample.'}
-      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={e => onUp(e)}
-      onPointerCancel={e => onUp(e,true)} onLostPointerCapture={e => { if (e.target === e.currentTarget) onUp(e, true); }}
-      onDoubleClick={e => {
-        if (performance.now() - lastDouble.current < 150) return;
+    <div
+      ref={stageRef}
+      style={variables}
+      className="swatch-fan"
+      data-swatch-fan=""
+      data-lighting={lightingPreset}
+      data-picked-up={pickedUp}
+      role="region"
+      tabIndex={-1}
+      aria-label={
+        lang === 'zh'
+          ? '流光色卡，左右滑动或方向键选色，双击拿起或放回'
+          : 'Film samples. Drag or arrow keys to browse, double-tap to lift.'
+      }
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={(e) => onUp(e)}
+      onPointerCancel={(e) => onUp(e, true)}
+      onLostPointerCapture={(e) => {
+        if (e.target === e.currentTarget) onUp(e, true);
+      }}
+      onWheel={onWheel}
+      onDoubleClick={(e) => {
+        if (performance.now() - lastDoubleRef.current < 150) return;
         const hit = (e.target as Element).closest<HTMLButtonElement>('button[data-fan-code]');
         if (hit?.dataset.fanCode) lift(hit.dataset.fanCode);
       }}
-      onKeyDown={e => {
+      onKeyDown={(e) => {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -307,13 +554,17 @@ export function SwatchFan({
         }
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         e.preventDefault();
-        holdUntil.current = performance.now() + 5200;
+        holdUntilRef.current = performance.now() + 5200;
         if (!pickedUp && n) {
-          const next = swatches[wrap(active + (e.key === 'ArrowLeft' ? -1 : 1), n)];
+          const step = e.key === 'ArrowLeft' ? -1 : 1;
+          const p = physicsRef.current;
+          p.target = Math.round(p.target) + step;
+          wakeRef.current();
+          const next = swatches[wrap(Math.round(p.target), n)];
           onSelect(next);
-          window.requestAnimationFrame(() => stage.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.focus({ preventScroll:true }));
         }
-      }}>
+      }}
+    >
       <div className="swatch-fan__room" aria-hidden="true" />
       <div className="swatch-fan__cards">{cards}</div>
     </div>

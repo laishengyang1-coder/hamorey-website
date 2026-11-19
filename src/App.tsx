@@ -7,7 +7,6 @@ import BrandPage from './pages/BrandPage'
 import ProductsPage from './pages/ProductsPage'
 import WindowFilmPage from './pages/WindowFilmPage'
 import PPFPage from './pages/PPFPage'
-import ColorPPFPage from './pages/ColorPPFPage'
 import SunroofFilmPage from './pages/SunroofFilmPage'
 import ArchitecturalFilmPage from './pages/ArchitecturalFilmPage'
 import ServicePage from './pages/ServicePage'
@@ -24,6 +23,8 @@ import NotFoundPage from './pages/NotFoundPage'
 import LoginHub from './pages/LoginHub'
 
 const ColorStudioPage = React.lazy(() => import('./pages/ColorStudioPage'))
+// 改色车衣页含 103 色色库数据（约 100KB 源码），按需加载，不进入官网首页主包
+const ColorPPFPage = React.lazy(() => import('./pages/ColorPPFPage'))
 
 const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -89,7 +90,16 @@ const brandRouter = createBrowserRouter([
       { path: 'products', element: <ProductsPage /> },
       { path: 'products/window-film', element: <WindowFilmPage /> },
       { path: 'products/ppf', element: <PPFPage /> },
-      { path: 'products/color-ppf', element: <ColorPPFPage /> },
+      {
+        path: 'products/color-ppf',
+        element: (
+          <ErrorBoundary label="TPU改色车衣">
+            <Suspense fallback={<LoadingScreen />}>
+              <ColorPPFPage />
+            </Suspense>
+          </ErrorBoundary>
+        ),
+      },
       { path: 'products/sunroof-film', element: <SunroofFilmPage /> },
       { path: 'products/architectural-film', element: <ArchitecturalFilmPage /> },
       { path: 'service', element: <ServicePage /> },

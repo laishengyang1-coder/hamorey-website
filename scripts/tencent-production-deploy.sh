@@ -169,6 +169,28 @@ location ^~ /assets/ {
     access_log off;
 }
 
+# 3D models: meshopt output is designed to be further gzipped (~30% smaller).
+# Filenames are not hashed, so the front end appends ?v=YYYYMMDD; bump it on replacement.
+location ^~ /models/ {
+    try_files \$uri =404;
+    types { model/gltf-binary glb; text/plain txt; }
+    gzip_types model/gltf-binary;
+    add_header Cache-Control "public, max-age=604800, stale-while-revalidate=2592000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    access_log off;
+}
+
+location ^~ /color-studio/paint/ {
+    try_files \$uri =404;
+    add_header Cache-Control "public, max-age=604800, stale-while-revalidate=2592000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    access_log off;
+}
+
 # The swatch assets share the SPA route name. Serve the entry for both spellings.
 location ~ ^/color-studio/?$ {
     rewrite ^ /index.html last;

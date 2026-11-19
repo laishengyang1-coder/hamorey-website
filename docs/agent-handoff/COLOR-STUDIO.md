@@ -1,6 +1,6 @@
 # 和膜 HAMOREY — 3D 高定选色工坊（Color Studio）跨 AI 同步与调用文档
 
-> 2026-11-19。本文对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
+> 2026-11-19（V4 已更新，见第七节）。本文最初对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
 
 ## 一、官网入口与选色方式
 
@@ -13,14 +13,14 @@
 
 ### 流光样板
 
-- **轮转。** 默认浏览全部 103 色，在选定工艺后只循环该组色卡。自动播放约每 3.2 秒前进一色。停稳时卡片共用转轴、相邻间隔 15°；轮转时近邻沿转向依次晚 50 毫秒起动，形成先张开、再收拢的动作。左右滑动或点选邻卡都能切换颜色。
+- **轮转（V4 改为弹簧物理）。** 默认浏览全部 103 色，在选定工艺后只循环该组色卡。自动播放约每 3.4 秒前进一色。卡片共用转轴、停稳间隔 13.5°。全部动作由一个 rAF 弹簧阻尼循环驱动（刚度 165、阻尼 21）：拖动 1:1 跟手，松手按速度惯性滑过 1~5 张并吸附中心；高速时扇面最多再张开约 3.2°、停稳收拢；支持触控板/滚轮横扫与左右键。卡片静止后循环自动休眠，不空转。位姿只由 rAF 写 `transform`，不放入 React `style`，以免重渲染覆盖当前帧造成跳位。
 - **拿起看漆面。** 双击中央或侧边的卡片可拿起指定颜色，也可点「拿起色卡」。拿起时暂停轮转，拖动可改变卡片角度与高光位置，双击、点「放回色卡」或按 Esc 可以放回。键盘焦点在样板上时，左右键切色，回车或空格拿起或放回。
 - **暂停与恢复。** 打开全系色谱、定制选色单、拿起卡片或切到后台都会暂时停止自动前进。放回或直接关闭弹层后延续先前的播放状态。从色谱或底部色轨主动选色、切换工艺后保持暂停，点播放键可继续。系统开启「减少动态效果」时初始为暂停。
-- **材质。** 卡面结合官网主色、原册四色带和材质粗糙度表现亮光、丝缎、哑光、金属颗粒、珠光偏色与碳纹。底色、颗粒和独立反光层分别绘制，拖动时移动图层。钢琴黑的原册色带与天鹅白重复，钢琴黑和总裁黑使用各自的官网黑色作为底色。柔光、展厅、落日三档照明使用同一个选色状态。
+- **材质（V4 改为纯净漆面）。** 卡面只用色号主色生成亮/基/中/暗四级亮度色阶（不混入其它颜色），叠加纯 CSS 斜向柔光高光带；亮光、丝缎、哑光按粗糙度区分高光宽度与强度，金属/珠光加细密 CSS 微粒，珠光与变色龙加偏色光带。仅锻碳/碳纤维使用 `public/color-studio/paint/tpu-*.webp` 纹理。原册四色带取样（`fanFinishes.ts`）因会把相邻色带的杂色混入卡面，已停用并删除。柔光、展厅、落日三档照明共用同一选色状态。
 
 ### 首屏与 3D 加载
 
-默认样板用 HTML/CSS 图层呈现。进入 `swatch` 只加载工坊页面和样板素材。切到 `car`、`closeup`、`macro` 或 `sphere` 才加载 Three.js 舞台；其中仅整车、腰线近景需要加载所选车型的 GLB。已载车型可在当前 3D 舞台内复用。直接打开带 `mode` 的链接会进入指定视图。
+默认样板用 HTML/CSS 图层呈现。进入 `swatch` 只加载工坊页面；停留约 2.5 秒后，浏览器空闲时会预取 Three.js 舞台分包和当前车型 GLB（省流量模式/2G 跳过），点「装车预览」可近乎秒开。切到 `car`、`closeup`、`macro` 或 `sphere` 加载 Three.js 舞台；其中仅整车、腰线近景需要加载所选车型的 GLB。已载车型可在当前 3D 舞台内复用。直接打开带 `mode` 的链接会进入指定视图。
 
 ## 二、 URL Query 调用协议（深链与外呼规范）
 
@@ -102,15 +102,15 @@
 | `src/config/colorStudio.ts` | `COLOR_STUDIO_SWATCHES` 保存 103 色名称、色号、主色、偏色和物理材质参数，同时定义产品规格、灯光、色系和车型。 |
 | `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioFanLayout.css` | 维护共享色号、灯光、语言、工艺、选色单和深链，按视图区分扇形首屏与 WebGL 舞台。 |
 | `src/components/color-studio/SwatchFan.tsx`、`SwatchFan.css` | 按可见范围绘制扇形，控制错时轮转、手势、拾取、放回和键盘操作。 |
-| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`、`fanFinishes.ts`（同一组件目录） | 按色号映射原册四色带和原始材质图路径，组合卡面颜料与反射层。`public/color-studio/finishes/` 留存原册材质切片，`public/color-studio/paint/` 提供渲染用的清漆、颗粒、丝缎与碳纹素材。 |
+| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`（同一组件目录） | 由主色生成纯亮度色阶与 CSS 反射层；锻碳/碳纤维读取 `public/color-studio/paint/tpu-001fp.webp`、`tpu-002fp.webp`、`tpu-cf.webp`。 |
 | `src/components/color-studio/ColorStudioCanvas.tsx`、`studioEnvironment.ts`、`filmMaterial.ts` | 后四种视图使用 WebGL、程序生成的棚拍环境光和按色号更新的物理车漆。金属随角变色、珠光亮度与清漆粗糙度由材质代码及色号参数控制。 |
-| `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱支持按名称、工艺或色系找色；定制选色单支持本地生成 900×1200 PNG 和门店入口。 |
-| `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊使用独立异步路由。产品页直接读取官方 103 色，按当前色号进入样板或整车。 |
+| `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱支持按名称、工艺、色系及**连续彩虹色谱条**（左侧黑白灰，右侧 0–360° 色相，±26° 匹配）找色；定制选色单支持本地生成 900×1200 PNG 和门店入口。 |
+| `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊与产品页**均为独立异步路由**（V4 起产品页也 `React.lazy`，103 色数据不进官网首页主包）。产品页读取官方 103 色，按当前色号进入样板或整车。 |
 | `src/config/products.ts` | 保留原产品结构及早期 `HC/HM/HP` 20 色兼容数组。现行选色页和产品页统一读取 `colorStudio.ts`。 |
 | `src/config/navigation.ts`、`src/config/seo.ts`、`src/index.css` | 维护官网导航、页尾入口、页面元信息及色轨公共样式。 |
 | `public/models/tesla-model-3.glb`、`tesla-model-y.glb`、`ATTRIBUTION.txt` | 两个 Tesla 模型及各自来源和署名。Model 3 为 1,384,048 字节，Model Y 为 1,580,392 字节。 |
 
-`speedformBuilder.ts` 留存前版曲面雕塑生成器。当前首屏入口指向 `SwatchFan`。
+V4 已删除不再引用的 `speedformBuilder.ts`、`fanFinishes.ts`、`public/color-studio/finishes/`（103 张）与 `paint/` 下 clearcoat/metal-grain/pearl-grain/satin 四张图（合计约 680 KB）。
 
 ### 2026 官方电子色卡 103 色分类速查表
 
@@ -141,8 +141,10 @@
 ```bash
 npx @gltf-transform/cli optimize raw-car.glb candidate-model.glb \
   --compress meshopt --texture-compress webp --texture-size 1024 \
-  --simplify false --palette false
+  --simplify false --join false --palette false
 ```
+
+**缓存与版本号（V4）**：服务器对 `/models/` 启用 gzip（meshopt 输出可再省约 30%）并缓存 7 天。`STUDIO_VEHICLES[].modelUrl` 带 `?v=YYYYMMDD`，**替换同名模型时必须同步改版本号**，否则老访客最多 7 天看到旧模型。
 
 大陆访问沿用站内模型、解码器与程序化灯光资源。接手时保留现有加载方式。
 
@@ -167,6 +169,18 @@ npx @gltf-transform/cli optimize raw-car.glb candidate-model.glb \
 ---
 
 ## 七、验证记录
+
+### 2026-11-19 V4 体验与性能优化（Antigravity）
+
+基线 `a3ba701`（含 Codex `95028f4` 扇形样板、`32d1738` 入口修复）。用户反馈：动画僵硬、色卡有不存在的杂色、不够流畅、色谱条丢失、水晶与金属部分颜色失真。
+
+- 动画：扇形改为弹簧物理 + 惯性 + 静止休眠，修复 React 提交覆盖 rAF 位姿的跳帧（见第一节「轮转」）。
+- 质感：停用原册色带混色与拉伸颗粒/遮罩图，改纯亮度色阶 + CSS 柔光（见第一节「材质」）。
+- 色彩：水晶 37 色与金属 23 色按原厂车漆资料交叉校准（如 Nardo Grey、Miami Blue、Rosso Corsa、GT Silver、Frozen Berry、Lava Orange、Chalk Grey、Brooklyn Grey、Kemora Grey、Sao Paulo Yellow、Selenite Grey、Tiffany Blue、Hermès Orange），`nameEn` 同步更新。珠光/变色龙/特殊工艺未改。
+- 体积与加载：删除约 680 KB 未用资源；`/products/color-ppf` 改懒加载，官网首页主包 370.8 KB → 287.5 KB（gzip 97 → 80 KB）；`/models/` gzip + 7 天缓存，`/color-studio/paint/` 7 天缓存；样板页空闲预取 3D 分包与车模。
+- 功能：恢复「全系色谱典藏」连续彩虹色谱条。
+- 本机核验：`npm run build`、`npm --prefix server run build` 通过；浏览器拖动/甩动/停稳无跳帧，双击拿起放回正常，`/products/color-ppf` 懒加载正常，首页正常，控制台 0 错误。
+- 发布回执见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 2026-11-19 V4 条目。
 
 ### 2026-11-19 扇形色卡正式发布与验收
 
