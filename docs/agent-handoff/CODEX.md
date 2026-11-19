@@ -87,3 +87,11 @@
 - 工作入口、可调参数、分设备测试及历史版本见[选色工坊专题交接](COLOR-STUDIO.md)。
 
 业务发布于北京时间 16:38 开始，16:59 完成。正式验收发现页面与同名素材目录发生冲突。17:01 已在服务器校验并加载两种入口的修复，代码固化于 `32d1738`，流水线同步添加入口检查，17:10 完成腾讯云重新部署。17:02–17:03 已在官网验收 103 色、拿起与放回、反光、深链和 Model Y。正式路由、112 份素材核对及部署任务见[选色工坊专题交接](COLOR-STUDIO.md)。页面可交接，微信真机渲染仍待实测。
+
+## 2026-11-19 · 和膜选色工坊扇形色卡拖动方向
+
+- 需求：首屏扇形色卡应与手指方向一致，松手惯性也不能反向。以 `bf2e3b3` 为基线；仅修改 `src/components/color-studio/SwatchFan.tsx`，不改色库、材质、键盘、滚轮、API、小程序或部署配置。
+- 原因与实现：转轴在卡片下方，`pos` 增加会让卡片向右；拖动目标用 `drag.startPos + dx / stepWidth`，惯性速度用 `stepDx / stepWidth / dt`，两者采用同一符号。保留已有阻尼、吸附和双击。
+- GitHub 主分支：[业务提交 `ada5918`](https://github.com/laishengyang1-coder/hamorey-website/commit/ada5918a6a7b59a57e0b02b6acb14850c0bcc638)。腾讯云 [Actions #267](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44542311722) 已成功，公网站点健康检查通过；上线的入口资产与修复构建相符。前后端构建、65 项接口契约、40 项质保一致性检查通过；React 组件模拟触屏与鼠标左右拖动、松手惯性、双击、取消及 Esc 均通过。
+- 线上验收（先国内、后海外）：[和膜](https://hemoppf.cn/color-studio?code=TPU-048P&mode=swatch) 和 [H&H](https://hhppf.com/color-studio/?lang=zh&code=TPU-048P&mode=swatch) 在桌面浏览器分别左右拖动，卡片与指针同向且切色正常。H&H 独立仓库 `hhppf-website` 已在 Cloudflare Pages 线上包含相同逻辑（部署基线 `280e4fe`，现有构建资源与线上逐字节匹配），无需重复推送或部署。未做手机真机或微信内浏览器验收；小程序未修改、未上传、未审核、未发布。
+- 接手建议：涉及触屏手感时，在手机各试一次慢拖和快速甩动，分别观察持有时方向和松手后的惯性。仅文档回执使用 `[skip ci]`。
