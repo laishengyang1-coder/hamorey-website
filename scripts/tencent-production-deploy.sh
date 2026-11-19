@@ -169,6 +169,11 @@ location ^~ /assets/ {
     access_log off;
 }
 
+# The swatch assets share the SPA route name. Serve the entry for both spellings.
+location ~ ^/color-studio/?$ {
+    rewrite ^ /index.html last;
+}
+
 location = /index.html {
     try_files \$uri =404;
     add_header Cache-Control "no-cache, no-store, must-revalidate" always;

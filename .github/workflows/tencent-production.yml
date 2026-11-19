@@ -106,3 +106,9 @@ jobs:
             --output /dev/null https://hemoppf.cn/
           curl --fail --silent --show-error --retry 3 --retry-all-errors \
             --output /dev/null https://system.hemoppf.cn/login/admin
+
+          for route in '/color-studio?code=TPU-048P&mode=swatch' '/color-studio/'; do
+            curl --fail --silent --show-error --retry 3 --retry-all-errors \
+              --output "$RUNNER_TEMP/color-studio-entry.html" "https://hemoppf.cn$route"
+            grep -Fq 'id="root"' "$RUNNER_TEMP/color-studio-entry.html"
+          done
