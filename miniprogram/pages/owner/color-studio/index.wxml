@@ -1,0 +1,7 @@
+<web-view wx:if="{{!failed}}" src="{{src}}" bindload="onWebLoad" binderror="onWebError" />
+<view wx:else class="error">
+  <text class="title">选色页暂时未能打开</text>
+  <text class="description">检查网络后再试一次，或复制链接到浏览器打开。</text>
+  <button class="retry" bindtap="retry">重新打开</button>
+  <button class="copy" bindtap="copyLink">复制选色链接</button>
+</view>

@@ -191,6 +191,78 @@
   height: 84rpx;
 }
 
+/* 车主端在线选色入口 */
+.color-studio-entry {
+  display: flex;
+  align-items: center;
+  margin: 20rpx 32rpx 0;
+  padding: 22rpx 24rpx;
+  border: 1rpx solid var(--color-border-light);
+  border-radius: 20rpx;
+  background: linear-gradient(110deg, #ffffff 52%, #f5efea);
+  box-shadow: var(--shadow-sm);
+}
+
+.color-studio-entry-pressed {
+  opacity: 0.85;
+}
+
+.color-studio-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.color-studio-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.color-studio-desc {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+}
+
+.color-studio-fan {
+  position: relative;
+  width: 108rpx;
+  height: 86rpx;
+  margin: 0 14rpx;
+  flex-shrink: 0;
+}
+
+.color-studio-swatch {
+  position: absolute;
+  bottom: 4rpx;
+  left: 35rpx;
+  width: 38rpx;
+  height: 74rpx;
+  border-radius: 6rpx;
+  transform-origin: 50% 100%;
+  box-shadow: 0 2rpx 5rpx rgba(35, 22, 24, .16);
+}
+
+.color-studio-swatch-red {
+  transform: rotate(-29deg);
+  background: linear-gradient(155deg, #ffc6ca, #bb4a60 55%, #742534);
+}
+
+.color-studio-swatch-purple {
+  background: linear-gradient(155deg, #e6cff5, #a679bc 55%, #513c6b);
+}
+
+.color-studio-swatch-blue {
+  transform: rotate(29deg);
+  background: linear-gradient(155deg, #bcf5fa, #79c6ce 55%, #387b89);
+}
+
+.color-studio-chevron {
+  color: var(--color-primary);
+  font-size: 34rpx;
+  line-height: 1;
+}
+
 /* 内容模块（重置 app.wxss 全局 .section 白底卡片样式，模块直接铺在米色底上） */
 .section {
   margin: 36rpx 32rpx 0;

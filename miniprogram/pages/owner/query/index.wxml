@@ -38,6 +38,19 @@
     </view>
   </view>
 
+  <navigator class="color-studio-entry" url="/pages/owner/color-studio/index" hover-class="color-studio-entry-pressed">
+    <view class="color-studio-copy">
+      <view class="color-studio-title">在线选色</view>
+      <view class="color-studio-desc">103 款车衣色卡，预览 3D 装车效果</view>
+    </view>
+    <view class="color-studio-fan" aria-hidden="true">
+      <view class="color-studio-swatch color-studio-swatch-red"></view>
+      <view class="color-studio-swatch color-studio-swatch-purple"></view>
+      <view class="color-studio-swatch color-studio-swatch-blue"></view>
+    </view>
+    <text class="color-studio-chevron" aria-hidden="true">›</text>
+  </navigator>
+
   <!-- 施工案例 -->
   <view class="section">
     <view class="section-header">

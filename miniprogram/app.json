@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/owner/query/index",
+    "pages/owner/color-studio/index",
     "pages/owner/warranty/index",
     "pages/owner/product/index",
     "pages/owner/brand/index",
