@@ -169,12 +169,15 @@ location ^~ /assets/ {
     access_log off;
 }
 
-# 3D models: meshopt output is designed to be further gzipped (~30% smaller).
-# Filenames are not hashed, so the front end appends ?v=YYYYMMDD; bump it on replacement.
+# 3D models (.hmy encrypted containers): gzip saves ~26%; ?v=YYYYMMDD busts 7d cache.
 location ^~ /models/ {
+    valid_referers none blocked server_names *.hemoppf.cn hemoppf.cn *.hhppf.com hhppf.com servicewechat.com;
+    if (\$invalid_referer) {
+        return 403;
+    }
     try_files \$uri =404;
-    types { model/gltf-binary glb; text/plain txt; }
-    gzip_types model/gltf-binary;
+    types { application/octet-stream hmy; model/gltf-binary glb; text/plain txt; }
+    gzip_types application/octet-stream model/gltf-binary;
     add_header Cache-Control "public, max-age=604800, stale-while-revalidate=2592000" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;

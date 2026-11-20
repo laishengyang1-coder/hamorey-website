@@ -106,14 +106,14 @@ export function ColorCatalogDrawer({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-lg animate-fade-in p-0 md:p-6"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/88 animate-fade-in p-0 md:p-6"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={lang === 'zh' ? '和彩全系色谱典藏' : 'HAMOREY Color Archive'}
-        className="w-full max-w-4xl h-[88dvh] md:h-[84dvh] rounded-t-3xl md:rounded-2xl bg-[#0a0b0f]/95 border border-[#C9A86A]/25 shadow-[0_32px_80px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden text-[#F7F3EB]"
+        className="w-full max-w-4xl h-[88dvh] md:h-[84dvh] rounded-t-3xl md:rounded-2xl bg-[#0a0b0f] border border-[#C9A86A]/25 shadow-[0_32px_80px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden text-[#F7F3EB]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 顶部高定标题栏 */}
@@ -150,7 +150,7 @@ export function ColorCatalogDrawer({
                     ? `搜索 ${COLOR_STUDIO_SWATCHES.length} 款 2026 官方色号（色名 / TPU-003S / 工艺）`
                     : `Search ${COLOR_STUDIO_SWATCHES.length} shades by name, code, or finish...`
                 }
-                className="w-full h-10 pl-10 pr-9 rounded-xl bg-white/[0.04] border border-white/12 text-sm text-[#F7F3EB] placeholder:text-white/35 focus:outline-none focus:border-[#C9A86A]/65"
+                className="w-full h-10 pl-10 pr-9 rounded-xl bg-white/[0.04] border border-white/12 text-base md:text-sm text-[#F7F3EB] placeholder:text-white/35 focus:outline-none focus:border-[#C9A86A]/65"
                 style={{ color: '#F7F3EB' }}
               />
               {query && (
@@ -270,7 +270,7 @@ export function ColorCatalogDrawer({
         </div>
 
         {/* 暗金高定材质卡画廊 */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex-1 overflow-y-auto p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:p-6">
           {filteredSwatches.length === 0 ? (
             <div className="h-52 flex flex-col items-center justify-center text-white/50 text-sm">
               <Sparkles className="w-6 h-6 mb-2 text-[#C9A86A]/70" />

@@ -17,6 +17,8 @@ import {
   createMetallicFlakeNormalMap,
 } from './studioEnvironment';
 import { createFilmMaterialController, type FilmMaterialController } from './filmMaterial';
+import { createLuxuryShaderball } from './shaderballBuilder';
+import { unpackHmyModelBuffer } from './studioGuard';
 type WebGLViewMode = Exclude<StudioViewMode, 'swatch'>;
 
 export type CarModelLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -26,6 +28,8 @@ export interface ColorStudioCanvasProps {
   viewMode: WebGLViewMode;
   lightingPreset: StudioLightingPreset;
   vehicleId: StudioVehicleId;
+  paused?: boolean;
+  retryToken?: number;
   onStepSwatch: (delta: number) => void;
   onModelStatusChange?: (status: CarModelLoadStatus, progress: number) => void;
 }
@@ -36,7 +40,7 @@ interface CameraPreset {
 }
 
 const CAMERA_PRESETS: Record<WebGLViewMode, CameraPreset> = {
-  sphere: { pos: new THREE.Vector3(2.25, 0.96, 2.78), target: new THREE.Vector3(0, 0.02, 0) },
+  sphere: { pos: new THREE.Vector3(3.26, 1.32, 4.02), target: new THREE.Vector3(0, -0.46, 0) },
   macro: { pos: new THREE.Vector3(0, 0.16, 2.35), target: new THREE.Vector3(0, 0.02, 0) },
   car: { pos: new THREE.Vector3(3.85, 1.28, 4.35), target: new THREE.Vector3(0, 0.42, 0) },
   closeup: { pos: new THREE.Vector3(1.95, 0.96, 2.05), target: new THREE.Vector3(0.28, 0.56, 0.48) },
@@ -44,9 +48,19 @@ const CAMERA_PRESETS: Record<WebGLViewMode, CameraPreset> = {
 
 function getResponsiveCameraPreset(mode: WebGLViewMode, aspect: number): CameraPreset {
   const base = CAMERA_PRESETS[mode];
-  if (aspect < 0.85 && (mode === 'car' || mode === 'sphere')) {
-    const scale = mode === 'car' ? 2.08 : 1.36;
+  if (aspect < 0.85) {
+    const scale =
+      mode === 'car'
+        ? 1.88
+        : mode === 'closeup'
+          ? 1.32
+          : mode === 'sphere'
+            ? 1.28
+            : 1.15;
     const target = base.target.clone();
+    if (mode === 'car') target.y = 0.28;
+    else if (mode === 'sphere') target.y = -0.32;
+    else if (mode === 'closeup') target.y = 0.48;
     const offset = base.pos.clone().sub(base.target).multiplyScalar(scale);
     return {
       pos: target.clone().add(offset),
@@ -187,7 +201,7 @@ function vehicleResourceDisposer(root: THREE.Object3D) {
 }
 
 export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
-  const { activeSwatch, viewMode, lightingPreset, vehicleId, onStepSwatch } = props;
+  const { activeSwatch, viewMode, lightingPreset, vehicleId, retryToken = 0, onStepSwatch } = props;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(props);
   stateRef.current = props;
@@ -242,11 +256,17 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: false,
-      powerPreference: 'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: false,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      stateRef.current.onModelStatusChange?.('error', 0);
+      return;
+    }
     // 自适应像素比：Retina 屏不再强制 2x（4 倍像素量），按实际帧耗动态升降
     const deviceDpr = window.devicePixelRatio || 1;
     const maxDpr = Math.min(deviceDpr, 1.75);
@@ -332,25 +352,14 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     };
     controls.addEventListener('start', handleControlStart);
 
-    // 光影球
-    const sphereGroup = new THREE.Group();
-    const sphereGeo = new THREE.SphereGeometry(1.1, 72, 56);
-    const sphereMesh = new THREE.Mesh(sphereGeo, filmController.material);
-    sphereMesh.position.y = 0.14;
-    sphereMesh.castShadow = true;
-    sphereGroup.add(sphereMesh);
-
-    const ringGeo = new THREE.TorusGeometry(0.76, 0.036, 20, 72);
-    ringGeo.rotateX(Math.PI / 2);
-    const ringMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#C9A86A'),
-      metalness: 0.94,
-      roughness: 0.18,
-      envMapIntensity: 1.5,
-    });
-    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-    ringMesh.position.y = -1.04;
-    sphereGroup.add(ringMesh);
+    // 高定车漆雕塑测试球（多曲率球壳 + 黑钛香槟金腰线 + 博物馆级曜石展台）
+    const shaderball = createLuxuryShaderball(
+      filmController.material,
+      computeSpotlightGlowColor(
+        stateRef.current.activeSwatch.shiftHex || stateRef.current.activeSwatch.hex,
+      ),
+    );
+    const sphereGroup = shaderball.rootGroup;
     sphereGroup.visible = stateRef.current.viewMode === 'sphere';
     scene.add(sphereGroup);
     runtimeRef.current.sphereGroup = sphereGroup;
@@ -585,76 +594,122 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       if (loadingVehicles.has(id)) return;
       loadingVehicles.add(id);
 
-      loader.load(
-        spec.modelUrl,
-        (gltf) => {
-          loadingVehicles.delete(id);
-          const release = vehicleResourceDisposer(gltf.scene);
-          if (disposed) {
-            release();
-            return;
-          }
-          releaseVehicles.push(release);
+      const fetchAndParseHmy = async () => {
+        try {
+          const resp = await window.fetch(spec.modelUrl, { credentials: 'same-origin' });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
-          const wrapper = new THREE.Group();
-          const root = gltf.scene;
-          if (spec.rotationY !== 0) {
-            root.rotation.y = spec.rotationY;
-          }
-          wrapper.add(root);
+          const total = Number(resp.headers.get('content-length') || 0);
+          let rawBuf: ArrayBuffer;
 
-          // 按世界坐标真实顶点计算精确包围盒，使四轮精确贴合地面 y=0
-          wrapper.updateMatrixWorld(true);
-          const rawBox = new THREE.Box3();
-          const tempVec = new THREE.Vector3();
-          root.traverse((obj) => {
-            if ((obj as THREE.Mesh).isMesh) {
-              const m = obj as THREE.Mesh;
-              const pos = m.geometry.getAttribute('position');
-              if (pos) {
-                for (let i = 0; i < pos.count; i++) {
-                  tempVec.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
-                  rawBox.expandByPoint(tempVec);
+          if (resp.body && total > 0) {
+            const reader = resp.body.getReader();
+            const chunks: Uint8Array[] = [];
+            let received = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              if (disposed) {
+                reader.cancel().catch(() => {});
+                return;
+              }
+              if (value) {
+                chunks.push(value);
+                received += value.byteLength;
+                if (stateRef.current.vehicleId === id) {
+                  const pct = Math.min(96, Math.round((received / total) * 100));
+                  stateRef.current.onModelStatusChange?.('loading', pct);
                 }
               }
             }
-          });
-          const size = new THREE.Vector3();
-          const center = new THREE.Vector3();
-          rawBox.getSize(size);
-          rawBox.getCenter(center);
-
-          const maxDim = Math.max(size.x, size.y, size.z) || 1;
-          const normScale = spec.targetLength / maxDim;
-          wrapper.scale.setScalar(normScale);
-          wrapper.position.set(
-            -center.x * normScale,
-            -rawBox.min.y * normScale,
-            -center.z * normScale,
-          );
-
-          bindVehicleMaterials(root, id);
-          loadedVehicles.set(id, wrapper);
-          carAnchor.add(wrapper);
-
-          const isCurrent = stateRef.current.vehicleId === id;
-          wrapper.visible = isCurrent;
-          if (isCurrent) {
-            showLoadedVehicle(stateRef.current.vehicleId);
-            stateRef.current.onModelStatusChange?.('ready', 100);
+            const merged = new Uint8Array(received);
+            let offset = 0;
+            for (const c of chunks) {
+              merged.set(c, offset);
+              offset += c.byteLength;
+            }
+            rawBuf = merged.buffer;
+          } else {
+            rawBuf = await resp.arrayBuffer();
           }
-        },
-        (evt) => {
-          if (disposed || !evt.total || stateRef.current.vehicleId !== id) return;
-          const pct = Math.min(98, Math.round((evt.loaded / evt.total) * 100));
-          stateRef.current.onModelStatusChange?.('loading', pct);
-        },
-        () => {
+
+          if (disposed) return;
+          const glbBuffer = unpackHmyModelBuffer(rawBuf);
+
+          loader.parse(
+            glbBuffer,
+            '/models/',
+            (gltf) => {
+              loadingVehicles.delete(id);
+              const release = vehicleResourceDisposer(gltf.scene);
+              if (disposed) {
+                release();
+                return;
+              }
+              releaseVehicles.push(release);
+
+              const wrapper = new THREE.Group();
+              const root = gltf.scene;
+              if (spec.rotationY !== 0) {
+                root.rotation.y = spec.rotationY;
+              }
+              wrapper.add(root);
+
+              // 按世界坐标真实顶点计算精确包围盒，使四轮精确贴合地面 y=0
+              wrapper.updateMatrixWorld(true);
+              const rawBox = new THREE.Box3();
+              const tempVec = new THREE.Vector3();
+              root.traverse((obj) => {
+                if ((obj as THREE.Mesh).isMesh) {
+                  const m = obj as THREE.Mesh;
+                  const pos = m.geometry.getAttribute('position');
+                  if (pos) {
+                    for (let i = 0; i < pos.count; i++) {
+                      tempVec.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+                      rawBox.expandByPoint(tempVec);
+                    }
+                  }
+                }
+              });
+              const size = new THREE.Vector3();
+              const center = new THREE.Vector3();
+              rawBox.getSize(size);
+              rawBox.getCenter(center);
+
+              const maxDim = Math.max(size.x, size.y, size.z) || 1;
+              const normScale = spec.targetLength / maxDim;
+              wrapper.scale.setScalar(normScale);
+              wrapper.position.set(
+                -center.x * normScale,
+                -rawBox.min.y * normScale,
+                -center.z * normScale,
+              );
+
+              bindVehicleMaterials(root, id);
+              loadedVehicles.set(id, wrapper);
+              carAnchor.add(wrapper);
+
+              const isCurrent = stateRef.current.vehicleId === id;
+              wrapper.visible = isCurrent;
+              if (isCurrent) {
+                showLoadedVehicle(stateRef.current.vehicleId);
+                stateRef.current.onModelStatusChange?.('ready', 100);
+              }
+            },
+            () => {
+              loadingVehicles.delete(id);
+              if (disposed || stateRef.current.vehicleId !== id) return;
+              stateRef.current.onModelStatusChange?.('error', 0);
+            },
+          );
+        } catch {
           loadingVehicles.delete(id);
           if (disposed || stateRef.current.vehicleId !== id) return;
           stateRef.current.onModelStatusChange?.('error', 0);
-        },
-      );
+        }
+      };
+
+      void fetchAndParseHmy();
     };
 
     runtimeRef.current.switchVehicle = loadOrSwitchVehicle;
@@ -686,9 +741,25 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     let lastTime = performance.now();
     const clockStart = lastTime;
 
+    const onContextLost = (e: Event) => {
+      e.preventDefault();
+    };
+    const onContextRestored = () => {
+      runtimeRef.current.shadowDirtyFrames = 4;
+    };
+    renderer.domElement.addEventListener('webglcontextlost', onContextLost);
+    renderer.domElement.addEventListener('webglcontextrestored', onContextRestored);
+
     const animate = (now: number) => {
       if (disposed) return;
       rafId = window.requestAnimationFrame(animate);
+
+      // 弹窗开启或切到后台时暂停 WebGL 渲染，保证移动端滚屏满帧零功耗
+      if (document.hidden || stateRef.current.paused) {
+        lastTime = now;
+        lastPerfStamp = now;
+        return;
+      }
 
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
@@ -709,6 +780,10 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
           Math.min(1, dt * 4.5),
         );
       }
+      shaderball.ambientRingMat.color.lerp(
+        runtimeRef.current.targetGlowColor,
+        Math.min(1, dt * 4.5),
+      );
 
       // 2) 模式切换相机平滑过渡
       if (runtimeRef.current.transitionCamera) {
@@ -781,6 +856,8 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       disposed = true;
       window.cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
+      renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored);
       controls.removeEventListener('start', handleControlStart);
       controls.dispose();
 
@@ -790,9 +867,7 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       keyLight.shadow.dispose();
       flakeNormalMap.dispose();
 
-      sphereGeo.dispose();
-      ringGeo.dispose();
-      ringMat.dispose();
+      shaderball.dispose();
       macroGeo.dispose();
       floorAlphaTex.dispose();
       floorGeo.dispose();
@@ -881,13 +956,13 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     }
   }, [viewMode]);
 
-  // 5. 同步切换展车车型（Model 3 焕新版 / Model Y 焕新版）
+  // 5. 同步切换展车车型（Model 3 焕新版 / Model Y 焕新版）及失败重试
   const showVehicle = viewMode === 'car' || viewMode === 'closeup';
   useEffect(() => {
     if (!showVehicle) return;
     const start = window.setTimeout(() => runtimeRef.current.switchVehicle?.(vehicleId), 0);
     return () => window.clearTimeout(start);
-  }, [showVehicle, vehicleId]);
+  }, [showVehicle, vehicleId, retryToken]);
 
   // 6. 键盘左右键切色
   useEffect(() => {

@@ -1,65 +1,208 @@
-/* The fan gets its own unobstructed stage between the studio controls. */
-.studio-fan-page {
+._hsl_p {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   background: #08090c;
+  overscroll-behavior: none;
 }
-.studio-fan-page > * { min-width: 0 }
-.studio-fan-page > header {
-  grid-row: 1; position: relative; inset: auto;
-  border-bottom: 1px solid rgba(201,168,106,.13);
+._hsl_p > * {
+  min-width: 0;
 }
-.studio-fan-toolbar {
-  grid-row: 2; display: flex; align-items: center; gap: 22px;
-  padding: clamp(13px,2.4vh,27px) clamp(18px,3.7vw,72px) clamp(9px,1.7vh,20px);
-  background: #0b0c10; z-index: 1;
+._hsl_p > header {
+  grid-row: 1;
+  position: relative;
+  inset: auto;
+  border-bottom: 1px solid rgba(201, 168, 106, 0.13);
 }
-.studio-fan-identity {min-width: 0; flex: 1}
-.studio-fan-meta, .studio-fan-optics, .studio-fan-actions, .studio-fan-title {display: flex; align-items: center}
-.studio-fan-meta {gap: 10px; color: #b8a787; font: 500 11px/1.3 ui-monospace, monospace; letter-spacing: .09em}
-.studio-fan-meta span+span {border-left: 1px solid #655b4b; padding-left: 10px}
-.studio-fan-title {gap: 14px; flex-wrap: wrap; margin-top: 5px}
-.studio-fan-title h1 {margin: 0; color: #f5f1e9; font-size: clamp(22px,2.1vw,34px); font-weight: 540; letter-spacing: .035em; line-height: 1.22}
-.studio-fan-title span {color: #ada99f; font: italic clamp(14px,1.1vw,18px)/1.16 Georgia,serif; overflow-wrap: anywhere}
-.studio-fan-optics {gap: 14px; color: #a3a09a; font-size: 11px}
-.studio-fan-optics b {color: #dcc492; font: 500 12px ui-monospace, monospace}
-.studio-fan-actions {gap: 8px; flex-shrink: 0}
-.studio-fan-actions button {
-  display: inline-flex; align-items:center; justify-content:center; gap:7px;
-  border-radius:999px; height:37px; padding:0 14px; color:#e4e1db;
-  border:1px solid #444044; background:#16171a; line-height:1.15;
-  font-size:12px; font-weight:550; white-space:nowrap; transition:background .18s, border-color .18s;
+._hsl_tb {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: clamp(10px, 2vh, 24px) clamp(16px, 3.7vw, 72px) clamp(8px, 1.5vh, 18px);
+  background: #0b0c10;
+  z-index: 1;
 }
-.studio-fan-actions .fan-play {width:37px; padding:0}
-.studio-fan-actions button:hover {background:#29282b; border-color:#847356}
-.studio-fan-actions button:disabled {opacity:.4; cursor:default}
-.studio-fan-actions .fan-handle {border-color:#7c6841; color:#e8cea0; background:#262117}
-.studio-fan-actions button:focus-visible {outline:2px solid #dbbc84; outline-offset:3px}
-.studio-fan-stage {grid-row:3;position:relative;min-height:0;overflow:hidden}
-.studio-fan-page > footer {grid-row:4; position:relative; inset:auto; background:#0b0c0f; border-top:1px solid #242326; padding-top:8px; gap:6px}
-.studio-fan-hint {font-size:12px; line-height:1.45; letter-spacing:.045em; color:#c3b697; margin:0; text-align:center}
-@media (max-width:1000px) {.studio-fan-optics{display:none}}
-@media (max-width:720px) {
-  .studio-fan-toolbar {gap:5px; padding:10px 13px 8px}
-  .studio-fan-title{display:block; margin-top:4px}
-  .studio-fan-title h1 {font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .studio-fan-title span {display:none}
-  .studio-fan-meta {font-size:10px;gap:6px}
-  .studio-fan-meta span+span {padding-left:6px}
-  .studio-fan-actions {gap:4px}
-  .studio-fan-actions button {height:34px;padding:0 9px;gap:4px;font-size:11px}
-  .studio-fan-actions .fan-play {width:32px}
-  .studio-fan-page > footer {padding-bottom:max(7px,env(safe-area-inset-bottom))}
+._hsl_id {
+  min-width: 0;
+  flex: 1;
 }
-@media (max-height:520px) and (orientation:landscape) {
-  .studio-fan-page > header {padding-block:4px}
-  .studio-fan-toolbar {padding-block:3px}
-  .studio-fan-title {margin:0}
-  .studio-fan-title h1 {font-size:16px}
-  .studio-fan-meta {font-size:9px}
-  .studio-fan-page > footer {padding-block:3px;gap:3px}
-  .studio-fan-page > footer > div {padding-block:4px}
-  .studio-fan-page > footer > div > div:nth-child(2) {margin-top:3px}
-  .studio-fan-hint {display:none}
+._hsl_mt,
+._hsl_op,
+._hsl_ac,
+._hsl_tt {
+  display: flex;
+  align-items: center;
+}
+._hsl_mt {
+  gap: 10px;
+  color: #b8a787;
+  font: 500 11px/1.3 ui-monospace, monospace;
+  letter-spacing: 0.09em;
+}
+._hsl_mt span + span {
+  border-left: 1px solid #655b4b;
+  padding-left: 10px;
+}
+._hsl_tt {
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+._hsl_tt h1 {
+  margin: 0;
+  color: #f5f1e9;
+  font-size: clamp(20px, 2.1vw, 34px);
+  font-weight: 560;
+  letter-spacing: 0.035em;
+  line-height: 1.2;
+}
+._hsl_tt span {
+  color: #ada99f;
+  font: italic clamp(13px, 1.1vw, 18px)/1.16 Georgia, serif;
+  overflow-wrap: anywhere;
+}
+._hsl_op {
+  gap: 14px;
+  color: #a3a09a;
+  font-size: 11px;
+}
+._hsl_op b {
+  color: #dcc492;
+  font: 500 12px ui-monospace, monospace;
+}
+._hsl_ac {
+  gap: 8px;
+  flex-shrink: 0;
+}
+._hsl_ac button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  height: 36px;
+  padding: 0 13px;
+  color: #e4e1db;
+  border: 1px solid #444044;
+  background: #16171a;
+  line-height: 1.15;
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s;
+}
+._hsl_ac ._b_pl {
+  width: 36px;
+  padding: 0;
+}
+._hsl_ac button:hover {
+  background: #29282b;
+  border-color: #847356;
+}
+._hsl_ac button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+._hsl_ac ._b_hd {
+  border-color: #7c6841;
+  color: #e8cea0;
+  background: #262117;
+}
+._hsl_ac button:focus-visible {
+  outline: 2px solid #dbbc84;
+  outline-offset: 3px;
+}
+._hsl_st {
+  grid-row: 3;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+._hsl_p > footer {
+  grid-row: 4;
+  position: relative;
+  inset: auto;
+  background: #0b0c0f;
+  border-top: 1px solid #242326;
+  padding-top: 6px;
+  gap: 5px;
+}
+._hsl_ht {
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.045em;
+  color: #c3b697;
+  margin: 0;
+  text-align: center;
+}
+@media (max-width: 1000px) {
+  ._hsl_op {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  ._hsl_tb {
+    gap: 6px;
+    padding: 8px 12px 7px;
+  }
+  ._hsl_tt {
+    display: block;
+    margin-top: 2px;
+  }
+  ._hsl_tt h1 {
+    font-size: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  ._hsl_tt span {
+    display: none;
+  }
+  ._hsl_mt {
+    font-size: 10px;
+    gap: 6px;
+  }
+  ._hsl_mt span + span {
+    padding-left: 6px;
+  }
+  ._hsl_ac {
+    gap: 4px;
+  }
+  ._hsl_ac button {
+    height: 32px;
+    padding: 0 9px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  ._hsl_ac ._b_pl {
+    width: 31px;
+  }
+  ._hsl_p > footer {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  ._hsl_p > header {
+    padding-block: 4px;
+  }
+  ._hsl_tb {
+    padding-block: 3px;
+  }
+  ._hsl_tt {
+    margin: 0;
+  }
+  ._hsl_tt h1 {
+    font-size: 15px;
+  }
+  ._hsl_mt {
+    font-size: 9px;
+  }
+  ._hsl_p > footer {
+    padding-block: 3px;
+    gap: 3px;
+  }
+  ._hsl_ht {
+    display: none;
+  }
 }

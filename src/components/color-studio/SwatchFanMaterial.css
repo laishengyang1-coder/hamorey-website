@@ -1,36 +1,34 @@
-/* 纯净高定车漆样板材质层：零 CSS mask / 零杂色贴图，全 GPU 轻量合成 */
-.fan-paint {
-  --paint-lamp: rgba(255, 255, 255, 0.72);
-  --paint-lamp-soft: rgba(255, 255, 255, 0.16);
+._hfm {
+  --_l0: rgba(255, 255, 255, 0.72);
+  --_l1: rgba(255, 255, 255, 0.16);
   position: absolute;
   inset: 0;
   display: block;
   overflow: hidden;
   pointer-events: none;
   border-radius: inherit;
-  background-color: var(--paint-base);
+  background-color: var(--_c1);
   background-image: linear-gradient(
     158deg,
-    var(--paint-light) 0%,
-    var(--paint-base) 34%,
-    var(--paint-mid) 68%,
-    var(--paint-dark) 100%
+    var(--_c0) 0%,
+    var(--_c1) 34%,
+    var(--_c2) 68%,
+    var(--_c3) 100%
   );
 }
 
-.fan-paint[data-light="gallery"] {
-  --paint-lamp: rgba(240, 248, 255, 0.82);
-  --paint-lamp-soft: rgba(226, 240, 255, 0.22);
+._hfm[data-l="gallery"] {
+  --_l0: rgba(240, 248, 255, 0.82);
+  --_l1: rgba(226, 240, 255, 0.22);
 }
 
-.fan-paint[data-light="sunset"] {
-  --paint-lamp: rgba(255, 224, 184, 0.82);
-  --paint-lamp-soft: rgba(255, 190, 128, 0.2);
+._hfm[data-l="sunset"] {
+  --_l0: rgba(255, 224, 184, 0.82);
+  --_l1: rgba(255, 190, 128, 0.2);
 }
 
-/* 极细腻微晶金属/珠光质感（纯 CSS 细密微点，绝不拉伸出脏斑） */
-.fan-paint[data-grain="metal"]::before,
-.fan-paint[data-grain="pearl"]::before {
+._hfm[data-g="1"]::before,
+._hfm[data-g="2"]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -42,68 +40,64 @@
   opacity: 0.24;
 }
 
-.fan-paint[data-grain="pearl"]::before {
+._hfm[data-g="2"]::before {
   opacity: 0.18;
 }
 
-.fan-paint[data-coat="carbon"] {
+._hfm[data-k="c"] {
   background-image:
     linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.45)),
-    var(--paint-pattern);
+    var(--_cp);
   background-size: cover;
   background-position: center;
 }
 
-/* 干净利落的棚拍软灯箱清漆流光带 + 珠光折光层（纯 transform GPU 合成） */
-.fan-paint__reflection {
+._hfm_r {
   position: absolute;
   inset: -12% -45%;
   display: block;
   pointer-events: none;
-  transform: translate3d(var(--fan-reflection, 0%), 0, 0);
+  transform: translate3d(var(--_rf, 0%), 0, 0);
   will-change: transform;
 }
 
-/* 珠光 / 变色龙随角折光带 */
-.fan-paint__reflection::before {
+._hfm_r::before {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse 38% 76% at 44% 48%,
-    var(--paint-shift) 0%,
+    var(--_c4) 0%,
     transparent 74%
   );
-  opacity: var(--paint-flop, 0);
+  opacity: var(--_c5, 0);
 }
 
-/* 亮光清漆：锐利而顺滑的双层柔光箱反光带 */
-.fan-paint__reflection::after {
+._hfm_r::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     112deg,
     transparent 26%,
-    var(--paint-lamp-soft) 36%,
-    var(--paint-lamp) 43%,
-    var(--paint-lamp-soft) 49%,
+    var(--_l1) 36%,
+    var(--_l0) 43%,
+    var(--_l1) 49%,
     transparent 58%,
     rgba(255, 255, 255, 0.1) 66%,
     transparent 74%
   );
-  opacity: var(--paint-specular, 0.78);
+  opacity: var(--_c6, 0.78);
 }
 
-/* 丝缎 / 超哑：更宽更柔和的漫反射高光过渡 */
-.fan-paint[data-coat="satin"] .fan-paint__reflection::after,
-.fan-paint[data-coat="matte"] .fan-paint__reflection::after {
+._hfm[data-k="s"] ._hfm_r::after,
+._hfm[data-k="m"] ._hfm_r::after {
   background: linear-gradient(
     115deg,
     transparent 16%,
-    var(--paint-lamp-soft) 34%,
-    var(--paint-lamp) 48%,
-    var(--paint-lamp-soft) 64%,
+    var(--_l1) 34%,
+    var(--_l0) 48%,
+    var(--_l1) 64%,
     transparent 82%
   );
 }

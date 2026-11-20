@@ -53,16 +53,17 @@
 
 | 文件或目录 | 当前职责 |
 |---|---|
-| `src/config/colorStudio.ts` | `COLOR_STUDIO_SWATCHES` 保存 103 色名称、色号、主色、偏色和物理材质参数，同时定义产品规格、灯光、色系和车型。 |
-| `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioFanLayout.css` | 维护共享色号、灯光、语言、工艺、选色单和深链，按视图区分扇形首屏与 WebGL 舞台。 |
-| `src/components/color-studio/SwatchFan.tsx`、`SwatchFan.css` | 按可见范围绘制扇形，控制错时轮转、手势、拾取、放回和键盘操作。 |
-| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`（同一组件目录） | 由主色生成纯亮度色阶与 CSS 反射层；锻碳/碳纤维读取 `public/color-studio/paint/tpu-001fp.webp`、`tpu-002fp.webp`、`tpu-cf.webp`。 |
-| `src/components/color-studio/ColorStudioCanvas.tsx`、`studioEnvironment.ts`、`filmMaterial.ts` | 后四种视图使用 WebGL、程序生成的棚拍环境光和按色号更新的物理车漆。金属随角变色、珠光亮度与清漆粗糙度由材质代码及色号参数控制。 |
-| `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱支持按名称、工艺、色系及**连续彩虹色谱条**（左侧黑白灰，右侧 0–360° 色相，±26° 匹配）找色；定制选色单支持本地生成 900×1200 PNG 和门店入口。 |
-| `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊与产品页**均为独立异步路由**（V4 起产品页也 `React.lazy`，103 色数据不进官网首页主包）。产品页读取官方 103 色，按当前色号进入样板或整车。 |
+| `src/config/colorStudio.ts`、`src/config/colorStudioVault.ts` | `colorStudioVault.ts` 以流式字节混淆存储 103 色加密载荷（构建包内零明文色表）；`colorStudio.ts` 导出解码后的 `COLOR_STUDIO_SWATCHES`、产品规格、灯光、色系与车型配置。 |
+| `src/components/color-studio/studioGuard.ts` | FNV-1a 域名授权校验（仅放行 `hemoppf.cn`、`hhppf.com` 及其子域与本地调试地址）、色库解码、`HMRY` 加密车模容器解包、微信小程序环境综合检测与生产环境防右键/防快捷键护盾。 |
+| `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioFanLayout.css` | 维护共享色号、灯光、语言、工艺、选色单和深链；手机/小程序端采用不遮挡 3D 视口的顶部通栏胶囊条与安全区留白，弹窗或后台时自动暂停 WebGL 渲染。 |
+| `src/components/color-studio/SwatchFan.tsx`、`SwatchFan.css` | 弹簧阻尼物理扇形色卡（精简混淆类名 `_hfs*` / `--_*`），支持同向拖动、脱手惯性、双击拾取、滚轮与方向键。 |
+| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`（同一组件目录） | 由主色生成纯亮度色阶与 CSS 反射层（混淆类名 `_hfm*`）；锻碳/碳纤维读取 `public/color-studio/paint/tpu-001fp.webp`、`tpu-002fp.webp`、`tpu-cf.webp`。 |
+| `src/components/color-studio/ColorStudioCanvas.tsx`、`shaderballBuilder.ts`、`studioEnvironment.ts`、`filmMaterial.ts` | WebGL 舞台：支持 `.hmy` 加密车模流式拉取与内存解包、`shaderballBuilder.ts` 多曲率雕塑测试球 + 三阶刻度铭文展台、程序化棚拍 HDR 与物理车漆。 |
+| `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱抽屉（移动端 16px 防 iOS 放大输入框 + 连续彩虹色谱条）；选色单支持桌面直接下载 PNG、手机/微信 `<web-view>` 弹出可长按保存大图预览及 `wx.miniProgram.postMessage` 回传色号。 |
+| `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊与产品页**均为独立异步路由**（`React.lazy`）。 |
 | `src/config/products.ts` | 保留原产品结构及早期 `HC/HM/HP` 20 色兼容数组。现行选色页和产品页统一读取 `colorStudio.ts`。 |
 | `src/config/navigation.ts`、`src/config/seo.ts`、`src/index.css` | 维护官网导航、页尾入口、页面元信息及色轨公共样式。 |
-| `public/models/tesla-model-3.glb`、`tesla-model-y.glb`、`ATTRIBUTION.txt` | 两个 Tesla 模型及各自来源和署名。Model 3 为 1,384,048 字节，Model Y 为 1,580,392 字节。 |
+| `public/models/m3-atelier.hmy`、`my-atelier.hmy`、`ATTRIBUTION.txt`、`scripts/pack-color-studio-assets.mjs` | 两个 Tesla 车模的 `HMRY` 加密二进制容器（已移除公开 `.glb` 原文件，外部软件与爬虫下载无法直接打开；Model 3 1,384,056 B，Model Y 1,580,400 B）及打包脚本。 |
 
 V4 已删除不再引用的 `speedformBuilder.ts`、`fanFinishes.ts`、`public/color-studio/finishes/`（103 张）与 `paint/` 下 clearcoat/metal-grain/pearl-grain/satin 四张图（合计约 680 KB）。
 
@@ -80,25 +81,30 @@ V4 已删除不再引用的 `speedformBuilder.ts`、`fanFinishes.ts`、`public/c
 
 ## 五、 后续扩展指引（加色号 / 换车模）
 
-### 1. 扩充新色号
+### 1. 扩充或校准色号（V5 加密色仓流程）
 
-1. 按原册核对唯一色号和中文名，将完整 `ColorFilmItem` 加入 `src/config/colorStudio.ts` 的 `COLOR_STUDIO_SWATCHES`。工艺可取 `crystal`、`metallic`、`pearlescent`、`chameleon` 或 `special`。
-2. 提取该色的原册四色带及材质切片，在 `fanFinishes.ts` 按同一色号登记。新增特殊纹理时同步检查 `SwatchFanMaterial.tsx` 的工艺分支和 `public/color-studio/paint/` 的素材。
-3. 核对产品页、工坊底部色轨、全系色谱、选色单、扇形卡面与整车深链是否指向同一官方色号。
+1. 在运行期或本地导出当前 `COLOR_STUDIO_SWATCHES` 为临时 JSON（如 `/tmp/swatches.json`），修改或追加 `ColorFilmItem`（工艺可取 `crystal`、`metallic`、`pearlescent`、`chameleon` 或 `special`）。
+2. 执行加密打包脚本重新生成 `src/config/colorStudioVault.ts`（切勿直接提交明文大 JSON，防止被外部爬虫一键扒走色表）：
+   ```bash
+   node scripts/pack-color-studio-assets.mjs pack-swatches /tmp/swatches.json
+   ```
+3. 删除临时 JSON，运行 `npm run build` 核对产品页、底部色轨、全系色谱与整车深链。
 
-### 2. 更换或新增 3D 车模
+### 2. 更换或新增 3D 车模（V5 `.hmy` 加密容器流程）
 
-现用 Model 3 Highland 和 Model Y Juniper 各自使用原模型材质名。更换时核对 `src/config/colorStudio.ts` 中的车型配置，以及 `ColorStudioCanvas.tsx` 的车型资源和材质适配分支。Model 3 的车漆材质名为 `Geohoodsub00021Mtl`，Model Y 为 `paint`。玻璃、灯罩、轮胎等有独立处理，需逐车检查。模型来源与许可见 `public/models/ATTRIBUTION.txt`。
-
-模型沿用本地 Meshopt 解码和 WebP 贴图，保留材质槽与平滑法线。制作新资产时可用下例输出候选文件，核验模型比例、落地位置、整车与近景后再替换正式资产。
+现用 Model 3 Highland（车漆材质名 `Geohoodsub00021Mtl`）和 Model Y Juniper（车漆材质名 `paint`）。制作与加密替换步骤如下：
 
 ```bash
-npx @gltf-transform/cli optimize raw-car.glb candidate-model.glb \
+# 1) meshopt + webp 压缩（必须保留材质槽与平滑法线）
+npx @gltf-transform/cli optimize raw-car.glb /tmp/candidate.glb \
   --compress meshopt --texture-compress webp --texture-size 1024 \
   --simplify false --join false --palette false
+
+# 2) 封装为 HMRY 加密容器（前 64KB 混淆，保持后段可被 Nginx gzip 压缩 ~26%）
+node scripts/pack-color-studio-assets.mjs pack-model /tmp/candidate.glb public/models/m3-atelier.hmy
 ```
 
-**缓存与版本号（V4）**：服务器对 `/models/` 启用 gzip（meshopt 输出可再省约 30%）并缓存 7 天。`STUDIO_VEHICLES[].modelUrl` 带 `?v=YYYYMMDD`，**替换同名模型时必须同步改版本号**，否则老访客最多 7 天看到旧模型。
+**缓存、防盗链与版本号（V5）**：服务器对 `/models/` 启用 `valid_referers` 防盗链（放行 `hemoppf.cn`、`hhppf.com`、`servicewechat.com` 与空 Referer）、`gzip` 压缩及 7 天缓存。**替换同名 `.hmy` 文件时必须同步更新 `STUDIO_VEHICLES[].modelUrl` 的 `?v=YYYYMMDD`**。
 
 大陆访问沿用站内模型、解码器与程序化灯光资源。接手时保留现有加载方式。
 

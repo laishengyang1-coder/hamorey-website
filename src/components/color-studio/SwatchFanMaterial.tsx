@@ -7,7 +7,7 @@ interface SwatchFanMaterialProps {
   lightingPreset: StudioLightingPreset;
 }
 
-type PaintVariables = CSSProperties & Record<`--paint-${string}`, string | number>;
+type PaintVariables = CSSProperties & Record<`--_${string}`, string | number>;
 
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '');
@@ -23,10 +23,6 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${c(r)}${c(g)}${c(b)}`;
 }
 
-/**
- * 纯净亮度调整：严格保持原色相与饱和度，不混入任何外部杂色。
- * amount > 0 柔和提亮（高光面），amount < 0 柔和压暗（暗部曲面）。
- */
 function shadePure(hex: string, amount: number): string {
   const [r, g, b] = hexToRgb(hex);
   if (amount >= 0) {
@@ -50,38 +46,37 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
   const pearl = swatch.finish === 'pearlescent';
   const shift = swatch.finish === 'chameleon' || (swatch.finish === 'special' && !metal && !carbon);
   const roughness = swatch.material.roughness;
-  const coat = carbon ? 'carbon' : roughness >= 0.4 ? 'matte' : roughness >= 0.24 ? 'satin' : 'gloss';
+  const coat = carbon ? 'c' : roughness >= 0.4 ? 'm' : roughness >= 0.24 ? 's' : 'g';
 
-  // 纯净单色色阶：水晶最纯净，金属暗部随角压深（flop），哑光反差更柔和
-  const lightLift = coat === 'matte' ? 0.08 : metal ? 0.16 : 0.12;
-  const midShade = coat === 'matte' ? -0.06 : metal ? -0.14 : -0.08;
-  const darkShade = coat === 'matte' ? -0.18 : metal ? -0.34 : -0.24;
+  const lightLift = coat === 'm' ? 0.08 : metal ? 0.16 : 0.12;
+  const midShade = coat === 'm' ? -0.06 : metal ? -0.14 : -0.08;
+  const darkShade = coat === 'm' ? -0.18 : metal ? -0.34 : -0.24;
 
   const variables: PaintVariables = {
-    '--paint-light': shadePure(base, lightLift),
-    '--paint-base': base,
-    '--paint-mid': shadePure(base, midShade),
-    '--paint-dark': shadePure(base, darkShade),
-    '--paint-shift': swatch.shiftHex || shadePure(base, 0.22),
-    '--paint-flop': shift ? 0.42 : pearl ? 0.24 : 0,
-    '--paint-specular':
-      coat === 'matte' ? 0.22 : coat === 'satin' ? 0.46 : carbon ? 0.4 : metal ? 0.72 : 0.85,
+    '--_c0': shadePure(base, lightLift),
+    '--_c1': base,
+    '--_c2': shadePure(base, midShade),
+    '--_c3': shadePure(base, darkShade),
+    '--_c4': swatch.shiftHex || shadePure(base, 0.22),
+    '--_c5': shift ? 0.42 : pearl ? 0.24 : 0,
+    '--_c6':
+      coat === 'm' ? 0.22 : coat === 's' ? 0.46 : carbon ? 0.4 : metal ? 0.72 : 0.85,
   };
 
   if (carbon) {
-    variables['--paint-pattern'] = `url("/color-studio/paint/${swatch.code.toLowerCase()}.webp")`;
+    variables['--_cp'] = `url("/color-studio/paint/${swatch.code.toLowerCase()}.webp")`;
   }
 
   return (
     <span
       aria-hidden="true"
-      className="fan-paint"
-      data-coat={coat}
-      data-grain={metal ? 'metal' : pearl || shift ? 'pearl' : undefined}
-      data-light={lightingPreset}
+      className="_hfm"
+      data-k={coat}
+      data-g={metal ? '1' : pearl || shift ? '2' : undefined}
+      data-l={lightingPreset}
       style={variables}
     >
-      <span className="fan-paint__reflection" />
+      <span className="_hfm_r" />
     </span>
   );
 });

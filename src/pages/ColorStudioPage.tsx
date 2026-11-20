@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -34,11 +34,78 @@ import { SwatchFan } from '../components/color-studio/SwatchFan';
 import './ColorStudioFanLayout.css';
 import { ColorCatalogDrawer } from '../components/color-studio/ColorCatalogDrawer';
 import { ColorCardModal } from '../components/color-studio/ColorCardModal';
+import {
+  useStudioProtectionShield,
+  useWeChatMiniProgramEmbed,
+} from '../components/color-studio/studioGuard';
 import { cn } from '../lib/cn';
 
 const loadColorStudioCanvas = () => import('../components/color-studio/ColorStudioCanvas');
-const ColorStudioCanvas = lazy(() => loadColorStudioCanvas()
-  .then(module => ({ default: module.ColorStudioCanvas })));
+const createLazyColorStudioCanvas = () =>
+  lazy(() => loadColorStudioCanvas().then((module) => ({ default: module.ColorStudioCanvas })));
+let LazyColorStudioCanvas = createLazyColorStudioCanvas();
+
+class Studio3DErrorBoundary extends Component<
+  {
+    resetKey: string;
+    lang: 'zh' | 'en';
+    onRetry: () => void;
+    onBackToSwatch: () => void;
+    children: ReactNode;
+  },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps: { resetKey: string }) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (!this.state.hasError) return this.props.children;
+    const isZh = this.props.lang === 'zh';
+    return (
+      <div className="grid h-full place-items-center p-6 bg-[#08090c]">
+        <div className="max-w-sm w-full rounded-2xl bg-[#090a0e]/95 border border-[#C9A86A]/30 p-5 text-center space-y-3 shadow-2xl">
+          <p className="text-sm font-semibold text-[#F7F3EB]">
+            {isZh ? '3D 展台网络加载未完成' : '3D Studio Failed to Load'}
+          </p>
+          <p className="text-xs text-white/60 leading-relaxed">
+            {isZh
+              ? '当前网络可能较弱，可重试加载 3D 展台，或先返回流光样板继续选色。'
+              : 'Network interrupted while loading 3D assets. Retry or return to swatches.'}
+          </p>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                LazyColorStudioCanvas = createLazyColorStudioCanvas();
+                this.setState({ hasError: false });
+                this.props.onRetry();
+              }}
+              className="px-3.5 py-2 rounded-xl bg-[#C9A86A] text-[#090A0D] text-xs font-semibold"
+            >
+              {isZh ? '重试加载' : 'Retry'}
+            </button>
+            <button
+              type="button"
+              onClick={this.props.onBackToSwatch}
+              className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/15 text-[#F7F3EB] text-xs font-medium"
+            >
+              {isZh ? '返回流光样板' : 'Back to Swatches'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 /**
  * 用户在扇形样板页浏览时，利用浏览器空闲时间预取 3D 引擎分包与当前车型模型，
@@ -93,7 +160,8 @@ export default function ColorStudioPage() {
   useSEO('color-studio');
 
   const [searchParams] = useSearchParams();
-  const isEmbed = searchParams.get('embed') === 'miniprogram';
+  const isEmbed = useWeChatMiniProgramEmbed(searchParams.get('embed') === 'miniprogram');
+  const isAuthorizedHost = useStudioProtectionShield();
 
   const initialSwatch = useMemo(
     () => findColorSwatchByCode(searchParams.get('code')),
@@ -133,6 +201,12 @@ export default function ColorStudioPage() {
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [modelStatus, setModelStatus] = useState<CarModelLoadStatus>('idle');
   const [modelProgress, setModelProgress] = useState<number>(0);
+  const [retryToken, setRetryToken] = useState<number>(0);
+
+  useEffect(() => {
+    if (!isEmbed) return;
+    document.title = lang === 'zh' ? '和膜在线选色' : 'HAMOREY Color Studio';
+  }, [isEmbed, lang]);
 
   const railSwatches = useMemo(
     () =>
@@ -235,9 +309,26 @@ export default function ColorStudioPage() {
   };
 
   return (
-    <div className={cn('relative w-full h-[100dvh] overflow-hidden bg-[#08090c] text-[#F7F3EB] select-none', viewMode === 'swatch' && 'studio-fan-page')}>
-      {/* 2. 顶部高定建筑感导航栏 */}
-      <header className="absolute top-0 left-0 right-0 z-20 px-3 py-3 md:px-6 md:py-4 flex items-center justify-between gap-1.5 md:gap-2 pointer-events-none">
+    <div
+      className={cn(
+        'relative w-full h-[100dvh] overflow-hidden overscroll-none bg-[#08090c] text-[#F7F3EB] select-none',
+        viewMode === 'swatch' && '_hsl_p',
+      )}
+    >
+      {!isAuthorizedHost && (
+        <div className="fixed inset-0 z-[999] pointer-events-auto flex items-center justify-center bg-black/92 p-6 text-center">
+          <div className="max-w-md space-y-2 border border-[#C9A86A]/40 rounded-2xl p-6 bg-[#0b0c10]">
+            <p className="text-xs font-mono tracking-[0.2em] text-[#C9A86A]">HAMOREY PROPRIETARY</p>
+            <h2 className="text-lg font-bold text-[#F7F3EB]">未授权域名访问受限</h2>
+            <p className="text-xs text-white/65 leading-relaxed">
+              本 3D 高定选色系统及加密色库归和膜 HAMOREY 专有，请通过官方渠道访问。
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 2. 顶部高定建筑感导航栏（适配刘海屏与小程序安全区） */}
+      <header className="absolute top-0 left-0 right-0 z-20 px-3 pt-[max(0.6rem,env(safe-area-inset-top))] pb-2 md:px-6 md:py-4 flex items-center justify-between gap-1.5 md:gap-2 pointer-events-none">
         {/* 左侧：返回 + 品牌标识 */}
         <div className="flex items-center gap-1.5 md:gap-3 pointer-events-auto whitespace-nowrap min-w-0">
           {!isEmbed && (
@@ -342,35 +433,35 @@ export default function ColorStudioPage() {
 
       {viewMode === 'swatch' ? (
         <>
-          <section className="studio-fan-toolbar" aria-label={lang === 'zh' ? '当前色卡' : 'Current swatch'}>
-            <div className="studio-fan-identity">
-              <div className="studio-fan-meta"><span>{activeSwatch.code}</span><span>{lang === 'zh' ? activeSwatch.seriesName.split(' ')[0] : activeSwatch.finishLabelEn}</span></div>
-              <div className="studio-fan-title">
+          <section className="_hsl_tb" aria-label={lang === 'zh' ? '当前色卡' : 'Current swatch'}>
+            <div className="_hsl_id">
+              <div className="_hsl_mt"><span>{activeSwatch.code}</span><span>{lang === 'zh' ? activeSwatch.seriesName.split(' ')[0] : activeSwatch.finishLabelEn}</span></div>
+              <div className="_hsl_tt">
                 <h1>{lang === 'zh' ? activeSwatch.name : activeSwatch.nameEn}</h1>
                 <span lang={lang === 'zh' ? 'en' : 'zh'}>{lang === 'zh' ? activeSwatch.nameEn : activeSwatch.name}</span>
               </div>
             </div>
             {pickedUp && (
-              <div className="studio-fan-optics">
+              <div className="_hsl_op">
                 <span>{lang === 'zh' ? '镜面清漆' : 'Gloss'} <b>{activeSwatch.optics.gloss}</b></span>
                 <span>{lang === 'zh' ? '金属微粒' : 'Flake'} <b>{activeSwatch.optics.metallic}</b></span>
                 <span>{lang === 'zh' ? '折光幻彩' : 'Shift'} <b>{activeSwatch.optics.shift}</b></span>
               </div>
             )}
-            <div className="studio-fan-actions">
-              <button type="button" className="fan-play" disabled={pickedUp} aria-label={lang === 'zh' ? (playing ? '暂停轮播' : '开始轮播') : (playing ? 'Pause playback' : 'Start playback')} title={lang === 'zh' ? (playing ? '暂停轮播' : '开始轮播') : (playing ? 'Pause' : 'Play')} onClick={() => setPlaying(on => !on)}>
+            <div className="_hsl_ac">
+              <button type="button" className="_b_pl" disabled={pickedUp} aria-label={lang === 'zh' ? (playing ? '暂停轮播' : '开始轮播') : (playing ? 'Pause playback' : 'Start playback')} title={lang === 'zh' ? (playing ? '暂停轮播' : '开始轮播') : (playing ? 'Pause' : 'Play')} onClick={() => setPlaying(on => !on)}>
                 {playing && !pickedUp ? <Pause size={15} /> : <Play size={15} />}
               </button>
-              <button type="button" className="fan-handle" aria-pressed={pickedUp} onClick={() => setPickedUp(on => !on)}>
+              <button type="button" className="_b_hd" aria-pressed={pickedUp} onClick={() => setPickedUp(on => !on)}>
                 {pickedUp ? <Undo2 size={15} /> : <Hand size={15} />}
                 {lang === 'zh' ? (pickedUp ? '放回色卡' : '拿起色卡') : (pickedUp ? 'Return' : 'Pick up')}
               </button>
-              <button type="button" className="fan-vehicle" onClick={() => handleChangeViewMode('car')}>
+              <button type="button" className="_b_vh" onClick={() => handleChangeViewMode('car')}>
                 <Car size={15} />{lang === 'zh' ? '装车预览' : 'On car'}
               </button>
             </div>
           </section>
-          <main className="studio-fan-stage" aria-label={lang === 'zh' ? '流光样板' : 'Swatch gallery'}>
+          <main className="_hsl_st" aria-label={lang === 'zh' ? '流光样板' : 'Swatch gallery'}>
             <SwatchFan swatches={railSwatches} activeSwatch={activeSwatch} lightingPreset={lightingPreset}
               lang={lang} pickedUp={pickedUp} paused={!playing || drawerOpen || cardModalOpen}
               onSelect={setActiveSwatch} onPickedUpChange={setPickedUp} />
@@ -378,15 +469,125 @@ export default function ColorStudioPage() {
         </>
       ) : (
         <div className="absolute inset-0">
-          <Suspense fallback={<div className="grid h-full place-items-center"><Loader2 aria-label={lang === 'zh' ? '载入 3D 展台' : 'Loading 3D studio'} className="text-[#C9A86A] animate-spin" /></div>}>
-            <ColorStudioCanvas activeSwatch={activeSwatch} viewMode={viewMode} lightingPreset={lightingPreset}
-              vehicleId={vehicleId} onStepSwatch={handleStepSwatch} onModelStatusChange={handleModelStatusChange} />
-          </Suspense>
+          <Studio3DErrorBoundary
+            resetKey={`${viewMode}-${retryToken}`}
+            lang={lang}
+            onRetry={() => setRetryToken((n) => n + 1)}
+            onBackToSwatch={() => handleChangeViewMode('swatch')}
+          >
+            <Suspense fallback={<div className="grid h-full place-items-center"><Loader2 aria-label={lang === 'zh' ? '载入 3D 展台' : 'Loading 3D studio'} className="text-[#C9A86A] animate-spin" /></div>}>
+              <LazyColorStudioCanvas
+                activeSwatch={activeSwatch}
+                viewMode={viewMode}
+                lightingPreset={lightingPreset}
+                vehicleId={vehicleId}
+                paused={drawerOpen || cardModalOpen}
+                retryToken={retryToken}
+                onStepSwatch={handleStepSwatch}
+                onModelStatusChange={handleModelStatusChange}
+              />
+            </Suspense>
+          </Studio3DErrorBoundary>
         </div>
       )}
 
-      {/* 3. 左侧高定色号铭牌卡（桌面端详细光学参数 / 移动端精简浮层） */}
-      {viewMode !== 'swatch' && <aside className="absolute top-14 left-3.5 md:top-20 md:left-6 z-20 pointer-events-auto max-w-[74vw] md:w-72">
+      {/* 3A. 手机与小程序端紧凑通栏信息胶囊（释放竖屏 3D 视口，不挡车模与球体） */}
+      {viewMode !== 'swatch' && (
+        <div className="md:hidden absolute left-3 right-3 top-[calc(3.15rem+env(safe-area-inset-top))] z-20 pointer-events-none flex flex-col gap-1.5">
+          <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl bg-[#090a0e]/92 border border-[#C9A86A]/25 px-3 py-2 shadow-xl">
+            <button
+              type="button"
+              onClick={() => setCardModalOpen(true)}
+              className="flex items-center gap-2 min-w-0 text-left"
+            >
+              <span
+                className="w-6 h-6 rounded-full border border-white/25 flex-shrink-0"
+                style={{
+                  background: `radial-gradient(circle at 30% 25%, ${activeSwatch.shiftHex || activeSwatch.hex}, ${activeSwatch.hex} 75%)`,
+                }}
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-bold text-[#F7F3EB] truncate leading-tight">
+                  {lang === 'zh' ? activeSwatch.name : activeSwatch.nameEn}
+                </span>
+                <span className="block text-[10px] font-mono text-[#C9A86A] truncate leading-tight mt-0.5">
+                  {activeSwatch.code} · {lang === 'zh' ? activeSwatch.finishLabel : activeSwatch.finishLabelEn}
+                </span>
+              </span>
+            </button>
+
+            {viewMode === 'car' || viewMode === 'closeup' ? (
+              <div
+                role="group"
+                aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
+                className="inline-flex items-center p-0.5 rounded-xl bg-black/65 border border-white/12 flex-shrink-0"
+              >
+                {STUDIO_VEHICLES.map((vehicle) => {
+                  const active = vehicleId === vehicle.id;
+                  return (
+                    <button
+                      key={vehicle.id}
+                      type="button"
+                      onClick={() => setVehicleId(vehicle.id)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap',
+                        active
+                          ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
+                          : 'text-white/65',
+                      )}
+                    >
+                      {vehicle.shortName}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleChangeViewMode('car')}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 active:bg-[#C9A86A] active:text-[#090A0D] border border-white/15 text-[11px] font-semibold whitespace-nowrap flex-shrink-0"
+              >
+                <Car className="w-3.5 h-3.5" />
+                <span>{lang === 'zh' ? '装车' : 'Car'}</span>
+              </button>
+            )}
+          </div>
+
+          {(viewMode === 'car' || viewMode === 'closeup') && modelStatus === 'loading' && (
+            <div className="self-center px-3 py-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/30 flex items-center gap-1.5 text-[11px] text-[#E5C992]">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>
+                {lang === 'zh'
+                  ? `加载 ${vehicleId === 'modely' ? 'Model Y' : 'Model 3'} ${modelProgress}%`
+                  : `Loading ${vehicleId === 'modely' ? 'Model Y' : 'Model 3'} ${modelProgress}%`}
+              </span>
+            </div>
+          )}
+
+          {(viewMode === 'car' || viewMode === 'closeup') && modelStatus === 'error' && (
+            <div className="pointer-events-auto self-center px-3 py-1.5 rounded-full bg-red-950/92 border border-red-500/40 flex items-center gap-2 text-[11px] text-red-200 shadow-lg">
+              <span>{lang === 'zh' ? '车模加载未完成' : 'Model load failed'}</span>
+              <button
+                type="button"
+                onClick={() => setRetryToken((n) => n + 1)}
+                className="px-2 py-0.5 rounded-full bg-[#C9A86A] text-[#090A0D] font-semibold"
+              >
+                {lang === 'zh' ? '重试' : 'Retry'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChangeViewMode('swatch')}
+                className="px-2 py-0.5 rounded-full bg-white/12 text-white font-medium"
+              >
+                {lang === 'zh' ? '返回样板' : 'Swatches'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 3B. 桌面端左侧高定色号铭牌卡 */}
+      {viewMode !== 'swatch' && <aside className="hidden md:block absolute md:top-20 md:left-6 z-20 pointer-events-auto md:w-72">
         <div className="rounded-2xl bg-[#090a0e]/92 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
           {/* 编号顶标 */}
           <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-[0.16em] text-[#C9A86A]">
@@ -508,18 +709,34 @@ export default function ColorStudioPage() {
 
             {(viewMode === 'car' || viewMode === 'closeup') &&
               modelStatus === 'error' && (
-                <div className="w-full text-[11px] text-red-300 text-center">
-                  {lang === 'zh' ? '3D 车模加载失败，请刷新重试' : 'Failed to load car model'}
+                <div className="w-full flex items-center justify-between gap-2 pt-1 text-[11px] text-red-200">
+                  <span>{lang === 'zh' ? '车模加载未完成' : 'Load failed'}</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setRetryToken((n) => n + 1)}
+                      className="px-2 py-0.5 rounded-md bg-[#C9A86A] text-[#090A0D] font-semibold"
+                    >
+                      {lang === 'zh' ? '重试' : 'Retry'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChangeViewMode('swatch')}
+                      className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white"
+                    >
+                      {lang === 'zh' ? '回样板' : 'Swatches'}
+                    </button>
+                  </div>
                 </div>
               )}
           </div>
         </div>
       </aside>}
 
-      {/* 4. 底部一体式控制台（移动端模式切换 + 高定流光色珠胶片轨） */}
-      <footer className="absolute bottom-0 left-0 right-0 z-20 px-3 pb-3.5 pt-2 md:px-6 md:pb-5 flex flex-col items-center gap-2 pointer-events-none bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+      {/* 4. 底部一体式控制台（移动端与小程序底部安全区适配 + 高定流光色珠胶片轨） */}
+      <footer className="absolute bottom-0 left-0 right-0 z-20 px-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-1.5 md:px-6 md:pb-5 flex flex-col items-center gap-1.5 md:gap-2 pointer-events-none bg-gradient-to-t from-black/85 via-black/45 to-transparent">
         {viewMode === 'swatch' && (
-          <p className="studio-fan-hint">
+          <p className="_hsl_ht">
             {lang === 'zh'
               ? pickedUp ? '拖动色卡看折光 · 双击放回' : '滑动切色 · 双击拿起色卡'
               : pickedUp ? 'Drag to tilt · Double-tap to return' : 'Swipe to browse · Double-tap to pick up'}
@@ -551,7 +768,7 @@ export default function ColorStudioPage() {
         </nav>
 
         {/* 高定「流光色珠胶片轨」面板 */}
-        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/92 border border-white/12 px-3 py-2.5 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
+        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/92 border border-white/12 px-2.5 py-2 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
           {/* 轨道顶排：工艺标签 + 操作指引 + 全系色谱典藏入口 */}
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/[0.08]">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
@@ -591,7 +808,7 @@ export default function ColorStudioPage() {
           </div>
 
           {/* 轨道底排：横向立体流光色珠选择轨 */}
-          <div ref={railRef} className="mt-2.5 flex items-center gap-2 md:gap-3 overflow-x-auto pb-1 no-scrollbar">
+          <div ref={railRef} className="mt-2 md:mt-2.5 flex items-center gap-1.5 md:gap-3 overflow-x-auto pb-0.5 no-scrollbar">
             {railSwatches.map((swatch) => {
               const selected = swatch.code === activeSwatch.code;
               const shiftTone = swatch.shiftHex || swatch.hex;
@@ -602,7 +819,7 @@ export default function ColorStudioPage() {
                   aria-pressed={selected}
                   onClick={() => selectFromControls(swatch)}
                   className={cn(
-                    'group flex flex-col items-center gap-1 px-1.5 py-1 rounded-xl transition-all flex-shrink-0 min-w-[54px] md:min-w-[60px]',
+                    'group flex flex-col items-center gap-1 px-1 sm:px-1.5 py-1 rounded-xl transition-all flex-shrink-0 min-w-[50px] md:min-w-[60px]',
                     selected
                       ? 'bg-white/[0.08]'
                       : 'hover:bg-white/[0.04]',
@@ -610,7 +827,7 @@ export default function ColorStudioPage() {
                 >
                   <span
                     className={cn(
-                      'w-8 h-8 md:w-9 md:h-9 rounded-full relative transition-transform duration-200',
+                      'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative transition-transform duration-200',
                       selected
                         ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
                         : 'group-hover:scale-105 ring-1 ring-white/20',
