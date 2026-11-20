@@ -282,3 +282,38 @@
 - 替换 `public/models/` 同名模型时**必须**同步修改 `STUDIO_VEHICLES[].modelUrl` 的 `?v=`（服务器缓存 7 天）。
 - 色卡质感不要再引入原册色带取样混色，否则会再次出现杂色；新增色号只需在 `colorStudio.ts` 填准 `hex`/`shiftHex`/`finish`/`material.roughness`。
 - 微信真机表现仍待实测。
+
+## 2026-11-20：3D 高定选色工坊 V5（雕塑球体、代码审查、手机/小程序适配与防 AI 复刻加密，已上线）
+
+- **用户需求**：保留新版雕塑光影球体；全站与选色工坊深度代码审查及流畅度/质感/UI 优化；做好手机端及微信小程序 `<web-view>` 嵌入适配；增加针对外部 AI 复刻与扒站的代码/色库/车模加密防护；部署上线并同步 GitHub 交接文档。
+- **基线**：`6d83c01`（含 Codex `9edeb33` 小程序入口与 `8b939f1` 移动端 Wi-Fi 预取策略，完整保留）。**业务提交**：`28132e6` + `22eea36`（Nginx `valid_referers` 重复参数修复）。
+- **范围**：仅官网前端 `src/`、静态车模 `public/models/`、打包与部署脚本 `scripts/` 及交接文档；未改 `miniprogram/`、`functions/`、`server/`、数据库与 `warranty-years.lock.json`。
+
+### 改动清单
+
+| 模块 | 核心改动 | 涉及文件 |
+|---|---|---|
+| 高定雕塑球体 | 多曲率车漆壳体 + 黑钛双金腰带 + 三阶 60 刻度铭文曜石展台，校准桌面与竖屏构图 | `shaderballBuilder.ts`、`ColorStudioCanvas.tsx` |
+| 代码审查与稳定性 | 弹窗/后台暂停 WebGL 渲染；去除遮罩 `backdrop-blur` 掉帧；补齐 `webglcontextlost`、WebGL 初始化容错、`Studio3DErrorBoundary` 与 3D 失败后「重试 / 返回流光样板」 | `ColorStudioCanvas.tsx`、`ColorStudioPage.tsx`、`ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` |
+| 手机与小程序适配 | 自动识别微信 `<web-view>` 与 `?embed=miniprogram`，同步顶栏标题「和膜在线选色」；顶部通栏紧凑胶囊条 + 刘海/底栏安全区 + `overscroll-none`；搜索框 16px 防 iOS 放大；选色单支持长按保存大图与 `wx.miniProgram.postMessage` | `studioGuard.ts`、`ColorStudioPage.tsx`、`ColorStudioFanLayout.css`、`ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` |
+| 防扒站与加密防护 | 103 色流式密文打包（产包零明文色表）；双车模转 `HMRY` 加密容器 `.hmy` 并删除 `.glb`；FNV-1a 域名哈希锁 + DOM/CSS 类名去语义化 + 生产防右键/快捷键护盾；Nginx `/models/` 防盗链 | `pack-color-studio-assets.mjs`、`colorStudioVault.ts`、`colorStudio.ts`、`studioGuard.ts`、`SwatchFan*`、`tencent-production-deploy.sh`、`public/models/*.hmy` |
+
+### 检查与线上核验（2026-11-20 10:50 Asia/Shanghai）
+
+- **本地验证**：`bash -n`、`npm run test:contracts`（65 项）、`npm run build`（含 40 项质保年限与 SPA 校验）、`npm --prefix server run build` 全通；`dist/assets/*.js` 零明文色名/色号；浏览器 `390×844` 小程序模式与 `1280×800` 桌面端实测 0 报错。
+- **腾讯云部署**：Run `44662472108`（`22eea36`）**Success**（10:48:56）。
+- **线上核验**：`m3-atelier.hmy`（gzip `1,027,939` B）与 `my-atelier.hmy`（gzip `1,154,829` B）均 200 且 7 天缓存；外部伪造 `Referer: https://evil-clone.ru/` 返回 **403**；微信 `servicewechat.com` 返回 **200**；旧 `tesla-model-3.glb` 返回 **404**；`/color-studio`、`/color-studio/`、`/products/color-ppf` 均 200（`index-CN6718SX.js`）；`/api/health` 全 `ok`。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| Git 提交 / 推送 | ✅ `28132e6`、`22eea36` 已推送 `origin/main` |
+| 网站部署 | ✅ Run `44662472108` Success，线上核验通过 |
+| 小程序 | ❌ 本轮未改 `miniprogram/`（`<web-view>` 直连线上域名自动生效） |
+
+### 对其他执行方的影响
+
+- 后续新增/调整 103 色请通过 `node scripts/pack-color-studio-assets.mjs pack-swatches <json>` 更新 `colorStudioVault.ts`，勿直接提交明文大色表；替换车模请用 `pack-model` 生成 `.hmy` 并同步更新 `?v=YYYYMMDD`。
+- `studioGuard.ts` 已包含 FNV-1a 域名哈希白名单（`hemoppf.cn`、`hhppf.com`、`localhost`、`127.0.0.1` 及其子域）；若未来新增正式域名，需在 `studioGuard.ts` 添加对应哈希并在 `tencent-production-deploy.sh` 的 `valid_referers` 放行。
+- 微信真机内长按保存选色图与好友转发仍待实机点验。

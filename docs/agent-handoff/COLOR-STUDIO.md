@@ -1,6 +1,6 @@
 # 和膜 HAMOREY — 3D 高定选色工坊（Color Studio）跨 AI 同步与调用文档
 
-> 2026-11-19（V4 已更新，见第七节）。本文最初对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
+> 2026-11-20（V5 已更新，见第七节）。本文最初对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
 
 ## 一、官网入口与选色方式
 
@@ -129,6 +129,19 @@ node scripts/pack-color-studio-assets.mjs pack-model /tmp/candidate.glb public/m
 ---
 
 ## 七、验证记录
+
+### 2026-11-20 V5 雕塑球体、代码审查、手机/小程序适配与防 AI 复刻加密（Antigravity）
+
+基线 `6d83c01`（完整保留 Codex `9edeb33` 小程序入口与 `8b939f1` 移动端 Wi-Fi 预取策略）。业务提交 `28132e6` + Nginx `valid_referers` 冲突修复 `22eea36`，腾讯云自动部署 Run [44662472108](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44662472108) 于北京时间 10:48:56 **Success**。
+
+- **高定雕塑光影球体（`shaderballBuilder.ts`）**：以程序化多曲率车漆壳体（上半球 + 腰线倒角槽 + 下裙边）、黑钛拉丝腰带 + 双香槟金饰环、三阶 60 刻度铭文曜石展台替代单调纯球，桌面端与竖屏镜头独立校准。
+- **代码审查与稳定性**：弹窗或后台自动暂停 WebGL `requestAnimationFrame`；移除遮罩大面积 `backdrop-blur`；补齐 `webglcontextlost`/`webglcontextrestored`、WebGL 初始化容错、`Studio3DErrorBoundary` 与弱网 3D 失败后的「重试加载 / 返回流光样板」闭环。
+- **手机端与微信小程序 `<web-view>` 适配**：新增 `useWeChatMiniProgramEmbed()` 自动识别微信环境与 `?embed=miniprogram`，自动同步 `<web-view>` 顶栏标题为「和膜在线选色」；手机端改用不遮挡 3D 视口的顶部通栏胶囊条与安全区留白；搜索框设为 `16px` 防 iOS 放大；选色单弹窗在手机/微信内改用可长按保存高清图预览并支持 `wx.miniProgram.postMessage` 回传色号。
+- **多层防扒站与防 AI 复刻加固**：103 色数据流式密文打包至 `colorStudioVault.ts`（`dist/assets/*.js` 零明文色号/色名）；Tesla 双车模封装为 `HMRY` 加密容器 `.hmy` 并删除公开 `.glb`；FNV-1a 域名哈希锁（零明文域名）+ 混淆核心 DOM/CSS 类名（`_hfs*` / `_hfm*` / `_hsl*`）+ 生产环境防右键/防快捷键护盾；Nginx `/models/` 启用 `valid_referers` 防盗链。
+- **线上实测核验（2026-11-20 10:50 Asia/Shanghai）**：
+  - `https://hemoppf.cn/models/m3-atelier.hmy?v=20261120`：`HTTP/2 200`，`content-encoding: gzip`（`1,027,939` B），`cache-control: public, max-age=604800, stale-while-revalidate=2592000`；`my-atelier.hmy?v=20261120`：`1,154,829` B。
+  - 异域防盗链：`Referer: https://evil-clone.ru/` → **`HTTP/2 403`**；微信 Referer：`Referer: https://servicewechat.com/...` → **`HTTP/2 200`**；旧明文 `/models/tesla-model-3.glb` → **`HTTP/2 404`**。
+  - `/color-studio?embed=miniprogram&code=TPU-016M&mode=sphere`、`/color-studio/`、`/products/color-ppf` 均 `HTTP/2 200`，入口 `assets/index-CN6718SX.js` 与本地一致；`https://api.hemoppf.cn/api/health` 返回 `api/mysql/cos` 全 `ok`。
 
 ### 2026-11-19 V4 体验与性能优化（Antigravity）
 
