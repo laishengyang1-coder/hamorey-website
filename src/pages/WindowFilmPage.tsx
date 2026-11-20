@@ -13,7 +13,7 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { CTASection } from '../components/blocks/CTASection';
 import { getCategoryConfig } from '../config/products';
-import { WINDOW_FILM_MODELS, WINDOW_FILM_POSITION_LABELS, formatWindowFilmPrice } from '../config/windowFilm';
+import { WINDOW_FILM_DEFAULT_ROLL_USES, WINDOW_FILM_MODELS, WINDOW_FILM_POSITION_LABELS, formatWindowFilmPrice } from '../config/windowFilm';
 import windowFilmImg from '../assets/hamorey/product-window.jpg';
 
 export default function WindowFilmPage() {
@@ -168,8 +168,8 @@ export default function WindowFilmPage() {
             质保与授权施工
           </h3>
           <p className="text-sm text-content-secondary leading-relaxed">
-            和膜窗膜质保码默认支持24次使用（整车玻璃），由授权门店施工后通过总部审核，
-            生成可查询的电子质保证书。请在和膜授权门店完成施工，以获得完整质保服务。
+            窗膜质保码按卷管理，前挡每卷默认 {WINDOW_FILM_DEFAULT_ROLL_USES.front} 次，侧挡每卷默认 {WINDOW_FILM_DEFAULT_ROLL_USES.side} 次。
+            具体次数可向施工门店核对。授权门店登记施工并经总部审核后，您即可查询电子质保证书。
           </p>
         </div>
       </ScrollReveal>

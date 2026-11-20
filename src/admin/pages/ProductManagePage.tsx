@@ -9,6 +9,7 @@ import { DataTable, type Column } from '../../shared/components/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { DetailDrawer } from '../../shared/components/DetailDrawer';
 import {
+  WINDOW_FILM_DEFAULT_ROLL_USES,
   WINDOW_FILM_MODELS,
   WINDOW_FILM_POSITION_LABELS,
   type WindowFilmModelSpec,
@@ -173,10 +174,11 @@ export default function ProductManagePage() {
       const fallback = Number(record.warrantyPrice || 0) * 100;
       return formatMoney(dbModel?.warranty_price_cents ?? fallback);
     } },
-    { key: 'usageLimit', title: '可使用次数', render: (_v, record) => {
+    { key: 'usageLimit', title: '新码默认次数', render: (_v, record) => {
       const dbModel = record.dbModel as ProductModel | undefined;
-      const fallback = record.glassPosition === 'front' ? 36 : 18;
-      return `${dbModel?.usage_limit || fallback}次`;
+      if (dbModel) return dbModel.usage_limit == null ? '未设置' : `${dbModel.usage_limit} 次`;
+      const position = record.glassPosition as WindowFilmModelSpec['glassPosition'];
+      return `参考 ${WINDOW_FILM_DEFAULT_ROLL_USES[position]} 次`;
     } },
     { key: 'status', title: '状态', render: (_v, record) => (
       record.dbModel
@@ -199,7 +201,7 @@ export default function ProductManagePage() {
       <div className="mb-6">
         <div className="mb-3">
           <h2 className="text-base font-semibold text-[var(--paper-text)]">窗膜型号</h2>
-          <p className="mt-1 text-sm text-[var(--paper-muted)]">按价格表拆分前挡和侧挡，并维护质保价格与质保码可使用次数。</p>
+          <p className="mt-1 text-sm text-[var(--paper-muted)]">按前挡和侧挡型号维护质保价格及新码默认次数。已入库卷码的次数可在「质保码库存」查看。</p>
         </div>
         <DataTable columns={WINDOW_COLS} data={windowRows as any} loading={loading} emptyText="暂无窗膜型号" />
       </div>

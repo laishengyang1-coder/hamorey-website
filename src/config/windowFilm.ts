@@ -272,6 +272,8 @@ export const WINDOW_FILM_POSITION_LABELS: Record<WindowFilmModelSpec['glassPosit
   side: '侧挡',
 };
 
+export const WINDOW_FILM_DEFAULT_ROLL_USES = { front: 30, side: 20 } as const;
+
 export function formatWindowFilmPrice(value?: number): string {
   return value == null ? '-' : `¥${value.toLocaleString('zh-CN')}`;
 }
