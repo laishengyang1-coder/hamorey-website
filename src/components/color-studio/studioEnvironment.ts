@@ -4,6 +4,7 @@
 // ============================================================
 
 import * as THREE from 'three';
+import logoNegativeUrl from '../../assets/hamorey/logo-negative.png';
 import type { StudioLightingPreset } from '../../config/colorStudio';
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -268,50 +269,115 @@ export function createMetallicFlakeNormalMap(): THREE.DataTexture {
 }
 
 /**
- * 生成「和膜 HAMOREY」曜石黑金高定展车牌照贴图
- * glTF UV 体系使用 flipY = false
+ * 生成「和膜 HAMOREY」曜石黑金高定展车牌照贴图（内嵌官方品牌 Logo）
  */
 export function createHamoreyPlateTexture(): THREE.CanvasTexture {
-  const width = 512;
-  const height = 128;
+  const width = 1024;
+  const height = 326;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
 
-  if (ctx) {
+  const drawBasePlate = (logoImg?: HTMLImageElement) => {
+    if (!ctx) return;
+    // 1. 曜石黑红拉丝铝底板
     const bg = ctx.createLinearGradient(0, 0, width, height);
-    bg.addColorStop(0, '#09090c');
-    bg.addColorStop(0.5, '#1b0b0e');
+    bg.addColorStop(0, '#0a0a0d');
+    bg.addColorStop(0.5, '#190b0e');
     bg.addColorStop(1, '#09090c');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, width, height);
 
+    // 细微横向金属拉丝纹理
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let y = 0; y < height; y += 4) {
+      ctx.fillRect(0, y, width, 1);
+    }
+
+    // 柔和顶部反光高光
+    const sheen = ctx.createLinearGradient(0, 0, 0, height * 0.45);
+    sheen.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+    sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sheen;
+    ctx.fillRect(14, 14, width - 28, height * 0.45);
+
+    // 2. 双层香槟金边框
     ctx.strokeStyle = '#C9A86A';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(10, 10, width - 20, height - 20);
+    ctx.lineWidth = 6;
+    ctx.strokeRect(14, 14, width - 28, height - 28);
 
     ctx.strokeStyle = 'rgba(201, 168, 106, 0.35)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(16, 16, width - 32, height - 32);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(26, 26, width - 52, height - 52);
 
-    ctx.fillStyle = '#F7F3EB';
-    ctx.font = 'bold 40px "HarmonyOS Sans SC", "PingFang SC", system-ui, sans-serif';
+    // 3. 四角高定哑金装饰螺钉
+    const screwOffsets: Array<[number, number]> = [
+      [54, 54],
+      [width - 54, 54],
+      [54, height - 54],
+      [width - 54, height - 54],
+    ];
+    for (const [sx, sy] of screwOffsets) {
+      ctx.beginPath();
+      ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#2a241c';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(201, 168, 106, 0.65)';
+      ctx.stroke();
+    }
+
+    // 4. 居中绘制官方「HAMOREY 和膜」Logo
+    if (logoImg && logoImg.naturalWidth > 0) {
+      const maxW = width * 0.68;
+      const maxH = height * 0.56;
+      const scale = Math.min(maxW / logoImg.naturalWidth, maxH / logoImg.naturalHeight);
+      const drawW = logoImg.naturalWidth * scale;
+      const drawH = logoImg.naturalHeight * scale;
+      const dx = (width - drawW) / 2;
+      const dy = (height - drawH) / 2 - 12;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(201, 168, 106, 0.25)';
+      ctx.shadowBlur = 14;
+      ctx.drawImage(logoImg, dx, dy, drawW, drawH);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#F7F3EB';
+      ctx.font = 'bold 82px "HarmonyOS Sans SC", "PingFang SC", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('HAMOREY · 和膜', width / 2, height * 0.45);
+    }
+
+    // 底部品牌副标
+    ctx.fillStyle = '#C9A86A';
+    ctx.font = '600 24px "HarmonyOS Sans SC", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('和膜 · HAMOREY', width / 2, height * 0.44);
+    ctx.fillText('ATELIER COLOR PPF  ·  HEMO', width / 2, height * 0.84);
+  };
 
-    ctx.fillStyle = '#C9A86A';
-    ctx.font = '600 17px "HarmonyOS Sans SC", system-ui, sans-serif';
-    ctx.fillText('ATELIER COLOR PPF', width / 2, height * 0.76);
-  }
+  drawBasePlate();
 
   const tex = new THREE.CanvasTexture(canvas);
-  tex.flipY = false;
+  tex.flipY = true;
   tex.wrapS = THREE.ClampToEdgeWrapping;
   tex.wrapT = THREE.ClampToEdgeWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
   tex.needsUpdate = true;
+
+  if (typeof Image !== 'undefined') {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      drawBasePlate(img);
+      tex.needsUpdate = true;
+    };
+    img.src = logoNegativeUrl;
+  }
+
   return tex;
 }

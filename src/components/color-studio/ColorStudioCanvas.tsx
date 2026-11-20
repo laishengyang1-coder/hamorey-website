@@ -14,6 +14,7 @@ import {
 } from '../../config/colorStudio';
 import {
   createAutomotiveStudioEnvMap,
+  createHamoreyPlateTexture,
   createMetallicFlakeNormalMap,
 } from './studioEnvironment';
 import { createFilmMaterialController, type FilmMaterialController } from './filmMaterial';
@@ -485,6 +486,22 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       roughness: 0.15,
       metalness: 0.12,
     });
+    const plateTexture = createHamoreyPlateTexture();
+    const plateFrameGeo = new THREE.BoxGeometry(0.412, 0.132, 0.012);
+    const plateFaceGeo = new THREE.PlaneGeometry(0.396, 0.122);
+    const plateFrameMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#141317'),
+      metalness: 0.78,
+      roughness: 0.28,
+    });
+    const plateFaceMat = new THREE.MeshPhysicalMaterial({
+      map: plateTexture,
+      roughness: 0.24,
+      metalness: 0.18,
+      clearcoat: 0.88,
+      clearcoatRoughness: 0.14,
+      envMapIntensity: 1.0,
+    });
     extraCarMaterials.push(
       glassMat,
       tireRubberMat,
@@ -492,7 +509,115 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       frontDrlMat,
       headlightLensMat,
       rearLightBarMat,
+      plateFrameMat,
+      plateFaceMat,
     );
+
+    const buildVehicleLicensePlates = (
+      vehicleRoot: THREE.Group,
+      id: StudioVehicleId,
+    ): THREE.Group => {
+      const platesGroup = new THREE.Group();
+      vehicleRoot.updateMatrixWorld(true);
+      const raycaster = new THREE.Raycaster();
+
+      // 自动识别车身主轴方向（X 轴或 Z 轴）及车头/车尾朝向，杜绝车牌贴到车门侧面
+      const carBox = new THREE.Box3().setFromObject(vehicleRoot);
+      const carSize = new THREE.Vector3();
+      carBox.getSize(carSize);
+      const alongX = carSize.x > carSize.z;
+      const halfLen = (alongX ? carSize.x : carSize.z) * 0.5;
+
+      // 通过对比车身前后 38% 处的垂向高度自动判定车头（前机盖低于后尾箱/溜背）
+      const probeTopY = (axisCoord: number): number => {
+        const origin = alongX
+          ? new THREE.Vector3(axisCoord, 2.6, 0)
+          : new THREE.Vector3(0, 2.6, axisCoord);
+        raycaster.set(origin, new THREE.Vector3(0, -1, 0));
+        const hits = raycaster.intersectObject(vehicleRoot, true);
+        return hits.length > 0 ? hits[0].point.y : 2.6;
+      };
+      const topPos = probeTopY(halfLen * 0.72);
+      const topNeg = probeTopY(-halfLen * 0.72);
+      const frontSign: 1 | -1 = topPos <= topNeg ? 1 : -1;
+
+      const configs: Array<{ side: 'front' | 'rear'; sign: 1 | -1; y: number }> =
+        id === 'modely'
+          ? [
+              { side: 'front', sign: frontSign, y: 0.43 },
+              { side: 'rear', sign: (-frontSign as 1 | -1), y: 0.48 },
+            ]
+          : [
+              { side: 'front', sign: frontSign, y: 0.37 },
+              { side: 'rear', sign: (-frontSign as 1 | -1), y: 0.60 },
+            ];
+
+      const sampleAxis = (lateral: number, y: number, sign: 1 | -1): number | null => {
+        if (alongX) {
+          raycaster.set(
+            new THREE.Vector3(sign * 4.2, y, lateral),
+            new THREE.Vector3(-sign, 0, 0),
+          );
+        } else {
+          raycaster.set(
+            new THREE.Vector3(lateral, y, sign * 4.2),
+            new THREE.Vector3(0, 0, -sign),
+          );
+        }
+        const hits = raycaster.intersectObject(vehicleRoot, true);
+        if (hits.length === 0) return null;
+        return alongX ? hits[0].point.x : hits[0].point.z;
+      };
+
+      for (const cfg of configs) {
+        const sign = cfg.sign;
+        const cHit = sampleAxis(0, cfg.y, sign);
+        if (cHit === null) continue;
+
+        const lHit = sampleAxis(-0.14, cfg.y, sign);
+        const rHit = sampleAxis(0.14, cfg.y, sign);
+        const tHit = sampleAxis(0, cfg.y + 0.045, sign);
+        const bHit = sampleAxis(0, cfg.y - 0.045, sign);
+
+        // 取最外侧贴合点 + 10mm 牌照框厚，确保弧面保险杠边缘不穿模、不悬空
+        const candidates = [cHit, lHit, rHit].filter(
+          (v): v is number => v !== null,
+        );
+        const outerCoord =
+          sign === 1 ? Math.max(...candidates) : Math.min(...candidates);
+
+        let pitch = 0;
+        if (tHit !== null && bHit !== null) {
+          const dAxis = sign === 1 ? tHit - bHit : bHit - tHit;
+          pitch = Math.max(-0.26, Math.min(0.26, Math.atan2(dAxis, 0.09)));
+        }
+
+        const plateUnit = new THREE.Group();
+        const frameMesh = new THREE.Mesh(plateFrameGeo, plateFrameMat);
+        frameMesh.castShadow = true;
+        frameMesh.receiveShadow = true;
+        plateUnit.add(frameMesh);
+
+        const faceMesh = new THREE.Mesh(plateFaceGeo, plateFaceMat);
+        faceMesh.position.z = 0.0066;
+        plateUnit.add(faceMesh);
+
+        if (alongX) {
+          plateUnit.position.set(outerCoord + sign * 0.01, cfg.y, 0);
+          plateUnit.rotation.order = 'YXZ';
+          plateUnit.rotation.y = sign === 1 ? Math.PI / 2 : -Math.PI / 2;
+        } else {
+          plateUnit.position.set(0, cfg.y, outerCoord + sign * 0.01);
+          plateUnit.rotation.order = 'YXZ';
+          plateUnit.rotation.y = sign === 1 ? 0 : Math.PI;
+        }
+        plateUnit.rotation.x = pitch;
+
+        platesGroup.add(plateUnit);
+      }
+
+      return platesGroup;
+    };
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
@@ -686,11 +811,16 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
               );
 
               bindVehicleMaterials(root, id);
-              loadedVehicles.set(id, wrapper);
-              carAnchor.add(wrapper);
+
+              const vehicleAssembly = new THREE.Group();
+              vehicleAssembly.add(wrapper);
+              vehicleAssembly.add(buildVehicleLicensePlates(wrapper, id));
+
+              loadedVehicles.set(id, vehicleAssembly);
+              carAnchor.add(vehicleAssembly);
 
               const isCurrent = stateRef.current.vehicleId === id;
-              wrapper.visible = isCurrent;
+              vehicleAssembly.visible = isCurrent;
               if (isCurrent) {
                 showLoadedVehicle(stateRef.current.vehicleId);
                 stateRef.current.onModelStatusChange?.('ready', 100);
@@ -880,6 +1010,9 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       shadowPlaneMat.dispose();
 
       for (const mat of extraCarMaterials) mat.dispose();
+      plateFrameGeo.dispose();
+      plateFaceGeo.dispose();
+      plateTexture.dispose();
       releaseVehicles.forEach((release) => release());
       loadedVehicles.clear();
       runtimeRef.current.switchVehicle = null;
