@@ -487,20 +487,21 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       metalness: 0.12,
     });
     const plateTexture = createHamoreyPlateTexture();
-    const plateFrameGeo = new THREE.BoxGeometry(0.412, 0.132, 0.012);
-    const plateFaceGeo = new THREE.PlaneGeometry(0.396, 0.122);
+    // 欧规/原厂展车修长比例（4.08:1）+ 8mm 超薄黑钛金属背框，完整覆盖原车牌照位
+    const plateFrameGeo = new THREE.BoxGeometry(0.474, 0.118, 0.008);
+    const plateFaceGeo = new THREE.PlaneGeometry(0.464, 0.112);
     const plateFrameMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#141317'),
-      metalness: 0.78,
-      roughness: 0.28,
+      color: new THREE.Color('#0c0d10'),
+      metalness: 0.72,
+      roughness: 0.25,
     });
     const plateFaceMat = new THREE.MeshPhysicalMaterial({
       map: plateTexture,
-      roughness: 0.24,
-      metalness: 0.18,
-      clearcoat: 0.88,
-      clearcoatRoughness: 0.14,
-      envMapIntensity: 1.0,
+      roughness: 0.18,
+      metalness: 0.12,
+      clearcoat: 0.94,
+      clearcoatRoughness: 0.1,
+      envMapIntensity: 0.9,
     });
     extraCarMaterials.push(
       glassMat,
@@ -544,11 +545,12 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       const configs: Array<{ side: 'front' | 'rear'; sign: 1 | -1; y: number }> =
         id === 'modely'
           ? [
-              { side: 'front', sign: frontSign, y: 0.43 },
-              { side: 'rear', sign: (-frontSign as 1 | -1), y: 0.48 },
+              // 精准对齐 Model Y 前杠原厂牌照框凹槽与后杠凹槽中心
+              { side: 'front', sign: frontSign, y: 0.485 },
+              { side: 'rear', sign: (-frontSign as 1 | -1), y: 0.485 },
             ]
           : [
-              { side: 'front', sign: frontSign, y: 0.37 },
+              { side: 'front', sign: frontSign, y: 0.38 },
               { side: 'rear', sign: (-frontSign as 1 | -1), y: 0.60 },
             ];
 
@@ -574,12 +576,12 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
         const cHit = sampleAxis(0, cfg.y, sign);
         if (cHit === null) continue;
 
-        const lHit = sampleAxis(-0.14, cfg.y, sign);
-        const rHit = sampleAxis(0.14, cfg.y, sign);
-        const tHit = sampleAxis(0, cfg.y + 0.045, sign);
-        const bHit = sampleAxis(0, cfg.y - 0.045, sign);
+        const lHit = sampleAxis(-0.18, cfg.y, sign);
+        const rHit = sampleAxis(0.18, cfg.y, sign);
+        const tHit = sampleAxis(0, cfg.y + 0.04, sign);
+        const bHit = sampleAxis(0, cfg.y - 0.04, sign);
 
-        // 取最外侧贴合点 + 10mm 牌照框厚，确保弧面保险杠边缘不穿模、不悬空
+        // 取最外侧贴合点 + 6mm 贴合偏移，紧贴原车牌照位、零悬空零穿模
         const candidates = [cHit, lHit, rHit].filter(
           (v): v is number => v !== null,
         );
@@ -589,7 +591,7 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
         let pitch = 0;
         if (tHit !== null && bHit !== null) {
           const dAxis = sign === 1 ? tHit - bHit : bHit - tHit;
-          pitch = Math.max(-0.26, Math.min(0.26, Math.atan2(dAxis, 0.09)));
+          pitch = Math.max(-0.24, Math.min(0.24, Math.atan2(dAxis, 0.08)));
         }
 
         const plateUnit = new THREE.Group();
@@ -599,15 +601,15 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
         plateUnit.add(frameMesh);
 
         const faceMesh = new THREE.Mesh(plateFaceGeo, plateFaceMat);
-        faceMesh.position.z = 0.0066;
+        faceMesh.position.z = 0.0046;
         plateUnit.add(faceMesh);
 
         if (alongX) {
-          plateUnit.position.set(outerCoord + sign * 0.01, cfg.y, 0);
+          plateUnit.position.set(outerCoord + sign * 0.006, cfg.y, 0);
           plateUnit.rotation.order = 'YXZ';
           plateUnit.rotation.y = sign === 1 ? Math.PI / 2 : -Math.PI / 2;
         } else {
-          plateUnit.position.set(0, cfg.y, outerCoord + sign * 0.01);
+          plateUnit.position.set(0, cfg.y, outerCoord + sign * 0.006);
           plateUnit.rotation.order = 'YXZ';
           plateUnit.rotation.y = sign === 1 ? 0 : Math.PI;
         }

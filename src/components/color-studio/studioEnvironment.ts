@@ -269,11 +269,11 @@ export function createMetallicFlakeNormalMap(): THREE.DataTexture {
 }
 
 /**
- * 生成「和膜 HAMOREY」曜石黑金高定展车牌照贴图（内嵌官方品牌 Logo）
+ * 生成「和膜 HAMOREY」极简高定原厂展车牌照贴图（纯黑钢琴漆底 + 官方白标，无多余边框与杂字）
  */
 export function createHamoreyPlateTexture(): THREE.CanvasTexture {
-  const width = 1024;
-  const height = 326;
+  const width = 1200;
+  const height = 294;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -281,82 +281,43 @@ export function createHamoreyPlateTexture(): THREE.CanvasTexture {
 
   const drawBasePlate = (logoImg?: HTMLImageElement) => {
     if (!ctx) return;
-    // 1. 曜石黑红拉丝铝底板
-    const bg = ctx.createLinearGradient(0, 0, width, height);
-    bg.addColorStop(0, '#0a0a0d');
-    bg.addColorStop(0.5, '#190b0e');
-    bg.addColorStop(1, '#09090c');
+    // 1. 极简曜石钢琴黑渐变底（媲美保时捷/特斯拉官方展车黑牌）
+    const bg = ctx.createLinearGradient(0, 0, 0, height);
+    bg.addColorStop(0, '#14151a');
+    bg.addColorStop(0.45, '#0b0c10');
+    bg.addColorStop(1, '#07080b');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, width, height);
 
-    // 细微横向金属拉丝纹理
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
-    for (let y = 0; y < height; y += 4) {
-      ctx.fillRect(0, y, width, 1);
-    }
+    // 顶部极淡棚拍柔光反光带（提升烤漆玻璃感）
+    const topSheen = ctx.createLinearGradient(0, 0, 0, height * 0.42);
+    topSheen.addColorStop(0, 'rgba(255, 255, 255, 0.065)');
+    topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = topSheen;
+    ctx.fillRect(0, 0, width, height * 0.42);
 
-    // 柔和顶部反光高光
-    const sheen = ctx.createLinearGradient(0, 0, 0, height * 0.45);
-    sheen.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-    sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = sheen;
-    ctx.fillRect(14, 14, width - 28, height * 0.45);
-
-    // 2. 双层香槟金边框
-    ctx.strokeStyle = '#C9A86A';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(14, 14, width - 28, height - 28);
-
-    ctx.strokeStyle = 'rgba(201, 168, 106, 0.35)';
+    // 极细暗银内倒角线（1.5px，低调克制，无土气金框）
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(26, 26, width - 52, height - 52);
+    ctx.strokeRect(8, 8, width - 16, height - 16);
 
-    // 3. 四角高定哑金装饰螺钉
-    const screwOffsets: Array<[number, number]> = [
-      [54, 54],
-      [width - 54, 54],
-      [54, height - 54],
-      [width - 54, height - 54],
-    ];
-    for (const [sx, sy] of screwOffsets) {
-      ctx.beginPath();
-      ctx.arc(sx, sy, 8, 0, Math.PI * 2);
-      ctx.fillStyle = '#2a241c';
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(201, 168, 106, 0.65)';
-      ctx.stroke();
-    }
-
-    // 4. 居中绘制官方「HAMOREY 和膜」Logo
+    // 2. 居中纯白官方「HAMOREY 和膜」Logo（大留白高定呼吸感）
     if (logoImg && logoImg.naturalWidth > 0) {
-      const maxW = width * 0.68;
-      const maxH = height * 0.56;
+      const maxW = width * 0.56;
+      const maxH = height * 0.60;
       const scale = Math.min(maxW / logoImg.naturalWidth, maxH / logoImg.naturalHeight);
       const drawW = logoImg.naturalWidth * scale;
       const drawH = logoImg.naturalHeight * scale;
       const dx = (width - drawW) / 2;
-      const dy = (height - drawH) / 2 - 12;
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(201, 168, 106, 0.25)';
-      ctx.shadowBlur = 14;
+      const dy = (height - drawH) / 2;
       ctx.drawImage(logoImg, dx, dy, drawW, drawH);
-      ctx.restore();
     } else {
-      ctx.fillStyle = '#F7F3EB';
-      ctx.font = 'bold 82px "HarmonyOS Sans SC", "PingFang SC", system-ui, sans-serif';
+      ctx.fillStyle = '#F5F6F8';
+      ctx.font = '600 84px "HarmonyOS Sans SC", "PingFang SC", system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('HAMOREY · 和膜', width / 2, height * 0.45);
+      ctx.fillText('HAMOREY', width / 2, height / 2);
     }
-
-    // 底部品牌副标
-    ctx.fillStyle = '#C9A86A';
-    ctx.font = '600 24px "HarmonyOS Sans SC", system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('ATELIER COLOR PPF  ·  HEMO', width / 2, height * 0.84);
   };
 
   drawBasePlate();
