@@ -4,6 +4,8 @@
 
 ## 当前执行与交接状态
 
+- **2026-11-20 · 和膜侧挡质保额度。** 9 个在售侧挡型号及 550 个已有卷码已调为每卷 20 次，前挡每卷 30 次。见 [窗膜额度交接与线上核验](WINDOW-FILM-QUOTA.md)。
+
 - ✅ **2026-11-20 Antigravity：3D 高定选色工坊 V5（雕塑球体、代码审查、手机/小程序 `<web-view>` 适配与多层防 AI 复刻加密）已上线，可交接**（业务提交 `28132e6` + Nginx 修复 `22eea36`，[腾讯云 Run `44662472108`](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44662472108) Success）。基线 `6d83c01`（完整保留 Codex `9edeb33` 与 `8b939f1`）；线上 `.hmy` 加密车模 gzip 生效、异域 Referer 403 拦截、旧 `.glb` 404 移除、API 健康全 `ok`。仅改官网前端与部署脚本，未改小程序与后端接口。详见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
 
 - **2026-11-20 · Codex · 小程序发版前修复。** 业务提交 `8b939f1` 已纳入微信开发者工具原项目。覆盖质保照片、兑换去重、电子证书装贴部位、部分已用码划拨、移动端三维预取。小程序由用户发版，官网、接口和真机验证状态见 [Codex 记录](CODEX.md)。
