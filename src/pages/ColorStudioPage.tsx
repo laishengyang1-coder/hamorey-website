@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Car,
+  ChevronLeft,
+  ChevronRight,
   Info,
   Loader2,
   Moon,
@@ -197,6 +199,17 @@ export default function ColorStudioPage() {
   const [pickedUp, setPickedUp] = useState<boolean>(false);
   const [playing, setPlaying] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const railRef = useRef<HTMLDivElement>(null);
+  const railDragRef = useRef<{ active: boolean; startX: number; startScroll: number; moved: boolean }>({
+    active: false,
+    startX: 0,
+    startScroll: 0,
+    moved: false,
+  });
+  const [railScrollable, setRailScrollable] = useState<{ left: boolean; right: boolean }>({
+    left: false,
+    right: true,
+  });
+  const [railDragging, setRailDragging] = useState<boolean>(false);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [modelStatus, setModelStatus] = useState<CarModelLoadStatus>('idle');
@@ -243,6 +256,37 @@ export default function ColorStudioPage() {
     return () => preference.removeEventListener('change', onChange);
   }, []);
 
+  const updateRailScrollButtons = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const left = rail.scrollLeft > 4;
+    const right = rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 4;
+    setRailScrollable((prev) => (prev.left === left && prev.right === right ? prev : { left, right }));
+  }, []);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const onWheel = (e: WheelEvent) => {
+      if (rail.scrollWidth <= rail.clientWidth) return;
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (delta === 0) return;
+      e.preventDefault();
+      rail.scrollLeft += delta;
+    };
+    const onScroll = () => updateRailScrollButtons();
+    rail.addEventListener('wheel', onWheel, { passive: false });
+    rail.addEventListener('scroll', onScroll, { passive: true });
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateRailScrollButtons) : null;
+    ro?.observe(rail);
+    updateRailScrollButtons();
+    return () => {
+      rail.removeEventListener('wheel', onWheel);
+      rail.removeEventListener('scroll', onScroll);
+      ro?.disconnect();
+    };
+  }, [railSwatches.length, updateRailScrollButtons]);
+
   useEffect(() => {
     const rail = railRef.current;
     const chip = rail?.querySelector<HTMLElement>('[aria-pressed="true"]');
@@ -251,7 +295,15 @@ export default function ColorStudioPage() {
     if (item.left < parent.left || item.right > parent.right) {
       rail.scrollLeft += item.left - parent.left - (parent.width - item.width) / 2;
     }
-  }, [activeSwatch.code, railFinish, viewMode]);
+    updateRailScrollButtons();
+  }, [activeSwatch.code, railFinish, viewMode, updateRailScrollButtons]);
+
+  const scrollRailBy = (dir: -1 | 1) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const distance = Math.max(220, Math.round(rail.clientWidth * 0.72));
+    rail.scrollBy({ left: dir * distance, behavior: 'smooth' });
+  };
 
   function selectFromControls(swatch: ColorFilmItem) {
     if (viewMode === 'swatch') {
@@ -807,49 +859,131 @@ export default function ColorStudioPage() {
             </button>
           </div>
 
-          {/* 轨道底排：横向立体流光色珠选择轨 */}
-          <div ref={railRef} className="mt-2 md:mt-2.5 flex items-center gap-1.5 md:gap-3 overflow-x-auto pb-0.5 no-scrollbar">
-            {railSwatches.map((swatch) => {
-              const selected = swatch.code === activeSwatch.code;
-              const shiftTone = swatch.shiftHex || swatch.hex;
-              return (
-                <button
-                  key={swatch.code}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => selectFromControls(swatch)}
-                  className={cn(
-                    'group flex flex-col items-center gap-1 px-1 sm:px-1.5 py-1 rounded-xl transition-all flex-shrink-0 min-w-[50px] md:min-w-[60px]',
-                    selected
-                      ? 'bg-white/[0.08]'
-                      : 'hover:bg-white/[0.04]',
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative transition-transform duration-200',
-                      selected
-                        ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
-                        : 'group-hover:scale-105 ring-1 ring-white/20',
-                    )}
-                    style={{
-                      background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0%, ${shiftTone} 28%, ${swatch.hex} 72%, #050608 100%)`,
-                      boxShadow: 'inset -3px -4px 8px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5)',
+          {/* 轨道底排：横向立体流光色珠选择轨（支持滚轮、鼠标拖拽、触屏滑动与左右翻页箭头） */}
+          <div className="relative mt-2 md:mt-2.5">
+            {railScrollable.left && (
+              <button
+                type="button"
+                aria-label={lang === 'zh' ? '向左滑动色珠' : 'Scroll swatches left'}
+                onClick={() => scrollRailBy(-1)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            {railScrollable.right && (
+              <button
+                type="button"
+                aria-label={lang === 'zh' ? '向右滑动色珠' : 'Scroll swatches right'}
+                onClick={() => scrollRailBy(1)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] flex items-center justify-center transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
+            <div
+              ref={railRef}
+              onPointerDown={(e) => {
+                if (e.pointerType !== 'mouse' || e.button !== 0) return;
+                const rail = railRef.current;
+                if (!rail) return;
+                railDragRef.current = {
+                  active: true,
+                  startX: e.clientX,
+                  startScroll: rail.scrollLeft,
+                  moved: false,
+                };
+              }}
+              onPointerMove={(e) => {
+                const drag = railDragRef.current;
+                if (!drag.active || e.pointerType !== 'mouse') return;
+                const rail = railRef.current;
+                if (!rail) return;
+                const dx = e.clientX - drag.startX;
+                if (!drag.moved && Math.abs(dx) > 5) {
+                  drag.moved = true;
+                  setRailDragging(true);
+                }
+                if (drag.moved) {
+                  rail.scrollLeft = drag.startScroll - dx;
+                }
+              }}
+              onPointerUp={() => {
+                const drag = railDragRef.current;
+                drag.active = false;
+                if (drag.moved) {
+                  setRailDragging(false);
+                  window.setTimeout(() => {
+                    railDragRef.current.moved = false;
+                  }, 0);
+                }
+              }}
+              onPointerCancel={() => {
+                railDragRef.current.active = false;
+                railDragRef.current.moved = false;
+                setRailDragging(false);
+              }}
+              onPointerLeave={() => {
+                if (railDragRef.current.active) {
+                  railDragRef.current.active = false;
+                  setRailDragging(false);
+                  window.setTimeout(() => {
+                    railDragRef.current.moved = false;
+                  }, 0);
+                }
+              }}
+              className={cn(
+                'flex items-center gap-1.5 md:gap-3 overflow-x-auto pb-0.5 px-1 no-scrollbar touch-pan-x select-none',
+                railDragging ? 'cursor-grabbing' : 'md:cursor-grab',
+              )}
+            >
+              {railSwatches.map((swatch) => {
+                const selected = swatch.code === activeSwatch.code;
+                const shiftTone = swatch.shiftHex || swatch.hex;
+                return (
+                  <button
+                    key={swatch.code}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      if (railDragRef.current.moved) return;
+                      selectFromControls(swatch);
                     }}
-                  >
-                    <span className="absolute top-1 left-1.5 w-2.5 h-1 rounded-full bg-white/60 -rotate-[25deg] pointer-events-none" />
-                  </span>
-                  <span
                     className={cn(
-                      'text-[10px] leading-tight truncate max-w-[54px] md:max-w-[60px]',
-                      selected ? 'text-[#E5C992] font-semibold' : 'text-white/60',
+                      'group flex flex-col items-center gap-1 px-1 sm:px-1.5 py-1 rounded-xl transition-all flex-shrink-0 min-w-[50px] md:min-w-[60px]',
+                      selected
+                        ? 'bg-white/[0.08]'
+                        : 'hover:bg-white/[0.04]',
                     )}
                   >
-                    {lang === 'zh' ? swatch.name : swatch.code}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className={cn(
+                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative transition-transform duration-200',
+                        selected
+                          ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
+                          : 'group-hover:scale-105 ring-1 ring-white/20',
+                      )}
+                      style={{
+                        background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0%, ${shiftTone} 28%, ${swatch.hex} 72%, #050608 100%)`,
+                        boxShadow: 'inset -3px -4px 8px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5)',
+                      }}
+                    >
+                      <span className="absolute top-1 left-1.5 w-2.5 h-1 rounded-full bg-white/60 -rotate-[25deg] pointer-events-none" />
+                    </span>
+                    <span
+                      className={cn(
+                        'text-[10px] leading-tight truncate max-w-[54px] md:max-w-[60px]',
+                        selected ? 'text-[#E5C992] font-semibold' : 'text-white/60',
+                      )}
+                    >
+                      {lang === 'zh' ? swatch.name : swatch.code}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </footer>
