@@ -4,6 +4,8 @@
 
 ## 当前执行与交接状态
 
+- **2026-11-20 · Codex · 和膜小程序在线选色开发预览。** 车主首页新增固定入口，微信好友卡片直接打开中文工坊。业务提交 `9edeb33` 在本地预览分支 `codex/mini-color-studio-20261120`，微信正式版仍待发布。见 [Codex 记录](CODEX.md) 与 [选色专题](COLOR-STUDIO.md)。
+
 - ✅ **2026-11-19 Dot：和膜首屏扇形色卡左右拖动同向修复已上线，可交接**（`ada5918`，[腾讯云 #267](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44542311722) 成功）。先验收和膜、后验收 H&H 的线上左右拖动；H&H 已含同向逻辑，无需另发。未做手机真机或微信内验收。详见 [CODEX 交接](CODEX.md)。
 
 - ✅ **2026-11-19 Antigravity：3D 选色工坊 V4 体验与性能优化已上线（业务提交 `f1ff80d`，Run `44495579649` Success）**：扇形色卡弹簧物理与静止休眠、纯净漆面去杂色、水晶/金属 60 色校准、恢复彩虹色谱条；删除约 680 KB 未用资源，首页主包 370.8→287.5 KB，车模 gzip 省约 30% 并缓存 7 天。基线 `a3ba701`，未改小程序与后端接口。详见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。

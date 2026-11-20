@@ -38,60 +38,14 @@
 - [Model 3 液态银整车](https://hemoppf.cn/color-studio?code=TPU-016M&mode=car&car=model3)
 - [小程序内嵌参数示例](https://hemoppf.cn/color-studio?embed=miniprogram&code=TPU-044S&car=modely)
 
-## 三、 微信小程序 `<web-view>` 后续接入指南
+## 三、和膜小程序选色入口与微信好友卡片
 
-> 本提交仅更新官网，未增设或发布选色工坊小程序承载页。以下是后续接入方案，可参考已有的 `miniprogram/pages/invitation/index/`。
+本节对应 2026-11-20 开发预览分支 `codex/mini-color-studio-20261120` 的业务提交 `9edeb33`。交付阶段见 [Codex 工作记录](CODEX.md)。
 
-1. **新建承载页四件套**（缺任一后缀都会导致 `npm run test:contracts` 失败）：
-   - `miniprogram/pages/owner/color-studio/index.js`
-   - `miniprogram/pages/owner/color-studio/index.json`（推荐 `"navigationBarTitleText": "3D高定选色"`）
-   - `miniprogram/pages/owner/color-studio/index.wxml`
-   - `miniprogram/pages/owner/color-studio/index.wxss`
-2. **编写 `index.wxml` 与 `index.js`**：
-   ```xml
-   <web-view wx:if="{{!failed}}" src="{{src}}" bindload="onWebLoad" binderror="onWebError" />
-   <view wx:else class="error">
-     <text>3D 选色工坊暂时未能打开，请检查网络后重试</text>
-     <button bindtap="retry">重新加载</button>
-   </view>
-   ```
-   ```js
-   const BASE_URL = 'https://hemoppf.cn/color-studio';
-   Page({
-     data: { src: `${BASE_URL}?embed=miniprogram`, failed: false },
-     onLoad(options) {
-       const params = ['embed=miniprogram'];
-       if (options && options.code) params.push(`code=${encodeURIComponent(options.code)}`);
-       if (options && options.mode) params.push(`mode=${encodeURIComponent(options.mode)}`);
-       if (options && options.car) params.push(`car=${encodeURIComponent(options.car)}`);
-       this.setData({ src: `${BASE_URL}?${params.join('&')}` });
-     },
-     onShow() {
-       wx.showShareMenu({ menus: ['shareAppMessage'] });
-     },
-     onWebLoad() { this.setData({ failed: false }); },
-     onWebError() { this.setData({ failed: true }); },
-     retry() {
-       const sep = this.data.src.includes('?') ? '&' : '?';
-       this.setData({ failed: false, src: `${this.data.src}${sep}_t=${Date.now()}` });
-     },
-     onShareAppMessage() {
-       return { title: '和膜 3D 高定选色工坊 · 实车换色预览', path: '/pages/owner/color-studio/index' };
-     }
-   });
-   ```
-3. **注册路由**：在 `miniprogram/app.json` 的 `"pages"` 数组中加入 `"pages/owner/color-studio/index"`。
-4. **添加入口**：在车主端 `miniprogram/pages/owner/product/index.*`（`color` 分类「和彩 QCCY」卡片）及首页金刚区/轮播中跳转 `/pages/owner/color-studio/index`。
-5. **双向跳转与通信（如后续需要跳回小程序报价/门店页）**：
-   - 在前端 `index.html` 或 `ColorCardModal.tsx` 引入微信官方 JSSDK（`https://res.wx.qq.com/open/js/jweixin-1.6.0.js`），在 `isEmbed === true` 分支点击「到店看实膜 / 立即报价」时调用：
-     ```ts
-     window.wx?.miniProgram?.navigateTo({
-       url: `/pages/owner/quote/index?color=${encodeURIComponent(swatch.code)}`,
-     });
-     ```
-6. **微信后台与发版核验（红线）**：
-   - 上线前必须在微信小程序后台「开发 -> 开发设置 -> **业务域名**」配置 `https://hemoppf.cn`（并放置微信校验文件到 `public/`）；
-   - 小程序变更必须上传体验版并在微信真机实测通过后再提交审核发版；**禁止将 GitHub 网站推送等同于小程序生效**。
+- 车主首页四个常用功能下方、和膜案例上方有固定的「在线选色」入口。位置见 `miniprogram/pages/owner/query/index.wxml` 和同目录样式。入口独立于后台轮播配置。
+- 首页与微信聊天卡片都直达 `/pages/owner/color-studio/index`。专页使用 `web-view` 打开 [和膜官网选色工坊](https://hemoppf.cn/color-studio?embed=miniprogram)，从中文扇形样板开始，免登录。线上官网负责色库与交互更新。
+- 页面右上角支持「转发给朋友」。卡片使用「和膜在线选色」及随小程序打包的 `/images/color-studio-share-20261120.jpg`（800 × 640）。接收方打开整个选色工坊的默认页。卡片和丽江邀请函、质保页分别设置。
+- 发布前，用有预览权限的微信在真机核对内嵌网页和聊天卡片，尤其是封面、对方点开后的落地页及页面返回。正式业务域名为 `https://hemoppf.cn`。网站上线与微信小程序版本发布分别进行。
 
 ---
 

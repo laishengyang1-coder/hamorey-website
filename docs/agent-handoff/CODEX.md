@@ -95,3 +95,11 @@
 - GitHub 主分支：[业务提交 `ada5918`](https://github.com/laishengyang1-coder/hamorey-website/commit/ada5918a6a7b59a57e0b02b6acb14850c0bcc638)。腾讯云 [Actions #267](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/44542311722) 已成功，公网站点健康检查通过；上线的入口资产与修复构建相符。前后端构建、65 项接口契约、40 项质保一致性检查通过；React 组件模拟触屏与鼠标左右拖动、松手惯性、双击、取消及 Esc 均通过。
 - 线上验收（先国内、后海外）：[和膜](https://hemoppf.cn/color-studio?code=TPU-048P&mode=swatch) 和 [H&H](https://hhppf.com/color-studio/?lang=zh&code=TPU-048P&mode=swatch) 在桌面浏览器分别左右拖动，卡片与指针同向且切色正常。H&H 独立仓库 `hhppf-website` 已在 Cloudflare Pages 线上包含相同逻辑（部署基线 `280e4fe`，现有构建资源与线上逐字节匹配），无需重复推送或部署。未做手机真机或微信内浏览器验收；小程序未修改、未上传、未审核、未发布。
 - 接手建议：涉及触屏手感时，在手机各试一次慢拖和快速甩动，分别观察持有时方向和松手后的惯性。仅文档回执使用 `[skip ci]`。
+
+## 2026-11-20 · 和膜小程序在线选色开发预览
+
+- 以已核对的 `origin/main@ed41536` 为基线，在独立工作区的 `codex/mini-color-studio-20261120` 提交业务修改 `9edeb33`。共享目录的 3D 舞台在制改动由原执行方继续。本次未推送或部署网站、API。
+- 涉及 `miniprogram/app.json`、`pages/owner/query/index.wxml` 和 `.wxss`、`pages/owner/color-studio/index` 四个页面文件、`images/color-studio-share-20261120.jpg`。入口在首页四个常用功能下方、和膜案例上方。首页与微信好友卡片均打开中文工坊，卡片指向整个工坊。网页加载失败时支持重试和复制官网链接。
+- 仓库 65 项接口调用及跨端检查通过。对真实和膜域名做了 390 × 844 触屏浏览器验证，默认中文、103 色、无横向溢出，双击拿起色卡成功。微信开发者工具模拟器从首页点进及冷启动直达均成功。好友分享回调返回专属标题、路径，微信运行时图片与包内 800 × 640 封面逐字节一致。
+- 微信官方开发预览码已生成，入口为车主首页。开发者工具中网页载入后，顶栏可能显示官网通用标题。聊天卡片使用「和膜在线选色」。两台真机之间的实际转发、封面裁切与接收方打开仍待核对。
+- 小程序体验版上传、审核、正式发布均未执行。后续确认预览后可将业务提交合入发布分支。本次未改后台轮播、丽江邀请函或质保功能。
