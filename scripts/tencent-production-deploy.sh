@@ -171,7 +171,7 @@ location ^~ /assets/ {
 
 # 3D models (.hmy encrypted containers): gzip saves ~26%; ?v=YYYYMMDD busts 7d cache.
 location ^~ /models/ {
-    valid_referers none blocked server_names *.hemoppf.cn hemoppf.cn *.hhppf.com hhppf.com servicewechat.com;
+    valid_referers none blocked hemoppf.cn *.hemoppf.cn hhppf.com *.hhppf.com servicewechat.com;
     if (\$invalid_referer) {
         return 403;
     }
