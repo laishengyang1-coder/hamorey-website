@@ -5,6 +5,8 @@
 // 依赖：sharp（Node native，server 运行时加载；中文字体 fonts-noto-cjk）
 // ============================================================
 
+import { resolveInstallPosition } from './_install-position.ts';
+
 export interface PartPriceItem {
   name: string;
   priceCents: number;
@@ -18,6 +20,7 @@ export interface CertificateData {
   vehicleBrand: string;
   vehicleModel: string;
   productName: string;
+  productCategory?: string | null;
   productModel: string;
   storeName: string;
   installationDate: string;
@@ -56,7 +59,7 @@ function fmtPrice(cents?: number | null): string {
   return `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
 }
 
-function buildSvg(data: CertificateData, sealBase64?: string | null): string {
+export function buildCertificateSvg(data: CertificateData, sealBase64?: string | null): string {
   const parts: string[] = [];
   let y = 0;
 
@@ -95,7 +98,7 @@ function buildSvg(data: CertificateData, sealBase64?: string | null): string {
   section('商品信息', [
     ['车膜卷号', data.warrantyCode || '-'],
     ['型号规格', `${data.productName} ${data.productModel}`],
-    ['装贴部位', '整车'],
+    ['装贴部位', resolveInstallPosition(data.productName, data.productModel, data.productCategory)],
     ['装贴价格', fmtPrice(data.warrantyPriceCents)],
     ['质保期限', `${data.warrantyYears} 年（${fmtDate(data.installationDate)} 至 ${fmtDate(data.expiryDate)}）`],
   ]);
@@ -198,7 +201,7 @@ export async function createCertificateImage(data: CertificateData, sealJpeg?: U
   // @ts-ignore - sharp 是 Node native 模块，在 server 运行时加载（functions tsconfig 为 Workers 环境）
   const sharp = (await import('sharp')).default as typeof import('sharp');
   const sealBase64 = sealJpeg ? Buffer.from(sealJpeg as Uint8Array).toString('base64') : null;
-  const svg = buildSvg(data, sealBase64);
+  const svg = buildCertificateSvg(data, sealBase64);
   const png = await sharp(Buffer.from(svg, 'utf-8')).png().toBuffer();
   return new Uint8Array(png);
 }

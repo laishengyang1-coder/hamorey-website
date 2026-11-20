@@ -5,7 +5,7 @@
  */
 
 const api = require('../../../utils/api');
-const auth = require('../../../utils/auth');
+const { registrationPhotoMethods } = require('../../../utils/registration-photos');
 
 Page({
   data: {
@@ -40,8 +40,7 @@ Page({
       vehicle_year: '',
       installation_date: ''
     },
-    photos: [],
-    photoKeys: []
+    photos: []
   },
 
   onShow() {
@@ -234,6 +233,7 @@ Page({
   /** 下一步 */
   nextStep() {
     if (!this.validateStep()) return;
+    if (this.data.currentStep === 3 && !this.photosReady()) return;
     const { currentStep } = this.data;
     this.setData({ currentStep: currentStep + 1 });
   },
@@ -246,49 +246,15 @@ Page({
     }
   },
 
-  /** 拍照 */
-  takePhoto() {
-    wx.chooseImage({
-      count: 6 - this.data.photos.length,
-      sizeType: ['compressed'],
-      sourceType: ['camera', 'album'],
-      success: async (res) => {
-        const newPhotos = [...this.data.photos, ...res.tempFilePaths];
-        this.setData({ photos: newPhotos });
+  ...registrationPhotoMethods('/province/upload-url'),
 
-        const newKeys = [...this.data.photoKeys];
-        for (const filePath of res.tempFilePaths) {
-          try {
-            const uploadRes = await api.post('/province/upload-url', {
-              fileName: `photo_${Date.now()}.jpg`,
-              contentType: 'image/jpeg'
-            }, { loading: false });
-
-            if (uploadRes.ok && uploadRes.data) {
-              const uploadResult = await api.upload(filePath, uploadRes.data.uploadUrl);
-              if (uploadResult.ok) {
-                newKeys.push(uploadRes.data.fileKey);
-              }
-            }
-          } catch (e) {
-            // 上传失败不阻塞流程
-          }
-        }
-        this.setData({ photoKeys: newKeys });
-      }
-    });
-  },
-
-  /** 删除照片 */
-  deletePhoto(e) {
-    const index = e.currentTarget.dataset.index;
-    const photos = this.data.photos.filter((_, i) => i !== index);
-    const photoKeys = this.data.photoKeys.filter((_, i) => i !== index);
-    this.setData({ photos, photoKeys });
+  onUnload() {
+    this._photosClosed = true;
   },
 
   /** 提交质保登记 */
   async handleSubmit() {
+    if (this.data.submitting || !this.photosReady()) return;
     const picked = (this.data.products || []).map((p) => (p.code || '').trim()).filter(Boolean);
     if (picked.length === 0) {
       wx.showToast({ title: '请至少添加一个产品的质保码', icon: 'none' });
@@ -309,7 +275,7 @@ Page({
       vehicle_model: form.vehicle_model.trim(),
       vehicle_year: form.vehicle_year.trim() || undefined,
       installation_date: form.installation_date,
-      photo_keys: this.data.photoKeys.length > 0 ? this.data.photoKeys : undefined
+      photo_keys: this.data.photos.length ? this.data.photos.map(photo => photo.fileKey) : undefined
     };
 
     const res = await api.post('/province/warranty-records-batch', payload, {

@@ -285,10 +285,13 @@ async function main(): Promise<void> {
 
   // ---------- 组装证书数据（与审核通过时一致） ----------
   const codeAndPrice = (await DB.prepare(
-    `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm
-     WHERE wc.id = ? AND pm.id = ?`,
+    `SELECT wc.code, pm.warranty_price_cents, p.category AS product_category
+       FROM product_models pm
+       JOIN warranty_codes wc ON wc.id = ?
+       LEFT JOIN products p ON p.id = pm.product_id
+       WHERE pm.id = ?`,
   ).bind(record.warranty_code_id, record.product_model_id).first()) as
-    { code: string; warranty_price_cents: number | null } | null;
+    { code: string; warranty_price_cents: number | null; product_category: string | null } | null;
 
   const partPriceRows = (await DB.prepare(
     `SELECT cp.name, cli.price_cents FROM claim_prices cli JOIN claim_parts cp ON cp.id = cli.claim_part_id
@@ -305,6 +308,7 @@ async function main(): Promise<void> {
     vehicleBrand: record.vehicle_brand_snapshot,
     vehicleModel: record.vehicle_model_snapshot,
     productName: record.product_name_snapshot,
+    productCategory: codeAndPrice?.product_category,
     productModel: record.product_model_snapshot,
     storeName: record.store_name_snapshot,
     installationDate: record.installation_date,

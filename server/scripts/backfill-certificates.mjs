@@ -41,10 +41,11 @@ async function main() {
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot, wr.product_name_snapshot, wr.product_model_snapshot,
               wr.store_name_snapshot, wr.installation_date, wr.warranty_expiry_date, wr.warranty_years_snapshot,
               wr.warranty_code_id, wr.product_model_id,
-              wc.code AS warranty_code, pm.warranty_price_cents
+              wc.code AS warranty_code, pm.warranty_price_cents, p.category AS product_category
        FROM warranty_records wr
        LEFT JOIN warranty_codes wc ON wc.id = wr.warranty_code_id
-       LEFT JOIN product_models pm ON pm.id = wr.product_model_id`;
+       LEFT JOIN product_models pm ON pm.id = wr.product_model_id
+       LEFT JOIN products p ON p.id = pm.product_id`;
   const sql = FORCE || CERT_FILTER.length > 0
     ? `${baseSelect} WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> ''${certFilterSql}`
     : `${baseSelect} LEFT JOIN certificate_files cf ON cf.warranty_record_id = wr.id
@@ -74,6 +75,7 @@ async function main() {
         vehicleBrand: r.vehicle_brand_snapshot || '-',
         vehicleModel: r.vehicle_model_snapshot || '-',
         productName: r.product_name_snapshot || '-',
+        productCategory: r.product_category,
         productModel: r.product_model_snapshot || '-',
         storeName: r.store_name_snapshot || '-',
         installationDate: r.installation_date || '-',

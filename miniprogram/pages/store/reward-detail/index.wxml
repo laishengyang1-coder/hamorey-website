@@ -45,11 +45,11 @@
     <view class="submit-area safe-bottom">
       <button
         class="btn-primary"
-        loading="{{submitting}}"
+        loading="{{submitting && !submitted}}"
         disabled="{{submitting || reward.stock_status === 'out_of_stock'}}"
         bindtap="handleRedeem"
       >
-        {{reward.stock_status === 'out_of_stock' ? '已售罄' : submitting ? '兑换中...' : '立即兑换（' + (reward.points_required || 0) + '积分）'}}
+        {{submitted ? '已提交' : reward.stock_status === 'out_of_stock' ? '已售罄' : submitting ? '兑换中...' : '立即兑换（' + (reward.points_required || 0) + '积分）'}}
       </button>
     </view>
   </block>

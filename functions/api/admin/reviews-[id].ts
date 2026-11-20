@@ -167,9 +167,13 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
   let certFileKey = '';
   try {
     const seal = await getCertificateSeal();
-    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null }>(
+    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null; product_category: string | null }>(
       context.env.DB,
-      `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm WHERE wc.id = ? AND pm.id = ?`,
+      `SELECT wc.code, pm.warranty_price_cents, p.category AS product_category
+       FROM product_models pm
+       JOIN warranty_codes wc ON wc.id = ?
+       LEFT JOIN products p ON p.id = pm.product_id
+       WHERE pm.id = ?`,
       record.warranty_code_id, record.product_model_id,
     );
     const partPriceRows = await queryAll<{ name: string; price_cents: number }>(
@@ -187,6 +191,7 @@ async function handleApprove(context: any, recordId: string): Promise<Response> 
       vehicleBrand: record.vehicle_brand_snapshot,
       vehicleModel: record.vehicle_model_snapshot,
       productName: record.product_name_snapshot,
+      productCategory: codeAndPrice?.product_category,
       productModel: record.product_model_snapshot,
       storeName: record.store_name_snapshot,
       installationDate: record.installation_date,

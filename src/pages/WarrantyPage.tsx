@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback, type FormEvent, type ReactNode } from 'react';
+import { resolveInstallPosition } from '../../functions/api/_install-position';
 import { Link, useLocation } from 'react-router-dom';
 import { useSEO } from '../lib/seo';
 import { PageLayout } from '../layouts/PageLayout';
@@ -131,7 +132,7 @@ function WarrantyCertificateCard({ record }: { record: WarrantyCardData }) {
           rows={[
             ['车膜卷号', record.warranty_code || '-'],
             ['型号规格', `${record.product_name} ${record.product_model}`.trim()],
-            ['装贴部位', '整车'],
+            ['装贴部位', record.install_position || resolveInstallPosition(record.product_name, record.product_model)],
             ['装贴价格', formatWarrantyPrice(record.warranty_price_cents)],
             [
               '质保期限',

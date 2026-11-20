@@ -1,7 +1,8 @@
 const api = require('../../../utils/api');
+const { submitRedemption, finishRedemption } = require('../../../utils/redemption');
 
 Page({
-  data: { rewardId: '', loading: true, error: '', reward: {}, submitting: false },
+  data: { rewardId: '', loading: true, error: '', reward: {}, submitted: false, submitting: false },
 
   onLoad(options) {
     const { id } = options;
@@ -40,18 +41,29 @@ Page({
     this.setData({ 'reward.imageFailed': true });
   },
 
-  async handleRedeem() {
+  handleRedeem() {
+    if (this.data.submitting || this.confirming) return;
     const { reward } = this.data;
+    this.confirming = true;
     wx.showModal({
-      title: '确认兑换', content: `确定使用 ${reward.points_required} 积分兑换"${reward.name}"吗？`, confirmColor: '#5C1A1A',
-      success: async (modalRes) => {
-        if (!modalRes.confirm) return;
+      title: '确认兑换',
+      content: `确定使用 ${reward.points_required} 积分兑换"${reward.name}"吗？`,
+      confirmColor: '#5C1A1A',
+      success: async (answer) => {
+        this.confirming = false;
+        if (!answer.confirm || this.data.submitting) return;
         this.setData({ submitting: true });
-        const res = await api.post('/province/redemptions', { address_id: 'default', items: [{ reward_id: reward.id, quantity: 1 }] }, { loading: true, loadingText: '兑换中...' });
-        this.setData({ submitting: false });
-        if (res.ok) { wx.showToast({ title: '兑换成功', icon: 'success' }); setTimeout(() => wx.navigateBack(), 1500); }
-        else { wx.showToast({ title: res.message || '兑换失败', icon: 'none' }); }
-      }
+        const res = await submitRedemption('province', 'default', [
+          { reward_id: reward.id, quantity: 1 }
+        ], { loading: true, loadingText: '兑换中...' });
+        if (res.ok) {
+          finishRedemption(this, 'province', 1);
+        } else {
+          this.setData({ submitting: false });
+          wx.showToast({ title: res.message || '兑换失败', icon: 'none' });
+        }
+      },
+      fail: () => { this.confirming = false; }
     });
   }
 });

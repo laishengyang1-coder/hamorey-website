@@ -193,13 +193,14 @@ function del(url, data = {}, opts = {}) {
  * 上传文件（图片）
  * @param {string} filePath - 本地文件路径
  * @param {string} uploadUrl - 上传地址（从 upload-url 接口获取）
+ * @param {{loading?: boolean}} options - 是否显示全局上传遮罩，默认显示
  * @returns {Promise<{ok: boolean, data: any, message: string}>}
  */
-function upload(filePath, uploadUrl) {
+function upload(filePath, uploadUrl, { loading = true } = {}) {
   const token = getToken();
 
   return new Promise((resolve) => {
-    wx.showLoading({ title: '上传中...', mask: true });
+    if (loading) wx.showLoading({ title: '上传中...', mask: true });
 
     wx.uploadFile({
       url: uploadUrl,
@@ -210,7 +211,7 @@ function upload(filePath, uploadUrl) {
       },
       timeout: 30000,
       success(res) {
-        wx.hideLoading();
+        if (loading) wx.hideLoading();
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const body = JSON.parse(res.data);
@@ -231,7 +232,7 @@ function upload(filePath, uploadUrl) {
         }
       },
       fail(err) {
-        wx.hideLoading();
+        if (loading) wx.hideLoading();
         resolve({
           ok: false,
           data: null,

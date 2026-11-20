@@ -3,6 +3,7 @@
 // 第二阶段：从 mock 数据改为真实 D1 + R2 查询
 // ============================================================
 
+import { resolveInstallPosition } from './_install-position.ts';
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { queryAll, queryFirst, sanitizeLegacyValue, sanitizeLegacyProductName, fmtDate } from './_lib';
 import { ok, error } from './_middleware';
@@ -56,12 +57,14 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     installation_date: string; warranty_expiry_date: string | null;
     store_name_snapshot: string; status: string;
     product_model_id: string | null;
+    product_category: string | null;
   }
 
-  const selectSql = `SELECT wr.*, wc.code AS warranty_code, pm.warranty_price_cents
+  const selectSql = `SELECT wr.*, wc.code AS warranty_code, pm.warranty_price_cents, p.category AS product_category
        FROM warranty_records wr
        JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
-       LEFT JOIN product_models pm ON wr.product_model_id = pm.id`;
+       LEFT JOIN product_models pm ON wr.product_model_id = pm.id
+       LEFT JOIN products p ON p.id = pm.product_id`;
 
   let records: RecordRow[] = [];
   if (type === 'vin') {
@@ -138,6 +141,7 @@ async function doSearch(db: D1Database, value: string): Promise<Response> {
     vin_snapshot: r.vin_snapshot,
     vehicle_brand_snapshot: sanitizeLegacyValue(r.vehicle_brand_snapshot),
     vehicle_model_snapshot: sanitizeLegacyValue(r.vehicle_model_snapshot),
+    install_position: resolveInstallPosition(r.product_name_snapshot, r.product_model_snapshot, r.product_category),
     product_name: sanitizeLegacyProductName(r.product_name_snapshot),
     product_model: sanitizeLegacyProductName(r.product_model_snapshot),
     warranty_price_cents: r.warranty_price_cents,

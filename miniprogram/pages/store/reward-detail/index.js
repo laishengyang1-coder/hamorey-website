@@ -3,6 +3,7 @@
  */
 
 const api = require('../../../utils/api');
+const { submitRedemption, finishRedemption } = require('../../../utils/redemption');
 
 Page({
   data: {
@@ -10,7 +11,7 @@ Page({
     loading: true,
     error: '',
     reward: {},
-    submitting: false
+    submitted: false, submitting: false
   },
 
   onLoad(options) {
@@ -62,33 +63,29 @@ Page({
   /**
    * 兑换
    */
-  async handleRedeem() {
+  handleRedeem() {
+    if (this.data.submitting || this.confirming) return;
     const { reward } = this.data;
-
+    this.confirming = true;
     wx.showModal({
       title: '确认兑换',
       content: `确定使用 ${reward.points_required} 积分兑换"${reward.name}"吗？`,
       confirmColor: '#5C1A1A',
-      success: async (modalRes) => {
-        if (!modalRes.confirm) return;
-
+      success: async (answer) => {
+        this.confirming = false;
+        if (!answer.confirm || this.data.submitting) return;
         this.setData({ submitting: true });
-
-        // 复用已有地址或创建默认地址（简化处理）
-        const res = await api.post('/store/redemptions', {
-          address_id: 'default',
-          items: [{ reward_id: reward.id, quantity: 1 }]
-        }, { loading: true, loadingText: '兑换中...' });
-
-        this.setData({ submitting: false });
-
+        const res = await submitRedemption('store', 'default', [
+          { reward_id: reward.id, quantity: 1 }
+        ], { loading: true, loadingText: '兑换中...' });
         if (res.ok) {
-          wx.showToast({ title: '兑换成功', icon: 'success' });
-          setTimeout(() => wx.navigateBack(), 1500);
+          finishRedemption(this, 'store', 1);
         } else {
+          this.setData({ submitting: false });
           wx.showToast({ title: res.message || '兑换失败', icon: 'none' });
         }
-      }
+      },
+      fail: () => { this.confirming = false; }
     });
   }
 });

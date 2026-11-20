@@ -61,7 +61,7 @@ Page({
     const nextPage = reset ? 1 : this.data.page + 1;
     this.setData(reset ? { loadingCodes: true } : { loadingMore: true });
 
-    const params = { status: 'in_stock', page: nextPage, pageSize: PAGE_SIZE };
+    const params = { transferable: '1', page: nextPage, pageSize: PAGE_SIZE };
     if (this.data.keyword) params.keyword = this.data.keyword;
     const res = await api.get('/province/warranty-codes', params, { loading: false });
 

@@ -31,6 +31,13 @@ function inspect(file) {
       file: relative(root, file),
     });
   }
+  // Registration and redemption pages pass their API destination to shared helpers.
+  for (const match of source.matchAll(/registrationPhotoMethods\(\s*['"](\/[^'"]+)['"]\s*\)/g)) {
+    calls.push({ method: 'Post', route: match[1], file: relative(root, file) });
+  }
+  for (const match of source.matchAll(/submitRedemption\(\s*['"](\w+)['"]\s*,/g)) {
+    calls.push({ method: 'Post', route: `/${match[1]}/redemptions`, file: relative(root, file) });
+  }
 }
 
 function routeFiles(route) {

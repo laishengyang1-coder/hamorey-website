@@ -2,6 +2,7 @@
 // GET /api/public/warranties — 公开质保记录查询
 // ============================================================
 
+import { resolveInstallPosition } from '../_install-position.ts';
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { queryAll, sanitizeLegacyValue, sanitizeLegacyProductName, fmtDate } from '../_lib';
 import { ok, error } from '../_middleware';
@@ -54,13 +55,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot,
               wr.product_name_snapshot, wr.product_model_snapshot,
-              pm.model_code, pm.warranty_price_cents,
+              pm.model_code, pm.warranty_price_cents, p.category AS product_category,
               wr.warranty_years_snapshot, wr.installation_date,
               wr.warranty_expiry_date, wr.store_name_snapshot, wr.status,
               wr.product_model_id
        FROM warranty_records wr
        JOIN warranty_codes wc ON wr.warranty_code_id = wc.id
        LEFT JOIN product_models pm ON wr.product_model_id = pm.id
+       LEFT JOIN products p ON p.id = pm.product_id
        WHERE ${comparison} AND wr.status = 'active'
        ORDER BY wr.installation_date DESC`,
       value,
@@ -92,6 +94,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       plate_no_snapshot: sanitizeLegacyValue(r.plate_no_snapshot),
       vehicle_brand_snapshot: sanitizeLegacyValue(r.vehicle_brand_snapshot),
       vehicle_model_snapshot: sanitizeLegacyValue(r.vehicle_model_snapshot),
+      install_position: resolveInstallPosition(r.product_name_snapshot, r.product_model_snapshot, r.product_category),
       product_name_snapshot: sanitizeLegacyProductName(r.product_name_snapshot),
       product_model_snapshot: sanitizeLegacyProductName(r.product_model_snapshot),
       installation_date: fmtDate(r.installation_date),

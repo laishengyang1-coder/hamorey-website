@@ -44,6 +44,7 @@ export interface WarrantyCardData {
   warranty_code: string;
   product_name: string;
   product_model: string;
+  install_position?: string;
   warranty_price_cents?: number | null;
   installation_date: string;
   warranty_expiry_date: string | null;

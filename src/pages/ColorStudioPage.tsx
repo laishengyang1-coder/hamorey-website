@@ -42,13 +42,18 @@ const ColorStudioCanvas = lazy(() => loadColorStudioCanvas()
 
 /**
  * 用户在扇形样板页浏览时，利用浏览器空闲时间预取 3D 引擎分包与当前车型模型，
- * 点击「装车预览」时近乎秒开。省流量模式 / 2G 网络下跳过。
+ * 移动端仅在明确为 Wi-Fi 或以太网时预取，微信中无法识别网络类型时按需加载。
  */
-function prefetchStudio3D(modelUrl: string): () => void {
+function prefetchStudio3D(modelUrl: string, isEmbed: boolean): () => void {
   const nav = navigator as Navigator & {
-    connection?: { saveData?: boolean; effectiveType?: string };
+    connection?: { saveData?: boolean; effectiveType?: string; type?: string };
   };
-  if (nav.connection?.saveData || /(^|-)2g$/.test(nav.connection?.effectiveType ?? '')) {
+  const connection = nav.connection;
+  const isMobile = isEmbed || window.matchMedia('(pointer: coarse)').matches;
+  const isUnmetered = connection?.type === 'wifi' || connection?.type === 'ethernet';
+  if (connection?.saveData || connection?.type === 'cellular' ||
+      ['slow-2g', '2g', '3g'].includes(connection?.effectiveType ?? '') ||
+      (isMobile && !isUnmetered)) {
     return () => {};
   }
   let cancelled = false;
@@ -154,8 +159,8 @@ export default function ColorStudioPage() {
   useEffect(() => {
     if (viewMode !== 'swatch') return;
     const vehicle = STUDIO_VEHICLES.find((v) => v.id === vehicleId) ?? STUDIO_VEHICLES[0];
-    return prefetchStudio3D(vehicle.modelUrl);
-  }, [viewMode, vehicleId]);
+    return prefetchStudio3D(vehicle.modelUrl, isEmbed);
+  }, [viewMode, vehicleId, isEmbed]);
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');

@@ -11,6 +11,7 @@ import {
   queryAll,
   queryFirst,
   resolveOrganizationAddress,
+  sha256,
 } from './_lib';
 import { error, getClientIP, ok } from './_middleware';
 
@@ -19,6 +20,7 @@ interface Env {
 }
 
 interface RedemptionRequest {
+  request_id?: string;
   address_id?: string;
   items?: Array<{ reward_id: string; quantity: number }>;
 }
@@ -29,6 +31,28 @@ interface RewardRow {
   points_required: number;
   stock_quantity: number | null;
   stock_status: string;
+}
+
+// A v8 UUID keeps the existing order primary key (including MySQL's type) as
+// the uniqueness boundary. Unkeyed clients continue to create independent orders.
+async function requestOrderId(orgId: string, userId: string, key: string): Promise<string> {
+  const hex = await sha256(JSON.stringify(['points-redemption-v1', orgId, userId, key]));
+  const variant = ((parseInt(hex[16], 16) & 3) | 8).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-8${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+async function replayRedemption(db: D1Database, orgId: string, id: string, fingerprint: string): Promise<Response | null> {
+  const row = await queryFirst<Record<string, unknown> & { request_log: string | null }>(
+    db, `SELECT r.*, l.detail_json AS request_log FROM redemptions r
+         LEFT JOIN operation_logs l ON l.id = r.id AND l.target_id = r.id AND l.action = 'submit_redemption'
+         WHERE r.id = ? AND r.organization_id = ?`, id, orgId,
+  );
+  if (!row) return null;
+  const { request_log, ...order } = row;
+  if (!request_log || JSON.parse(request_log).requestFingerprint !== fingerprint) {
+    return error('该提交编号已用于其他兑换内容，请重新确认订单', 409);
+  }
+  return ok(order, '兑换申请已提交');
 }
 
 function databaseMessage(err: unknown): string | null {
@@ -89,18 +113,34 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!user) return error('未登录', 401);
 
     const body = await context.request.json() as RedemptionRequest;
-    if (!body.address_id) return error('请选择收货地址', 400);
-    if (!body.items?.length) return error('请选择兑换商品', 400);
+    if (!body || typeof body.address_id !== 'string' || !body.address_id) return error('请选择收货地址', 400);
+    if (!Array.isArray(body.items) || !body.items.length) return error('请选择兑换商品', 400);
     if (body.items.length > 20) return error('单次最多兑换 20 种商品', 400);
-    if (body.items.some((item) => !item.reward_id || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99)) {
+    if (body.items.some((item) => !item || typeof item.reward_id !== 'string' || !item.reward_id || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99)) {
       return error('兑换数量必须为 1 到 99 的整数', 400);
     }
 
     const rewardIds = body.items.map((item) => item.reward_id);
     if (new Set(rewardIds).size !== rewardIds.length) return error('同一商品不能重复提交', 400);
 
+    const key = body.request_id;
+    if (key !== undefined && (typeof key !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(key))) {
+      return error('兑换提交编号无效', 400);
+    }
+    const redemptionId = key ? await requestOrderId(user.orgId, user.userId, key) : generateId();
+    const quantities = body.items.map(({ reward_id, quantity }) => [reward_id, quantity] as const);
+    quantities.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
+    const fingerprint = key ? await sha256(JSON.stringify([body.address_id, quantities])) : null;
+    const replay = () => fingerprint ? replayRedemption(context.env.DB, user.orgId, redemptionId, fingerprint) : null;
+
+    const existing = await replay();
+    if (existing) return existing;
+    // A concurrent winner can already have consumed the last stock/points
+    // between the first lookup and these checks. A committed receipt wins.
+    const unavailable = async (message: string) => (await replay()) ?? error(message, 400);
+
     const address = await resolveOrganizationAddress(context.env.DB, user.orgId, body.address_id);
-    if (!address) return error('收货地址不存在，请先维护收货地址', 400);
+    if (!address) return await unavailable('收货地址不存在，请先维护收货地址');
 
     const rewards = await queryAll<RewardRow>(
       context.env.DB,
@@ -113,22 +153,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     let totalPoints = 0;
     for (const item of body.items) {
       const reward = rewardMap.get(item.reward_id);
-      if (!reward) return error(`商品 ${item.reward_id} 不存在或已下架`, 400);
-      if (reward.stock_status !== 'available') return error(`“${reward.name}”暂不可兑换`, 400);
+      if (!reward) return await unavailable(`商品 ${item.reward_id} 不存在或已下架`);
+      if (reward.stock_status !== 'available') return await unavailable(`“${reward.name}”暂不可兑换`);
       if (reward.stock_quantity !== null && reward.stock_quantity < item.quantity) {
-        return error(`“${reward.name}”库存不足`, 400);
+        return await unavailable(`“${reward.name}”库存不足`);
       }
       totalPoints += reward.points_required * item.quantity;
     }
 
-    if (!Number.isSafeInteger(totalPoints) || totalPoints <= 0) return error('兑换积分计算异常', 400);
+    if (!Number.isSafeInteger(totalPoints) || totalPoints <= 0) return await unavailable('兑换积分计算异常');
 
     const points = await getOrgPoints(context.env.DB, user.orgId);
     if (points.available < totalPoints) {
-      return error(`积分不足，可用 ${points.available}，需要 ${totalPoints}`, 400);
+      return await unavailable(`积分不足，可用 ${points.available}，需要 ${totalPoints}`);
     }
 
-    const redemptionId = generateId();
     const statements: Array<{ sql: string; params: unknown[] }> = [
       {
         // 快照收货地址：addresses 表在 MySQL 里没有任何外键保护，门店可随时改/删自己的地址。
@@ -165,13 +204,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         sql: `INSERT INTO operation_logs
               (id, user_id, action, target_type, target_id, detail_json, ip_address, created_at)
               VALUES (?, ?, 'submit_redemption', 'redemption', ?, ?, ?, datetime('now'))`,
-        params: [generateId(), user.userId, redemptionId, JSON.stringify({ totalPoints }), getClientIP(context.request)],
+        params: [key ? redemptionId : generateId(), user.userId, redemptionId,
+          JSON.stringify(fingerprint ? { totalPoints, requestFingerprint: fingerprint } : { totalPoints }), getClientIP(context.request)],
       },
     );
 
-    await batch(context.env.DB, statements);
+    try {
+      await batch(context.env.DB, statements);
+    } catch (cause) {
+      const committed = await replay();
+      if (committed) return committed;
+      throw cause;
+    }
 
     const item = await queryFirst(context.env.DB, `SELECT * FROM redemptions WHERE id = ?`, redemptionId);
+    if (!item) return error('兑换结果暂未确认，请重试', 503);
     return ok(item, '兑换申请已提交');
   } catch (err) {
     console.error('[redemptions POST]', err);

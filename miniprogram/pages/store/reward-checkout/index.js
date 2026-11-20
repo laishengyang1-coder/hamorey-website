@@ -3,12 +3,13 @@
  * 地址使用后端 addresses 表模型（address_id），与总部审核链路一致
  */
 const api = require('../../../utils/api');
+const { submitRedemption, finishRedemption } = require('../../../utils/redemption');
 
 Page({
   data: {
     items: [],
     total: 0,
-    submitting: false,
+    submitted: false, submitting: false,
     addresses: [],
     selectedAddressId: '',
     showAddrForm: false,
@@ -110,17 +111,12 @@ Page({
 
     const items = this.data.items.map(i => ({ reward_id: i.id, quantity: i.qty }));
 
-    const res = await api.post('/store/redemptions', {
-      items,
-      address_id: this.data.selectedAddressId
-    });
-
-    this.setData({ submitting: false });
+    const res = await submitRedemption('store', this.data.selectedAddressId, items);
 
     if (res.ok) {
-      wx.showToast({ title: '兑换申请已提交', icon: 'success' });
-      setTimeout(() => wx.navigateBack({ delta: 2 }), 1500);
+      finishRedemption(this, 'store', 2);
     } else {
+      this.setData({ submitting: false });
       wx.showModal({ title: '兑换失败', content: res.message || '请稍后重试', showCancel: false });
     }
   }

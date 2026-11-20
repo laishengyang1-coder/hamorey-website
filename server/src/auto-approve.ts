@@ -144,9 +144,13 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   try {
     const seal = await getCertificateSeal();
     // 补充证书长图所需数据：质保码(卷号) + 官方指导价 + 部位价值参考
-    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null }>(
+    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null; product_category: string | null }>(
       env.DB,
-      `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm WHERE wc.id = ? AND pm.id = ?`,
+      `SELECT wc.code, pm.warranty_price_cents, p.category AS product_category
+       FROM product_models pm
+       JOIN warranty_codes wc ON wc.id = ?
+       LEFT JOIN products p ON p.id = pm.product_id
+       WHERE pm.id = ?`,
       record.warranty_code_id, record.product_model_id,
     );
     const partPriceRows = await queryAll<{ name: string; price_cents: number }>(
@@ -166,6 +170,7 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
       vehicleBrand: record.vehicle_brand_snapshot,
       vehicleModel: record.vehicle_model_snapshot,
       productName: record.product_name_snapshot,
+      productCategory: codeAndPrice?.product_category,
       productModel: record.product_model_snapshot,
       storeName: record.store_name_snapshot,
       installationDate: record.installation_date,

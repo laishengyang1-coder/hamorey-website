@@ -113,11 +113,14 @@ async function main() {
     try {
       // 质保码 + 官方指导价
       const [codeRows] = await conn.query(
-        `SELECT wc.code, pm.warranty_price_cents FROM warranty_codes wc, product_models pm
-         WHERE wc.id = ? AND pm.id = ?`,
+        `SELECT wc.code, pm.warranty_price_cents, p.category AS product_category
+       FROM product_models pm
+       JOIN warranty_codes wc ON wc.id = ?
+       LEFT JOIN products p ON p.id = pm.product_id
+       WHERE pm.id = ?`,
         [r.warranty_code_id, r.product_model_id],
       );
-      const codeAndPrice = (codeRows as { code: string; warranty_price_cents: number | null }[])[0];
+      const codeAndPrice = (codeRows as { code: string; warranty_price_cents: number | null; product_category: string | null }[])[0];
 
       // 分部位报价
       const [partRows] = await conn.query(
@@ -150,6 +153,7 @@ async function main() {
         vehicleBrand: r.vehicle_brand_snapshot,
         vehicleModel: r.vehicle_model_snapshot,
         productName: r.product_name_snapshot,
+        productCategory: codeAndPrice?.product_category,
         productModel: r.product_model_snapshot,
         storeName: r.store_name_snapshot,
         installationDate: r.installation_date,

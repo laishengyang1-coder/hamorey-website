@@ -198,14 +198,13 @@
       </view>
       <view class="section-body">
         <view class="photo-upload-area">
-          <view
-            wx:for="{{photos}}"
-            wx:key="index"
-            class="photo-preview"
-            data-index="{{index}}"
-          >
-            <image src="{{item}}" mode="aspectFill" class="photo-preview-img" />
-            <view class="photo-delete" data-index="{{index}}" bindtap="deletePhoto">✕</view>
+          <view wx:for="{{photos}}" wx:key="id" class="photo-preview">
+            <image src="{{item.path}}" mode="aspectFill" class="photo-preview-img" />
+            <view wx:if="{{item.status === 'failed'}}" class="photo-status photo-retry"
+              aria-role="button" data-id="{{item.id}}" bindtap="retryPhoto">上传失败 · 点此重试</view>
+            <view wx:else class="photo-status">{{item.status === 'ready' ? '已上传' : '上传中…'}}</view>
+            <view class="photo-delete" aria-role="button" aria-label="删除照片"
+              data-id="{{item.id}}" bindtap="deletePhoto">✕</view>
           </view>
           <view wx:if="{{photos.length < 6}}" class="photo-add" bindtap="takePhoto">
             <view class="photo-add-icon">+</view>

@@ -8,7 +8,7 @@
  */
 
 const api = require('../../../utils/api');
-const auth = require('../../../utils/auth');
+const { registrationPhotoMethods } = require('../../../utils/registration-photos');
 
 const MAX_PRODUCTS = 8;
 
@@ -34,8 +34,7 @@ Page({
     suggestIndex: -1,
     suggestionLoading: false,
     suggestionQuery: null,
-    photos: [],
-    photoKeys: []
+    photos: []
   },
 
   onShow() {
@@ -217,6 +216,7 @@ Page({
 
   nextStep() {
     if (!this.validateStep()) return;
+    if (this.data.currentStep === 3 && !this.photosReady()) return;
     this.setData({ currentStep: this.data.currentStep + 1 });
   },
 
@@ -226,46 +226,15 @@ Page({
     }
   },
 
-  // ---------- 拍照 ----------
-  takePhoto() {
-    wx.chooseImage({
-      count: 6 - this.data.photos.length,
-      sizeType: ['compressed'],
-      sourceType: ['camera', 'album'],
-      success: async (res) => {
-        const newPhotos = [...this.data.photos, ...res.tempFilePaths];
-        this.setData({ photos: newPhotos });
+  ...registrationPhotoMethods('/store/upload-url'),
 
-        const newKeys = [...this.data.photoKeys];
-        for (const filePath of res.tempFilePaths) {
-          try {
-            const uploadRes = await api.post('/store/upload-url', {
-              fileName: `photo_${Date.now()}.jpg`,
-              contentType: 'image/jpeg'
-            }, { loading: false });
-
-            if (uploadRes.ok && uploadRes.data) {
-              const uploadResult = await api.upload(filePath, uploadRes.data.uploadUrl);
-              if (uploadResult.ok) newKeys.push(uploadRes.data.fileKey);
-            }
-          } catch (e) {
-            // 上传失败不阻塞流程
-          }
-        }
-        this.setData({ photoKeys: newKeys });
-      }
-    });
-  },
-
-  deletePhoto(e) {
-    const index = e.currentTarget.dataset.index;
-    const photos = this.data.photos.filter((item, i) => i !== index);
-    const photoKeys = this.data.photoKeys.filter((item, i) => i !== index);
-    this.setData({ photos, photoKeys });
+  onUnload() {
+    this._photosClosed = true;
   },
 
   // ---------- 提交 ----------
   async handleSubmit() {
+    if (this.data.submitting || !this.photosReady()) return;
     const form = this.data.form;
     const codes = this.data.products.map((p) => (p.code || '').trim()).filter(Boolean);
 
@@ -286,7 +255,7 @@ Page({
       vehicle_year: form.vehicle_year.trim() || undefined,
       installation_date: form.installation_date,
       products: codes.map((code) => ({ warranty_code: code })),
-      photo_keys: this.data.photoKeys.length > 0 ? this.data.photoKeys : undefined
+      photo_keys: this.data.photos.length ? this.data.photos.map(photo => photo.fileKey) : undefined
     };
 
     const res = await api.post('/store/warranty-records-batch', payload, {

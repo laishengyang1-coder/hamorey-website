@@ -76,7 +76,7 @@
   <!-- 提交 -->
   <view class="submit-area">
     <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="submit">
-      {{submitting ? '提交中...' : '确认兑换'}}
+      {{submitted ? '已提交' : submitting ? '提交中...' : '确认兑换'}}
     </view>
   </view>
 </view>
