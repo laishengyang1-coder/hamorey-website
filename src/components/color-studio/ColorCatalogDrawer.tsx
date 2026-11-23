@@ -16,6 +16,7 @@ import {
   type FilmFinishType,
 } from '../../config/colorStudio';
 import { cn } from '../../lib/cn';
+import { getSwatchOrbVisual } from './swatchVisuals';
 
 export interface ColorCatalogDrawerProps {
   open: boolean;
@@ -293,6 +294,7 @@ export function ColorCatalogDrawer({
               {filteredSwatches.map((swatch) => {
                 const selected = swatch.code === activeSwatch.code;
                 const shiftTone = swatch.shiftHex || swatch.hex;
+                const orb = getSwatchOrbVisual(swatch, 'drawer');
                 return (
                   <button
                     key={swatch.code}
@@ -320,14 +322,22 @@ export function ColorCatalogDrawer({
 
                       {/* 立体双曲流光漆面圆穹 */}
                       <div
-                        className="relative w-16 h-16 md:w-[74px] md:h-[74px] rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.8)] transition-transform duration-300 group-hover:scale-105"
-                        style={{
-                          background: `radial-gradient(circle at 32% 26%, rgba(255,255,255,0.45) 0%, ${shiftTone} 28%, ${swatch.hex} 68%, #040507 100%)`,
-                          boxShadow: `inset -6px -8px 16px rgba(0,0,0,0.65), inset 4px 5px 12px rgba(255,255,255,0.22), 0 10px 24px rgba(0,0,0,0.8)`,
-                        }}
+                        className="relative w-16 h-16 md:w-[74px] md:h-[74px] rounded-full overflow-hidden shadow-[0_10px_24px_rgba(0,0,0,0.8)] transition-transform duration-300 group-hover:scale-105"
+                        style={orb.style}
                       >
-                        {/* 锐利影棚弧形灯带反射 */}
-                        <div className="absolute top-2 left-3 w-7 h-2.5 rounded-full bg-white/55 blur-[1px] -rotate-[25deg] pointer-events-none" />
+                        {/* 按工艺呈现对应高光：超哑无亮斑、丝缎柔光、碳纤半光、高光锐利灯带 */}
+                        {orb.specular !== 'none' && (
+                          <div
+                            className={cn(
+                              'absolute rounded-full -rotate-[25deg] pointer-events-none',
+                              orb.specular === 'satin'
+                                ? 'top-2 left-2.5 w-9 h-4 bg-white/24 blur-[4px]'
+                                : orb.specular === 'carbon'
+                                  ? 'top-2 left-3 w-7 h-2.5 bg-white/32 blur-[1.5px]'
+                                  : 'top-2 left-3 w-7 h-2.5 bg-white/55 blur-[1px]',
+                            )}
+                          />
+                        )}
                         <div className="absolute inset-0 rounded-full border border-white/15 pointer-events-none" />
                       </div>
 

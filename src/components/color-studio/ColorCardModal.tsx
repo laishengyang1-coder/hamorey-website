@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Download, MapPin, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { HECAI_SPEC, type ColorFilmItem } from '../../config/colorStudio';
+import { getSwatchBannerStyle } from './swatchVisuals';
 
 export interface ColorCardModalProps {
   open: boolean;
@@ -261,11 +262,7 @@ export function ColorCardModal({
             {/* 顶部流光质感头图 */}
             <div
               className="relative h-32 sm:h-36 p-4 sm:p-5 flex flex-col justify-between overflow-hidden flex-shrink-0"
-              style={{
-                background: swatch.shiftHex
-                  ? `radial-gradient(circle at 28% 25%, ${swatch.shiftHex} 0%, ${swatch.hex} 65%, #07080b 100%)`
-                  : `radial-gradient(circle at 28% 25%, ${swatch.hex} 0%, #07080b 100%)`,
-              }}
+              style={getSwatchBannerStyle(swatch)}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-[#0c0d12] via-black/25 to-transparent" />
               <div className="relative z-10 flex items-center justify-between">

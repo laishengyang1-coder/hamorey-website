@@ -492,7 +492,19 @@ export function SwatchFan({
             if (e.detail === 0) lift(swatch.code);
           }}
         >
-          <span className="_hfs_f" aria-hidden="true">
+          <span
+            className="_hfs_f"
+            data-k={
+              swatch.code.endsWith('FP') || swatch.code === 'TPU-CF'
+                ? 'c'
+                : swatch.material.roughness >= 0.44
+                  ? 'm'
+                  : swatch.material.roughness >= 0.24
+                    ? 's'
+                    : 'g'
+            }
+            aria-hidden="true"
+          >
             <SwatchFanMaterial swatch={swatch} lightingPreset={lightingPreset} />
             <span className="_hfs_m">HAMOREY</span>
             <span className="_hfs_n">{numbers.get(swatch.code)}</span>

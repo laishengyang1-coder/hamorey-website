@@ -93,6 +93,22 @@
     0 10px 24px rgba(0, 0, 0, 0.34);
 }
 
+/* 超哑色卡去除高光亮边，呈现纯正绒面磨砂切边 */
+._hfs_f[data-k="m"] {
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.08),
+    inset -1px -1px 1px rgba(5, 6, 8, 0.52),
+    0 10px 24px rgba(0, 0, 0, 0.38);
+}
+
+/* 丝缎色卡呈柔和半哑绸光边缘 */
+._hfs_f[data-k="s"] {
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.22),
+    inset -1px -1px 1px rgba(5, 6, 8, 0.48),
+    0 10px 24px rgba(0, 0, 0, 0.36);
+}
+
 ._hfs_m,
 ._hfs_n,
 ._hfs_t {
@@ -161,6 +177,20 @@
     inset 1px 1px 1px var(--_rm),
     inset -2px -1px 1px rgba(5, 6, 8, 0.5),
     0 22px 48px rgba(0, 0, 0, 0.46);
+}
+
+._hfs[data-p="1"] ._hfs_s[data-c="1"] ._hfs_f[data-k="m"] {
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.08),
+    inset -2px -1px 1px rgba(5, 6, 8, 0.54),
+    0 22px 48px rgba(0, 0, 0, 0.5);
+}
+
+._hfs[data-p="1"] ._hfs_s[data-c="1"] ._hfs_f[data-k="s"] {
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.22),
+    inset -2px -1px 1px rgba(5, 6, 8, 0.5),
+    0 22px 48px rgba(0, 0, 0, 0.48);
 }
 
 ._hfs[data-dg="1"] ._hfs_b {

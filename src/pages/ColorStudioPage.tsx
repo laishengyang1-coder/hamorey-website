@@ -36,6 +36,7 @@ import { SwatchFan } from '../components/color-studio/SwatchFan';
 import './ColorStudioFanLayout.css';
 import { ColorCatalogDrawer } from '../components/color-studio/ColorCatalogDrawer';
 import { ColorCardModal } from '../components/color-studio/ColorCardModal';
+import { getSwatchOrbVisual } from '../components/color-studio/swatchVisuals';
 import {
   useStudioProtectionShield,
   useWeChatMiniProgramEmbed,
@@ -554,10 +555,8 @@ export default function ColorStudioPage() {
               className="flex items-center gap-2 min-w-0 text-left"
             >
               <span
-                className="w-6 h-6 rounded-full border border-white/25 flex-shrink-0"
-                style={{
-                  background: `radial-gradient(circle at 30% 25%, ${activeSwatch.shiftHex || activeSwatch.hex}, ${activeSwatch.hex} 75%)`,
-                }}
+                className="w-6 h-6 rounded-full border border-white/25 flex-shrink-0 overflow-hidden"
+                style={getSwatchOrbVisual(activeSwatch, 'bead').style}
               />
               <span className="min-w-0">
                 <span className="block text-sm font-bold text-[#F7F3EB] truncate leading-tight">
@@ -942,7 +941,7 @@ export default function ColorStudioPage() {
             >
               {railSwatches.map((swatch) => {
                 const selected = swatch.code === activeSwatch.code;
-                const shiftTone = swatch.shiftHex || swatch.hex;
+                const orb = getSwatchOrbVisual(swatch, 'bead');
                 return (
                   <button
                     key={swatch.code}
@@ -961,17 +960,25 @@ export default function ColorStudioPage() {
                   >
                     <span
                       className={cn(
-                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative transition-transform duration-200',
+                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative overflow-hidden transition-transform duration-200',
                         selected
                           ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
                           : 'group-hover:scale-105 ring-1 ring-white/20',
                       )}
-                      style={{
-                        background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0%, ${shiftTone} 28%, ${swatch.hex} 72%, #050608 100%)`,
-                        boxShadow: 'inset -3px -4px 8px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5)',
-                      }}
+                      style={orb.style}
                     >
-                      <span className="absolute top-1 left-1.5 w-2.5 h-1 rounded-full bg-white/60 -rotate-[25deg] pointer-events-none" />
+                      {orb.specular !== 'none' && (
+                        <span
+                          className={cn(
+                            'absolute pointer-events-none rounded-full -rotate-[25deg]',
+                            orb.specular === 'satin'
+                              ? 'top-1 left-1 w-3.5 h-2 bg-white/25 blur-[2px]'
+                              : orb.specular === 'carbon'
+                                ? 'top-1 left-1.5 w-2.5 h-1 bg-white/35 blur-[0.5px]'
+                                : 'top-1 left-1.5 w-2.5 h-1 bg-white/60',
+                          )}
+                        />
+                      )}
                     </span>
                     <span
                       className={cn(

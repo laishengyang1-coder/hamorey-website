@@ -1,6 +1,6 @@
 ._hfm {
-  --_l0: rgba(255, 255, 255, 0.72);
-  --_l1: rgba(255, 255, 255, 0.16);
+  --_l0: rgba(255, 255, 255, 0.74);
+  --_l1: rgba(255, 255, 255, 0.18);
   position: absolute;
   inset: 0;
   display: block;
@@ -17,30 +17,97 @@
   );
 }
 
+/* 金属系列：强随角异色（flop）高反差金属烤漆基面 */
+._hfm[data-e="metal"]:not([data-k="m"]) {
+  background-image: linear-gradient(
+    150deg,
+    var(--_c0) 0%,
+    var(--_c1) 28%,
+    var(--_c2) 62%,
+    var(--_c3) 100%
+  );
+}
+
+/* 极光变色龙：基底即呈现双色至三色曲面流转 */
+._hfm[data-e="chameleon"] {
+  background-image: linear-gradient(
+    142deg,
+    var(--_c4) 0%,
+    var(--_c1) 36%,
+    var(--_c2) 70%,
+    var(--_c3) 100%
+  );
+}
+
+/* 超哑 / 哑光（Magno）：柔和丝绒吸光基底 + 漫散射柔雾暗角，彻底告别塑料亮感 */
+._hfm[data-k="m"] {
+  background-image:
+    radial-gradient(ellipse 96% 78% at 34% 26%, rgba(255, 255, 255, 0.055) 0%, transparent 68%),
+    linear-gradient(164deg, var(--_c0) 0%, var(--_c1) 48%, var(--_c3) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 42px rgba(0, 0, 0, 0.26);
+}
+
+/* 丝缎（Satin）：温润绸缎过渡基底，柔光内敛 */
+._hfm[data-k="s"] {
+  background-image: linear-gradient(
+    156deg,
+    var(--_c0) 0%,
+    var(--_c1) 38%,
+    var(--_c2) 72%,
+    var(--_c3) 100%
+  );
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.16);
+}
+
 ._hfm[data-l="gallery"] {
-  --_l0: rgba(240, 248, 255, 0.82);
-  --_l1: rgba(226, 240, 255, 0.22);
+  --_l0: rgba(242, 248, 255, 0.84);
+  --_l1: rgba(226, 240, 255, 0.24);
 }
 
 ._hfm[data-l="sunset"] {
-  --_l0: rgba(255, 224, 184, 0.82);
-  --_l1: rgba(255, 190, 128, 0.2);
+  --_l0: rgba(255, 224, 184, 0.84);
+  --_l1: rgba(255, 190, 128, 0.22);
 }
 
+/* 无规则有机微晶金属粉 / 珠光云母 / 哑光微磨砂质感（彻底淘汰机械网格点） */
 ._hfm[data-g="1"]::before,
-._hfm[data-g="2"]::before {
+._hfm[data-g="2"]::before,
+._hfm[data-g="m"]::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.35' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 128px 128px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.45' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
   mix-blend-mode: soft-light;
-  opacity: 0.16;
+  opacity: 0.22;
 }
 
 ._hfm[data-g="2"]::before {
-  opacity: 0.1;
+  opacity: 0.14;
+}
+
+/* 超哑磨砂微颗粒：细腻的绒面微磨砂漫反射肌理 */
+._hfm[data-g="m"]::before {
+  background-size: 84px 84px;
+  mix-blend-mode: soft-light;
+  opacity: 0.28;
+}
+
+/* 金属漆细密闪耀层：仅沿受光曲面高光区闪耀，暗区自然隐匿（物理级铝粉光学） */
+._hfm[data-e="metal"]:not([data-k="m"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.35' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  background-size: 108px 108px;
+  mix-blend-mode: screen;
+  opacity: 0.22;
+  -webkit-mask-image: linear-gradient(112deg, transparent 10%, #000 42%, transparent 78%);
+  mask-image: linear-gradient(112deg, transparent 10%, #000 42%, transparent 78%);
 }
 
 ._hfm[data-k="c"] {
@@ -51,52 +118,148 @@
   background-position: center;
 }
 
+/* 动态视角反射与变色流转层（足够宽的水平余量，防止最外侧斜卡片出现硬截断边） */
 ._hfm_r {
   position: absolute;
-  inset: -12% -45%;
+  inset: -16% -88%;
   display: block;
   pointer-events: none;
-  transform: translate3d(var(--_rf, 0%), 0, 0);
+  transform: translate3d(calc(var(--_rf, 0%) * 0.62), 0, 0);
   will-change: transform;
 }
 
+/* 1. 次级光学偏色层（珠光云母晕 / 金属高光泛色 / 双色幻彩 / 极光变色龙 / 七彩镭射） */
 ._hfm_r::before {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 38% 76% at 44% 48%,
+    ellipse 34% 72% at 47% 48%,
     var(--_c4) 0%,
-    transparent 74%
+    transparent 70%
   );
   opacity: var(--_c5, 0);
 }
 
+/* 金属漆：沿高光脊线泛出金属本色/金色流光（保留黑曜金/黑金AMG山灰的深色基底对比） */
+._hfm[data-e="metal"] ._hfm_r::before {
+  background: linear-gradient(
+    112deg,
+    transparent 30%,
+    var(--_c4) 47%,
+    transparent 64%
+  );
+  mix-blend-mode: screen;
+}
+
+/* 珠光系列：清漆底层柔和透出的云母珠光晕 */
+._hfm[data-e="pearl"] ._hfm_r::before {
+  background: radial-gradient(
+    ellipse 38% 76% at 47% 46%,
+    var(--_c4) 0%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+}
+
+/* 双色幻彩 & 钻白（梦幻火山灰、妃子笑、黑魅红、金钻白、蓝钻白、时光金）：受光面绽放偏色，暗区保留纯正底色 */
+._hfm[data-e="bicolor"] ._hfm_r::before {
+  background:
+    radial-gradient(ellipse 36% 72% at 47% 45%, var(--_c4) 0%, transparent 68%),
+    linear-gradient(114deg, transparent 31%, var(--_c4) 47%, transparent 64%);
+  mix-blend-mode: screen;
+}
+
+/* 极光变色龙（青魔、青岭苍岚、喀纳斯蓝）：多段薄膜干涉色带 */
+._hfm[data-e="chameleon"] ._hfm_r::before {
+  background: linear-gradient(
+    116deg,
+    transparent 20%,
+    var(--_c4) 38%,
+    var(--_c7) 52%,
+    var(--_c4) 65%,
+    transparent 82%
+  );
+  mix-blend-mode: screen;
+}
+
+/* 七彩镭射（高光镭射白、镭射黑）：真实棱镜衍射七彩光谱流光带 */
+._hfm[data-e="laser"] ._hfm_r::before {
+  background: linear-gradient(
+    114deg,
+    transparent 22%,
+    rgba(92, 236, 255, 0.74) 34%,
+    rgba(176, 118, 255, 0.78) 42%,
+    rgba(255, 116, 198, 0.80) 50%,
+    rgba(255, 222, 102, 0.78) 58%,
+    rgba(98, 245, 182, 0.72) 66%,
+    transparent 78%
+  );
+  mix-blend-mode: screen;
+}
+
+/* 浅底色（白/米白）禁止使用 screen 滤色，改用 normal 透叠，并收束晕染范围以保留大片纯净白底 */
+._hfm[data-b="l"][data-e="pearl"] ._hfm_r::before,
+._hfm[data-b="l"][data-e="bicolor"] ._hfm_r::before,
+._hfm[data-b="l"][data-e="laser"] ._hfm_r::before {
+  mix-blend-mode: normal;
+}
+
+._hfm[data-b="l"][data-e="bicolor"] ._hfm_r::before {
+  background:
+    radial-gradient(ellipse 26% 58% at 47% 45%, var(--_c4) 0%, transparent 66%),
+    linear-gradient(114deg, transparent 35%, var(--_c4) 48%, transparent 61%);
+}
+
+._hfm[data-b="l"][data-e="laser"] ._hfm_r::before {
+  background: linear-gradient(
+    114deg,
+    transparent 24%,
+    rgba(66, 214, 245, 0.48) 35%,
+    rgba(164, 108, 255, 0.52) 43%,
+    rgba(255, 102, 184, 0.54) 50%,
+    rgba(255, 206, 72, 0.52) 57%,
+    rgba(62, 224, 162, 0.48) 65%,
+    transparent 76%
+  );
+}
+
+/* 2. 顶层清漆反射层：水晶高光=锐利玻璃镜面带；金属=紧致高对比银光脊 */
 ._hfm_r::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     112deg,
-    transparent 26%,
-    var(--_l1) 36%,
-    var(--_l0) 43%,
-    var(--_l1) 49%,
-    transparent 58%,
-    rgba(255, 255, 255, 0.1) 66%,
-    transparent 74%
+    transparent 35%,
+    var(--_l1) 41%,
+    var(--_l0) 45.2%,
+    var(--_l1) 49.5%,
+    transparent 55%,
+    rgba(255, 255, 255, 0.14) 61%,
+    transparent 67%
   );
-  opacity: var(--_c6, 0.78);
+  opacity: var(--_c6, 0.85);
 }
 
-._hfm[data-k="s"] ._hfm_r::after,
-._hfm[data-k="m"] ._hfm_r::after {
+/* 丝缎（Satin）：宽幅柔焦丝绸光晕（无硬边、呈温润阳极氧化/绸缎光泽） */
+._hfm[data-k="s"] ._hfm_r::after {
   background: linear-gradient(
-    115deg,
+    116deg,
     transparent 16%,
-    var(--_l1) 34%,
-    var(--_l0) 48%,
-    var(--_l1) 64%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.44) 47%,
+    rgba(255, 255, 255, 0.12) 64%,
+    transparent 80%
+  );
+}
+
+/* 超哑 / 哑光（Ultra Matte）：完全去除斜向亮条，仅保留极柔漫反射天光雾面 */
+._hfm[data-k="m"] ._hfm_r::after {
+  background: radial-gradient(
+    ellipse 52% 86% at 46% 42%,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 46%,
     transparent 82%
   );
 }
