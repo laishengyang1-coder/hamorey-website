@@ -19,6 +19,7 @@ import {
 } from './studioEnvironment';
 import { createFilmMaterialController, type FilmMaterialController } from './filmMaterial';
 import { createLuxuryShaderball } from './shaderballBuilder';
+import { createStudioSceneManager, type StudioSceneManager } from './studioScenes';
 import { unpackHmyModelBuffer } from './studioGuard';
 type WebGLViewMode = Exclude<StudioViewMode, 'swatch'>;
 
@@ -226,6 +227,7 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     desiredTarget: THREE.Vector3;
     controls: OrbitControls | null;
     switchVehicle: ((id: StudioVehicleId) => void) | null;
+    sceneManager: StudioSceneManager | null;
     shadowDirtyFrames: number;
   }>({
     renderer: null,
@@ -246,6 +248,7 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     desiredTarget: CAMERA_PRESETS[viewMode].target.clone(),
     controls: null,
     switchVehicle: null,
+    sceneManager: null,
     shadowDirtyFrames: 4,
   });
 
@@ -430,6 +433,16 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       stateRef.current.viewMode === 'car' || stateRef.current.viewMode === 'closeup';
     scene.add(carGroup);
     runtimeRef.current.carGroup = carGroup;
+
+    // 三大 3D 实景展厅（暗夜柔光影棚 / 极昼美术馆展厅 / 海岸落日观景台）
+    const sceneManager = createStudioSceneManager(
+      scene,
+      floorMat,
+      floorGlowMat,
+      shadowPlaneMat,
+    );
+    sceneManager.applyPreset(stateRef.current.lightingPreset, stateRef.current.viewMode);
+    runtimeRef.current.sceneManager = sceneManager;
 
     // 后台异步加载与缓存双车型 3D 模型（Model 3 焕新版 / Model Y 焕新版）
     let disposed = false;
@@ -898,13 +911,13 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       const elapsed = (now - clockStart) / 1000;
       const curMode = stateRef.current.viewMode;
 
-      // 1) 同色调影棚氛围空间渐变
-      if (scene.background instanceof THREE.Color) {
+      // 1) 同色调影棚氛围空间渐变（仅暗夜柔光影棚随车色微调地台，展厅与落日保留独立实景地面与雾效）
+      if (stateRef.current.lightingPreset === 'studio' && scene.background instanceof THREE.Color) {
         scene.background.lerp(runtimeRef.current.targetMoodColor, Math.min(1, dt * 4.5));
         if (scene.fog instanceof THREE.FogExp2) {
           scene.fog.color.copy(scene.background);
         }
-        floorMat.color.copy(scene.background).multiplyScalar(0.55);
+        floorMat.color.copy(scene.background).multiplyScalar(0.58);
       }
       if (runtimeRef.current.floorGlowMat) {
         runtimeRef.current.floorGlowMat.color.lerp(
@@ -1000,6 +1013,8 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       flakeNormalMap.dispose();
 
       shaderball.dispose();
+      sceneManager.dispose();
+      runtimeRef.current.sceneManager = null;
       macroGeo.dispose();
       floorAlphaTex.dispose();
       floorGeo.dispose();
@@ -1027,7 +1042,7 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     };
   }, []);
 
-  // 2. 实时切换三档 HDR 影棚环境光
+  // 2. 实时切换三档 HDR 影棚环境光与 3D 实景背景
   useEffect(() => {
     const rt = runtimeRef.current;
     if (!rt.renderer || !rt.scene) return;
@@ -1039,25 +1054,33 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
       prevEnv.renderTarget?.dispose();
     }
 
+    rt.sceneManager?.applyPreset(lightingPreset, viewMode);
+
     if (rt.hemiLight && rt.keyLight && rt.rimLight) {
       if (lightingPreset === 'gallery') {
-        rt.hemiLight.intensity = 0.22;
+        rt.hemiLight.color.set('#ffffff');
+        rt.hemiLight.groundColor.set('#cfd6e0');
+        rt.hemiLight.intensity = 0.42;
         rt.keyLight.color.set('#ffffff');
-        rt.keyLight.intensity = 0.7;
+        rt.keyLight.intensity = 0.72;
         rt.rimLight.color.set('#e2edff');
       } else if (lightingPreset === 'sunset') {
-        rt.hemiLight.intensity = 0.1;
-        rt.keyLight.color.set('#ffcf98');
-        rt.keyLight.intensity = 0.85;
-        rt.rimLight.color.set('#93c5fd');
+        rt.hemiLight.color.set('#ffd4a8');
+        rt.hemiLight.groundColor.set('#26181c');
+        rt.hemiLight.intensity = 0.18;
+        rt.keyLight.color.set('#ffbe7b');
+        rt.keyLight.intensity = 0.92;
+        rt.rimLight.color.set('#8ab8ff');
       } else {
+        rt.hemiLight.color.set('#e8eefc');
+        rt.hemiLight.groundColor.set('#0b0c10');
         rt.hemiLight.intensity = 0.12;
         rt.keyLight.color.set('#fff8f0');
         rt.keyLight.intensity = 0.75;
         rt.rimLight.color.set('#dbe8ff');
       }
     }
-  }, [lightingPreset]);
+  }, [lightingPreset, viewMode]);
 
   // 3. 同步色号与材质
   useEffect(() => {

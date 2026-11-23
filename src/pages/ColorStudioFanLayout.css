@@ -118,6 +118,18 @@
   position: relative;
   min-height: 0;
   overflow: hidden;
+  background: radial-gradient(ellipse 75% 65% at 50% 42%, #191b24 0%, #0d0e13 58%, #07080b 100%);
+  transition: background 0.45s ease;
+}
+._hsl_p[data-scene='gallery'] ._hsl_st {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 18%, rgba(255, 255, 255, 0.92) 0%, rgba(226, 232, 240, 0.65) 45%, transparent 80%),
+    linear-gradient(180deg, #e7ecf3 0%, #d4dbe6 56%, #bac3d1 100%);
+}
+._hsl_p[data-scene='sunset'] ._hsl_st {
+  background:
+    radial-gradient(circle at 50% 62%, rgba(255, 212, 134, 0.52) 0%, rgba(236, 118, 62, 0.34) 28%, rgba(102, 46, 78, 0.25) 56%, transparent 78%),
+    linear-gradient(180deg, #131a34 0%, #3b2649 38%, #a64a3b 70%, #2a181f 100%);
 }
 ._hsl_p > footer {
   grid-row: 4;

@@ -362,6 +362,7 @@ export default function ColorStudioPage() {
 
   return (
     <div
+      data-scene={lightingPreset}
       className={cn(
         'relative w-full h-[100dvh] overflow-hidden overscroll-none bg-[#08090c] text-[#F7F3EB] select-none',
         viewMode === 'swatch' && '_hsl_p',
@@ -387,13 +388,13 @@ export default function ColorStudioPage() {
             <Link
               to="/products/color-ppf"
               aria-label={lang === 'zh' ? '返回官网' : 'Back'}
-              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full bg-[#0a0b0f]/92 hover:bg-[#14161e] border border-white/12 text-xs text-white/80 transition-colors flex-shrink-0"
+              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full bg-[#0a0b0f]/90 hover:bg-[#14161e] border border-white/12 text-xs text-white/80 transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{lang === 'zh' ? '返回' : 'Back'}</span>
             </Link>
           )}
-          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#0a0b0f]/92 border border-white/10">
+          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#0a0b0f]/90 border border-white/10">
             <span className="text-[11px] sm:text-xs md:text-sm font-bold tracking-[0.1em] text-[#F7F3EB]">
               和膜 <span className="text-[#C9A86A]">HAMOREY</span>
             </span>
@@ -407,7 +408,7 @@ export default function ColorStudioPage() {
         {/* 桌面端居中：5 大视角分段控制器 */}
         <nav
           aria-label="展示模式"
-          className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/92 border border-[#C9A86A]/25 shadow-2xl pointer-events-auto"
+          className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/25 shadow-2xl pointer-events-auto"
         >
           {VIEW_MODES.map((m) => {
             const active = viewMode === m.key;
@@ -434,7 +435,7 @@ export default function ColorStudioPage() {
           <div
             role="group"
             aria-label={lang === 'zh' ? '影棚光影切换' : 'Studio Lighting'}
-            className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/92 border border-white/12"
+            className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/90 border border-white/12"
           >
             {LIGHTING_PRESETS.map((preset) => {
               const active = lightingPreset === preset.key;
@@ -463,7 +464,7 @@ export default function ColorStudioPage() {
           <button
             type="button"
             onClick={() => setLang((prev) => (prev === 'zh' ? 'en' : 'zh'))}
-            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#090a0e]/92 hover:bg-[#14161e] border border-white/15 text-[11px] font-mono font-semibold flex items-center justify-center transition-colors"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#090a0e]/90 hover:bg-[#14161e] border border-white/15 text-[11px] font-mono font-semibold flex items-center justify-center transition-colors"
             aria-label="切换中英文"
           >
             {lang === 'zh' ? 'EN' : '中'}
@@ -472,7 +473,7 @@ export default function ColorStudioPage() {
           <button
             type="button"
             onClick={() => setCardModalOpen(true)}
-            className="h-8 w-8 sm:w-auto sm:px-3 md:h-9 md:px-3.5 rounded-full bg-[#090a0e]/92 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap"
+            className="h-8 w-8 sm:w-auto sm:px-3 md:h-9 md:px-3.5 rounded-full bg-[#090a0e]/90 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap"
             aria-label={lang === 'zh' ? '定制选色单' : 'Spec Card'}
           >
             <Info className="w-3.5 h-3.5" />
@@ -546,7 +547,7 @@ export default function ColorStudioPage() {
       {/* 3A. 手机与小程序端紧凑通栏信息胶囊（释放竖屏 3D 视口，不挡车模与球体） */}
       {viewMode !== 'swatch' && (
         <div className="md:hidden absolute left-3 right-3 top-[calc(3.15rem+env(safe-area-inset-top))] z-20 pointer-events-none flex flex-col gap-1.5">
-          <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl bg-[#090a0e]/92 border border-[#C9A86A]/25 px-3 py-2 shadow-xl">
+          <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 px-3 py-2 shadow-xl">
             <button
               type="button"
               onClick={() => setCardModalOpen(true)}
@@ -640,7 +641,7 @@ export default function ColorStudioPage() {
 
       {/* 3B. 桌面端左侧高定色号铭牌卡 */}
       {viewMode !== 'swatch' && <aside className="hidden md:block absolute md:top-20 md:left-6 z-20 pointer-events-auto md:w-72">
-        <div className="rounded-2xl bg-[#090a0e]/92 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
           {/* 编号顶标 */}
           <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-[0.16em] text-[#C9A86A]">
             <span>
@@ -797,7 +798,7 @@ export default function ColorStudioPage() {
         {/* 小屏模式切换器 */}
         <nav
           aria-label="展示模式切换"
-          className="lg:hidden inline-flex items-center p-1 rounded-full bg-[#090a0e]/92 border border-[#C9A86A]/25 pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
+          className="lg:hidden inline-flex items-center p-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/25 pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
         >
           {VIEW_MODES.map((m) => {
             const active = viewMode === m.key;
@@ -820,7 +821,7 @@ export default function ColorStudioPage() {
         </nav>
 
         {/* 高定「流光色珠胶片轨」面板 */}
-        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/92 border border-white/12 px-2.5 py-2 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
+        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/90 border border-white/12 px-2.5 py-2 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
           {/* 轨道顶排：工艺标签 + 操作指引 + 全系色谱典藏入口 */}
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/[0.08]">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
