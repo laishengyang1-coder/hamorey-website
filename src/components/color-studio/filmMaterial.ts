@@ -1,20 +1,22 @@
 // ============================================================
-// 和膜 HAMOREY — 真实物理车漆材质控制器 V5
+// 和膜 HAMOREY — 真实物理车漆材质控制器 V6
 // 精确区分超哑丝绒 / 丝缎绸光 / 水晶镜面 / 金属随角异色 / 珠光双色 / 七彩镭射
-// + 世界空间三平面程序化碳纤（幽冥黑波纹锻碳 / 黑锻碳碎切锻造碳 / 2x2 编织碳纤维）
+// + 实拍无缝高精三平面碳纤映射（幽冥黑波纹锻碳 / 黑锻碳碎切碳条 / 2x2 细密斜纹碳纤维）
 // 单一着色器零重编译，切色零卡顿
 // ============================================================
 
 import * as THREE from 'three';
 import type { ColorFilmItem, StudioViewMode } from '../../config/colorStudio';
+import { getCarbonTextureUrl, isCarbonSwatch } from './swatchVisuals';
 
 interface PaintUniforms {
   uPearlShiftColor: { value: THREE.Color };
   uPearlShiftStrength: { value: number };
   uFlopStrength: { value: number };
   uLaserStrength: { value: number };
-  uCarbonMode: { value: number };
+  uCarbonStrength: { value: number };
   uCarbonScale: { value: number };
+  uCarbonMap: { value: THREE.Texture };
 }
 
 export interface FilmMaterialController {
@@ -23,105 +25,14 @@ export interface FilmMaterialController {
   dispose: () => void;
 }
 
-const CARBON_GLSL_HELPERS = `
-float cHash21(vec2 p) {
-  p = fract(p * vec2(123.34, 456.21));
-  p += dot(p, p + 45.32);
-  return fract(p.x * p.y);
+function createFallbackCarbonTexture(): THREE.DataTexture {
+  const data = new Uint8Array([32, 34, 38, 255]);
+  const tex = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.needsUpdate = true;
+  return tex;
 }
-
-vec2 cHash22(vec2 p) {
-  return vec2(cHash21(p), cHash21(p + vec2(37.17, 17.83)));
-}
-
-float cNoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  float a = cHash21(i);
-  float b = cHash21(i + vec2(1.0, 0.0));
-  float c = cHash21(i + vec2(0.0, 1.0));
-  float d = cHash21(i + vec2(1.0, 1.0));
-  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
-}
-
-float cFbm(vec2 p) {
-  float v = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 3; i++) {
-    v += a * cNoise(p);
-    p = mat2(0.8, -0.6, 0.6, 0.8) * p * 2.02;
-    a *= 0.5;
-  }
-  return v;
-}
-
-// Mode 1: Damascus flowing marble forged carbon
-float cDamascus(vec2 uv, vec3 viewDir) {
-  vec2 q = vec2(cFbm(uv), cFbm(uv + vec2(5.2, 1.3)));
-  float w = cFbm(uv + 2.4 * q);
-  float bands = 0.5 + 0.5 * sin(uv.x * 4.5 + w * 11.0);
-  float ridges = pow(bands, 1.45);
-  float aniso = 0.72 + 0.28 * abs(sin(w * 6.2831 + viewDir.x * 2.2));
-  return clamp(ridges * aniso, 0.0, 1.0);
-}
-
-// Mode 2: Chopped forged carbon composite shards
-float cForgedLayer(vec2 uv, vec3 viewDir) {
-  vec2 n = floor(uv);
-  vec2 f = fract(uv);
-  float md = 8.0;
-  float cellId = 0.0;
-  vec2 bestOffset = vec2(0.0);
-  for (int j = -1; j <= 1; j++) {
-    for (int i = -1; i <= 1; i++) {
-      vec2 g = vec2(float(i), float(j));
-      vec2 o = cHash22(n + g);
-      vec2 r = g + o - f;
-      float d = dot(r, r);
-      if (d < md) {
-        md = d;
-        cellId = cHash21(n + g + vec2(11.3, 29.7));
-        bestOffset = r;
-      }
-    }
-  }
-  float ang = cellId * 6.28318;
-  vec2 dir = vec2(cos(ang), sin(ang));
-  float fibers = 0.5 + 0.5 * sin(dot(bestOffset, dir) * 42.0 + cellId * 12.0);
-  vec2 v2 = normalize(viewDir.xz + vec2(0.001, 0.001));
-  float glint = pow(abs(dot(dir, v2)), 1.6);
-  return clamp(mix(0.12, 0.92, glint) * (0.78 + 0.22 * fibers), 0.0, 1.0);
-}
-
-float cForged(vec2 uv, vec3 viewDir) {
-  float a = cForgedLayer(uv, viewDir);
-  float b = cForgedLayer(uv * 1.65 + vec2(7.4, 3.1), viewDir);
-  return clamp(mix(a, b, 0.42), 0.0, 1.0);
-}
-
-// Mode 3: 2x2 diagonal twill woven carbon fiber
-float cTwill(vec2 uv, vec3 viewDir) {
-  vec2 cell = floor(uv);
-  vec2 f = fract(uv);
-  float diag = mod(cell.x + cell.y, 4.0);
-  bool isWarp = diag < 2.0;
-  float across = isWarp ? f.y : f.x;
-  float along = isWarp ? f.x : f.y;
-  float pillow = sin(clamp(across, 0.0, 1.0) * 3.14159);
-  float strands = 0.88 + 0.12 * sin(across * 31.4159);
-  float gap = smoothstep(0.0, 0.12, across) * smoothstep(1.0, 0.88, across) *
-              smoothstep(0.0, 0.08, along) * smoothstep(1.0, 0.92, along);
-  float orient = isWarp ? (0.62 + 0.38 * abs(viewDir.x)) : (0.30 + 0.34 * abs(viewDir.z));
-  return clamp(pillow * strands * gap * orient, 0.0, 1.0);
-}
-
-float evalCarbon2D(vec2 uv, float mode, vec3 viewDir) {
-  if (mode < 1.5) return cDamascus(uv, viewDir);
-  if (mode < 2.5) return cForged(uv, viewDir);
-  return cTwill(uv, viewDir);
-}
-`;
 
 /**
  * 创建统一复用的 TPU 改色物理材质控制器。
@@ -132,13 +43,42 @@ export function createFilmMaterialController(
   flakeNormalMap: THREE.Texture,
   initialMode: StudioViewMode,
 ): FilmMaterialController {
+  const fallbackTex = createFallbackCarbonTexture();
+  const textureLoader = new THREE.TextureLoader();
+  const carbonTextureCache = new Map<string, THREE.Texture>();
+  let disposed = false;
+
+  const getOrLoadCarbonTexture = (code: string): THREE.Texture => {
+    const cached = carbonTextureCache.get(code);
+    if (cached) return cached;
+    const tex = textureLoader.load(getCarbonTextureUrl(code), (loaded) => {
+      if (disposed) {
+        loaded.dispose();
+        return;
+      }
+      loaded.wrapS = THREE.RepeatWrapping;
+      loaded.wrapT = THREE.RepeatWrapping;
+      loaded.anisotropy = 8;
+      loaded.generateMipmaps = true;
+      loaded.minFilter = THREE.LinearMipmapLinearFilter;
+      loaded.magFilter = THREE.LinearFilter;
+      loaded.needsUpdate = true;
+    });
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 8;
+    carbonTextureCache.set(code, tex);
+    return tex;
+  };
+
   const uniforms: PaintUniforms = {
     uPearlShiftColor: { value: new THREE.Color(initialSwatch.shiftHex || initialSwatch.hex) },
     uPearlShiftStrength: { value: 0 },
     uFlopStrength: { value: 0 },
     uLaserStrength: { value: 0 },
-    uCarbonMode: { value: 0 },
-    uCarbonScale: { value: 12 },
+    uCarbonStrength: { value: 0 },
+    uCarbonScale: { value: 6 },
+    uCarbonMap: { value: fallbackTex },
   };
 
   const material = new THREE.MeshPhysicalMaterial({
@@ -155,15 +95,16 @@ export function createFilmMaterialController(
     side: THREE.DoubleSide,
   });
 
-  material.customProgramCacheKey = () => 'hamorey-film-physical-v5';
+  material.customProgramCacheKey = () => 'hamorey-film-physical-v6';
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uPearlShiftColor = uniforms.uPearlShiftColor;
     shader.uniforms.uPearlShiftStrength = uniforms.uPearlShiftStrength;
     shader.uniforms.uFlopStrength = uniforms.uFlopStrength;
     shader.uniforms.uLaserStrength = uniforms.uLaserStrength;
-    shader.uniforms.uCarbonMode = uniforms.uCarbonMode;
+    shader.uniforms.uCarbonStrength = uniforms.uCarbonStrength;
     shader.uniforms.uCarbonScale = uniforms.uCarbonScale;
+    shader.uniforms.uCarbonMap = uniforms.uCarbonMap;
 
     shader.vertexShader = shader.vertexShader
       .replace(
@@ -187,11 +128,11 @@ uniform vec3 uPearlShiftColor;
 uniform float uPearlShiftStrength;
 uniform float uFlopStrength;
 uniform float uLaserStrength;
-uniform float uCarbonMode;
+uniform float uCarbonStrength;
 uniform float uCarbonScale;
+uniform sampler2D uCarbonMap;
 varying vec3 vCarbonPos;
-varying vec3 vCarbonNorm;
-${CARBON_GLSL_HELPERS}`,
+varying vec3 vCarbonNorm;`,
       )
       .replace(
         '#include <lights_physical_fragment>',
@@ -200,20 +141,22 @@ ${CARBON_GLSL_HELPERS}`,
   float paintNdotV = clamp(abs(dot(normal, paintViewDir)), 0.0, 1.0);
   float grazing = 1.0 - paintNdotV;
 
-  // Triplanar 3D carbon composite & twill weave (zero UV stretch across car & sphere)
-  if (uCarbonMode > 0.5) {
+  // World-space triplanar sampling of real seamless high-res carbon textures
+  if (uCarbonStrength > 0.5) {
     vec3 cNorm = normalize(vCarbonNorm);
-    vec3 tw = pow(abs(cNorm), vec3(6.0));
+    vec3 tw = pow(abs(cNorm), vec3(7.0));
     tw /= max(tw.x + tw.y + tw.z, 1e-4);
     vec3 sp = vCarbonPos * uCarbonScale;
-    float pYZ = evalCarbon2D(sp.yz, uCarbonMode, paintViewDir);
-    float pXZ = evalCarbon2D(sp.xz, uCarbonMode, paintViewDir);
-    float pXY = evalCarbon2D(sp.xy, uCarbonMode, paintViewDir);
-    float pat = clamp(pYZ * tw.x + pXZ * tw.y + pXY * tw.z, 0.0, 1.0);
-    vec3 cDark = vec3(0.008, 0.009, 0.011);
-    vec3 cLight = vec3(0.115, 0.126, 0.148);
-    diffuseColor.rgb = mix(cDark, cLight, pat);
-    roughnessFactor = mix(0.42, 0.16, pat);
+    vec3 sYZ = texture2D(uCarbonMap, sp.yz).rgb;
+    vec3 sXZ = texture2D(uCarbonMap, sp.xz).rgb;
+    vec3 sXY = texture2D(uCarbonMap, sp.xy).rgb;
+    vec3 srgbTex = sYZ * tw.x + sXZ * tw.y + sXY * tw.z;
+    // Convert sampled sRGB texture to linear and enhance crisp carbon fiber depth
+    vec3 linTex = pow(clamp(srgbTex, 0.0, 1.0), vec3(2.2));
+    float luma = dot(linTex, vec3(0.2126, 0.7152, 0.0722));
+    float anisoBoost = 0.86 + 0.34 * smoothstep(0.12, 0.85, grazing);
+    diffuseColor.rgb = clamp(linTex * 1.15 * anisoBoost, 0.005, 0.32);
+    roughnessFactor = mix(0.38, 0.14, smoothstep(0.02, 0.22, luma));
   }
 
   // Pearl / bicolor / chameleon / metallic shift (keep dark bases luminous)
@@ -247,43 +190,45 @@ ${CARBON_GLSL_HELPERS}`,
   const update = (swatch: ColorFilmItem, viewMode: StudioViewMode) => {
     const { material: p, finish, code } = swatch;
     const isVehicleView = viewMode === 'car' || viewMode === 'closeup';
-    const carbonMode =
-      code === 'TPU-001FP' ? 1 : code === 'TPU-002FP' ? 2 : code === 'TPU-CF' ? 3 : 0;
-    const isMatte = carbonMode === 0 && p.roughness >= 0.44;
-    const isSatin = carbonMode === 0 && !isMatte && p.roughness >= 0.24;
+    const isCarbon = isCarbonSwatch(code);
+    const isMatte = !isCarbon && p.roughness >= 0.44;
+    const isSatin = !isCarbon && !isMatte && p.roughness >= 0.24;
     const isLaser = code === 'TPU-001L' || code === 'TPU-002L';
     const isDualToneMetallic = code === 'TPU-001M' || code === 'TPU-002M';
 
     material.color.set(swatch.hex);
-    uniforms.uCarbonMode.value = carbonMode;
 
-    if (carbonMode > 0) {
-      material.metalness = 0.32;
-      material.roughness = 0.28;
-      material.clearcoat = 0.88;
-      material.clearcoatRoughness = isVehicleView ? 0.14 : 0.09;
-      material.specularIntensity = 0.92;
-      material.envMapIntensity = 1.02;
+    if (isCarbon) {
+      uniforms.uCarbonStrength.value = 1;
+      uniforms.uCarbonMap.value = getOrLoadCarbonTexture(code);
+      // 细密真实尺度（实拍样板同款高密纹理 + 湿润高亮 8.0 mil TPU 清漆）
+      if (code === 'TPU-CF') {
+        uniforms.uCarbonScale.value =
+          viewMode === 'macro' ? 16.0 : viewMode === 'sphere' ? 7.5 : 13.5;
+      } else if (code === 'TPU-002FP') {
+        uniforms.uCarbonScale.value =
+          viewMode === 'macro' ? 8.0 : viewMode === 'sphere' ? 3.6 : 6.2;
+      } else {
+        // TPU-001FP 幽冥黑
+        uniforms.uCarbonScale.value =
+          viewMode === 'macro' ? 7.4 : viewMode === 'sphere' ? 3.2 : 5.6;
+      }
+      material.metalness = 0.28;
+      material.roughness = 0.26;
+      material.clearcoat = 0.96;
+      material.clearcoatRoughness = isVehicleView ? 0.11 : 0.06;
+      material.specularIntensity = 1.0;
+      material.envMapIntensity = 1.08;
       material.normalScale.set(0, 0);
       uniforms.uPearlShiftStrength.value = 0;
-      uniforms.uFlopStrength.value = 0.24;
+      uniforms.uFlopStrength.value = 0.22;
       uniforms.uLaserStrength.value = 0;
-
-      if (carbonMode === 1) {
-        uniforms.uCarbonScale.value =
-          viewMode === 'macro' ? 5.2 : viewMode === 'sphere' ? 2.1 : 3.0;
-      } else if (carbonMode === 2) {
-        uniforms.uCarbonScale.value =
-          viewMode === 'macro' ? 20.0 : viewMode === 'sphere' ? 8.5 : 13.5;
-      } else {
-        uniforms.uCarbonScale.value =
-          viewMode === 'macro' ? 58.0 : viewMode === 'sphere' ? 24.0 : 40.0;
-      }
       return;
     }
 
+    uniforms.uCarbonStrength.value = 0;
+
     if (isMatte) {
-      // 超哑 / 哑光（Magno）：高粗糙漫反射 + 极低清漆，彻底告别塑料亮感
       material.metalness = Math.min(p.metalness, finish === 'metallic' ? 0.32 : 0.08);
       material.roughness = 0.66;
       material.clearcoat = 0.04;
@@ -291,7 +236,6 @@ ${CARBON_GLSL_HELPERS}`,
       material.specularIntensity = 0.28;
       material.envMapIntensity = 0.52;
     } else if (isSatin) {
-      // 丝缎（Satin）：柔和绸缎半哑光，柔化高光勾勒腰线
       material.metalness = Math.min(p.metalness, finish === 'metallic' ? 0.52 : 0.28);
       material.roughness = 0.36;
       material.clearcoat = 0.24;
@@ -336,7 +280,6 @@ ${CARBON_GLSL_HELPERS}`,
       uniforms.uPearlShiftStrength.value = isMatte ? 0.12 : 0.52;
       uniforms.uFlopStrength.value = isMatte ? 0.14 : 0.48;
     } else {
-      // chameleon / bicolor / laser / special
       const scale = viewMode === 'macro' ? 0.09 : 0.045;
       material.normalScale.set(scale, scale);
       uniforms.uPearlShiftStrength.value = isLaser ? 0.18 : 0.76;
@@ -350,6 +293,10 @@ ${CARBON_GLSL_HELPERS}`,
     material,
     update,
     dispose: () => {
+      disposed = true;
+      fallbackTex.dispose();
+      carbonTextureCache.forEach((t) => t.dispose());
+      carbonTextureCache.clear();
       material.dispose();
     },
   };

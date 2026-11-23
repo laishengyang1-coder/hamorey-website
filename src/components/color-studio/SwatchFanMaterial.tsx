@@ -183,14 +183,14 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
                     : 0.46
               : 0;
 
-  // 清漆镜面反光强度（超哑绝不出现塑料亮条，丝缎呈柔宽绸缎光带，高光呈锐利玻璃镜面）
+  // 清漆镜面反光强度（超哑绝不出现塑料亮条，丝缎呈柔宽绸缎光带，锻碳/碳纤呈高亮8.0mil湿润清漆，高光呈锐利玻璃镜面）
   const specOpacity =
     coat === 'm'
       ? 0.11
       : coat === 's'
         ? 0.56
         : carbon
-          ? 0.36
+          ? 0.72
           : metal
             ? 0.84
             : 0.88;
@@ -207,7 +207,9 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
   };
 
   if (carbon) {
-    variables['--_cp'] = `url("/color-studio/paint/${code.toLowerCase()}.webp")`;
+    variables['--_cp'] = `url("/color-studio/paint/${code.toLowerCase()}.webp?v=20261123")`;
+    variables['--_cs'] =
+      code === 'TPU-CF' ? '62px 62px' : code === 'TPU-002FP' ? '132px 132px' : '140px 140px';
   }
 
   return (

@@ -111,11 +111,13 @@
 }
 
 ._hfm[data-k="c"] {
+  background-color: #101215;
   background-image:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.45)),
+    linear-gradient(156deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 42%, rgba(0, 0, 0, 0.42) 100%),
     var(--_cp);
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%, var(--_cs, 132px 132px);
+  background-repeat: no-repeat, repeat;
+  background-position: center, center;
 }
 
 /* 动态视角反射与变色流转层（足够宽的水平余量，防止最外侧斜卡片出现硬截断边） */
