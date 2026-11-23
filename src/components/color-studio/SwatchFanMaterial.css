@@ -164,12 +164,51 @@
   mix-blend-mode: screen;
 }
 
-/* 双色幻彩 & 钻白（梦幻火山灰、妃子笑、黑魅红、金钻白、蓝钻白、时光金）：受光面绽放偏色，暗区保留纯正底色 */
+/* 梦幻火山灰（TPU-001B）：清透浅水泥灰底色 + 细密粉银云母闪粉，暗角纯净灰、受光面爆柔美樱花粉 */
+._hfm[data-e="volcanic"] {
+  background-image: linear-gradient(
+    158deg,
+    #b2b3b8 0%,
+    #a1a2a8 42%,
+    #93949b 74%,
+    #7f8188 100%
+  );
+}
+
+/* 梦幻火山灰微距细闪珠光粉层（还原实拍高密银粉闪耀颗粒） */
+._hfm[data-e="volcanic"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.65' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0 0 0 0 0 1 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0 0 0 0 0 0.72 0.85'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0 0 0 0 0 0.84 0.94'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23v)'/%3E%3C/svg%3E");
+  background-size: 92px 92px;
+  mix-blend-mode: screen;
+  opacity: 0.34;
+  -webkit-mask-image: linear-gradient(122deg, rgba(0, 0, 0, 0.25) 0%, #000 45%, rgba(0, 0, 0, 0.15) 90%);
+  mask-image: linear-gradient(122deg, rgba(0, 0, 0, 0.25) 0%, #000 45%, rgba(0, 0, 0, 0.15) 90%);
+}
+
+/* 双色幻彩 & 钻白（妃子笑、黑魅红、金钻白、蓝钻白、时光金）：受光面绽放偏色，暗区保留纯正底色 */
 ._hfm[data-e="bicolor"] ._hfm_r::before {
   background:
     radial-gradient(ellipse 36% 72% at 47% 45%, var(--_c4) 0%, transparent 68%),
     linear-gradient(114deg, transparent 31%, var(--_c4) 47%, transparent 64%);
   mix-blend-mode: screen;
+}
+
+/* 梦幻火山灰随角干涉及粉：收束在镜面高光带周围，确保卡片一半呈现纯净浅水泥灰、受光面爆出柔美樱花粉（拿起倾斜可全灰↔全粉流转） */
+._hfm[data-e="volcanic"] ._hfm_r::before {
+  background: linear-gradient(
+    118deg,
+    transparent 33%,
+    rgba(216, 146, 178, 0.42) 41%,
+    rgba(218, 112, 160, 0.88) 49%,
+    rgba(234, 152, 188, 0.90) 56%,
+    rgba(214, 148, 176, 0.36) 64%,
+    transparent 71%
+  );
+  mix-blend-mode: normal;
 }
 
 /* 极光变色龙（青魔、青岭苍岚、喀纳斯蓝）：多段薄膜干涉色带 */

@@ -58,15 +58,15 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
 
   const carbon = code.endsWith('FP') || code === 'TPU-CF';
   const laser = code === 'TPU-001L' || code === 'TPU-002L';
+  const volcanic = code === 'TPU-001B';
   const bicolor =
-    code === 'TPU-001B' ||
     code === 'TPU-002B' ||
     code === 'TPU-001C' ||
     code === 'TPU-001G' ||
     code === 'TPU-002G' ||
     code === 'TPU-003G';
   const chameleon =
-    swatch.finish === 'chameleon' && !bicolor;
+    swatch.finish === 'chameleon' && !bicolor && !volcanic;
   const metal =
     swatch.finish === 'metallic' || code.endsWith('A');
   const pearl = swatch.finish === 'pearlescent';
@@ -80,18 +80,20 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
         ? 's'
         : 'g';
 
-  // 颜料光学效应分层：laser=七彩镭射, chameleon=极光变色龙, bicolor=双色/钻白幻彩, metal=液态金属, pearl=云母珠光, solid=水晶单色
-  const effect: 'laser' | 'chameleon' | 'bicolor' | 'metal' | 'pearl' | 'solid' = laser
+  // 颜料光学效应分层：laser=七彩镭射, volcanic=梦幻火山灰(浅灰底受光爆粉珠光), chameleon=极光变色龙, bicolor=双色/钻白幻彩, metal=液态金属, pearl=云母珠光, solid=水晶单色
+  const effect: 'laser' | 'volcanic' | 'chameleon' | 'bicolor' | 'metal' | 'pearl' | 'solid' = laser
     ? 'laser'
-    : chameleon
-      ? 'chameleon'
-      : bicolor
-        ? 'bicolor'
-        : metal
-          ? 'metal'
-          : pearl
-            ? 'pearl'
-            : 'solid';
+    : volcanic
+      ? 'volcanic'
+      : chameleon
+        ? 'chameleon'
+        : bicolor
+          ? 'bicolor'
+          : metal
+            ? 'metal'
+            : pearl
+              ? 'pearl'
+              : 'solid';
 
   const isLightBase = relativeLuminance(base) > 0.68;
   const isDualToneMetal = code === 'TPU-001M' || code === 'TPU-002M';
@@ -153,35 +155,35 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
       ? isLightBase
         ? 0.56
         : 0.78
-      : chameleon
-        ? coat === 's'
-          ? 0.64
-          : 0.78
-        : bicolor
-          ? isLightBase
-            ? code === 'TPU-002B'
-              ? 0.44
-              : 0.38
-            : code === 'TPU-001B'
-              ? 0.68
+      : volcanic
+        ? 0.94
+        : chameleon
+          ? coat === 's'
+            ? 0.64
+            : 0.78
+          : bicolor
+            ? isLightBase
+              ? code === 'TPU-002B'
+                ? 0.44
+                : 0.38
               : 0.8
-          : pearl
-            ? coat === 'm'
-              ? 0.24
-              : isLightBase
-                ? 0.32
-                : 0.56
-            : metal
-              ? isDualToneMetal
-                ? code === 'TPU-002M'
-                  ? 0.5
-                  : 0.4
-                : coat === 'm'
-                  ? 0.12
-                  : coat === 's'
-                    ? 0.34
-                    : 0.46
-              : 0;
+            : pearl
+              ? coat === 'm'
+                ? 0.24
+                : isLightBase
+                  ? 0.32
+                  : 0.56
+              : metal
+                ? isDualToneMetal
+                  ? code === 'TPU-002M'
+                    ? 0.5
+                    : 0.4
+                  : coat === 'm'
+                    ? 0.12
+                    : coat === 's'
+                      ? 0.34
+                      : 0.46
+                : 0;
 
   // 清漆镜面反光强度（超哑绝不出现塑料亮条，丝缎呈柔宽绸缎光带，锻碳/碳纤呈高亮8.0mil湿润清漆，高光呈锐利玻璃镜面）
   const specOpacity =
@@ -191,9 +193,11 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
         ? 0.56
         : carbon
           ? 0.72
-          : metal
-            ? 0.84
-            : 0.88;
+          : volcanic
+            ? 0.92
+            : metal
+              ? 0.84
+              : 0.88;
 
   const variables: PaintVariables = {
     '--_c0': c0,
@@ -222,7 +226,7 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
       data-g={
         coat === 'm'
           ? 'm'
-          : metal
+          : metal || volcanic
             ? '1'
             : pearl || bicolor || chameleon || laser
               ? '2'

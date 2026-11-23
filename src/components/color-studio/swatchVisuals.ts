@@ -70,6 +70,20 @@ export function getSwatchOrbVisual(
     };
   }
 
+  if (code === 'TPU-001B') {
+    // 梦幻火山灰：清透浅水泥灰基底 + 受光穹顶柔美樱花粉珠光
+    return {
+      style: {
+        background:
+          'radial-gradient(circle at 28% 24%, rgba(255,255,255,0.58) 0%, #E79AB9 24%, #D972A2 44%, #A3A4AA 70%, #57585F 100%)',
+        boxShadow: isDrawer
+          ? 'inset -6px -8px 16px rgba(0,0,0,0.58), inset 4px 5px 12px rgba(255,255,255,0.28), 0 10px 24px rgba(0,0,0,0.8)'
+          : 'inset -3px -4px 8px rgba(0,0,0,0.52), 0 4px 10px rgba(0,0,0,0.5)',
+      },
+      specular: 'gloss',
+    };
+  }
+
   if (isLaser) {
     return {
       style: {

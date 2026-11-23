@@ -12,6 +12,7 @@ import { getCarbonTextureUrl, isCarbonSwatch } from './swatchVisuals';
 interface PaintUniforms {
   uPearlShiftColor: { value: THREE.Color };
   uPearlShiftStrength: { value: number };
+  uFacePearlStrength: { value: number };
   uFlopStrength: { value: number };
   uLaserStrength: { value: number };
   uCarbonStrength: { value: number };
@@ -74,6 +75,7 @@ export function createFilmMaterialController(
   const uniforms: PaintUniforms = {
     uPearlShiftColor: { value: new THREE.Color(initialSwatch.shiftHex || initialSwatch.hex) },
     uPearlShiftStrength: { value: 0 },
+    uFacePearlStrength: { value: 0 },
     uFlopStrength: { value: 0 },
     uLaserStrength: { value: 0 },
     uCarbonStrength: { value: 0 },
@@ -95,11 +97,12 @@ export function createFilmMaterialController(
     side: THREE.DoubleSide,
   });
 
-  material.customProgramCacheKey = () => 'hamorey-film-physical-v6';
+  material.customProgramCacheKey = () => 'hamorey-film-physical-v7';
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uPearlShiftColor = uniforms.uPearlShiftColor;
     shader.uniforms.uPearlShiftStrength = uniforms.uPearlShiftStrength;
+    shader.uniforms.uFacePearlStrength = uniforms.uFacePearlStrength;
     shader.uniforms.uFlopStrength = uniforms.uFlopStrength;
     shader.uniforms.uLaserStrength = uniforms.uLaserStrength;
     shader.uniforms.uCarbonStrength = uniforms.uCarbonStrength;
@@ -126,6 +129,7 @@ vCarbonNorm = normalize(mat3(modelMatrix) * objectNormal);`,
         `#include <common>
 uniform vec3 uPearlShiftColor;
 uniform float uPearlShiftStrength;
+uniform float uFacePearlStrength;
 uniform float uFlopStrength;
 uniform float uLaserStrength;
 uniform float uCarbonStrength;
@@ -159,7 +163,23 @@ varying vec3 vCarbonNorm;`,
     roughnessFactor = mix(0.38, 0.14, smoothstep(0.02, 0.22, luma));
   }
 
-  // Pearl / bicolor / chameleon / metallic shift (keep dark bases luminous)
+  // True half-vector interference pearl (volcanic ash: ~60% clean light volcanic grey, pink erupts tightly around light-reflection crests)
+  if (uFacePearlStrength > 0.001) {
+    vec3 wN = normalize(vCarbonNorm);
+    vec3 wV = normalize(cameraPosition - vCarbonPos);
+    vec3 keyL1 = normalize(vec3(0.42, 0.82, 0.39));
+    vec3 keyL2 = normalize(vec3(-0.48, 0.72, -0.50));
+    vec3 h1 = normalize(keyL1 + wV);
+    vec3 h2 = normalize(keyL2 + wV);
+    float lobe1 = pow(max(dot(wN, h1), 0.0), 3.8);
+    float lobe2 = pow(max(dot(wN, h2), 0.0), 4.2) * 0.72;
+    float pinkBand = smoothstep(0.22, 0.80, max(lobe1, lobe2));
+    // Keep volcanic grey clean & luminous off-axis; erupt into silky sakura-rose pink right on reflection crests
+    vec3 roseTint = mix(uPearlShiftColor, uPearlShiftColor * 1.15, smoothstep(0.55, 0.95, pinkBand));
+    diffuseColor.rgb = mix(diffuseColor.rgb, clamp(roseTint, 0.0, 1.0), pinkBand * uFacePearlStrength);
+  }
+
+  // Grazing-angle pearl / bicolor / chameleon / metallic shift (keep dark bases luminous)
   if (uPearlShiftStrength > 0.001) {
     float baseLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
     float shiftLuma = max(dot(uPearlShiftColor, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
@@ -221,12 +241,15 @@ varying vec3 vCarbonNorm;`,
       material.envMapIntensity = 1.08;
       material.normalScale.set(0, 0);
       uniforms.uPearlShiftStrength.value = 0;
+      uniforms.uFacePearlStrength.value = 0;
       uniforms.uFlopStrength.value = 0.22;
       uniforms.uLaserStrength.value = 0;
       return;
     }
 
     uniforms.uCarbonStrength.value = 0;
+    const isVolcanic = code === 'TPU-001B';
+    uniforms.uFacePearlStrength.value = isVolcanic ? 0.86 : 0;
 
     if (isMatte) {
       material.metalness = Math.min(p.metalness, finish === 'metallic' ? 0.32 : 0.08);
@@ -280,10 +303,18 @@ varying vec3 vCarbonNorm;`,
       uniforms.uPearlShiftStrength.value = isMatte ? 0.12 : 0.52;
       uniforms.uFlopStrength.value = isMatte ? 0.14 : 0.48;
     } else {
-      const scale = viewMode === 'macro' ? 0.09 : 0.045;
+      const scale = isVolcanic
+        ? viewMode === 'macro'
+          ? 0.14
+          : viewMode === 'sphere'
+            ? 0.068
+            : 0.055
+        : viewMode === 'macro'
+          ? 0.09
+          : 0.045;
       material.normalScale.set(scale, scale);
-      uniforms.uPearlShiftStrength.value = isLaser ? 0.18 : 0.76;
-      uniforms.uFlopStrength.value = isSatin ? 0.42 : 0.58;
+      uniforms.uPearlShiftStrength.value = isVolcanic ? 0 : isLaser ? 0.18 : 0.76;
+      uniforms.uFlopStrength.value = isVolcanic ? 0.22 : isSatin ? 0.42 : 0.58;
     }
   };
 
