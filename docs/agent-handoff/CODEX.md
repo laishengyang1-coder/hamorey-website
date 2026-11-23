@@ -135,3 +135,4 @@
 - **部署修正。** `scripts/tencent-production-deploy.sh` 以所需权限检查完整证书链与私钥。已签发的站点直接生成 HTTPS 配置，证书或私钥缺失时保留已有站点并报错。全新站点仍可完成首次签发。`.github/workflows/tencent-production.yml` 新增微信实际入口检查，并将作业时限调至 60 分钟，为跨区传输和上线验证预留时间。
 - **验收。** 公开入口、管理端、API 均通过系统信任链验证，www 正确跳转至主域名。源站按四个域名分别协商 TLS 1.2，证书校验均成功。API 的服务、数据库及对象存储健康检查均正常。微信开发者工具开启合法域名和证书校验后，从车主首页进入选色页，显示「卡其米兰 TPU-005S」和扇形色卡。官网和接口本地构建通过。
 - **复查办法。** 使用带证书验证的 `curl -fsS 'https://hemoppf.cn/color-studio?embed=miniprogram'` 检查页面包含 `id="root"`，再查 `https://api.hemoppf.cn/api/health`。若复现域名不匹配，先比对 Nginx 为该域名实际返回的证书和 `hamorey-cn/fullchain.pem`，并查最近一次发布状态。小程序包、业务域名及分享路径均无改动，无需重新提审；用户原手机待复核。
+- **正式发布回执。** 11:28 核对 [腾讯云发布 #277](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45103351576) 成功，服务器部署版本为 `84e731b8d025c88db5c31ccbad1d90fad58632dd`，和膜 HTTPS 站点已启用，微信入口及公网 API 再次验证通过。实际部署判断另经 11 个隔离场景回归，包括普通账号无法查看既有证书、私钥缺失及首次签发。
