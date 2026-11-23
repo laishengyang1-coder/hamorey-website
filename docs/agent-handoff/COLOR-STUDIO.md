@@ -1,6 +1,6 @@
 # 和膜 HAMOREY — 3D 高定选色工坊（Color Studio）跨 AI 同步与调用文档
 
-> 2026-11-20（V5 已更新，见第七节）。本文最初对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
+> 2026-11-23（V6 已更新，见第七节）。本文最初对应业务提交 `95028f491a67af1c445816ed22acb621fdaf796e`，覆盖官网选色、活动 H5 深链和小程序承载页接入。网站发布回执与本机观察分开记录。
 
 ## 一、官网入口与选色方式
 
@@ -57,8 +57,8 @@
 | `src/components/color-studio/studioGuard.ts` | FNV-1a 域名授权校验（仅放行 `hemoppf.cn`、`hhppf.com` 及其子域与本地调试地址）、色库解码、`HMRY` 加密车模容器解包、微信小程序环境综合检测与生产环境防右键/防快捷键护盾。 |
 | `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioFanLayout.css` | 维护共享色号、灯光、语言、工艺、选色单和深链；手机/小程序端采用不遮挡 3D 视口的顶部通栏胶囊条与安全区留白，弹窗或后台时自动暂停 WebGL 渲染。 |
 | `src/components/color-studio/SwatchFan.tsx`、`SwatchFan.css` | 弹簧阻尼物理扇形色卡（精简混淆类名 `_hfs*` / `--_*`），支持同向拖动、脱手惯性、双击拾取、滚轮与方向键。 |
-| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`（同一组件目录） | 由主色生成纯亮度色阶与 CSS 反射层（混淆类名 `_hfm*`）；锻碳/碳纤维读取 `public/color-studio/paint/tpu-001fp.webp`、`tpu-002fp.webp`、`tpu-cf.webp`。 |
-| `src/components/color-studio/ColorStudioCanvas.tsx`、`shaderballBuilder.ts`、`studioEnvironment.ts`、`filmMaterial.ts` | WebGL 舞台：支持 `.hmy` 加密车模流式拉取与内存解包、`shaderballBuilder.ts` 多曲率雕塑测试球 + 三阶刻度铭文展台、程序化棚拍 HDR 与物理车漆。 |
+| `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`、`swatchVisuals.ts`（同一组件目录） | 表层清漆（超哑/丝缎/高光/碳纤）与颜料光学（水晶/液态金属/珠光/双色/梦幻火山灰/极光变色龙/七彩镭射）双维分层渲染（混淆类名 `_hfm*`）；统一驱动色卡、底部色珠、色谱圆穹与选色单头图；三款实拍无缝细密碳纤纹理读取 `public/color-studio/paint/tpu-001fp.webp`、`tpu-002fp.webp`、`tpu-cf.webp`（`?v=20261123`）。 |
+| `src/components/color-studio/ColorStudioCanvas.tsx`、`shaderballBuilder.ts`、`studioEnvironment.ts`、`studioScenes.ts`、`filmMaterial.ts` | WebGL 舞台：支持 `.hmy` 加密车模与前后原厂钢琴黑和膜展车牌照、无畸变三套实景（柔光暗棚 / 极简白弧幕天窗展厅 / 真实 CC0 360° 落日苍穹 `sunset-360.jpg` + 沥青路面）、缝合竖缝的高定雕塑球体、物理车漆 V7（超哑/丝缎/深色爆红/镭射虹光/三平面实拍细密碳纤/梦幻火山灰 Blinn 半程矢量樱花粉珠光）。 |
 | `src/components/color-studio/ColorCatalogDrawer.tsx`、`ColorCardModal.tsx` | 色谱抽屉（移动端 16px 防 iOS 放大输入框 + 连续彩虹色谱条）；选色单支持桌面直接下载 PNG、手机/微信 `<web-view>` 弹出可长按保存大图预览及 `wx.miniProgram.postMessage` 回传色号。 |
 | `src/App.tsx`、`src/pages/ColorPPFPage.tsx` | 工坊与产品页**均为独立异步路由**（`React.lazy`）。 |
 | `src/config/products.ts` | 保留原产品结构及早期 `HC/HM/HP` 20 色兼容数组。现行选色页和产品页统一读取 `colorStudio.ts`。 |
@@ -129,6 +129,22 @@ node scripts/pack-color-studio-assets.mjs pack-model /tmp/candidate.glb public/m
 ---
 
 ## 七、验证记录
+
+### 2026-11-23 V6 改色产品页重塑、双车展车牌照、无畸变三场景、全工艺材质与实拍碳纤/梦幻火山灰校准（Antigravity）
+
+基线 `22eea36`（并保留期间 Codex 的 `d85b2d0` 窗膜侧挡额度与 `84e731b` 生产 HTTPS 保护修复）。业务提交链路：`e8b990e` → `6b90ff6` → `f14f5e5` / `0ac728a` → `85c1017` / `2f1ba74` / `904f818` → `7e6ccea` → `40529bb` → **`4dd4c5b`**，最终腾讯云自动部署 Run [45136411337](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45136411337) 于北京时间 16:49:54 **Success**。
+
+- **产品页与选色轨体验（`e8b990e`、`6b90ff6`）**：底部色珠轨补齐桌面鼠标拖拽横滑、滚轮横向映射与左右翻页箭头；`/products/color-ppf` 全面改版为曜石黑 × 香槟金高定选色台 + 五大工艺卡 + 5 层真 TPU 架构 + TPU vs PVC 对比。
+- **原厂钢琴黑和膜展车牌照（`f14f5e5`、`0ac728a`）**：为 Model 3 焕新版与 Model Y 焕新版前后精准射线贴合官方 `HAMOREY 和膜` Logo 极简钢琴黑牌照，完整遮盖 Model Y 前杠灰底牌照框。
+- **无畸变三套 3D 场景 & 曲面反光修复（`85c1017`、`904f818`）**：淘汰会产生地面漩涡畸变的 2D `GroundedSkybox`，升级为暗黑柔光影棚、极简建筑白弧幕五天窗展厅、以及真实 CC0 360° 落日天空球（`public/color-studio/scenes/sunset-360.jpg`，`57,359 B`）+ 平面反射沥青路；通过 `weldLatheSeamNormals` 消除雕塑球体 0°/360° 竖缝；经 5 组隔离排查移除导致 Model 3 翼子板 6 齿锯齿的法线重焊，改用柔化 HDR 羽化与整车清漆粗糙度下限（`>=0.11`）。
+- **全工艺分层光学 + 55+ 色精准校色 + 实拍碳纤与梦幻火山灰（`7e6ccea`、`40529bb`、`4dd4c5b`）**：
+  - 色卡与底部色珠、色谱抽屉、选色单头图通过 `swatchVisuals.ts` + `SwatchFanMaterial` 严格区分超哑（去亮条/磨砂微肌理/去亮边）、丝缎（宽幅柔焦绸光）、液态金属（强 flop + 受光脊线遮罩微闪，彻底淘汰 6px 网格点）、珠光、极光变色龙与七彩镭射（浅白底改 `normal` 透叠防发白）；加密色仓 `colorStudioVault.ts` 重新校准 55+ 非水晶色号并保持产包零明文泄漏。
+  - 从用户实拍 `TPU-001FP` / `TPU-002FP` / `TPU-CF` 实膜照片提取无接缝细密高精纹理（`tpu-001fp.webp` `100,278 B`、`tpu-002fp.webp` `84,962 B`、`tpu-cf.webp` `13,074 B`，带 `?v=20261123`），并升级 `filmMaterial.ts`（V7）支持世界空间三平面实拍碳纤采样与湿润 8.0 mil 清漆。
+  - 对照用户实拍 6 视角重塑 `TPU-001B 梦幻火山灰`：校准清透浅水泥灰底色（`#9E9FA5`）与樱花玫瑰粉偏色（`#DA76A5`）、100% 镜面高光清漆、色卡半灰半粉随角干涉与微距粉银细闪，并在 3D 着色器采用 Blinn 半程矢量薄膜干涉算法（约 60% 保持纯净浅灰，迎光折角脊线实时爆出樱花粉）。
+- **线上实测核验（2026-11-23 16:50 Asia/Shanghai）**：
+  - 入口脚本 `assets/index-CI9Mh_G_.js` 与 `4dd4c5b` 本地构建一致；`/color-studio?code=TPU-001B&mode=car`、`/color-studio/`、`/products/color-ppf` 均 `HTTP/2 200`；
+  - `tpu-001fp.webp?v=20261123`（`100,278 B`）、`tpu-002fp.webp?v=20261123`（`84,962 B`）、`tpu-cf.webp?v=20261123`（`13,074 B`）、`sunset-360.jpg`（`57,359 B`）均 `HTTP/2 200`；
+  - `https://api.hemoppf.cn/api/health` 返回 `api/mysql/cos` 全 `ok`。
 
 ### 2026-11-20 V5 雕塑球体、代码审查、手机/小程序适配与防 AI 复刻加密（Antigravity）
 

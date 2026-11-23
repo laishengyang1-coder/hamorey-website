@@ -317,3 +317,37 @@
 - 后续新增/调整 103 色请通过 `node scripts/pack-color-studio-assets.mjs pack-swatches <json>` 更新 `colorStudioVault.ts`，勿直接提交明文大色表；替换车模请用 `pack-model` 生成 `.hmy` 并同步更新 `?v=YYYYMMDD`。
 - `studioGuard.ts` 已包含 FNV-1a 域名哈希白名单（`hemoppf.cn`、`hhppf.com`、`localhost`、`127.0.0.1` 及其子域）；若未来新增正式域名，需在 `studioGuard.ts` 添加对应哈希并在 `tencent-production-deploy.sh` 的 `valid_referers` 放行。
 - 微信真机内长按保存选色图与好友转发仍待实机点验。
+
+## 2026-11-23：3D 高定选色工坊 V6（产品页重塑、双车展车牌、无畸变三场景、全工艺光学升级与实拍碳纤/梦幻火山灰校准，已上线）
+
+- **用户需求**：补齐底部色珠横向滑动体验；改版 `/products/color-ppf` 改色产品页；为两款展车前后安装和膜官方牌照；解决展厅/落日 3D 场景畸变、球体竖缝、翼子板锯齿反光与色卡金属点阵网格；重塑超哑/丝缎/金属/珠光/变色龙/镭射全工艺光学质感与 55+ 色准确校色；按实拍样板照片重制幽冥黑/黑锻碳/碳纤维(黑)超细无缝纹理与梦幻火山灰六视角随角变色效果，并部署上线。
+- **基线**：`22eea36`（完整保留期间 Codex `d85b2d0` 窗膜侧挡额度与 `84e731b` 生产 HTTPS 保护修复）。**最终业务提交**：`4dd4c5b`（链路 `e8b990e` → `6b90ff6` → `0ac728a` → `904f818` → `7e6ccea` → `40529bb` → `4dd4c5b`）。
+- **范围**：仅官网前端 `src/` 与静态展厅资产 `public/color-studio/` 及交接文档；未触碰 `miniprogram/`、`functions/`、`server/`、`migrations/` 与 `scripts/warranty-years.lock.json`。
+
+### 改动清单
+
+| 模块 | 核心改动 | 涉及文件 |
+|---|---|---|
+| 产品页与色轨交互 | 底部色珠支持鼠标拖拽、滚轮横滑与左右箭头；`/products/color-ppf` 升级为黑曜石高定选色台 + 五大工艺卡 + 5 层 TPU 架构 + TPU vs PVC 对比 | `ColorStudioPage.tsx`、`ColorPPFPage.tsx` |
+| 展车牌照与三场景 | Model 3 / Model Y 前后精准贴装极简钢琴黑和膜展车牌；淘汰畸变 `GroundedSkybox`，升级柔光暗棚 / 白弧幕天窗展厅 / CC0 360° 落日苍穹（`sunset-360.jpg`）+ 沥青路；`weldLatheSeamNormals` 消除球体竖缝；移除致锯齿法线重焊并柔化 HDRI | `ColorStudioCanvas.tsx`、`studioScenes.ts`、`studioEnvironment.ts`、`shaderballBuilder.ts`、`public/color-studio/scenes/sunset-360.jpg` |
+| 全工艺色卡与校色 | 表层光泽（超哑/丝缎/高光/碳纤）与颜料光学（金属/珠光/双色/梦幻火山灰/变色龙/镭射）解耦；消除 6px 网格点改有机 `feTurbulence` 颗粒与受光遮罩微闪；浅白底改 `normal` 透叠；加宽反射层防斜卡截断边；校准 55+ 非水晶色号并加密入库 | `SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`、`SwatchFan.tsx`、`SwatchFan.css`、`swatchVisuals.ts`、`ColorCatalogDrawer.tsx`、`ColorCardModal.tsx`、`colorStudioVault.ts` |
+| 实拍细密碳纤 & 梦幻火山灰 3D 材质 | 从实拍样板提取无缝细密 `tpu-001fp.webp` / `tpu-002fp.webp` / `tpu-cf.webp`（`?v=20261123`）；`filmMaterial.ts`（V7）新增世界空间三平面实拍碳纤采样与梦幻火山灰 Blinn 半程矢量薄膜干涉（约 60% 浅水泥灰、迎光折角脊线爆樱花粉） | `filmMaterial.ts`、`public/color-studio/paint/tpu-*.webp`、`swatchVisuals.ts`、`SwatchFanMaterial.*` |
+
+### 检查与线上核验（2026-11-23 16:50 Asia/Shanghai）
+
+- **本地验证**：`npm run test:contracts`（65 项）、`npm run build`（含 40 项质保年限与 SPA 校验）、`npm --prefix server run build` 全通；`dist/assets/ColorStudio*.js` 零明文色表泄漏；本地 Chrome 桌面端多轮逐类（超哑/丝缎/金属/珠光/双色/变色龙/镭射/三款碳纤/梦幻火山灰六视角）及 3D 整车/展厅/球体实测 0 控制台/WebGL 报错。
+- **腾讯云部署**：`904f818`（Run `45124232902`）、`7e6ccea`（Run `45133460852`）、`40529bb`（Run `45134807763`）、`4dd4c5b`（Run [45136411337](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45136411337)）全部 **Success**。
+- **线上核验**：入口脚本 `assets/index-CI9Mh_G_.js` 与 `4dd4c5b` 一致；`/color-studio?code=TPU-001B&mode=car`、`/color-studio/`、`/products/color-ppf` 均 `HTTP/2 200`；`tpu-001fp.webp?v=20261123`（`100,278 B`）、`tpu-002fp.webp?v=20261123`（`84,962 B`）、`tpu-cf.webp?v=20261123`（`13,074 B`）、`sunset-360.jpg`（`57,359 B`）均 `HTTP/2 200`；`https://api.hemoppf.cn/api/health` 返回 `api/mysql/cos` 全 `ok`。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| Git 提交 / 推送 | ✅ `4dd4c5b`（含前序 `e8b990e`..`40529bb`）已推送 `origin/main` |
+| 网站部署 | ✅ Run `45136411337` Success，线上资源与 API 健康核验通过 |
+| 小程序 | ❌ 本轮未改 `miniprogram/`（`<web-view>` 直连线上域名自动同步生效） |
+
+### 对其他执行方的影响
+
+- 切勿对 Model 3 车漆网格 `body-shell-9` 重新启用基于位置桶焊接的 `smoothPaintNormals`（会导致右前翼子板 6 齿锯齿反光）；也切勿将普通 16:9 透视照片塞入 `GroundedSkybox`（会导致地面漩涡畸变）。
+- `public/color-studio/paint/tpu-*.webp` 已设为 7 天缓存，若后续再次更新需同步递增 `swatchVisuals.ts` 中的 `CARBON_TEX_VERSION` 与 `SwatchFanMaterial.tsx` 中的 `?v=` 版本号。
