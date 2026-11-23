@@ -434,9 +434,10 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     scene.add(carGroup);
     runtimeRef.current.carGroup = carGroup;
 
-    // 三大 3D 实景展厅（暗夜柔光影棚 / 极昼美术馆展厅 / 海岸落日观景台）
+    // 三大 3D 实景展厅（暗夜柔光影棚 / 极昼美术馆 GroundedSkybox / 海岸落日 GroundedSkybox）
     const sceneManager = createStudioSceneManager(
       scene,
+      floorMesh,
       floorMat,
       floorGlowMat,
       shadowPlaneMat,
