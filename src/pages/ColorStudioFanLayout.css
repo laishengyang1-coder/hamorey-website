@@ -123,13 +123,13 @@
 }
 ._hsl_p[data-scene='gallery'] ._hsl_st {
   background:
-    linear-gradient(180deg, rgba(235, 238, 244, 0.25) 0%, rgba(215, 220, 228, 0.12) 100%),
-    url('/color-studio/scenes/gallery-360.jpg?v=20261123') center / cover no-repeat;
+    radial-gradient(ellipse 72% 52% at 50% 18%, rgba(255, 255, 255, 0.94) 0%, rgba(226, 232, 240, 0.65) 48%, transparent 82%),
+    linear-gradient(180deg, #eef2f7 0%, #dce2ea 55%, #c8d0dc 100%);
 }
 ._hsl_p[data-scene='sunset'] ._hsl_st {
   background:
-    linear-gradient(180deg, rgba(16, 14, 22, 0.22) 0%, rgba(16, 12, 16, 0.35) 100%),
-    url('/color-studio/scenes/sunset-360.jpg?v=20261123') center / cover no-repeat;
+    linear-gradient(180deg, rgba(16, 22, 38, 0.2) 0%, rgba(16, 20, 32, 0.35) 100%),
+    url('/color-studio/scenes/sunset-360.jpg?v=20261123b') center / cover no-repeat;
 }
 ._hsl_p > footer {
   grid-row: 4;

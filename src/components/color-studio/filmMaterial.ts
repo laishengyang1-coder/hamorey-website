@@ -100,7 +100,11 @@ uniform float uFlopStrength;`,
     // 底漆粗糙度保持一定漫反射，使颜色由「色」而非「反光」主导
     material.roughness = Math.max(p.roughness, finish === 'crystal' ? 0.32 : 0.24);
     material.clearcoat = p.clearcoat;
-    material.clearcoatRoughness = p.clearcoatRoughness;
+    // 整车/近景：车模面数有限，镜面级清漆会把灯箱边缘沿三角面拆成锯齿，适度柔化清漆反射
+    const isVehicleView = viewMode === 'car' || viewMode === 'closeup';
+    material.clearcoatRoughness = isVehicleView
+      ? Math.max(p.clearcoatRoughness, 0.11)
+      : p.clearcoatRoughness;
     material.envMapIntensity = finish === 'crystal' ? 0.9 : 1.0;
 
     if (viewMode === 'macro') {

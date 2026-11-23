@@ -1,20 +1,16 @@
 // ============================================================
-// 和膜 HAMOREY — 三大沉浸式 3D 实景展厅（柔光影棚 / 极昼美术馆 / 海岸落日）
-// 展厅与落日采用 Three.js 官方 GroundedSkybox 地面投影实景穹顶，车轮直落真实地面
+// 和膜 HAMOREY — 三大高定 3D 展厅场景（暗夜柔光影棚 / 极简白棚展厅 / 黄金落日天际）
+// 告别球面贴图地面畸变：全部采用真实平整 3D 地面 + 建筑级穹顶灯光 / CC0 实拍 360° 落日天穹
 // ============================================================
 
 import * as THREE from 'three';
-import { GroundedSkybox } from 'three/examples/jsm/objects/GroundedSkybox.js';
 import type { StudioLightingPreset, StudioViewMode } from '../../config/colorStudio';
 
 type WebGLViewMode = Exclude<StudioViewMode, 'swatch'>;
 
-const SCENE_PANORAMA_URLS: Record<'gallery' | 'sunset', string> = {
-  gallery: '/color-studio/scenes/gallery-360.jpg?v=20261123',
-  sunset: '/color-studio/scenes/sunset-360.jpg?v=20261123',
-};
+const SUNSET_SKY_URL = '/color-studio/scenes/sunset-360.jpg?v=20261123b';
 
-function createStudioDomeTexture(): THREE.CanvasTexture {
+function createStudioCycloramaTexture(): THREE.CanvasTexture {
   const w = 1024;
   const h = 512;
   const canvas = document.createElement('canvas');
@@ -26,27 +22,56 @@ function createStudioDomeTexture(): THREE.CanvasTexture {
     const bg = ctx.createLinearGradient(0, 0, 0, h);
     bg.addColorStop(0.0, '#07080c');
     bg.addColorStop(0.32, '#0e1017');
-    bg.addColorStop(0.52, '#171922');
-    bg.addColorStop(0.64, '#0c0d12');
+    bg.addColorStop(0.50, '#181b24');
+    bg.addColorStop(0.62, '#0c0d12');
     bg.addColorStop(1.0, '#050608');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
 
-    const horizonGlow = ctx.createLinearGradient(0, h * 0.38, 0, h * 0.62);
+    const horizonGlow = ctx.createLinearGradient(0, h * 0.38, 0, h * 0.60);
     horizonGlow.addColorStop(0, 'rgba(201, 168, 106, 0)');
     horizonGlow.addColorStop(0.5, 'rgba(201, 168, 106, 0.08)');
     horizonGlow.addColorStop(1, 'rgba(201, 168, 106, 0)');
     ctx.fillStyle = horizonGlow;
-    ctx.fillRect(0, h * 0.38, w, h * 0.24);
+    ctx.fillRect(0, h * 0.38, w, h * 0.22);
+  }
 
-    for (const cx of [w * 0.22, w * 0.5, w * 0.78]) {
-      const grad = ctx.createRadialGradient(cx, h * 0.22, 8, cx, h * 0.22, 160);
-      grad.addColorStop(0, 'rgba(245, 240, 232, 0.14)');
-      grad.addColorStop(0.5, 'rgba(205, 212, 228, 0.04)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(cx - 180, 0, 360, h * 0.45);
-    }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * 保时捷 / 小米 EV 官方选车器风格：极简无影白棚建筑穹顶（零畸变、零杂物、高级冷白银渐变）
+ */
+function createWhiteShowroomCycloramaTexture(): THREE.CanvasTexture {
+  const w = 1024;
+  const h = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  if (ctx) {
+    const bg = ctx.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0.0, '#f3f5f8');
+    bg.addColorStop(0.28, '#e8ecf2');
+    bg.addColorStop(0.49, '#dce2ea');
+    bg.addColorStop(0.52, '#d2d8e2');
+    bg.addColorStop(0.76, '#dbe0e8');
+    bg.addColorStop(1.0, '#c8cfd9');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    // 柔和环形展厅漫射天光带
+    const band = ctx.createLinearGradient(0, h * 0.24, 0, h * 0.48);
+    band.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    band.addColorStop(0.5, 'rgba(255, 255, 255, 0.42)');
+    band.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, h * 0.24, w, h * 0.24);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -72,22 +97,32 @@ export function createStudioSceneManager(
   let currentPreset: StudioLightingPreset = 'studio';
   let currentMode: WebGLViewMode = 'car';
 
-  const studioDomeTex = createStudioDomeTexture();
-  const studioSkyGeo = new THREE.SphereGeometry(32, 48, 28);
-  const studioSkyMat = new THREE.MeshBasicMaterial({
+  const studioDomeTex = createStudioCycloramaTexture();
+  const galleryDomeTex = createWhiteShowroomCycloramaTexture();
+  let sunsetSkyTex: THREE.Texture | null = null;
+  let sunsetLoading = false;
+
+  // 共享 360° 无畸变远景穹顶（地面由真实平整 3D 地板承载，绝不产生球面漩涡畸变）
+  const skyGeo = new THREE.SphereGeometry(40, 48, 28);
+  const skyMat = new THREE.MeshBasicMaterial({
     map: studioDomeTex,
     side: THREE.BackSide,
     depthWrite: false,
     fog: false,
   });
-  const studioSkyMesh = new THREE.Mesh(studioSkyGeo, studioSkyMat);
-  studioSkyMesh.renderOrder = -10;
-  scene.add(studioSkyMesh);
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  skyMesh.renderOrder = -10;
+  scene.add(skyMesh);
 
-  // 暗夜柔光影棚装置（顶部柔光灯箱 + 地面香槟金细环）
+  const disposablesGeo: THREE.BufferGeometry[] = [skyGeo];
+  const disposablesMat: THREE.Material[] = [skyMat];
+
+  // --- 场景 1：暗夜柔光影棚装置（3 道悬吊磨砂柔光灯箱 + 地面香槟金转盘细环） ---
   const studioProps = new THREE.Group();
   const softboxGeo = new THREE.BoxGeometry(5.6, 0.08, 0.52);
   const softboxMat = new THREE.MeshBasicMaterial({ color: '#f3eee6', fog: false });
+  disposablesGeo.push(softboxGeo);
+  disposablesMat.push(softboxMat);
   for (const zPos of [-1.85, 0, 1.85]) {
     const bar = new THREE.Mesh(softboxGeo, softboxMat);
     bar.position.set(0, 5.2, zPos);
@@ -101,76 +136,121 @@ export function createStudioSceneManager(
     opacity: 0.34,
     depthWrite: false,
   });
+  disposablesGeo.push(studioRingGeo);
+  disposablesMat.push(studioRingMat);
   const studioRing = new THREE.Mesh(studioRingGeo, studioRingMat);
   studioRing.position.y = 0.003;
   studioProps.add(studioRing);
   scene.add(studioProps);
 
-  // 实景地面投影阴影接收层（仅在展厅/落日实景下启用，将车辆真实投影落到微水泥/沥青地面上）
+  // --- 场景 2：极简白棚美术馆装置（顶部 5 道建筑线性天窗灯阵 + 地面拉丝钛银圆盘镶线） ---
+  const galleryProps = new THREE.Group();
+  const louverGeo = new THREE.BoxGeometry(6.8, 0.07, 0.46);
+  const louverMat = new THREE.MeshBasicMaterial({ color: '#ffffff', fog: false });
+  const louverFrameGeo = new THREE.BoxGeometry(7.0, 0.09, 0.56);
+  const louverFrameMat = new THREE.MeshStandardMaterial({
+    color: '#c4cbd6',
+    roughness: 0.55,
+    metalness: 0.15,
+  });
+  disposablesGeo.push(louverGeo, louverFrameGeo);
+  disposablesMat.push(louverMat, louverFrameMat);
+  for (const zPos of [-3.2, -1.6, 0, 1.6, 3.2]) {
+    const frame = new THREE.Mesh(louverFrameGeo, louverFrameMat);
+    frame.position.set(0, 5.45, zPos);
+    galleryProps.add(frame);
+    const panel = new THREE.Mesh(louverGeo, louverMat);
+    panel.position.set(0, 5.40, zPos);
+    galleryProps.add(panel);
+  }
+  // 精致的展车圆形转盘双银线（克制高定，无任何突兀几何体）
+  const galleryOuterRingGeo = new THREE.RingGeometry(3.26, 3.30, 128);
+  galleryOuterRingGeo.rotateX(-Math.PI / 2);
+  const galleryOuterRingMat = new THREE.MeshBasicMaterial({
+    color: '#9aa4b2',
+    transparent: true,
+    opacity: 0.48,
+    depthWrite: false,
+  });
+  const galleryInnerRingGeo = new THREE.RingGeometry(2.96, 2.98, 128);
+  galleryInnerRingGeo.rotateX(-Math.PI / 2);
+  const galleryInnerRingMat = new THREE.MeshBasicMaterial({
+    color: '#b5becb',
+    transparent: true,
+    opacity: 0.36,
+    depthWrite: false,
+  });
+  disposablesGeo.push(galleryOuterRingGeo, galleryInnerRingGeo);
+  disposablesMat.push(galleryOuterRingMat, galleryInnerRingMat);
+  const gOuter = new THREE.Mesh(galleryOuterRingGeo, galleryOuterRingMat);
+  gOuter.position.y = 0.003;
+  const gInner = new THREE.Mesh(galleryInnerRingGeo, galleryInnerRingMat);
+  gInner.position.y = 0.003;
+  galleryProps.add(gOuter, gInner);
+  galleryProps.visible = false;
+  scene.add(galleryProps);
+
+  // 展厅/落日下的真实方向光阴影接收层
   const shadowCatcherGeo = new THREE.PlaneGeometry(14, 14);
   shadowCatcherGeo.rotateX(-Math.PI / 2);
   const shadowCatcherMat = new THREE.ShadowMaterial({
-    opacity: 0.38,
+    opacity: 0.24,
     depthWrite: false,
   });
+  disposablesGeo.push(shadowCatcherGeo);
+  disposablesMat.push(shadowCatcherMat);
   const shadowCatcher = new THREE.Mesh(shadowCatcherGeo, shadowCatcherMat);
   shadowCatcher.position.y = 0.001;
   shadowCatcher.receiveShadow = true;
   shadowCatcher.visible = false;
   scene.add(shadowCatcher);
 
-  // 延迟按需加载 360° 实景 GroundedSkybox（极昼美术馆 & 海岸落日）
   const textureLoader = new THREE.TextureLoader();
-  const skyboxes: Partial<Record<'gallery' | 'sunset', GroundedSkybox>> = {};
-  const loadedTextures: THREE.Texture[] = [];
-  const loadingSet = new Set<'gallery' | 'sunset'>();
 
-  const syncVisibility = () => {
+  const syncScene = () => {
     const showCarProps = currentMode === 'car' || currentMode === 'closeup';
-    const activeSkybox =
-      currentPreset === 'gallery' || currentPreset === 'sunset'
-        ? skyboxes[currentPreset]
-        : undefined;
-
-    studioSkyMesh.visible = !activeSkybox;
+    floorMesh.visible = true;
     studioProps.visible = showCarProps && currentPreset === 'studio';
-    floorMesh.visible = !activeSkybox;
-    shadowCatcher.visible = showCarProps && Boolean(activeSkybox);
-
-    for (const key of ['gallery', 'sunset'] as const) {
-      const box = skyboxes[key];
-      if (!box) continue;
-      const isActive = currentPreset === key;
-      box.visible = isActive;
-      if (isActive) {
-        // 整车模式下将地面精确投影至 y=0；球体/微距模式下略降高度让背景景深居中
-        const groundHeight = key === 'gallery' ? 2.4 : 2.15;
-        box.position.y = showCarProps ? groundHeight : 1.35;
-      }
-    }
+    galleryProps.visible = showCarProps && currentPreset === 'gallery';
+    shadowCatcher.visible = showCarProps && currentPreset !== 'studio';
 
     if (currentPreset === 'gallery') {
-      floorGlowMat.opacity = 0.05;
-      shadowPlaneMat.opacity = 0.58;
-      shadowCatcherMat.opacity = 0.32;
+      skyMat.map = galleryDomeTex;
+      skyMesh.rotation.y = 0;
+      floorMat.color.set('#dce2ea');
+      floorMat.roughness = 0.36;
+      floorMat.metalness = 0.04;
+      floorMat.envMapIntensity = 0.38;
+      floorGlowMat.opacity = 0.04;
+      shadowPlaneMat.opacity = 0.52;
+      shadowCatcherMat.opacity = 0.22;
       if (scene.fog instanceof THREE.FogExp2) {
-        scene.fog.color.set('#cfd4dc');
-        scene.fog.density = 0.004;
+        scene.fog.color.set('#dce2ea');
+        scene.fog.density = 0.022;
       }
     } else if (currentPreset === 'sunset') {
+      skyMat.map = sunsetSkyTex ?? studioDomeTex;
+      // 调整实拍落日天穹方位，让默认 3/4 车头机位正好看到柔和落日金辉地平线
+      skyMesh.rotation.y = Math.PI * 0.42;
+      // 平整深蓝灰倒影沥青/盐湖质感地面，自然融入落日天际线
+      floorMat.color.set('#2b3242');
+      floorMat.roughness = 0.22;
+      floorMat.metalness = 0.28;
+      floorMat.envMapIntensity = 0.85;
       floorGlowMat.opacity = 0.14;
-      shadowPlaneMat.opacity = 0.78;
-      shadowCatcherMat.opacity = 0.46;
+      shadowPlaneMat.opacity = 0.72;
+      shadowCatcherMat.opacity = 0.34;
       if (scene.fog instanceof THREE.FogExp2) {
-        scene.fog.color.set('#2a1c22');
-        scene.fog.density = 0.005;
+        scene.fog.color.set('#58657d');
+        scene.fog.density = 0.018;
       }
     } else {
+      skyMat.map = studioDomeTex;
+      skyMesh.rotation.y = 0;
       floorMat.color.set('#08090d');
       floorMat.roughness = 0.58;
       floorMat.metalness = 0.05;
       floorMat.envMapIntensity = 0.24;
-      floorMat.needsUpdate = true;
       floorGlowMat.opacity = 0.22;
       shadowPlaneMat.opacity = 0.86;
       if (scene.fog instanceof THREE.FogExp2) {
@@ -178,16 +258,17 @@ export function createStudioSceneManager(
         scene.fog.density = 0.032;
       }
     }
+    skyMat.needsUpdate = true;
+    floorMat.needsUpdate = true;
   };
 
-  const ensurePhotoSkybox = (key: 'gallery' | 'sunset') => {
-    if (skyboxes[key] || loadingSet.has(key)) return;
-    loadingSet.add(key);
-
+  const ensureSunsetSky = () => {
+    if (sunsetSkyTex || sunsetLoading) return;
+    sunsetLoading = true;
     textureLoader.load(
-      SCENE_PANORAMA_URLS[key],
+      SUNSET_SKY_URL,
       (tex) => {
-        loadingSet.delete(key);
+        sunsetLoading = false;
         if (disposed) {
           tex.dispose();
           return;
@@ -196,26 +277,12 @@ export function createStudioSceneManager(
         tex.mapping = THREE.EquirectangularReflectionMapping;
         tex.anisotropy = 4;
         tex.needsUpdate = true;
-        loadedTextures.push(tex);
-
-        const groundHeight = key === 'gallery' ? 2.4 : 2.15;
-        const skybox = new GroundedSkybox(tex, groundHeight, 34, 64);
-        skybox.position.y = groundHeight;
-        // 调整初始水平方位角，使默认 3/4 车头机位正对建筑玻璃庭院 / 落日海平面主景
-        skybox.rotation.y = key === 'gallery' ? Math.PI * 0.78 : Math.PI * 0.72;
-        if (skybox.material instanceof THREE.MeshBasicMaterial) {
-          skybox.material.fog = false;
-        }
-        skybox.renderOrder = -9;
-        skybox.visible = false;
-
-        skyboxes[key] = skybox;
-        scene.add(skybox);
-        syncVisibility();
+        sunsetSkyTex = tex;
+        syncScene();
       },
       undefined,
       () => {
-        loadingSet.delete(key);
+        sunsetLoading = false;
       },
     );
   };
@@ -223,34 +290,22 @@ export function createStudioSceneManager(
   const applyPreset = (preset: StudioLightingPreset, viewMode: WebGLViewMode) => {
     currentPreset = preset;
     currentMode = viewMode;
-    if (preset === 'gallery' || preset === 'sunset') {
-      ensurePhotoSkybox(preset);
+    if (preset === 'sunset') {
+      ensureSunsetSky();
     }
-    syncVisibility();
+    syncScene();
   };
 
   const dispose = () => {
     disposed = true;
     studioDomeTex.dispose();
-    studioSkyGeo.dispose();
-    studioSkyMat.dispose();
-    softboxGeo.dispose();
-    softboxMat.dispose();
-    studioRingGeo.dispose();
-    studioRingMat.dispose();
-    shadowCatcherGeo.dispose();
-    shadowCatcherMat.dispose();
-    loadedTextures.forEach((t) => t.dispose());
-    for (const key of ['gallery', 'sunset'] as const) {
-      const box = skyboxes[key];
-      if (!box) continue;
-      box.geometry.dispose();
-      if (Array.isArray(box.material)) box.material.forEach((m) => m.dispose());
-      else box.material.dispose();
-      scene.remove(box);
-    }
-    scene.remove(studioSkyMesh);
+    galleryDomeTex.dispose();
+    sunsetSkyTex?.dispose();
+    disposablesGeo.forEach((g) => g.dispose());
+    disposablesMat.forEach((m) => m.dispose());
+    scene.remove(skyMesh);
     scene.remove(studioProps);
+    scene.remove(galleryProps);
     scene.remove(shadowCatcher);
   };
 

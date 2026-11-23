@@ -12,6 +12,34 @@ export interface LuxuryShaderballResources {
 }
 
 /**
+ * 缝合 LatheGeometry 在 phi=0 与 phi=2π 首尾列的顶点法线，彻底消除球体与底座上的竖向接缝线
+ */
+function weldLatheSeamNormals(
+  geo: THREE.LatheGeometry,
+  profileCount: number,
+  segments: number,
+): void {
+  geo.computeVertexNormals();
+  const norm = geo.getAttribute('normal');
+  if (!norm) return;
+  const lastColOffset = segments * profileCount;
+  for (let row = 0; row < profileCount; row++) {
+    const i0 = row;
+    const i1 = lastColOffset + row;
+    const nx = norm.getX(i0) + norm.getX(i1);
+    const ny = norm.getY(i0) + norm.getY(i1);
+    const nz = norm.getZ(i0) + norm.getZ(i1);
+    const len = Math.hypot(nx, ny, nz) || 1;
+    const ux = nx / len;
+    const uy = ny / len;
+    const uz = nz / len;
+    norm.setXYZ(i0, ux, uy, uz);
+    norm.setXYZ(i1, ux, uy, uz);
+  }
+  norm.needsUpdate = true;
+}
+
+/**
  * 构建带精确腰线折角的高定车漆雕塑球壳（LatheGeometry 剖面）
  * - 上半部大曲率圆穹：检验清漆镜面通透度与柔光过渡
  * - 赤道内收倒角槽：检验金属漆随角异色（flop）与珠光折角色彩流转
@@ -64,7 +92,7 @@ function buildSculptedPaintShellGeometry(): THREE.LatheGeometry {
   pts[pts.length - 1].set(0, radius);
 
   const geo = new THREE.LatheGeometry(pts, 96);
-  geo.computeVertexNormals();
+  weldLatheSeamNormals(geo, pts.length, 96);
   return geo;
 }
 
@@ -87,7 +115,7 @@ function buildPedestalGeometry(): THREE.LatheGeometry {
     new THREE.Vector2(0.0, -0.12),
   ];
   const geo = new THREE.LatheGeometry(pts, 96);
-  geo.computeVertexNormals();
+  weldLatheSeamNormals(geo, pts.length, 96);
   return geo;
 }
 

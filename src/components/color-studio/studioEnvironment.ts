@@ -58,8 +58,10 @@ function sampleSoftboxStrip(
   const pu = (dx * tux + dy * tuy + dz * tuz) / Math.max(0.2, forwardDot);
   const pv = (dx * tvx + dy * tvy + dz * tvz) / Math.max(0.2, forwardDot);
 
-  const maskU = 1 - smoothstep(halfLen - edgeSoftness, halfLen + edgeSoftness, Math.abs(pu));
-  const maskV = 1 - smoothstep(halfWid - edgeSoftness, halfWid + edgeSoftness, Math.abs(pv));
+  // 加宽羽化边缘：硬边灯箱在低面数车身上会被三角面插值成锯齿状高光分界
+  const soft = edgeSoftness * 2.4;
+  const maskU = 1 - smoothstep(halfLen - soft, halfLen + soft, Math.abs(pu));
+  const maskV = 1 - smoothstep(halfWid - soft, halfWid + soft, Math.abs(pv));
   return maskU * maskV;
 }
 

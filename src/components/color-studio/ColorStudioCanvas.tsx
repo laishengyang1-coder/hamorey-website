@@ -320,7 +320,14 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     keyLight.position.set(4.5, 7.8, 5.2);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(1024, 1024);
-    keyLight.shadow.bias = -0.0004;
+    keyLight.shadow.camera.left = -3.4;
+    keyLight.shadow.camera.right = 3.4;
+    keyLight.shadow.camera.top = 3.4;
+    keyLight.shadow.camera.bottom = -3.4;
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 20;
+    keyLight.shadow.bias = -0.0002;
+    keyLight.shadow.normalBias = 0.035;
     scene.add(keyLight);
     runtimeRef.current.keyLight = keyLight;
 
@@ -713,10 +720,20 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
           return mat;
         };
 
+        let usesPaint = false;
         if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map(mapSingleMaterial);
+          mesh.material = mesh.material.map((m) => {
+            const mapped = mapSingleMaterial(m);
+            if (mapped === filmController.material) usesPaint = true;
+            return mapped;
+          });
         } else if (mesh.material) {
           mesh.material = mapSingleMaterial(mesh.material);
+          if (mesh.material === filmController.material) usesPaint = true;
+        }
+        if (usesPaint) {
+          // 车身曲面漆面保留向地面投射阴影，关闭自身阴影贴图接收，避免掠射角自阴影伪影
+          mesh.receiveShadow = false;
         }
       });
     };
