@@ -411,17 +411,24 @@ pm2 save --force
 TLS_CERTIFICATE_PATH="/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/fullchain.pem"
 TLS_PRIVATE_KEY_PATH="/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME/privkey.pem"
 TLS_READY=false
-if [ -f "$TLS_CERTIFICATE_PATH" ] && [ -f "$TLS_PRIVATE_KEY_PATH" ]; then
+# Certbot's live/archive directories can be traversed only by root on this host.
+if sudo test -s "$TLS_CERTIFICATE_PATH" && sudo test -s "$TLS_PRIVATE_KEY_PATH"; then
   TLS_READY=true
+elif sudo test -d "/etc/letsencrypt/live/$LETSENCRYPT_CERT_NAME" ||
+     sudo test -e "/etc/letsencrypt/renewal/$LETSENCRYPT_CERT_NAME.conf" ||
+     sudo grep -Eq '^[[:space:]]*listen[[:space:]]+([^[:space:]]*:)?443([[:space:];]|$)' /etc/nginx/sites-available/hamorey-production 2>/dev/null; then
+  echo "Existing Hamorey HTTPS configuration has an incomplete certificate or key. Keeping the active Nginx configuration." >&2
+  exit 1
 fi
 
-# Keep HTTP available for the ACME challenge before the first certificate exists.
-write_nginx_config "$TLS_READY"
-
-if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
-  if [ "$TLS_READY" = "false" ] && [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
-    echo "TLS certificate skipped: LETSENCRYPT_EMAIL is missing from $API_ENV_FILE."
-  elif [ "$TLS_READY" = "false" ]; then
+if [ "$TLS_READY" = "false" ]; then
+  if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ] && [ -z "${LETSENCRYPT_EMAIL:-}" ]; then
+    echo "First certificate issuance requires LETSENCRYPT_EMAIL in $API_ENV_FILE." >&2
+    exit 1
+  fi
+  # Only a new HTTP site needs the ACME challenge configuration.
+  write_nginx_config false
+  if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
     sudo apt-get update
     sudo apt-get install -y certbot
     sudo certbot certonly \
@@ -439,10 +446,12 @@ if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
 
     TLS_READY=true
   fi
+fi
 
-  if [ "$TLS_READY" = "true" ]; then
+if [ "$TLS_READY" = "true" ]; then
+  write_nginx_config true
+  if [ "${ENABLE_LETSENCRYPT:-false}" = "true" ]; then
     install_certbot_renewal_hook
-    write_nginx_config "$TLS_READY"
 
     upsert_api_env "CORS_ORIGIN" "https://hemoppf.cn,https://www.hemoppf.cn,https://system.hemoppf.cn"
     upsert_api_env "SITE_URL" "https://system.hemoppf.cn"

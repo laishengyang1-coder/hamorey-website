@@ -17,7 +17,8 @@ jobs:
   deploy:
     name: Deploy production
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Cross-region archive transfer alone has taken nearly 30 minutes.
+    timeout-minutes: 60
 
     steps:
       - name: Check out exact main commit
@@ -107,7 +108,7 @@ jobs:
           curl --fail --silent --show-error --retry 3 --retry-all-errors \
             --output /dev/null https://system.hemoppf.cn/login/admin
 
-          for route in '/color-studio?code=TPU-048P&mode=swatch' '/color-studio/'; do
+          for route in '/color-studio?embed=miniprogram' '/color-studio?code=TPU-048P&mode=swatch' '/color-studio/'; do
             curl --fail --silent --show-error --retry 3 --retry-all-errors \
               --output "$RUNNER_TEMP/color-studio-entry.html" "https://hemoppf.cn$route"
             grep -Fq 'id="root"' "$RUNNER_TEMP/color-studio-entry.html"
