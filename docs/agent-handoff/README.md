@@ -4,6 +4,8 @@
 
 ## 当前执行与交接状态
 
+- ✅ **2026-11-24 Antigravity：3D 高定选色工坊 V7（355 张实拍色卡全库校准 + 14 款新增色号扩充至 117 色 + 非对称羽化柔光天幕 HDRI + V10 凝脂/丝绒漆面着色器 + 2D 白字层级修复）已上线，可交接**（业务提交 `ddb5e4b`，[腾讯云 Run `45357460607`](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45357460607) Success）。基线 `1396fed`（完整保留 Codex 2026-11-24 单卷型号纠正记录）；线上入口 `assets/index-CrKCP8X7.js` 与 `/api/health` 均核验通过。仅改官网前端 `src/`，未改小程序与后端接口。详见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。
+
 - **2026-11-24 · Codex · 单卷型号纠正已完成，可交接。** 按用户确认的实物标签，将一条未登记卷码纠正为和旺 HW9 / 10 年。同批其他库存保持原样，备份、单行事务和回查已完成。本轮仅修改正式库存并追加交接文档，无业务代码部署或小程序发版。详见 [单卷纠正记录](CODEX.md#single-roll-model-20261124)。
 
 - ✅ **2026-11-23 Antigravity：3D 高定选色工坊 V6（改色产品页重塑、双车展车牌照、无畸变三场景、全工艺光学升级、实拍细密碳纤与梦幻火山灰校准）已上线，可交接**（最终业务提交 `4dd4c5b`，[腾讯云 Run `45136411337`](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45136411337) Success）。基线 `22eea36`（完整保留 Codex `d85b2d0` 与 `84e731b`）；线上入口 `assets/index-CI9Mh_G_.js`、三款细密碳纤纹理、`sunset-360.jpg` 与 `/api/health` 均核验通过。仅改官网前端与 `public/color-studio/` 静态资源，未改小程序与后端接口。详见 [`ANTIGRAVITY.md`](ANTIGRAVITY.md) 与 [`COLOR-STUDIO.md`](COLOR-STUDIO.md)。

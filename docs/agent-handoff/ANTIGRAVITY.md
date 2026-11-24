@@ -351,3 +351,32 @@
 
 - 切勿对 Model 3 车漆网格 `body-shell-9` 重新启用基于位置桶焊接的 `smoothPaintNormals`（会导致右前翼子板 6 齿锯齿反光）；也切勿将普通 16:9 透视照片塞入 `GroundedSkybox`（会导致地面漩涡畸变）。
 - `public/color-studio/paint/tpu-*.webp` 已设为 7 天缓存，若后续再次更新需同步递增 `swatchVisuals.ts` 中的 `CARBON_TEX_VERSION` 与 `SwatchFanMaterial.tsx` 中的 `?v=` 版本号。
+
+## 2026-11-24：3D 高定选色工坊 V7（355 张实拍色卡校准、117 色扩充、非对称柔光天幕与 V10 去塑感漆面，已上线）
+
+- **用户需求**：按实拍色卡与实车图校准天鹅白/哑光曙光白/金属香槟金/炫彩时光金/喀纳斯蓝；修复色卡白字变半透明问题；基于桌面 355 张实拍色卡对照官方中英文表批量校色并补录文件夹中多出的 14 款色号；解决全系亮面车衣偏哑、浅色过曝、双色/变色龙缺乏折光变化、整体光感偏硬偏塑料等问题，并部署上线。
+- **基线**：`1396fed`（完整保留 Codex 2026-11-24 单卷型号纠正交接记录）。**业务提交**：`ddb5e4b`。
+- **范围**：仅官网前端 `src/`（9 个文件）与交接文档；未触碰 `miniprogram/`、`functions/`、`server/`、`migrations/` 与 `scripts/warranty-years.lock.json`。
+
+### 改动清单
+
+| 模块 | 核心改动 | 涉及文件 |
+|---|---|---|
+| 实拍色库校准与 117 色扩充 | 视觉引擎 OCR 识别 355 张实拍图并拼图人工复核，校准 67 款既有色号（含天鹅绒紫、保时捷亚灰、青魔、青岭苍岚、松石绿、瓷器蓝、迈阿密蓝、朱雀红、流光金等）并补录 14 款实拍新增色号（`TPU-020S/022S/023S/024S/043S`、`TPU-017M/024M/025M/028M`、`TPU-014P/015P/022P/030P/036P`），全系由 103 扩充至 **117 色**（99 色已实拍校对，18 色暂无实拍图），重新加密打包且零明文泄漏 | `src/config/colorStudioVault.ts`、`src/pages/ColorPPFPage.tsx` |
+| 非对称羽化柔光天幕 HDRI | `1024×512` 16-bit HalfFloat HDRI 升级为 `sampleFeatheredScrim` 双翼非对称羽化柔光天幕（中央留负空间保机盖饱和度、外缘清透、内缘奶油般羽化）+ 车尾补光柔光幕；大幅压低点直射主光（`keyLight: 0.75 → 0.26`）消除点光源塑料白斑 | `src/components/color-studio/studioEnvironment.ts`、`src/components/color-studio/ColorStudioCanvas.tsx` |
+| V10 去塑感漆面与变色龙着色器 | `filmMaterial.ts`（V10）：底漆 `specularColor` 按色卡着色消除非金属塑料灰白雾感；哑光/丝缎引入同色 `sheen` 丝绒微散射；用 Beer-Lambert 高饱和光学深度替代斜角乘黑；移除变色龙 `lumaScale` 压暗限制并为 `青魔/青岭苍岚/黑魅红/妃子笑/喀纳斯蓝` 启用宽幅柔滑半角干涉 + 视角双色流转 | `src/components/color-studio/filmMaterial.ts` |
+| 2D 色卡白字修复与高光柔化 | `._hfm` 启用 `isolation: isolate` 彻底解决白字被反光层压成半透明的问题；将高光卡生硬双白条改为清透非对称柔光天幕渐变；同步更新天鹅白/曙光白/时光金 2D 卡面与底部色珠 | `src/components/color-studio/SwatchFanMaterial.tsx`、`SwatchFanMaterial.css`、`SwatchFan.css`、`swatchVisuals.ts` |
+
+### 检查与线上核验（2026-11-24 16:52 Asia/Shanghai）
+
+- **本地验证**：`npm run test:contracts`（65 项）、`npm run build`（含 40 项质保年限与 SPA 校验）、`npm --prefix server run build` 全通；`dist/` 零明文色表泄漏（`ZERO_VAULT_LEAK`）；本地 Chrome 多轮实拍核验蒂芙尼蓝、天鹅白、法拉利红、保时捷亚灰、高亮喀纳斯蓝、青魔、青岭苍岚、黑魅红、妃子笑、天鹅绒紫、超哑摩卡慕斯、超哑锦绣红 2D/3D 视图均 0 报错。
+- **腾讯云部署**：`ddb5e4b`（Run [45357460607](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45357460607)）**Success**。
+- **线上核验**：`https://hemoppf.cn/color-studio` 线上入口脚本 `assets/index-CrKCP8X7.js` 与 `ddb5e4b` 一致；`https://api.hemoppf.cn/api/health` 返回 `api/mysql/cos` 全 `ok`。
+
+### 发布状态
+
+| 项 | 状态 |
+|---|---|
+| Git 提交 / 推送 | ✅ `ddb5e4b` 已推送 `origin/main` |
+| 网站部署 | ✅ Run `45357460607` Success，线上入口与 API 健康核验通过 |
+| 小程序 | ❌ 本轮未改 `miniprogram/`（`<web-view>` 直连线上域名自动同步生效） |
