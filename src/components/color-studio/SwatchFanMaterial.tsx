@@ -59,17 +59,18 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
   const carbon = code.endsWith('FP') || code === 'TPU-CF';
   const laser = code === 'TPU-001L' || code === 'TPU-002L';
   const volcanic = code === 'TPU-001B';
+  const dawn = code === 'TPU-021P';
+  const armor = code === 'TPU-001G';
+  const diamond = code === 'TPU-002G' || code === 'TPU-003G';
   const bicolor =
     code === 'TPU-002B' ||
     code === 'TPU-001C' ||
-    code === 'TPU-001G' ||
-    code === 'TPU-002G' ||
-    code === 'TPU-003G';
+    diamond;
   const chameleon =
     swatch.finish === 'chameleon' && !bicolor && !volcanic;
   const metal =
     swatch.finish === 'metallic' || code.endsWith('A');
-  const pearl = swatch.finish === 'pearlescent';
+  const pearl = swatch.finish === 'pearlescent' && !dawn;
 
   // 表面光学光泽分层：c=锻碳/碳纤, m=超哑/哑光, s=丝缎, g=高光清漆
   const coat: 'c' | 'm' | 's' | 'g' = carbon
@@ -80,53 +81,79 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
         ? 's'
         : 'g';
 
-  // 颜料光学效应分层：laser=七彩镭射, volcanic=梦幻火山灰(浅灰底受光爆粉珠光), chameleon=极光变色龙, bicolor=双色/钻白幻彩, metal=液态金属, pearl=云母珠光, solid=水晶单色
-  const effect: 'laser' | 'volcanic' | 'chameleon' | 'bicolor' | 'metal' | 'pearl' | 'solid' = laser
+  // 颜料光学效应分层
+  const effect:
+    | 'laser'
+    | 'volcanic'
+    | 'dawn'
+    | 'armor'
+    | 'chameleon'
+    | 'bicolor'
+    | 'metal'
+    | 'pearl'
+    | 'solid' = laser
     ? 'laser'
     : volcanic
       ? 'volcanic'
-      : chameleon
-        ? 'chameleon'
-        : bicolor
-          ? 'bicolor'
-          : metal
-            ? 'metal'
-            : pearl
-              ? 'pearl'
-              : 'solid';
+      : dawn
+        ? 'dawn'
+        : armor
+          ? 'armor'
+          : chameleon
+            ? 'chameleon'
+            : bicolor
+              ? 'bicolor'
+              : metal
+                ? 'metal'
+                : pearl
+                  ? 'pearl'
+                  : 'solid';
 
-  const isLightBase = relativeLuminance(base) > 0.68;
+  const lum = relativeLuminance(base);
+  const isLightBase = lum > 0.68;
+  const isPureWhiteCrystal = lum > 0.84 && effect === 'solid' && coat === 'g';
+  const isLightMetal = metal && lum > 0.44 && coat === 'g';
   const isDualToneMetal = code === 'TPU-001M' || code === 'TPU-002M';
 
-  // 各工艺专属随角明暗曲线（金属强 flop 反差，超哑柔和丝绒低反差，水晶通透均衡）
+  // 各工艺专属随角明暗曲线（高白水晶保持纯净瓷白不发灰，浅香槟金属温润通透，深金属强 flop 反差）
   const lightLift =
     coat === 'm'
       ? 0.035
       : coat === 's'
         ? 0.095
-        : metal
-          ? 0.24
-          : pearl || bicolor
-            ? 0.14
-            : 0.13;
+        : isPureWhiteCrystal
+          ? 0.14
+          : metal
+            ? 0.24
+            : pearl || bicolor || armor
+              ? 0.14
+              : 0.13;
   const midShade =
     coat === 'm'
       ? -0.03
       : coat === 's'
         ? -0.1
-        : metal
-          ? -0.22
-          : -0.09;
+        : isPureWhiteCrystal
+          ? -0.038
+          : isLightMetal
+            ? -0.13
+            : metal
+              ? -0.22
+              : -0.09;
   const darkShade =
     coat === 'm'
-      ? -0.1
+      ? -0.09
       : coat === 's'
         ? -0.24
-        : metal
-          ? -0.48
-          : chameleon
-            ? -0.36
-            : -0.25;
+        : isPureWhiteCrystal
+          ? -0.095
+          : isLightMetal
+            ? -0.32
+            : metal
+              ? -0.48
+              : chameleon
+                ? -0.36
+                : -0.25;
 
   // 金属漆高光与主色做融合，防止高光发灰；黑曜金/黑金AMG山灰保留深邃黑灰底色，仅在受光脊线绽放金芒
   const c0 =
@@ -139,14 +166,14 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
       : shadePure(base, midShade);
   const c3 = shadePure(base, darkShade);
 
-  // 极光变色龙专属第三光学干涉色（青魔=海蓝紫，青岭苍岚=岚山青蓝，喀纳斯蓝=青蓝紫三色）
+  // 极光变色龙专属第三光学干涉色（青魔=海蓝紫，青岭苍岚=岚山青蓝，喀纳斯蓝=冰青→海蓝→电光紫）
   const thirdHarmonic =
     code === 'TPU-002C'
       ? '#4B63F6'
       : code === 'TPU-003C'
         ? '#4D82A8'
         : code === 'TPU-005C' || code === 'TPU-006C'
-          ? '#8A5CF6'
+          ? '#1CC4F5'
           : mixHex(shiftHex, '#7e6bff', 0.32);
 
   // 偏色光晕强度（金属、珠光、双色、变色龙、镭射各有独立物理响应）
@@ -157,33 +184,37 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
         : 0.78
       : volcanic
         ? 0.94
-        : chameleon
-          ? coat === 's'
-            ? 0.64
-            : 0.78
-          : bicolor
-            ? isLightBase
-              ? code === 'TPU-002B'
-                ? 0.44
-                : 0.38
-              : 0.8
-            : pearl
-              ? coat === 'm'
-                ? 0.24
-                : isLightBase
-                  ? 0.32
-                  : 0.56
-              : metal
-                ? isDualToneMetal
-                  ? code === 'TPU-002M'
-                    ? 0.5
-                    : 0.4
-                  : coat === 'm'
-                    ? 0.12
-                    : coat === 's'
-                      ? 0.34
-                      : 0.46
-                : 0;
+        : dawn
+          ? 0.62
+          : armor
+            ? 0.72
+            : chameleon
+              ? coat === 's'
+                ? 0.64
+                : 0.78
+              : bicolor
+                ? isLightBase
+                  ? code === 'TPU-002B'
+                    ? 0.44
+                    : 0.38
+                  : 0.8
+                : pearl
+                  ? coat === 'm'
+                    ? 0.24
+                    : isLightBase
+                      ? 0.32
+                      : 0.56
+                  : metal
+                    ? isDualToneMetal
+                      ? code === 'TPU-002M'
+                        ? 0.5
+                        : 0.4
+                      : coat === 'm'
+                        ? 0.12
+                        : coat === 's'
+                          ? 0.34
+                          : 0.46
+                    : 0;
 
   // 清漆镜面反光强度（超哑绝不出现塑料亮条，丝缎呈柔宽绸缎光带，锻碳/碳纤呈高亮8.0mil湿润清漆，高光呈锐利玻璃镜面）
   const specOpacity =
@@ -193,10 +224,10 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
         ? 0.56
         : carbon
           ? 0.72
-          : volcanic
-            ? 0.92
+          : volcanic || armor || isPureWhiteCrystal
+            ? 0.94
             : metal
-              ? 0.84
+              ? 0.86
               : 0.88;
 
   const variables: PaintVariables = {
@@ -226,12 +257,13 @@ export const SwatchFanMaterial = memo(function SwatchFanMaterial({
       data-g={
         coat === 'm'
           ? 'm'
-          : metal || volcanic
+          : metal || volcanic || armor || diamond
             ? '1'
             : pearl || bicolor || chameleon || laser
               ? '2'
               : undefined
       }
+      data-sp={diamond ? '1' : undefined}
       data-l={lightingPreset}
       style={variables}
     >

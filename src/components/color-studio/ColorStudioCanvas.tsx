@@ -311,13 +311,13 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     );
     runtimeRef.current.filmController = filmController;
 
-    // 真实棚拍布光：环境 HDR 主导反射，直射光只做轻度塑形，避免整面漫反射泛白
-    const hemiLight = new THREE.HemisphereLight('#e8eefc', '#0b0c10', 0.12);
+    // 真实棚拍布光：95% 由大面积渐变柔光天幕 HDR 承载，直射光仅作极轻柔地面投影与体积微塑形，彻底消除点光源塑料白斑与生硬明暗交界线
+    const hemiLight = new THREE.HemisphereLight('#edf1fa', '#14161e', 0.24);
     scene.add(hemiLight);
     runtimeRef.current.hemiLight = hemiLight;
 
-    const keyLight = new THREE.DirectionalLight('#fff8f0', 0.75);
-    keyLight.position.set(4.5, 7.8, 5.2);
+    const keyLight = new THREE.DirectionalLight('#fffaf4', 0.26);
+    keyLight.position.set(4.2, 8.2, 4.8);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(1024, 1024);
     keyLight.shadow.camera.left = -3.4;
@@ -331,11 +331,11 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     scene.add(keyLight);
     runtimeRef.current.keyLight = keyLight;
 
-    const fillLight = new THREE.DirectionalLight('#eef2ff', 0.14);
+    const fillLight = new THREE.DirectionalLight('#eef2ff', 0.08);
     fillLight.position.set(-4.4, 4.6, 4.8);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight('#dbe8ff', 0.3);
+    const rimLight = new THREE.DirectionalLight('#e2ecff', 0.12);
     rimLight.position.set(-5.2, 3.4, -4.4);
     scene.add(rimLight);
     runtimeRef.current.rimLight = rimLight;
@@ -1077,25 +1077,25 @@ export function ColorStudioCanvas(props: ColorStudioCanvasProps) {
     if (rt.hemiLight && rt.keyLight && rt.rimLight) {
       if (lightingPreset === 'gallery') {
         rt.hemiLight.color.set('#ffffff');
-        rt.hemiLight.groundColor.set('#cfd6e0');
-        rt.hemiLight.intensity = 0.42;
+        rt.hemiLight.groundColor.set('#d4dae4');
+        rt.hemiLight.intensity = 0.34;
         rt.keyLight.color.set('#ffffff');
-        rt.keyLight.intensity = 0.72;
+        rt.keyLight.intensity = 0.28;
         rt.rimLight.color.set('#e2edff');
       } else if (lightingPreset === 'sunset') {
-        rt.hemiLight.color.set('#ffd4a8');
-        rt.hemiLight.groundColor.set('#26181c');
-        rt.hemiLight.intensity = 0.18;
-        rt.keyLight.color.set('#ffbe7b');
-        rt.keyLight.intensity = 0.92;
-        rt.rimLight.color.set('#8ab8ff');
+        rt.hemiLight.color.set('#ffd8b2');
+        rt.hemiLight.groundColor.set('#281c22');
+        rt.hemiLight.intensity = 0.24;
+        rt.keyLight.color.set('#ffc58c');
+        rt.keyLight.intensity = 0.42;
+        rt.rimLight.color.set('#9bc2ff');
       } else {
-        rt.hemiLight.color.set('#e8eefc');
-        rt.hemiLight.groundColor.set('#0b0c10');
-        rt.hemiLight.intensity = 0.12;
-        rt.keyLight.color.set('#fff8f0');
-        rt.keyLight.intensity = 0.75;
-        rt.rimLight.color.set('#dbe8ff');
+        rt.hemiLight.color.set('#edf1fa');
+        rt.hemiLight.groundColor.set('#14161e');
+        rt.hemiLight.intensity = 0.24;
+        rt.keyLight.color.set('#fffaf4');
+        rt.keyLight.intensity = 0.26;
+        rt.rimLight.color.set('#e2ecff');
       }
     }
   }, [lightingPreset, viewMode]);

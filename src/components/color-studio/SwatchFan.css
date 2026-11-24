@@ -10,7 +10,7 @@
   user-select: none;
   --_a0: rgba(190, 165, 123, 0.12);
   --_a1: rgba(110, 125, 157, 0.08);
-  --_rm: rgba(255, 247, 223, 0.44);
+  --_rm: rgba(255, 251, 240, 0.68);
 }
 
 ._hfs[data-l="gallery"] {
@@ -113,6 +113,7 @@
 ._hfs_n,
 ._hfs_t {
   position: absolute;
+  z-index: 2;
 }
 
 ._hfs_m {

@@ -70,6 +70,64 @@ export function getSwatchOrbVisual(
     };
   }
 
+  if (code === 'TPU-001S') {
+    // 天鹅白：纯净湿润高光陶瓷白（避免底部暗圈发黑发脏）
+    return {
+      style: {
+        background:
+          'radial-gradient(circle at 28% 24%, #FFFFFF 0%, #F7F8F6 46%, #DFE2DF 78%, #A8AEAD 100%)',
+        boxShadow: isDrawer
+          ? 'inset -5px -7px 14px rgba(0,0,0,0.28), inset 4px 5px 12px rgba(255,255,255,0.85), 0 10px 24px rgba(0,0,0,0.75)'
+          : 'inset -2px -3px 6px rgba(0,0,0,0.28), 0 4px 10px rgba(0,0,0,0.45)',
+      },
+      specular: 'gloss',
+    };
+  }
+
+  if (code === 'TPU-021P') {
+    // 哑光曙光白：绒雾奶白基底 + 轻盈清透薄荷青玉极光柔晕（无镜面亮斑）
+    return {
+      style: {
+        background:
+          'radial-gradient(circle at 34% 28%, #CEEFDB 0%, #EDF6F0 36%, #F3F5F1 68%, #A5ABA6 100%)',
+        boxShadow: isDrawer
+          ? 'inset -5px -7px 14px rgba(0,0,0,0.34), 0 10px 22px rgba(0,0,0,0.75)'
+          : 'inset -2px -3px 6px rgba(0,0,0,0.32), 0 4px 10px rgba(0,0,0,0.45)',
+      },
+      specular: 'none',
+    };
+  }
+
+  if (code === 'TPU-001G') {
+    // 炫彩时光金（Golden Armor）：冰银钻白底 + 暖香槟金高光细闪
+    return {
+      style: {
+        background:
+          'radial-gradient(circle at 28% 24%, #FFFFFF 0%, #F8E39E 22%, #E8EAEE 56%, #9DA3AC 100%)',
+        boxShadow: isDrawer
+          ? 'inset -5px -7px 14px rgba(0,0,0,0.38), inset 4px 5px 12px rgba(255,255,255,0.7), 0 10px 24px rgba(0,0,0,0.78)'
+          : 'inset -2px -3px 6px rgba(0,0,0,0.38), 0 4px 10px rgba(0,0,0,0.48)',
+      },
+      specular: 'gloss',
+    };
+  }
+
+  if (code === 'TPU-005C' || code === 'TPU-006C') {
+    // 喀纳斯蓝（高亮/丝缎）：正面冰青湖蓝、侧视大角度电光紫罗兰变色龙
+    const isSatinKanas = code === 'TPU-006C';
+    return {
+      style: {
+        background: isSatinKanas
+          ? 'radial-gradient(circle at 30% 26%, #45C6F2 0%, #1E79CF 34%, #6C34D8 68%, #2E1065 100%)'
+          : 'radial-gradient(circle at 28% 24%, rgba(255,255,255,0.48) 0%, #24C4F8 22%, #136BD8 46%, #7B2CE4 74%, #2B0D5E 100%)',
+        boxShadow: isDrawer
+          ? 'inset -6px -8px 16px rgba(0,0,0,0.62), inset 4px 5px 12px rgba(255,255,255,0.2), 0 10px 24px rgba(0,0,0,0.8)'
+          : 'inset -3px -4px 8px rgba(0,0,0,0.58), 0 4px 10px rgba(0,0,0,0.5)',
+      },
+      specular: isSatinKanas ? 'satin' : 'gloss',
+    };
+  }
+
   if (code === 'TPU-001B') {
     // 梦幻火山灰：清透浅水泥灰基底 + 受光穹顶柔美樱花粉珠光
     return {

@@ -1,8 +1,10 @@
 ._hfm {
-  --_l0: rgba(255, 255, 255, 0.74);
+  --_l0: rgba(255, 255, 255, 0.56);
   --_l1: rgba(255, 255, 255, 0.18);
   position: absolute;
   inset: 0;
+  z-index: 0;
+  isolation: isolate;
   display: block;
   overflow: hidden;
   pointer-events: none;
@@ -62,13 +64,13 @@
 }
 
 ._hfm[data-l="gallery"] {
-  --_l0: rgba(242, 248, 255, 0.84);
-  --_l1: rgba(226, 240, 255, 0.24);
+  --_l0: rgba(244, 249, 255, 0.62);
+  --_l1: rgba(230, 242, 255, 0.20);
 }
 
 ._hfm[data-l="sunset"] {
-  --_l0: rgba(255, 224, 184, 0.84);
-  --_l1: rgba(255, 190, 128, 0.22);
+  --_l0: rgba(255, 228, 192, 0.58);
+  --_l1: rgba(255, 196, 138, 0.18);
 }
 
 /* 无规则有机微晶金属粉 / 珠光云母 / 哑光微磨砂质感（彻底淘汰机械网格点） */
@@ -96,18 +98,48 @@
   opacity: 0.28;
 }
 
-/* 金属漆细密闪耀层：仅沿受光曲面高光区闪耀，暗区自然隐匿（物理级铝粉光学） */
+/* 金属漆细密闪耀层：高密度微晶铝粉（还原金属香槟金/GT银/钛灰实拍的细腻金属砂砾闪耀感） */
 ._hfm[data-e="metal"]:not([data-k="m"])::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.35' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0 0 0 0 0 0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
-  background-size: 108px 108px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.45' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0 0 0 0 0 0.85 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0 0 0 0 0 0.85 1'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0 0 0 0 0 0.85 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
   mix-blend-mode: screen;
-  opacity: 0.22;
-  -webkit-mask-image: linear-gradient(112deg, transparent 10%, #000 42%, transparent 78%);
-  mask-image: linear-gradient(112deg, transparent 10%, #000 42%, transparent 78%);
+  opacity: 0.28;
+  -webkit-mask-image: linear-gradient(116deg, rgba(0, 0, 0, 0.25) 0%, #000 42%, rgba(0, 0, 0, 0.2) 88%);
+  mask-image: linear-gradient(116deg, rgba(0, 0, 0, 0.25) 0%, #000 42%, rgba(0, 0, 0, 0.2) 88%);
+}
+
+/* 炫彩时光金（TPU-001G Golden Armor TPU）：高明度冰银钻白通透底 + 满铺清脆璀璨星钻细闪（置于清漆层之下） */
+._hfm[data-e="armor"] {
+  background-image: linear-gradient(
+    158deg,
+    #f9fafb 0%,
+    #eff1f4 44%,
+    #e4e7ec 76%,
+    #d8dce3 100%
+  );
+}
+
+._hfm[data-e="armor"]::after,
+._hfm[data-sp="1"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='g1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.85' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0 0 0 0 0 1 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0 0 0 0 0 0.97 1'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0 0 0 0 0 0.86 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g1)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='g2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='1' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0.5 0.5 0.5 0.5 0.5 0.36 0.72'/%3E%3CfeFuncG type='discrete' tableValues='0.5 0.5 0.5 0.5 0.5 0.37 0.72'/%3E%3CfeFuncB type='discrete' tableValues='0.5 0.5 0.5 0.5 0.5 0.39 0.70'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g2)'/%3E%3C/svg%3E");
+  background-size: 80px 80px, 72px 72px;
+  mix-blend-mode: screen, overlay;
+  opacity: 0.72;
+}
+
+._hfm[data-sp="1"]::after {
+  opacity: 0.38;
 }
 
 ._hfm[data-k="c"] {
@@ -120,10 +152,11 @@
   background-position: center, center;
 }
 
-/* 动态视角反射与变色流转层（足够宽的水平余量，防止最外侧斜卡片出现硬截断边） */
+/* 动态视角反射与变色流转层（置于颗粒层之上，还原表层 8.0 mil 清漆物理层级） */
 ._hfm_r {
   position: absolute;
   inset: -16% -88%;
+  z-index: 2;
   display: block;
   pointer-events: none;
   transform: translate3d(calc(var(--_rf, 0%) * 0.62), 0, 0);
@@ -211,17 +244,17 @@
   mix-blend-mode: normal;
 }
 
-/* 极光变色龙（青魔、青岭苍岚、喀纳斯蓝）：多段薄膜干涉色带 */
+/* 极光变色龙（青魔、青岭苍岚、喀纳斯蓝）：多段薄膜干涉色带（高饱和青→蓝→电光紫流转） */
 ._hfm[data-e="chameleon"] ._hfm_r::before {
   background: linear-gradient(
     116deg,
-    transparent 20%,
-    var(--_c4) 38%,
-    var(--_c7) 52%,
-    var(--_c4) 65%,
-    transparent 82%
+    transparent 16%,
+    var(--_c7) 34%,
+    var(--_c1) 48%,
+    var(--_c4) 64%,
+    transparent 84%
   );
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
 }
 
 /* 七彩镭射（高光镭射白、镭射黑）：真实棱镜衍射七彩光谱流光带 */
@@ -237,6 +270,32 @@
     transparent 78%
   );
   mix-blend-mode: screen;
+}
+
+/* 哑光曙光白（TPU-021P Matte Dawn White）：70% 保持纯净绒雾奶白，受光面轻轻浮现清透薄荷青玉极光微晕 */
+._hfm[data-e="dawn"] ._hfm_r::before {
+  background: linear-gradient(
+    118deg,
+    transparent 28%,
+    rgba(196, 240, 214, 0.32) 40%,
+    rgba(176, 236, 202, 0.56) 50%,
+    rgba(196, 240, 214, 0.30) 60%,
+    transparent 72%
+  );
+  mix-blend-mode: multiply;
+}
+
+/* 炫彩时光金（TPU-001G Golden Armor TPU）：冰银钻白底上沿镜面强光脊线泛起清亮暖香槟碎金微芒 */
+._hfm[data-e="armor"] ._hfm_r::before {
+  background: linear-gradient(
+    112deg,
+    transparent 34%,
+    rgba(248, 224, 152, 0.38) 40.5%,
+    rgba(250, 218, 126, 0.74) 46%,
+    rgba(248, 224, 152, 0.36) 52%,
+    transparent 59%
+  );
+  mix-blend-mode: multiply;
 }
 
 /* 浅底色（白/米白）禁止使用 screen 滤色，改用 normal 透叠，并收束晕染范围以保留大片纯净白底 */
@@ -265,22 +324,35 @@
   );
 }
 
-/* 2. 顶层清漆反射层：水晶高光=锐利玻璃镜面带；金属=紧致高对比银光脊 */
+/* 2. 顶层清漆反射层：非对称棚拍柔光天幕反光（前缘清透利落、后缘丝滑宽幅晕开，透出醇厚膜面本色，彻底告别生硬双白塑料条） */
 ._hfm_r::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    112deg,
-    transparent 35%,
-    var(--_l1) 41%,
-    var(--_l0) 45.2%,
-    var(--_l1) 49.5%,
-    transparent 55%,
-    rgba(255, 255, 255, 0.14) 61%,
-    transparent 67%
+    114deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.06) 38.5%,
+    var(--_l0) 42.5%,
+    rgba(255, 255, 255, 0.34) 46.5%,
+    var(--_l1) 52%,
+    rgba(255, 255, 255, 0.05) 59%,
+    transparent 66%
   );
-  opacity: var(--_c6, 0.85);
+  opacity: var(--_c6, 0.86);
+}
+
+/* 纯白/浅色高光卡（如 TPU-001S 天鹅白、TPU-001G 炫彩时光金）：温润瓷釉渐变清漆窗影 */
+._hfm[data-b="l"][data-k="g"] ._hfm_r::after {
+  background: linear-gradient(
+    114deg,
+    transparent 33%,
+    rgba(170, 182, 196, 0.16) 39%,
+    rgba(255, 255, 255, 0.92) 43%,
+    rgba(255, 255, 255, 0.56) 48%,
+    rgba(176, 188, 202, 0.12) 54%,
+    transparent 62%
+  );
 }
 
 /* 丝缎（Satin）：宽幅柔焦丝绸光晕（无硬边、呈温润阳极氧化/绸缎光泽） */

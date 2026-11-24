@@ -1,6 +1,6 @@
 // ============================================================
-// 和膜 HAMOREY — 真 16-bit HalfFloat HDR 汽车影棚环境光 & 512x512 微晶金属法线贴图
-// 支持三档影棚照明切换：暗夜光廊 (studio) / 极昼展厅 (gallery) / 落日金辉 (sunset)
+// 和膜 HAMOREY — 1024x512 真 16-bit HalfFloat 高锐度镜面影棚 HDR 环境光
+// 360° 全向硬边光学灯廊 + 锐利天地平线反差切线，赋予水晶/亮面改色膜真实 8.0 mil 湿润镜面玻璃感
 // ============================================================
 
 import * as THREE from 'three';
@@ -13,9 +13,10 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
 }
 
 /**
- * 评估指定 3D 矩形软灯箱光带对方向向量 (dx, dy, dz) 的线性 HDR 辐射贡献
+ * 评估真实汽车摄影棚「非对称渐变柔光天幕（Feathered Scrim）」：
+ * 一侧保留干净利落的轮廓切边（勾勒车身腰线清漆感），另一侧呈宽幅奶油般丝滑过渡（消除生硬灯条与塑料感）
  */
-function sampleSoftboxStrip(
+function sampleFeatheredScrim(
   dx: number,
   dy: number,
   dz: number,
@@ -27,19 +28,17 @@ function sampleSoftboxStrip(
   uz: number,
   halfLen: number,
   halfWid: number,
-  edgeSoftness: number,
+  crispEdge: number,
+  softEdge: number,
 ): number {
-  // 中心法向量
   const cLen = Math.hypot(cx, cy, cz) || 1;
   const ncx = cx / cLen;
   const ncy = cy / cLen;
   const ncz = cz / cLen;
 
-  // 若在灯箱背面则直接返回 0
   const forwardDot = dx * ncx + dy * ncy + dz * ncz;
-  if (forwardDot <= 0.05) return 0;
+  if (forwardDot <= 0.04) return 0;
 
-  // 构造灯箱局部正交基 (U, V, N)
   const uDot = ux * ncx + uy * ncy + uz * ncz;
   let tux = ux - uDot * ncx;
   let tuy = uy - uDot * ncy;
@@ -49,31 +48,40 @@ function sampleSoftboxStrip(
   tuy /= tLen;
   tuz /= tLen;
 
-  // V = N × U
   const tvx = ncy * tuz - ncz * tuy;
   const tvy = ncz * tux - ncx * tuz;
   const tvz = ncx * tuy - ncy * tux;
 
-  // 投影到切平面的角度偏移
-  const pu = (dx * tux + dy * tuy + dz * tuz) / Math.max(0.2, forwardDot);
-  const pv = (dx * tvx + dy * tvy + dz * tvz) / Math.max(0.2, forwardDot);
+  const invF = 1 / Math.max(0.20, forwardDot);
+  const pu = (dx * tux + dy * tuy + dz * tuz) * invF;
+  const pv = (dx * tvx + dy * tvy + dz * tvz) * invF;
 
-  // 加宽羽化边缘：硬边灯箱在低面数车身上会被三角面插值成锯齿状高光分界
-  const soft = edgeSoftness * 2.4;
-  const maskU = 1 - smoothstep(halfLen - soft, halfLen + soft, Math.abs(pu));
-  const maskV = 1 - smoothstep(halfWid - soft, halfWid + soft, Math.abs(pv));
-  return maskU * maskV;
+  const maxSpanU = halfLen + softEdge * 1.4;
+  if (Math.abs(pu) >= maxSpanU || pv < -(halfWid + crispEdge) || pv > halfWid + softEdge) {
+    return 0;
+  }
+
+  // 纵向两端宽幅柔和收光，绝不出现生硬截断块
+  const endFade = 1 - smoothstep(halfLen * 0.55, maxSpanU, Math.abs(pu));
+  // 横向非对称专业棚拍渐变：负向侧干净清晰，正向侧如丝绸般宽幅晕开
+  const crispSide = smoothstep(-(halfWid + crispEdge), -(halfWid - crispEdge * 0.8), pv);
+  const softSide = 1 - smoothstep(halfWid * 0.15, halfWid + softEdge, pv);
+  // 叠加柔和中心余弦光脊，让车漆高光富有呼吸层次
+  const normV = Math.max(0, Math.min(1, (pv + halfWid) / Math.max(0.01, halfWid * 2 + softEdge * 0.6)));
+  const silkGrad = 0.42 + 0.58 * Math.pow(1 - normV * 0.72, 1.35);
+
+  return endFade * crispSide * softSide * silkGrad;
 }
 
 /**
- * 生成 16-bit HalfFloat 真高动态范围（HDR）全景贴图并转换为 PMREM 环境光
+ * 生成 1024x512 16-bit HalfFloat 真高动态范围（HDR）汽车摄影柔光天幕全景图并转换为 PMREM 环境光
  */
 export function createAutomotiveStudioEnvMap(
   renderer: THREE.WebGLRenderer,
   preset: StudioLightingPreset = 'studio',
 ): THREE.Texture {
-  const width = 512;
-  const height = 256;
+  const width = 1024;
+  const height = 512;
   const data = new Uint16Array(width * height * 4);
   const oneHalf = THREE.DataUtils.toHalfFloat(1.0);
 
@@ -83,91 +91,153 @@ export function createAutomotiveStudioEnvMap(
     const cosLat = Math.cos(lat);
     const dy = Math.sin(lat);
 
+    // 温润自然的天地环幕过渡（既有真实展厅地平线明暗层次，又无生硬割裂感）
+    const horizonCut = smoothstep(-0.045, 0.055, dy);
+    const floorReflect = dy < 0 ? 0.14 + 0.28 * smoothstep(-0.48, 0.0, dy) : 1.0;
+
     for (let x = 0; x < width; x++) {
       const u = (x + 0.5) / width;
       const theta = (u - 0.5) * Math.PI * 2;
       const dx = cosLat * Math.cos(theta);
       const dz = cosLat * Math.sin(theta);
 
-      let r = 0.012;
-      let g = 0.014;
-      let b = 0.018;
-
-      // 地面半球：真实影棚深色地坪，令车身下半部与裙边自然压暗（真实感关键）
-      const floorShade = dy < 0 ? 0.35 + 0.65 * smoothstep(-0.35, 0.0, dy) : 1.0;
+      let r = 0.02;
+      let g = 0.022;
+      let b = 0.026;
 
       if (preset === 'studio') {
-        // 1. 深灰影棚墙面基底（低亮度，不再大面积铺满高光）
-        const wall = smoothstep(-0.05, 0.65, dy);
-        r = 0.016 + wall * 0.022;
-        g = 0.017 + wall * 0.024;
-        b = 0.02 + wall * 0.028;
+        // 1. 温润深邃环幕空间基底（保留高定负空间留白，让机盖与门板 75% 区域展现醇厚饱满本色，不发粉发雾）
+        const dome = smoothstep(-0.05, 0.92, dy);
+        const sideWarmth = 0.5 + 0.5 * Math.cos(theta - 0.6);
+        r = 0.026 + dome * 0.042 + sideWarmth * 0.010;
+        g = 0.028 + dome * 0.045 + sideWarmth * 0.009;
+        b = 0.034 + dome * 0.054 + (1 - sideWarmth) * 0.010;
 
-        // 2. 顶部单块有边界的大型柔光箱（矩形、羽化边缘）——车顶/机盖上一条干净的柔光带
-        const overhead = sampleSoftboxStrip(dx, dy, dz, 0.0, 1.0, 0.08, 1, 0, 0, 0.95, 0.34, 0.16);
-        r += overhead * 3.1;
-        g += overhead * 3.15;
-        b += overhead * 3.25;
+        // 2. 双翼非对称渐变柔光天幕（中央留出深邃负空间保住机盖浓郁纯色，两侧外缘清透利落、内缘奶油般丝滑羽化）
+        const wingL = sampleFeatheredScrim(
+          dx, dy, dz,
+          -0.40, 0.92, 0.0,
+          0, 0, 1,
+          1.38, 0.075,
+          0.024, 0.14,
+        );
+        const wingR = sampleFeatheredScrim(
+          dx, dy, dz,
+          0.40, 0.92, 0.0,
+          0, 0, 1,
+          1.38, 0.075,
+          0.024, 0.14,
+        );
+        const topLum = (wingL + wingR) * 2.85;
+        r += topLum * 1.01;
+        g += topLum * 1.0;
+        b += topLum * 0.99;
 
-        // 3. 左右 45° 竖向条形柔光（勾勒腰线与肩线）
-        const sideL = sampleSoftboxStrip(dx, dy, dz, -0.72, 0.42, 0.42, 0, 1, 0, 0.55, 0.11, 0.08);
-        const sideR = sampleSoftboxStrip(dx, dy, dz, 0.7, 0.4, -0.45, 0, 1, 0, 0.55, 0.11, 0.08);
-        r += sideL * 1.9 + sideR * 2.1;
-        g += sideL * 1.95 + sideR * 2.0;
-        b += sideL * 2.1 + sideR * 1.9;
+        // 3. 左右双侧非对称羽化腰线柔光幕（上缘利落勾勒门板肩线，向下丝滑衰减融入深色暗部）
+        const sideL = sampleFeatheredScrim(
+          dx, dy, dz,
+          -0.93, 0.27, 0.06,
+          0, 0, 1,
+          1.18, 0.065,
+          0.022, 0.13,
+        );
+        const sideR = sampleFeatheredScrim(
+          dx, dy, dz,
+          0.93, 0.27, -0.06,
+          0, 0, 1,
+          1.18, 0.065,
+          0.022, 0.13,
+        );
+        r += (sideL + sideR) * 2.25;
+        g += (sideL + sideR) * 2.30;
+        b += (sideL + sideR) * 2.40;
 
-        // 4. 前方低位柔光（车头 / 样板正面的柔和高光）
-        const frontKey = sampleSoftboxStrip(dx, dy, dz, 0.22, 0.3, 0.92, 1, 0.1, -0.2, 0.7, 0.16, 0.12);
-        r += frontKey * 1.6;
-        g += frontKey * 1.62;
-        b += frontKey * 1.68;
+        // 4. 前后对称羽化柔光幕（车头与车尾 C 柱 / 尾门柔顺过渡，清透不生硬）
+        const frontScrim = sampleFeatheredScrim(
+          dx, dy, dz,
+          0.12, 0.36, 0.93,
+          1, 0, -0.13,
+          0.86, 0.072,
+          0.024, 0.14,
+        );
+        const rearScrim = sampleFeatheredScrim(
+          dx, dy, dz,
+          -0.12, 0.38, -0.93,
+          1, 0, 0.13,
+          0.86, 0.072,
+          0.024, 0.14,
+        );
+        const endLum = frontScrim * 2.35 + rearScrim * 2.50;
+        r += endLum * 1.0;
+        g += endLum * 1.0;
+        b += endLum * 1.03;
 
-        // 5. 极淡的地平线漫反射，避免下沿死黑
-        const horizon = Math.exp(-Math.pow((dy - 0.03) / 0.07, 2)) * 0.05;
-        r += horizon;
-        g += horizon;
-        b += horizon * 1.05;
+        // 5. 360° 环幕地平线柔和天光晕（赋予车身下半部温润立体折光）
+        const horizonBand =
+          horizonCut * (1 - smoothstep(0.02, 0.26, dy)) * (0.72 + 0.28 * Math.cos(theta * 2));
+        r += horizonBand * 0.28;
+        g += horizonBand * 0.30;
+        b += horizonBand * 0.34;
       } else if (preset === 'gallery') {
-        // 极昼展厅：明亮但有层次的室内日光，天花漫射 + 两条天窗
-        const wall = smoothstep(-0.1, 0.7, dy);
-        r = 0.05 + wall * 0.07;
-        g = 0.052 + wall * 0.073;
-        b = 0.058 + wall * 0.08;
+        // 极简无影美术馆白棚：大面积柔和自然天窗漫射，色彩清透温润不生硬
+        const skyGrad = smoothstep(-0.04, 0.92, dy);
+        const above = 0.20 + skyGrad * 0.24;
+        r = mixVal(0.075, above * 0.99, horizonCut);
+        g = mixVal(0.080, above * 1.0, horizonCut);
+        b = mixVal(0.090, above * 1.03, horizonCut);
 
-        const skylightA = sampleSoftboxStrip(dx, dy, dz, 0, 0.96, 0.26, 1, 0, 0, 1.1, 0.2, 0.14);
-        const skylightB = sampleSoftboxStrip(dx, dy, dz, 0, 0.93, -0.32, 1, 0, 0, 1.1, 0.2, 0.14);
-        const frontWindow = sampleSoftboxStrip(dx, dy, dz, 0.2, 0.3, 0.92, 0.95, 0.2, -0.2, 1.0, 0.26, 0.16);
-        const lum = skylightA * 2.6 + skylightB * 2.3 + frontWindow * 1.8;
-        r += lum * 0.99;
-        g += lum;
+        const skyCanopy = sampleFeatheredScrim(dx, dy, dz, 0, 0.98, 0.0, 0, 0, 1, 1.48, 0.28, 0.045, 0.36);
+        const skyLeft = sampleFeatheredScrim(dx, dy, dz, -0.52, 0.85, 0.0, 0, 0, 1, 1.38, 0.12, 0.035, 0.24);
+        const skyRight = sampleFeatheredScrim(dx, dy, dz, 0.52, 0.85, 0.0, 0, 0, 1, 1.38, 0.12, 0.035, 0.24);
+        const frontGlass = sampleFeatheredScrim(dx, dy, dz, 0.14, 0.34, 0.93, 1, 0, -0.15, 1.02, 0.13, 0.038, 0.24);
+        const rearGlass = sampleFeatheredScrim(dx, dy, dz, -0.14, 0.36, -0.93, 1, 0, 0.15, 1.02, 0.13, 0.038, 0.24);
+        const lum = skyCanopy * 2.1 + (skyLeft + skyRight) * 1.65 + (frontGlass + rearGlass) * 1.45;
+        r += lum * 1.0;
+        g += lum * 1.0;
         b += lum * 1.02;
+
+        const galleryHorizon = horizonCut * (1 - smoothstep(0.02, 0.22, dy)) * 0.36;
+        r += galleryHorizon * 0.98;
+        g += galleryHorizon * 1.0;
+        b += galleryHorizon * 1.03;
       } else {
-        // 落日金辉：暮蓝天空 + 低角度暖金斜阳（有边界，不铺满）
-        const sky = smoothstep(-0.05, 0.75, dy);
-        r = 0.02 + sky * 0.04;
-        g = 0.024 + sky * 0.06;
-        b = 0.04 + sky * 0.13;
+        // 黄金海岸落日：柔美晚霞渐变天际 + 温暖柔化夕阳金辉（不刺眼、不油腻）
+        const sky = smoothstep(-0.04, 0.88, dy);
+        const skyR = 0.11 + sky * 0.08;
+        const skyG = 0.14 + sky * 0.15;
+        const skyB = 0.22 + sky * 0.30;
+        r = mixVal(0.042, skyR, horizonCut);
+        g = mixVal(0.044, skyG, horizonCut);
+        b = mixVal(0.055, skyB, horizonCut);
 
-        const horizonSunset =
-          Math.exp(-Math.pow((dy - 0.06) / 0.14, 2)) * (0.25 + 0.5 * Math.max(0, dz));
-        r += horizonSunset * 0.55;
-        g += horizonSunset * 0.27;
-        b += horizonSunset * 0.1;
+        const sunFacing = Math.max(0, dx * 0.42 + dz * 0.90);
+        const horizonGlow =
+          horizonCut * (1 - smoothstep(0.01, 0.28, dy)) * (0.55 + 1.25 * sunFacing ** 1.8);
+        r += horizonGlow * 0.68;
+        g += horizonGlow * 0.39;
+        b += horizonGlow * 0.19;
 
-        const sun = sampleSoftboxStrip(dx, dy, dz, 0.42, 0.24, 0.87, 0.85, 0.15, -0.45, 0.45, 0.14, 0.1);
-        r += sun * 5.2;
-        g += sun * 2.9;
-        b += sun * 1.1;
+        const sunScrim = sampleFeatheredScrim(dx, dy, dz, 0.40, 0.24, 0.89, 0.90, 0, -0.44, 0.68, 0.12, 0.038, 0.28);
+        r += sunScrim * 3.8;
+        g += sunScrim * 2.35;
+        b += sunScrim * 1.15;
 
-        const coolSky = sampleSoftboxStrip(dx, dy, dz, -0.82, 0.38, -0.4, 0.3, 0.1, 0.9, 0.9, 0.2, 0.14);
-        r += coolSky * 0.6;
-        g += coolSky * 0.95;
-        b += coolSky * 1.7;
+        const zenithRibbon = sampleFeatheredScrim(dx, dy, dz, -0.22, 0.92, -0.25, 0.8, 0, -0.6, 1.35, 0.20, 0.045, 0.32);
+        r += zenithRibbon * 1.35;
+        g += zenithRibbon * 1.75;
+        b += zenithRibbon * 2.55;
+
+        const backCoolWindow = sampleFeatheredScrim(dx, dy, dz, -0.42, 0.34, -0.85, 0.88, 0, -0.46, 0.95, 0.13, 0.038, 0.24);
+        r += backCoolWindow * 1.35;
+        g += backCoolWindow * 1.75;
+        b += backCoolWindow * 2.45;
       }
 
-      r *= floorShade;
-      g *= floorShade;
-      b *= floorShade;
+      if (preset === 'studio') {
+        r *= floorReflect;
+        g *= floorReflect;
+        b *= floorReflect;
+      }
 
       const idx = (y * width + x) * 4;
       data[idx] = THREE.DataUtils.toHalfFloat(r);
@@ -200,6 +270,10 @@ export function createAutomotiveStudioEnvMap(
   return envTarget.texture;
 }
 
+function mixVal(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
 /**
  * 生成 512x512 细腻微米圆片金属颗粒法线贴图（消除噪点锯齿，展现真实金属烤漆质感）
  */
@@ -208,14 +282,12 @@ export function createMetallicFlakeNormalMap(): THREE.DataTexture {
   const nxArr = new Float32Array(size * size);
   const nyArr = new Float32Array(size * size);
 
-  // 基础平滑法线 (0, 0, 1)
   let seed = 48271;
   const nextRand = () => {
     seed = (seed * 16807) % 2147483647;
     return (seed - 1) / 2147483646;
   };
 
-  // 在可环绕平面分布 16,000 颗微米级扁平圆片金属晶片（半径 1.4 ~ 2.1 px）
   const flakeCount = 16000;
   for (let f = 0; f < flakeCount; f++) {
     const cx = nextRand() * size;
@@ -283,7 +355,6 @@ export function createHamoreyPlateTexture(): THREE.CanvasTexture {
 
   const drawBasePlate = (logoImg?: HTMLImageElement) => {
     if (!ctx) return;
-    // 1. 极简曜石钢琴黑渐变底（媲美保时捷/特斯拉官方展车黑牌）
     const bg = ctx.createLinearGradient(0, 0, 0, height);
     bg.addColorStop(0, '#14151a');
     bg.addColorStop(0.45, '#0b0c10');
@@ -291,19 +362,16 @@ export function createHamoreyPlateTexture(): THREE.CanvasTexture {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, width, height);
 
-    // 顶部极淡棚拍柔光反光带（提升烤漆玻璃感）
     const topSheen = ctx.createLinearGradient(0, 0, 0, height * 0.42);
     topSheen.addColorStop(0, 'rgba(255, 255, 255, 0.065)');
     topSheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = topSheen;
     ctx.fillRect(0, 0, width, height * 0.42);
 
-    // 极细暗银内倒角线（1.5px，低调克制，无土气金框）
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
     ctx.lineWidth = 2;
     ctx.strokeRect(8, 8, width - 16, height - 16);
 
-    // 2. 居中纯白官方「HAMOREY 和膜」Logo（大留白高定呼吸感）
     if (logoImg && logoImg.naturalWidth > 0) {
       const maxW = width * 0.56;
       const maxH = height * 0.60;

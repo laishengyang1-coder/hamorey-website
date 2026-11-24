@@ -217,7 +217,7 @@ export default function ColorPPFPage() {
       imagePosition="center 72%"
       subtitle="HAMOREY ATELIER · COLOR PPF"
       title="和彩 TPU 改色车衣"
-      description="以 8.0 mil 隐形车衣级物理铠甲，重塑原厂高定车漆美学。收录 2026 官方 103 款全系色库，支持全屏 3D 流光样板与 Model 3 / Model Y 实时装车预览。"
+      description="以 8.0 mil 隐形车衣级物理铠甲，重塑原厂高定车漆美学。收录 2026 官方 117 款全系色库，支持全屏 3D 流光样板与 Model 3 / Model Y 实时装车预览。"
     >
       {/* 1. 核心价值与建筑感规格带 */}
       <ScrollReveal>
