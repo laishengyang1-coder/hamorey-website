@@ -33,7 +33,9 @@ import {
 } from '../config/colorStudio';
 import type { CarModelLoadStatus } from '../components/color-studio/ColorStudioCanvas';
 import { SwatchFan } from '../components/color-studio/SwatchFan';
+import { IosGlassSegmented } from '../components/color-studio/IosGlassPill';
 import './ColorStudioFanLayout.css';
+import './ColorStudioIOSLiquidGlass.css';
 import { ColorCatalogDrawer } from '../components/color-studio/ColorCatalogDrawer';
 import { ColorCardModal } from '../components/color-studio/ColorCardModal';
 import { getSwatchOrbVisual } from '../components/color-studio/swatchVisuals';
@@ -216,6 +218,10 @@ export default function ColorStudioPage() {
   const [modelStatus, setModelStatus] = useState<CarModelLoadStatus>('idle');
   const [modelProgress, setModelProgress] = useState<number>(0);
   const [retryToken, setRetryToken] = useState<number>(0);
+  const iosPreview = useMemo(
+    () => searchParams.get('ui') !== 'classic',
+    [searchParams],
+  );
 
   useEffect(() => {
     if (!isEmbed) return;
@@ -364,9 +370,18 @@ export default function ColorStudioPage() {
   return (
     <div
       data-scene={lightingPreset}
+      style={
+        iosPreview
+          ? ({
+              '--ios-accent': activeSwatch.hex,
+              '--ios-shift': activeSwatch.shiftHex || activeSwatch.hex,
+            } as React.CSSProperties)
+          : undefined
+      }
       className={cn(
         'relative w-full h-[100dvh] overflow-hidden overscroll-none bg-[#08090c] text-[#F7F3EB] select-none',
         viewMode === 'swatch' && '_hsl_p',
+        iosPreview && 'ios26-root',
       )}
     >
       {!isAuthorizedHost && (
@@ -384,88 +399,174 @@ export default function ColorStudioPage() {
       {/* 2. 顶部高定建筑感导航栏（适配刘海屏与小程序安全区） */}
       <header className="absolute top-0 left-0 right-0 z-20 px-3 pt-[max(0.6rem,env(safe-area-inset-top))] pb-2 md:px-6 md:py-4 flex items-center justify-between gap-1.5 md:gap-2 pointer-events-none">
         {/* 左侧：返回 + 品牌标识 */}
-        <div className="flex items-center gap-1.5 md:gap-3 pointer-events-auto whitespace-nowrap min-w-0">
+        <div className="flex items-center gap-1.5 md:gap-2.5 pointer-events-auto whitespace-nowrap min-w-0">
           {!isEmbed && (
             <Link
               to="/products/color-ppf"
               aria-label={lang === 'zh' ? '返回官网' : 'Back'}
-              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full bg-[#0a0b0f]/90 hover:bg-[#14161e] border border-white/12 text-xs text-white/80 transition-colors flex-shrink-0"
+              className={cn(
+                'inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-xs transition-colors flex-shrink-0',
+                iosPreview
+                  ? 'ios26-glass ios26-btn font-medium'
+                  : 'bg-[#0a0b0f]/90 hover:bg-[#14161e] border border-white/12 text-white/80',
+              )}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{lang === 'zh' ? '返回' : 'Back'}</span>
             </Link>
           )}
-          <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#0a0b0f]/90 border border-white/10">
-            <span className="text-[11px] sm:text-xs md:text-sm font-bold tracking-[0.1em] text-[#F7F3EB]">
-              和膜 <span className="text-[#C9A86A]">HAMOREY</span>
+          <div
+            className={cn(
+              'flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full',
+              iosPreview
+                ? 'ios26-glass'
+                : 'bg-[#0a0b0f]/90 border border-white/10',
+            )}
+          >
+            <span
+              className={cn(
+                'text-[11px] sm:text-xs md:text-[13px] font-semibold tracking-[0.06em]',
+                iosPreview ? 'text-[var(--ios-text-primary)]' : 'font-bold tracking-[0.1em] text-[#F7F3EB]',
+              )}
+            >
+              和膜 <span className={iosPreview ? 'opacity-80 font-medium' : 'text-[#C9A86A]'}>HAMOREY</span>
             </span>
-            <span className="hidden sm:inline-block w-px h-3 bg-[#C9A86A]/35" />
-            <span className="hidden sm:inline text-[11px] tracking-widest text-white/60">
+            <span
+              className={cn(
+                'hidden sm:inline-block w-px h-3',
+                iosPreview ? 'bg-[var(--ios-divider)]' : 'bg-[#C9A86A]/35',
+              )}
+            />
+            <span
+              className={cn(
+                'hidden sm:inline text-[11px] tracking-wide',
+                iosPreview ? 'text-[var(--ios-text-secondary)]' : 'tracking-widest text-white/60',
+              )}
+            >
               {lang === 'zh' ? '高定选色工坊' : 'ATELIER STUDIO'}
             </span>
           </div>
         </div>
 
         {/* 桌面端居中：5 大视角分段控制器 */}
-        <nav
-          aria-label="展示模式"
-          className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/25 shadow-2xl pointer-events-auto"
-        >
-          {VIEW_MODES.map((m) => {
-            const active = viewMode === m.key;
-            return (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => handleChangeViewMode(m.key)}
-                className={cn(
-                  'px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap',
-                  active
-                    ? 'bg-[#C9A86A] text-[#090A0D] font-semibold shadow'
-                    : 'text-white/70 hover:text-[#F7F3EB]',
-                )}
-              >
-                {lang === 'zh' ? m.label : m.labelEn}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* 右侧：三档 HDR 灯光切换 + 语言 + 定制选色单 */}
-        <div className="flex items-center gap-1 md:gap-2 pointer-events-auto flex-shrink-0">
-          <div
-            role="group"
-            aria-label={lang === 'zh' ? '影棚光影切换' : 'Studio Lighting'}
-            className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/90 border border-white/12"
+        {iosPreview ? (
+          <nav aria-label="展示模式" className="hidden lg:inline-flex pointer-events-auto">
+            <IosGlassSegmented
+              activeKey={viewMode}
+              className="ios26-glass p-1 rounded-full"
+            >
+              {VIEW_MODES.map((m) => {
+                const active = viewMode === m.key;
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    data-ios-seg={m.key}
+                    data-active={active}
+                    onClick={() => handleChangeViewMode(m.key)}
+                    className="ios26-seg-item px-4 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap"
+                  >
+                    {lang === 'zh' ? m.label : m.labelEn}
+                  </button>
+                );
+              })}
+            </IosGlassSegmented>
+          </nav>
+        ) : (
+          <nav
+            aria-label="展示模式"
+            className="hidden lg:inline-flex items-center p-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/25 shadow-2xl pointer-events-auto"
           >
-            {LIGHTING_PRESETS.map((preset) => {
-              const active = lightingPreset === preset.key;
+            {VIEW_MODES.map((m) => {
+              const active = viewMode === m.key;
               return (
                 <button
-                  key={preset.key}
+                  key={m.key}
                   type="button"
-                  onClick={() => setLightingPreset(preset.key)}
-                  title={lang === 'zh' ? preset.label : preset.labelEn}
+                  onClick={() => handleChangeViewMode(m.key)}
                   className={cn(
-                    'inline-flex items-center gap-1 px-1.5 sm:px-2 md:px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap',
+                    'px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap',
                     active
-                      ? 'bg-white/15 text-[#E5C992] border border-[#C9A86A]/45'
-                      : 'text-white/55 hover:text-white border border-transparent',
+                      ? 'bg-[#C9A86A] text-[#090A0D] font-semibold shadow'
+                      : 'text-white/70 hover:text-[#F7F3EB]',
                   )}
                 >
-                  {renderLightIcon(preset.key)}
-                  <span className="hidden sm:inline">
-                    {lang === 'zh' ? preset.shortLabel : preset.shortLabelEn}
-                  </span>
+                  {lang === 'zh' ? m.label : m.labelEn}
                 </button>
               );
             })}
-          </div>
+          </nav>
+        )}
+
+        {/* 右侧：三档 HDR 灯光切换 + 语言 + 定制选色单 */}
+        <div className="flex items-center gap-1.5 md:gap-2 pointer-events-auto flex-shrink-0">
+          {iosPreview ? (
+            <IosGlassSegmented
+              activeKey={lightingPreset}
+              role="group"
+              aria-label={lang === 'zh' ? '影棚光影切换' : 'Studio Lighting'}
+              className="ios26-glass p-1 rounded-full"
+            >
+              {LIGHTING_PRESETS.map((preset) => {
+                const active = lightingPreset === preset.key;
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    data-ios-seg={preset.key}
+                    data-active={active}
+                    onClick={() => setLightingPreset(preset.key)}
+                    title={lang === 'zh' ? preset.label : preset.labelEn}
+                    className="ios26-seg-item inline-flex items-center gap-1 px-2 md:px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap"
+                  >
+                    {renderLightIcon(preset.key)}
+                    <span className="hidden sm:inline">
+                      {lang === 'zh' ? preset.shortLabel : preset.shortLabelEn}
+                    </span>
+                  </button>
+                );
+              })}
+            </IosGlassSegmented>
+          ) : (
+            <div
+              role="group"
+              aria-label={lang === 'zh' ? '影棚光影切换' : 'Studio Lighting'}
+              className="inline-flex items-center p-0.5 rounded-full bg-[#090a0e]/90 border border-white/12"
+            >
+              {LIGHTING_PRESETS.map((preset) => {
+                const active = lightingPreset === preset.key;
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    onClick={() => setLightingPreset(preset.key)}
+                    title={lang === 'zh' ? preset.label : preset.labelEn}
+                    className={cn(
+                      'inline-flex items-center gap-1 px-1.5 sm:px-2 md:px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap',
+                      active
+                        ? 'bg-white/15 text-[#E5C992] border border-[#C9A86A]/45'
+                        : 'text-white/55 hover:text-white border border-transparent',
+                    )}
+                  >
+                    {renderLightIcon(preset.key)}
+                    <span className="hidden sm:inline">
+                      {lang === 'zh' ? preset.shortLabel : preset.shortLabelEn}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <button
             type="button"
             onClick={() => setLang((prev) => (prev === 'zh' ? 'en' : 'zh'))}
-            className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#090a0e]/90 hover:bg-[#14161e] border border-white/15 text-[11px] font-mono font-semibold flex items-center justify-center transition-colors"
+            className={cn(
+              'w-8 h-8 md:w-9 md:h-9 rounded-full text-[11px] font-semibold flex items-center justify-center',
+              iosPreview
+                ? 'ios26-glass ios26-btn'
+                : 'bg-[#090a0e]/90 hover:bg-[#14161e] border border-white/15 font-mono transition-colors',
+            )}
             aria-label="切换中英文"
           >
             {lang === 'zh' ? 'EN' : '中'}
@@ -474,7 +575,12 @@ export default function ColorStudioPage() {
           <button
             type="button"
             onClick={() => setCardModalOpen(true)}
-            className="h-8 w-8 sm:w-auto sm:px-3 md:h-9 md:px-3.5 rounded-full bg-[#090a0e]/90 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap"
+            className={cn(
+              'h-8 w-8 sm:w-auto sm:px-3.5 md:h-9 md:px-4 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap',
+              iosPreview
+                ? 'ios26-glass ios26-btn'
+                : 'bg-[#090a0e]/90 hover:bg-[#171922] border border-[#C9A86A]/55 text-[#E5C992] transition-all',
+            )}
             aria-label={lang === 'zh' ? '定制选色单' : 'Spec Card'}
           >
             <Info className="w-3.5 h-3.5" />
@@ -547,57 +653,105 @@ export default function ColorStudioPage() {
 
       {/* 3A. 手机与小程序端紧凑通栏信息胶囊（释放竖屏 3D 视口，不挡车模与球体） */}
       {viewMode !== 'swatch' && (
-        <div className="md:hidden absolute left-3 right-3 top-[calc(3.15rem+env(safe-area-inset-top))] z-20 pointer-events-none flex flex-col gap-1.5">
-          <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 px-3 py-2 shadow-xl">
+        <div className="md:hidden absolute left-3 right-3 top-[calc(3.2rem+env(safe-area-inset-top))] z-20 pointer-events-none flex flex-col gap-1.5">
+          <div
+            className={cn(
+              'pointer-events-auto flex items-center justify-between gap-2 px-3 py-2',
+              iosPreview
+                ? 'ios26-glass ios26-glass-strong rounded-[22px]'
+                : 'rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 shadow-xl',
+            )}
+          >
             <button
               type="button"
               onClick={() => setCardModalOpen(true)}
-              className="flex items-center gap-2 min-w-0 text-left"
+              className="flex items-center gap-2.5 min-w-0 text-left"
             >
               <span
-                className="w-6 h-6 rounded-full border border-white/25 flex-shrink-0 overflow-hidden"
+                className="w-7 h-7 rounded-full ring-1 ring-white/30 flex-shrink-0 overflow-hidden shadow-sm"
                 style={getSwatchOrbVisual(activeSwatch, 'bead').style}
               />
               <span className="min-w-0">
-                <span className="block text-sm font-bold text-[#F7F3EB] truncate leading-tight">
+                <span
+                  className={cn(
+                    'block text-[14px] font-semibold truncate leading-tight tracking-[-0.01em]',
+                    iosPreview ? 'text-[var(--ios-text-primary)]' : 'font-bold text-[#F7F3EB]',
+                  )}
+                >
                   {lang === 'zh' ? activeSwatch.name : activeSwatch.nameEn}
                 </span>
-                <span className="block text-[10px] font-mono text-[#C9A86A] truncate leading-tight mt-0.5">
+                <span
+                  className={cn(
+                    'block text-[10px] truncate leading-tight mt-0.5 tabular-nums',
+                    iosPreview ? 'text-[var(--ios-text-secondary)]' : 'font-mono text-[#C9A86A]',
+                  )}
+                >
                   {activeSwatch.code} · {lang === 'zh' ? activeSwatch.finishLabel : activeSwatch.finishLabelEn}
                 </span>
               </span>
             </button>
 
             {viewMode === 'car' || viewMode === 'closeup' ? (
-              <div
-                role="group"
-                aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
-                className="inline-flex items-center p-0.5 rounded-xl bg-black/65 border border-white/12 flex-shrink-0"
-              >
-                {STUDIO_VEHICLES.map((vehicle) => {
-                  const active = vehicleId === vehicle.id;
-                  return (
-                    <button
-                      key={vehicle.id}
-                      type="button"
-                      onClick={() => setVehicleId(vehicle.id)}
-                      className={cn(
-                        'px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap',
-                        active
-                          ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
-                          : 'text-white/65',
-                      )}
-                    >
-                      {vehicle.shortName}
-                    </button>
-                  );
-                })}
-              </div>
+              iosPreview ? (
+                <IosGlassSegmented
+                  activeKey={vehicleId}
+                  role="group"
+                  aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
+                  className="ios26-inner-track flex-shrink-0"
+                  pillClassName="ios26-inner-lens"
+                >
+                  {STUDIO_VEHICLES.map((vehicle) => {
+                    const active = vehicleId === vehicle.id;
+                    return (
+                      <button
+                        key={vehicle.id}
+                        type="button"
+                        data-ios-seg={vehicle.id}
+                        data-active={active}
+                        onClick={() => setVehicleId(vehicle.id)}
+                        className="ios26-seg-item px-2.5 py-1 rounded-xl text-[11px] font-medium whitespace-nowrap"
+                      >
+                        {vehicle.shortName}
+                      </button>
+                    );
+                  })}
+                </IosGlassSegmented>
+              ) : (
+                <div
+                  role="group"
+                  aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
+                  className="inline-flex items-center p-0.5 rounded-xl bg-black/65 border border-white/12 flex-shrink-0"
+                >
+                  {STUDIO_VEHICLES.map((vehicle) => {
+                    const active = vehicleId === vehicle.id;
+                    return (
+                      <button
+                        key={vehicle.id}
+                        type="button"
+                        onClick={() => setVehicleId(vehicle.id)}
+                        className={cn(
+                          'px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap',
+                          active
+                            ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
+                            : 'text-white/65',
+                        )}
+                      >
+                        {vehicle.shortName}
+                      </button>
+                    );
+                  })}
+                </div>
+              )
             ) : (
               <button
                 type="button"
                 onClick={() => handleChangeViewMode('car')}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 active:bg-[#C9A86A] active:text-[#090A0D] border border-white/15 text-[11px] font-semibold whitespace-nowrap flex-shrink-0"
+                className={cn(
+                  'inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap flex-shrink-0',
+                  iosPreview
+                    ? 'ios26-glass ios26-btn rounded-full'
+                    : 'rounded-xl bg-white/10 active:bg-[#C9A86A] active:text-[#090A0D] border border-white/15',
+                )}
               >
                 <Car className="w-3.5 h-3.5" />
                 <span>{lang === 'zh' ? '装车' : 'Car'}</span>
@@ -606,7 +760,14 @@ export default function ColorStudioPage() {
           </div>
 
           {(viewMode === 'car' || viewMode === 'closeup') && modelStatus === 'loading' && (
-            <div className="self-center px-3 py-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/30 flex items-center gap-1.5 text-[11px] text-[#E5C992]">
+            <div
+              className={cn(
+                'self-center px-3.5 py-1.5 flex items-center gap-1.5 text-[11px] tabular-nums',
+                iosPreview
+                  ? 'ios26-dynamic-island'
+                  : 'rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/30 text-[#E5C992]',
+              )}
+            >
               <Loader2 className="w-3 h-3 animate-spin" />
               <span>
                 {lang === 'zh'
@@ -639,33 +800,68 @@ export default function ColorStudioPage() {
       )}
 
       {/* 3B. 桌面端左侧高定色号铭牌卡 */}
-      {viewMode !== 'swatch' && <aside className="hidden md:block absolute md:top-20 md:left-6 z-20 pointer-events-auto md:w-72">
-        <div className="rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+      {viewMode !== 'swatch' && <aside className="hidden md:block absolute md:top-20 md:left-6 z-20 pointer-events-auto md:w-[292px]">
+        <div
+          className={cn(
+            iosPreview
+              ? 'ios26-glass ios26-glass-strong ios26-inspector'
+              : 'rounded-2xl bg-[#090a0e]/90 border border-[#C9A86A]/25 p-3 md:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)]',
+          )}
+        >
           {/* 编号顶标 */}
-          <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-[0.16em] text-[#C9A86A]">
-            <span>
+          <div
+            className={cn(
+              'flex items-center justify-between gap-2 text-[11px]',
+              iosPreview
+                ? 'font-medium tracking-[0.04em] text-[var(--ios-text-secondary)]'
+                : 'text-[10px] font-mono text-[#C9A86A] tracking-[0.16em]',
+            )}
+          >
+            <span className="tabular-nums">
               {activeSwatch.code} ·{' '}
               {String(activeGlobalIndex + 1).padStart(2, '0')} /{' '}
               {String(COLOR_STUDIO_SWATCHES.length).padStart(2, '0')}
             </span>
-            <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-white/70 tracking-normal">
+            <span
+              className={cn(
+                'px-2 py-0.5 tracking-normal',
+                iosPreview
+                  ? 'ios26-badge-pill text-[10px] font-medium'
+                  : 'rounded bg-white/[0.06] text-white/70',
+              )}
+            >
               {HECAI_SPEC.thickness} TPU
             </span>
           </div>
 
           {/* 主副标题 */}
-          <div className="mt-1.5 md:mt-2 flex items-center gap-2.5">
+          <div className="mt-2 md:mt-2.5 flex items-center gap-3">
             <div
-              className="w-7 h-7 md:hidden rounded-full border border-white/25 flex-shrink-0"
-              style={{
-                background: `radial-gradient(circle at 30% 25%, ${activeSwatch.shiftHex || activeSwatch.hex}, ${activeSwatch.hex} 75%)`,
-              }}
+              className={cn(
+                'rounded-full flex-shrink-0 overflow-hidden',
+                iosPreview
+                  ? 'w-10 h-10 ring-1 ring-white/35 shadow-[0_6px_16px_rgba(0,0,0,0.35)]'
+                  : 'w-7 h-7 md:hidden border border-white/25',
+              )}
+              style={getSwatchOrbVisual(activeSwatch, 'bead').style}
             />
             <div className="min-w-0">
-              <h1 className="text-base md:text-2xl font-display font-bold tracking-wide text-[#F7F3EB] truncate">
+              <h1
+                className={cn(
+                  'truncate',
+                  iosPreview
+                    ? 'text-[22px] font-bold tracking-[-0.02em] leading-tight text-[var(--ios-text-primary)]'
+                    : 'text-base md:text-2xl font-display font-bold tracking-wide text-[#F7F3EB]',
+                )}
+              >
                 {lang === 'zh' ? activeSwatch.name : activeSwatch.nameEn}
               </h1>
-              <p className="text-[11px] text-white/50 font-mono truncate">
+              <p
+                className={cn(
+                  'text-[11px] truncate mt-0.5',
+                  iosPreview ? 'text-[var(--ios-text-secondary)]' : 'text-white/50 font-mono',
+                )}
+              >
                 {lang === 'zh' ? activeSwatch.nameEn : activeSwatch.name} ·{' '}
                 {lang === 'zh' ? activeSwatch.finishLabel : activeSwatch.finishLabelEn}
               </p>
@@ -673,12 +869,22 @@ export default function ColorStudioPage() {
           </div>
 
           {/* 桌面端：质感短评 + 3 项光学指标进度条 */}
-          <div className="hidden md:block mt-3 pt-3 border-t border-white/10 space-y-2.5">
-            <p className="text-xs text-white/70 leading-relaxed">
+          <div
+            className={cn(
+              'hidden md:block mt-3.5 pt-3.5 border-t space-y-3',
+              iosPreview ? 'ios26-inspector-divider' : 'border-white/10',
+            )}
+          >
+            <p
+              className={cn(
+                'text-xs leading-relaxed',
+                iosPreview ? 'text-[var(--ios-text-secondary)]' : 'text-white/70',
+              )}
+            >
               {lang === 'zh' ? activeSwatch.tagline : activeSwatch.taglineEn}
             </p>
 
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-0.5">
               {[
                 {
                   k: lang === 'zh' ? '镜面清漆' : 'Clearcoat Gloss',
@@ -693,15 +899,36 @@ export default function ColorStudioPage() {
                   v: activeSwatch.optics.shift,
                 },
               ].map((metric) => (
-                <div key={metric.k} className="flex items-center gap-2 text-[11px]">
-                  <span className="w-16 text-white/50 flex-shrink-0">{metric.k}</span>
-                  <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
+                <div key={metric.k} className="flex items-center gap-2.5 text-[11px]">
+                  <span
+                    className={cn(
+                      'w-14 flex-shrink-0',
+                      iosPreview ? 'text-[var(--ios-text-secondary)]' : 'w-16 text-white/50',
+                    )}
+                  >
+                    {metric.k}
+                  </span>
+                  <div
+                    className={cn(
+                      'flex-1 overflow-hidden',
+                      iosPreview ? 'ios26-meter-track' : 'h-1 rounded-full bg-white/10',
+                    )}
+                  >
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#C9A86A] to-[#f0d8a8] transition-all duration-500"
+                      className={cn(
+                        iosPreview
+                          ? 'ios26-meter-fill'
+                          : 'h-full rounded-full bg-gradient-to-r from-[#C9A86A] to-[#f0d8a8] transition-all duration-500',
+                      )}
                       style={{ width: `${metric.v}%` }}
                     />
                   </div>
-                  <span className="w-6 text-right font-mono text-white/70">
+                  <span
+                    className={cn(
+                      'w-6 text-right font-mono tabular-nums',
+                      iosPreview ? 'text-[var(--ios-text-primary)] font-medium' : 'text-white/70',
+                    )}
+                  >
                     {metric.v}
                   </span>
                 </div>
@@ -710,16 +937,50 @@ export default function ColorStudioPage() {
           </div>
 
           {/* 快捷动作：装车实看 / 双车型切换（Model 3 焕新版 / Model Y 焕新版） */}
-          <div className="mt-2.5 md:mt-3.5 pt-2.5 md:pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
+          <div
+            className={cn(
+              'mt-3.5 pt-3.5 border-t flex flex-wrap items-center gap-2',
+              iosPreview ? 'ios26-inspector-divider' : 'border-white/10',
+            )}
+          >
             {viewMode !== 'car' && viewMode !== 'closeup' ? (
               <button
                 type="button"
                 onClick={() => handleChangeViewMode('car')}
-                className="w-full h-8 md:h-9 rounded-xl bg-white/10 hover:bg-[#C9A86A] hover:text-[#090A0D] border border-white/15 hover:border-[#C9A86A] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                className={cn(
+                  'w-full h-9 text-xs font-semibold flex items-center justify-center gap-1.5',
+                  iosPreview
+                    ? 'ios26-glass ios26-btn rounded-2xl'
+                    : 'rounded-xl bg-white/10 hover:bg-[#C9A86A] hover:text-[#090A0D] border border-white/15 hover:border-[#C9A86A] transition-all',
+                )}
               >
                 <Car className="w-3.5 h-3.5" />
                 <span>{lang === 'zh' ? '装车实看 3D 效果' : 'Preview on 3D Car'}</span>
               </button>
+            ) : iosPreview ? (
+              <IosGlassSegmented
+                activeKey={vehicleId}
+                role="group"
+                aria-label={lang === 'zh' ? '展车车型切换' : 'Vehicle Selector'}
+                className="w-full grid grid-cols-2 ios26-inner-track"
+                pillClassName="ios26-inner-lens"
+              >
+                {STUDIO_VEHICLES.map((vehicle) => {
+                  const active = vehicleId === vehicle.id;
+                  return (
+                    <button
+                      key={vehicle.id}
+                      type="button"
+                      data-ios-seg={vehicle.id}
+                      data-active={active}
+                      onClick={() => setVehicleId(vehicle.id)}
+                      className="ios26-seg-item py-1.5 rounded-xl text-[11px] font-medium whitespace-nowrap text-center"
+                    >
+                      {lang === 'zh' ? vehicle.name : vehicle.shortName}
+                    </button>
+                  );
+                })}
+              </IosGlassSegmented>
             ) : (
               <div
                 role="group"
@@ -749,9 +1010,16 @@ export default function ColorStudioPage() {
 
             {(viewMode === 'car' || viewMode === 'closeup') &&
               modelStatus === 'loading' && (
-                <div className="w-full flex items-center justify-center gap-1.5 text-[11px] text-[#E5C992] py-0.5">
+                <div
+                  className={cn(
+                    'w-full flex items-center justify-center gap-1.5 text-[11px]',
+                    iosPreview
+                      ? 'ios26-dynamic-island py-1.5 px-3 mt-1'
+                      : 'text-[#E5C992] py-0.5',
+                  )}
+                >
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>
+                  <span className="tabular-nums">
                     {lang === 'zh'
                       ? `加载${vehicleId === 'modely' ? ' Model Y ' : ' Model 3 '}模型 ${modelProgress}%`
                       : `Loading ${vehicleId === 'modely' ? 'Model Y' : 'Model 3'} ${modelProgress}%`}
@@ -786,7 +1054,12 @@ export default function ColorStudioPage() {
       </aside>}
 
       {/* 4. 底部一体式控制台（移动端与小程序底部安全区适配 + 高定流光色珠胶片轨） */}
-      <footer className="absolute bottom-0 left-0 right-0 z-20 px-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-1.5 md:px-6 md:pb-5 flex flex-col items-center gap-1.5 md:gap-2 pointer-events-none bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+      <footer
+        className={cn(
+          'absolute bottom-0 left-0 right-0 z-20 px-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-1.5 md:px-6 md:pb-5 flex flex-col items-center gap-1.5 md:gap-2 pointer-events-none',
+          iosPreview ? 'ios26-footer-scrim' : 'bg-gradient-to-t from-black/85 via-black/45 to-transparent',
+        )}
+      >
         {viewMode === 'swatch' && (
           <p className="_hsl_ht">
             {lang === 'zh'
@@ -797,7 +1070,10 @@ export default function ColorStudioPage() {
         {/* 小屏模式切换器 */}
         <nav
           aria-label="展示模式切换"
-          className="lg:hidden inline-flex items-center p-1 rounded-full bg-[#090a0e]/90 border border-[#C9A86A]/25 pointer-events-auto max-w-full overflow-x-auto no-scrollbar"
+          className={cn(
+            'lg:hidden inline-flex items-center p-1 rounded-full pointer-events-auto max-w-full overflow-x-auto no-scrollbar',
+            iosPreview ? 'ios26-glass' : 'bg-[#090a0e]/90 border border-[#C9A86A]/25',
+          )}
         >
           {VIEW_MODES.map((m) => {
             const active = viewMode === m.key;
@@ -808,9 +1084,13 @@ export default function ColorStudioPage() {
                 onClick={() => handleChangeViewMode(m.key)}
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all',
-                  active
-                    ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
-                    : 'text-white/70 hover:text-white',
+                  iosPreview
+                    ? active
+                      ? 'bg-white/25 text-[var(--ios-lens-text)] font-semibold shadow-sm'
+                      : 'text-[var(--ios-text-secondary)]'
+                    : active
+                      ? 'bg-[#C9A86A] text-[#090A0D] font-semibold'
+                      : 'text-white/70 hover:text-white',
                 )}
               >
                 {lang === 'zh' ? m.shortLabel : m.labelEn}
@@ -820,38 +1100,86 @@ export default function ColorStudioPage() {
         </nav>
 
         {/* 高定「流光色珠胶片轨」面板 */}
-        <div className="w-full max-w-4xl rounded-2xl bg-[#090a0e]/90 border border-white/12 px-2.5 py-2 md:px-4 md:py-3 shadow-2xl pointer-events-auto">
+        <div
+          className={cn(
+            'w-full max-w-4xl pointer-events-auto',
+            iosPreview
+              ? 'ios26-glass ios26-glass-strong ios26-dock'
+              : 'rounded-2xl bg-[#090a0e]/90 border border-white/12 px-2.5 py-2 md:px-4 md:py-3 shadow-2xl',
+          )}
+        >
           {/* 轨道顶排：工艺标签 + 操作指引 + 全系色谱典藏入口 */}
-          <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/[0.08]">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              {FINISH_FILTERS.map((f) => {
-                const active = railFinish === f.key;
-                return (
-                  <button
-                    key={f.key}
-                    type="button"
-                    onClick={() => selectFinish(f.key)}
-                    className={cn(
-                      'px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all',
-                      active
-                        ? 'bg-white/14 text-[#E5C992] border border-[#C9A86A]/45'
-                        : 'text-white/55 hover:text-white border border-transparent',
-                    )}
-                  >
-                    {lang === 'zh' ? f.label : f.labelEn}
-                  </button>
-                );
-              })}
-            </div>
+          <div
+            className={cn(
+              'flex items-center justify-between gap-2 pb-2 border-b',
+              iosPreview ? 'ios26-inspector-divider' : 'border-white/[0.08]',
+            )}
+          >
+            {iosPreview ? (
+              <IosGlassSegmented
+                activeKey={railFinish}
+                className="flex items-center gap-0.5 p-0.5 rounded-full overflow-x-auto no-scrollbar"
+                pillClassName="rounded-full"
+              >
+                {FINISH_FILTERS.map((f) => {
+                  const active = railFinish === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      data-ios-seg={f.key}
+                      data-active={active}
+                      onClick={() => selectFinish(f.key)}
+                      className="ios26-seg-item px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap"
+                    >
+                      {lang === 'zh' ? f.label : f.labelEn}
+                    </button>
+                  );
+                })}
+              </IosGlassSegmented>
+            ) : (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {FINISH_FILTERS.map((f) => {
+                  const active = railFinish === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => selectFinish(f.key)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all',
+                        active
+                          ? 'bg-white/14 text-[#E5C992] border border-[#C9A86A]/45'
+                          : 'text-white/55 hover:text-white border border-transparent',
+                      )}
+                    >
+                      {lang === 'zh' ? f.label : f.labelEn}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-            {viewMode !== 'swatch' && <p className="hidden lg:block text-[11px] text-white/40 truncate">
-              {lang === 'zh' ? '拖动 360° 旋转 · 滚轮或双指缩放漆面细节' : 'Drag to orbit 360° · Pinch or scroll to zoom'}
-            </p>}
+            {viewMode !== 'swatch' && (
+              <p
+                className={cn(
+                  'hidden lg:block text-[11px] truncate',
+                  iosPreview ? 'text-[var(--ios-text-muted)]' : 'text-white/40',
+                )}
+              >
+                {lang === 'zh' ? '拖动 360° 旋转 · 滚轮或双指缩放漆面细节' : 'Drag to orbit 360° · Pinch or scroll to zoom'}
+              </p>
+            )}
 
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C9A86A]/15 hover:bg-[#C9A86A]/25 border border-[#C9A86A]/40 text-[11px] font-medium text-[#E5C992] whitespace-nowrap transition-colors flex-shrink-0"
+              className={cn(
+                'inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium whitespace-nowrap flex-shrink-0',
+                iosPreview
+                  ? 'ios26-glass ios26-btn rounded-full text-[var(--ios-text-primary)]'
+                  : 'rounded-lg bg-[#C9A86A]/15 hover:bg-[#C9A86A]/25 border border-[#C9A86A]/40 text-[#E5C992] transition-colors',
+              )}
             >
               <Sparkles className="w-3 h-3" />
               <span>{lang === 'zh' ? '全系色谱典藏' : 'Archive'}</span>
@@ -866,7 +1194,12 @@ export default function ColorStudioPage() {
                 type="button"
                 aria-label={lang === 'zh' ? '向左滑动色珠' : 'Scroll swatches left'}
                 onClick={() => scrollRailBy(-1)}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] flex items-center justify-center transition-colors"
+                className={cn(
+                  'absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center',
+                  iosPreview
+                    ? 'ios26-glass ios26-btn'
+                    : 'bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] transition-colors',
+                )}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -877,7 +1210,12 @@ export default function ColorStudioPage() {
                 type="button"
                 aria-label={lang === 'zh' ? '向右滑动色珠' : 'Scroll swatches right'}
                 onClick={() => scrollRailBy(1)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] flex items-center justify-center transition-colors"
+                className={cn(
+                  'absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center',
+                  iosPreview
+                    ? 'ios26-glass ios26-btn'
+                    : 'bg-[#0b0d12]/95 hover:bg-[#C9A86A] text-[#E5C992] hover:text-[#090A0D] border border-[#C9A86A]/40 shadow-[0_4px_14px_rgba(0,0,0,0.75)] transition-colors',
+                )}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -935,7 +1273,7 @@ export default function ColorStudioPage() {
                 }
               }}
               className={cn(
-                'flex items-center gap-1.5 md:gap-3 overflow-x-auto pb-0.5 px-1 no-scrollbar touch-pan-x select-none',
+                'flex items-center gap-1.5 md:gap-2.5 overflow-x-auto py-1 px-1 no-scrollbar touch-pan-x select-none',
                 railDragging ? 'cursor-grabbing' : 'md:cursor-grab',
               )}
             >
@@ -952,18 +1290,26 @@ export default function ColorStudioPage() {
                       selectFromControls(swatch);
                     }}
                     className={cn(
-                      'group flex flex-col items-center gap-1 px-1 sm:px-1.5 py-1 rounded-xl transition-all flex-shrink-0 min-w-[50px] md:min-w-[60px]',
-                      selected
-                        ? 'bg-white/[0.08]'
-                        : 'hover:bg-white/[0.04]',
+                      'group flex flex-col items-center gap-1 px-1 sm:px-1.5 py-1.5 flex-shrink-0 min-w-[52px] md:min-w-[62px]',
+                      iosPreview
+                        ? 'ios26-bead-btn'
+                        : cn(
+                            'rounded-xl transition-all',
+                            selected ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]',
+                          ),
                     )}
                   >
                     <span
                       className={cn(
-                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative overflow-hidden transition-transform duration-200',
-                        selected
-                          ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
-                          : 'group-hover:scale-105 ring-1 ring-white/20',
+                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full relative overflow-hidden',
+                        iosPreview
+                          ? 'ios26-bead-orb ring-1 ring-white/25'
+                          : cn(
+                              'transition-transform duration-200',
+                              selected
+                                ? 'scale-110 ring-2 ring-[#C9A86A] ring-offset-2 ring-offset-[#090a0e]'
+                                : 'group-hover:scale-105 ring-1 ring-white/20',
+                            ),
                       )}
                       style={orb.style}
                     >
@@ -982,8 +1328,14 @@ export default function ColorStudioPage() {
                     </span>
                     <span
                       className={cn(
-                        'text-[10px] leading-tight truncate max-w-[54px] md:max-w-[60px]',
-                        selected ? 'text-[#E5C992] font-semibold' : 'text-white/60',
+                        'leading-tight truncate max-w-[58px] md:max-w-[64px]',
+                        iosPreview
+                          ? selected
+                            ? 'text-[11px] tracking-[-0.01em] text-[var(--ios-text-primary)] font-semibold'
+                            : 'text-[11px] tracking-[-0.01em] text-[var(--ios-text-secondary)] font-medium'
+                          : selected
+                            ? 'text-[10px] text-[#E5C992] font-semibold'
+                            : 'text-[10px] text-white/60',
                       )}
                     >
                       {lang === 'zh' ? swatch.name : swatch.code}

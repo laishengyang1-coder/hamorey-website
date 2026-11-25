@@ -1,0 +1,456 @@
+/* ============================================================================
+ * iOS 26 Liquid Glass (液态玻璃) Design System — Local Interactive Preview
+ * 核心特征：
+ * 1. 自适应明暗液态玻璃（暗棚/落日呈通透深邃黑曜液态玻璃；白棚展厅自动切换为清澈磨砂日光白玻璃）
+ * 2. 光学折射 1px 镜面内描边 + 顶部高光脊线 + 跟随当前车漆色号的微弱折射色晕（--ios-accent）
+ * 3. Apple 弹簧阻尼滑动透镜（cubic-bezier(0.30, 1.28, 0.38, 1)）与按压弹性回弹（:active scale 0.94）
+ * 4. 同心圆角几何（外框 28px -> 内轨 16px -> 选中透镜 12px -> 悬浮胶囊 999px）
+ * 5. SF Pro / PingFang SC 苹果系统排版层级 + 等宽数字表盘指标
+ * ============================================================================ */
+
+.ios26-root {
+  --ios-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --ios-spring: cubic-bezier(0.28, 1.26, 0.36, 1);
+  --ios-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Dark Studio Liquid Glass Tokens (default) */
+  --ios-glass-bg: rgba(24, 26, 34, 0.44);
+  --ios-glass-bg-strong: rgba(22, 24, 32, 0.56);
+  --ios-glass-bg-hover: rgba(42, 46, 58, 0.56);
+  --ios-glass-border: rgba(255, 255, 255, 0.22);
+  --ios-glass-rim-top: rgba(255, 255, 255, 0.48);
+  --ios-glass-rim-bottom: rgba(255, 255, 255, 0.10);
+  --ios-glass-shadow:
+    0 18px 44px -12px rgba(0, 0, 0, 0.58),
+    0 2px 10px -2px rgba(0, 0, 0, 0.32);
+  --ios-text-primary: rgba(255, 255, 255, 0.96);
+  --ios-text-secondary: rgba(235, 238, 248, 0.68);
+  --ios-text-muted: rgba(235, 238, 248, 0.48);
+  --ios-divider: rgba(255, 255, 255, 0.13);
+
+  /* Active Liquid Glass Lens */
+  --ios-lens-bg: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.18) 52%,
+    rgba(255, 255, 255, 0.24) 100%
+  );
+  --ios-lens-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0.5px rgba(255, 255, 255, 0.16),
+    0 6px 18px -4px rgba(0, 0, 0, 0.38);
+  --ios-lens-text: #ffffff;
+
+  font-family: var(--ios-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 自适应日光展厅模式（Gallery = iOS 26 Light Liquid Glass） */
+.ios26-root[data-scene="gallery"] {
+  --ios-glass-bg: rgba(255, 255, 255, 0.54);
+  --ios-glass-bg-strong: rgba(255, 255, 255, 0.68);
+  --ios-glass-bg-hover: rgba(255, 255, 255, 0.78);
+  --ios-glass-border: rgba(255, 255, 255, 0.78);
+  --ios-glass-rim-top: rgba(255, 255, 255, 0.96);
+  --ios-glass-rim-bottom: rgba(15, 23, 42, 0.08);
+  --ios-glass-shadow:
+    0 18px 44px -14px rgba(15, 23, 42, 0.16),
+    0 2px 10px -2px rgba(15, 23, 42, 0.07);
+  --ios-text-primary: rgba(17, 20, 28, 0.94);
+  --ios-text-secondary: rgba(17, 20, 28, 0.64);
+  --ios-text-muted: rgba(17, 20, 28, 0.44);
+  --ios-divider: rgba(15, 23, 42, 0.10);
+
+  --ios-lens-bg: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(246, 248, 252, 0.82) 100%
+  );
+  --ios-lens-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 14px -3px rgba(15, 23, 42, 0.14),
+    0 1px 3px rgba(15, 23, 42, 0.08);
+  --ios-lens-text: #0f141e;
+}
+
+/* 落日模式：微暖琥珀液态玻璃 */
+.ios26-root[data-scene="sunset"] {
+  --ios-glass-bg: rgba(34, 24, 28, 0.44);
+  --ios-glass-bg-strong: rgba(32, 22, 26, 0.56);
+  --ios-glass-rim-top: rgba(255, 236, 214, 0.52);
+}
+
+/* ----------------------------------------------------------------------------
+ * 核心液态玻璃材质基类
+ * ---------------------------------------------------------------------------- */
+.ios26-glass:not(.absolute) {
+  position: relative;
+}
+
+.ios26-glass {
+  background: var(--ios-glass-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.04);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.04);
+  border: 1px solid var(--ios-glass-border) !important;
+  box-shadow:
+    inset 0 1px 0 0 var(--ios-glass-rim-top),
+    inset 0 -1px 0 0 var(--ios-glass-rim-bottom),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.14),
+    var(--ios-glass-shadow) !important;
+  color: var(--ios-text-primary);
+  transition:
+    background-color 0.28s var(--ios-spring-soft),
+    border-color 0.28s var(--ios-spring-soft),
+    box-shadow 0.28s var(--ios-spring-soft),
+    transform 0.34s var(--ios-spring);
+}
+
+/* 顶部纤细折射高光弧线（模拟液态玻璃厚壁折射） */
+.ios26-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      140% 70% at 22% -10%,
+      rgba(255, 255, 255, 0.24) 0%,
+      rgba(255, 255, 255, 0.04) 42%,
+      transparent 70%
+    ),
+    radial-gradient(
+      90% 90% at 88% 115%,
+      color-mix(in srgb, var(--ios-accent, #7dd3fc) 22%, transparent) 0%,
+      transparent 65%
+    );
+  opacity: 0.9;
+}
+
+.ios26-glass-strong {
+  background: var(--ios-glass-bg-strong) !important;
+}
+
+/* 液态玻璃按钮按压弹性（iOS 26 标志性触控反馈） */
+.ios26-btn:not(.absolute) {
+  position: relative;
+}
+
+.ios26-btn {
+  transition:
+    transform 0.36s var(--ios-spring),
+    background-color 0.24s ease,
+    color 0.24s ease,
+    box-shadow 0.28s ease !important;
+}
+
+.ios26-btn:hover {
+  background: var(--ios-glass-bg-hover) !important;
+}
+
+.ios26-btn:active {
+  transform: scale(0.935) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.68),
+    inset 0 0 18px rgba(255, 255, 255, 0.14),
+    0 6px 18px -6px rgba(0, 0, 0, 0.42) !important;
+}
+
+/* 滑动液态玻璃透镜胶囊（移除嵌套 backdrop-filter，杜绝 Safari 闪屏并保持 60fps 流畅） */
+.ios26-sliding-lens {
+  background: var(--ios-lens-bg);
+  box-shadow: var(--ios-lens-shadow);
+  transition:
+    transform 0.42s var(--ios-spring),
+    width 0.42s var(--ios-spring),
+    filter 0.2s ease;
+  will-change: transform, width;
+}
+
+.ios26-sliding-lens.is-gliding {
+  filter: brightness(1.16) saturate(1.2);
+}
+
+/* 分段控制器文字项 */
+.ios26-seg-item {
+  position: relative;
+  z-index: 1;
+  color: var(--ios-text-secondary);
+  transition: color 0.25s ease, transform 0.3s var(--ios-spring);
+}
+
+.ios26-seg-item:hover {
+  color: var(--ios-text-primary);
+}
+
+.ios26-seg-item[data-active="true"] {
+  color: var(--ios-lens-text) !important;
+  font-weight: 600;
+}
+
+.ios26-seg-item:active {
+  transform: scale(0.94);
+}
+
+/* ----------------------------------------------------------------------------
+ * 左侧悬浮液态玻璃铭牌卡片（iOS 26 Floating Inspector Sheet）
+ * ---------------------------------------------------------------------------- */
+@keyframes ios26CardEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(-12px, 10px, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.ios26-inspector {
+  border-radius: 28px !important;
+  padding: 18px !important;
+  contain: layout style;
+  animation: ios26CardEnter 0.48s var(--ios-spring) both;
+}
+
+.ios26-inspector-divider {
+  border-color: var(--ios-divider) !important;
+}
+
+.ios26-badge-pill {
+  background: color-mix(in srgb, var(--ios-text-primary) 10%, transparent);
+  color: var(--ios-text-secondary);
+  border: 1px solid var(--ios-divider);
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 光学进度条：iOS 26 液态玻璃胶囊槽 + 动态车漆折射渐变条 */
+.ios26-meter-track {
+  height: 6px !important;
+  border-radius: 9999px !important;
+  background: color-mix(in srgb, var(--ios-text-primary) 12%, transparent) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.ios26-meter-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ios-accent, #38bdf8) 78%, #ffffff) 0%,
+    color-mix(in srgb, var(--ios-shift, #93c5fd) 65%, #ffffff) 100%
+  ) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ios-accent, #38bdf8) 55%, transparent);
+  transition: width 0.55s var(--ios-spring) !important;
+}
+
+/* 内嵌同心圆角分段容器（Model 3 / Model Y 切换） */
+.ios26-inner-track {
+  border-radius: 16px !important;
+  padding: 4px !important;
+  background: color-mix(in srgb, var(--ios-text-primary) 8%, transparent) !important;
+  border: 1px solid var(--ios-divider) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.16);
+}
+
+.ios26-inner-lens {
+  border-radius: 12px !important;
+}
+
+/* ----------------------------------------------------------------------------
+ * 底部悬浮液态玻璃 Dock（iOS 26 Floating Dock）
+ * ---------------------------------------------------------------------------- */
+.ios26-footer-scrim {
+  background: transparent !important;
+}
+
+.ios26-dock {
+  border-radius: 30px !important;
+  padding: 10px 14px 12px !important;
+  contain: layout style;
+}
+
+/* 弹性色珠 Dock（Apple Store / iOS 26 精致选色环：充足留白、绝不越界压字） */
+.ios26-bead-btn {
+  border-radius: 16px !important;
+  padding: 8px 6px 6px !important;
+  gap: 7px !important;
+  transition:
+    transform 0.36s var(--ios-spring),
+    background-color 0.24s ease !important;
+}
+
+.ios26-bead-btn:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--ios-text-primary) 6%, transparent) !important;
+}
+
+.ios26-bead-btn:active {
+  transform: scale(0.94);
+}
+
+.ios26-bead-btn[aria-pressed="true"] {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ios-text-primary) 12%, transparent) 0%,
+    color-mix(in srgb, var(--ios-text-primary) 5%, transparent) 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+
+.ios26-bead-orb {
+  transition:
+    transform 0.38s var(--ios-spring),
+    box-shadow 0.3s ease !important;
+}
+
+.ios26-bead-btn:hover .ios26-bead-orb {
+  transform: scale(1.06);
+}
+
+.ios26-bead-btn[aria-pressed="true"] .ios26-bead-orb {
+  transform: scale(1.04) !important;
+  box-shadow:
+    0 0 0 2px rgba(18, 20, 26, 0.85),
+    0 0 0 3.5px rgba(255, 255, 255, 0.90),
+    0 4px 12px -2px rgba(0, 0, 0, 0.42) !important;
+}
+
+.ios26-root[data-scene="gallery"] .ios26-bead-btn[aria-pressed="true"] {
+  background: rgba(15, 23, 42, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.ios26-root[data-scene="gallery"] .ios26-bead-btn[aria-pressed="true"] .ios26-bead-orb {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 0 3.5px rgba(15, 23, 42, 0.85),
+    0 4px 10px -2px rgba(15, 23, 42, 0.18) !important;
+}
+
+/* ----------------------------------------------------------------------------
+ * 扇形色卡视图顶部控制栏（_hsl_tb / _hsl_ac）iOS 26 液态玻璃 + 字体与白棚模式完整适配
+ * ---------------------------------------------------------------------------- */
+.ios26-root._hsl_p[data-scene="gallery"] {
+  background: #eef2f7 !important;
+}
+
+.ios26-root._hsl_p[data-scene="gallery"] > header {
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.ios26-root._hsl_p[data-scene="gallery"] ._hsl_tb {
+  background: rgba(238, 242, 247, 0.92) !important;
+}
+
+.ios26-root._hsl_p[data-scene="gallery"] > footer {
+  background: rgba(226, 232, 240, 0.82) !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.ios26-root ._hsl_mt {
+  font-family: var(--ios-font) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.06em !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--ios-text-secondary) !important;
+}
+
+.ios26-root ._hsl_mt span + span {
+  border-left-color: var(--ios-divider) !important;
+}
+
+.ios26-root ._hsl_id h1 {
+  font-family: var(--ios-font) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ios-text-primary) !important;
+}
+
+.ios26-root ._hsl_tt > span {
+  font-family: var(--ios-font) !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.005em !important;
+  color: var(--ios-text-secondary) !important;
+}
+
+.ios26-root ._hsl_ht {
+  font-family: var(--ios-font) !important;
+  color: var(--ios-text-secondary) !important;
+}
+
+.ios26-root ._hsl_ac button {
+  background: var(--ios-glass-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--ios-glass-border) !important;
+  color: var(--ios-text-primary) !important;
+  font-family: var(--ios-font) !important;
+  font-weight: 500 !important;
+  box-shadow:
+    inset 0 1px 0 var(--ios-glass-rim-top),
+    0 8px 22px -8px rgba(0, 0, 0, 0.34) !important;
+  transition: transform 0.34s var(--ios-spring), background-color 0.22s ease !important;
+}
+
+.ios26-root ._hsl_ac button:hover {
+  background: var(--ios-glass-bg-hover) !important;
+}
+
+.ios26-root ._hsl_ac button:active {
+  transform: scale(0.93) !important;
+}
+
+/* 主按钮「装车预览」：高对比 Apple 原生胶囊，确保白/黄/黑全 117 色清晰可读 */
+.ios26-root ._hsl_ac ._b_vh {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #0f141e !important;
+  border-color: rgba(255, 255, 255, 1) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.45) !important;
+}
+
+.ios26-root ._hsl_ac ._b_vh:hover {
+  background: #ffffff !important;
+}
+
+.ios26-root[data-scene="gallery"] ._hsl_ac ._b_vh {
+  background: #11141c !important;
+  color: #ffffff !important;
+  border-color: rgba(17, 20, 28, 0.9) !important;
+  box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.28) !important;
+}
+
+.ios26-root[data-scene="gallery"] ._hsl_ac ._b_vh:hover {
+  background: #1f2430 !important;
+}
+
+/* 灵动岛加载状态胶囊 */
+.ios26-dynamic-island {
+  border-radius: 9999px;
+  background: rgba(14, 16, 22, 0.86);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 12px 32px -6px rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ios26-sliding-lens,
+  .ios26-btn,
+  .ios26-bead-btn,
+  .ios26-bead-orb,
+  .ios26-inspector {
+    transition: none !important;
+    animation: none !important;
+  }
+}
