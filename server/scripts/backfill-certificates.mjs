@@ -40,26 +40,35 @@ async function main() {
   const baseSelect = `SELECT wr.id, wr.certificate_no, wr.customer_name_snapshot, wr.plate_no_snapshot, wr.vin_snapshot,
               wr.vehicle_brand_snapshot, wr.vehicle_model_snapshot, wr.product_name_snapshot, wr.product_model_snapshot,
               wr.store_name_snapshot, wr.installation_date, wr.warranty_expiry_date, wr.warranty_years_snapshot,
-              wr.warranty_code_id, wr.product_model_id,
+              wr.warranty_code_id, wr.product_model_id, DATE_FORMAT(wr.approved_at, '%Y-%m-%d') approved_day,
               wc.code AS warranty_code, pm.warranty_price_cents, p.category AS product_category
        FROM warranty_records wr
        LEFT JOIN warranty_codes wc ON wc.id = wr.warranty_code_id
        LEFT JOIN product_models pm ON pm.id = wr.product_model_id
        LEFT JOIN products p ON p.id = pm.product_id`;
-  const sql = FORCE || CERT_FILTER.length > 0
-    ? `${baseSelect} WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> ''${certFilterSql}`
-    : `${baseSelect} LEFT JOIN certificate_files cf ON cf.warranty_record_id = wr.id
-       WHERE wr.status = 'active' AND wr.certificate_no IS NOT NULL AND wr.certificate_no <> '' AND cf.id IS NULL`;
-
-  const [rows] = await db.query(sql, CERT_FILTER.length > 0 ? CERT_FILTER : []);
+  const missingOnly = !FORCE && !CERT_FILTER.length;
+  const [rows] = await db.query(`SELECT wr.id FROM warranty_records wr
+    WHERE wr.status = 'active' AND COALESCE(wr.certificate_no,'') <> '' ${certFilterSql}
+    ${missingOnly ? 'AND NOT EXISTS (SELECT 1 FROM certificate_files cf WHERE cf.warranty_record_id=wr.id)' : ''}`,
+    CERT_FILTER);
   console.log(`待${FORCE || CERT_FILTER.length > 0 ? '重新生成' : '补'}证书长图: ${rows.length} 条${DRY_RUN ? '（dry-run 仅预览）' : ''}（印章: ${seal ? '已加载' : '无'}）`);
 
   let ok = 0, fail = 0;
   const failedList = [];
-  for (const r of rows) {
-    const certNo = r.certificate_no.trim();
-    const key = `certificates/${certNo}.png`;
+  for (const target of rows) {
+    let certNo = '';
     try {
+      await db.query(DRY_RUN ? 'START TRANSACTION READ ONLY' : 'START TRANSACTION');
+      const [[r]] = await db.query(`${baseSelect} WHERE wr.id=? AND wr.status='active' ${DRY_RUN ? '' : 'FOR UPDATE'}`, [target.id]);
+      if (!r) { await db.rollback(); continue; }
+      certNo = r.certificate_no.trim();
+      const [history] = await db.query(`SELECT file_key,version,DATE_FORMAT(created_at,'%Y-%m-%d') issued
+        FROM certificate_files WHERE warranty_record_id=? ORDER BY version,created_at`, [r.id]);
+      if (missingOnly && history.length) { await db.rollback(); continue; }
+      const first = history[0], latest = history[history.length - 1];
+      const key = `certificates/generated/${certNo}/${crypto.randomUUID()}.png`;
+      const issueDate = first && !first.file_key.startsWith('certificates/generated/')
+        ? first.issued : r.approved_day || first?.issued || new Date().toISOString().slice(0,10);
       // 查部位价值参考
       const [ppRows] = await db.query(
         `SELECT cp.name, cli.price_cents FROM claim_prices cli JOIN claim_parts cp ON cp.id = cli.claim_part_id
@@ -81,29 +90,27 @@ async function main() {
         installationDate: r.installation_date || '-',
         expiryDate: r.warranty_expiry_date || '-',
         warrantyYears: r.warranty_years_snapshot || 1,
-        issueDate: new Date().toISOString().slice(0, 10),
+        issueDate,
         warrantyCode: r.warranty_code,
         warrantyPriceCents: r.warranty_price_cents,
         partPrices,
       };
-      if (DRY_RUN) { ok++; continue; }
+      if (DRY_RUN) { await db.rollback(); ok++; continue; }
       const png = await createCertificateImage(data, seal);
       await new Promise((resolve, reject) =>
         cos.putObject({ Bucket: env.COS_BUCKET, Region: env.COS_REGION, Key: key, Body: Buffer.from(png), ContentType: 'image/png' }, (e) => (e ? reject(e) : resolve())),
       );
-      const existing = await db.query(`SELECT id FROM certificate_files WHERE warranty_record_id = ? LIMIT 1`, [r.id]);
-      if (existing[0].length === 0) {
-        await db.query(
-          `INSERT INTO certificate_files (id, warranty_record_id, file_key, file_url, version, generated_by, created_at)
-           VALUES (?, ?, ?, NULL, 1, NULL, NOW())`,
-          [crypto.randomUUID(), r.id, key],
-        );
-      } else {
-        await db.query(`UPDATE certificate_files SET file_key = ?, version = version + 1, created_at = NOW() WHERE warranty_record_id = ?`, [key, r.id]);
-      }
+      await db.query(
+        `INSERT INTO certificate_files (id, warranty_record_id, file_key, file_url, version, generated_by, created_at)
+         VALUES (?, ?, ?, NULL, ?, NULL, NOW())`,
+        [crypto.randomUUID(), r.id, key, (latest?.version || 0) + 1],
+      );
+      await db.query('DELETE FROM certificate_jobs WHERE warranty_record_id=?', [r.id]);
+      await db.commit();
       ok++;
       if (ok % 100 === 0) console.log(`  进度: ${ok}/${rows.length}`);
     } catch (e) {
+      await db.rollback();
       fail++;
       failedList.push(`${certNo}: ${e.message || e}`);
     }
