@@ -4,6 +4,7 @@
  */
 
 // 占位注释：触发开发者工具重新编译（图片资源改动有时不被监听）
+const { displayVersion } = require('../../../config/version');
 const auth = require('../../../utils/auth');
 const api = require('../../../utils/api');
 
@@ -113,7 +114,7 @@ Page({
     cases: HOME_CONFIG.cases,
     productSeries: HOME_CONFIG.productSeries,
     brand: HOME_CONFIG.brand,
-    version: 'v2.3.4'
+    version: displayVersion()
   },
 
   onShow() {

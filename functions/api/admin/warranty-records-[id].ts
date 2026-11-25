@@ -4,8 +4,9 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryFirst, queryAll, execute, batch, writeOperationLog, getAuthUser } from '../_lib';
+import { queryFirst, queryAll, batch, writeOperationLog, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
+import { editWarranty } from '../_edit-warranty';
 
 interface Env {
   DB: D1Database;
@@ -60,58 +61,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     const recordId = extractId(new URL(context.request.url).pathname);
     if (!recordId) return error('缺少记录 ID', 400);
 
-    const body = (await context.request.json()) as {
-      customer_name?: string;
-      customer_phone?: string;
-      plate_no?: string;
-      vin?: string;
-      vehicle_brand?: string;
-      vehicle_model?: string;
-      installation_date?: string;
-    };
-
-    const updates: string[] = [];
-    const params: unknown[] = [];
-
-    const fieldMap: Record<string, string> = {
-      customer_name: 'customer_name_snapshot',
-      customer_phone: 'customer_phone_snapshot',
-      plate_no: 'plate_no_snapshot',
-      vin: 'vin_snapshot',
-      vehicle_brand: 'vehicle_brand_snapshot',
-      vehicle_model: 'vehicle_model_snapshot',
-      installation_date: 'installation_date',
-    };
-
-    for (const [key, col] of Object.entries(fieldMap)) {
-      if (body[key as keyof typeof body] !== undefined) {
-        updates.push(`${col} = ?`);
-        params.push(body[key as keyof typeof body]);
-      }
-    }
-
-    if (updates.length === 0) return error('没有需要更新的字段', 400);
-
-    updates.push("updated_at = datetime('now')");
-    params.push(recordId);
-
-    await execute(
-      context.env.DB,
-      `UPDATE warranty_records SET ${updates.join(', ')} WHERE id = ?`,
-      ...params,
-    );
-
-    await writeOperationLog(
-      context.env.DB,
-      user.userId,
-      'edit_warranty_record',
-      'warranty_records',
-      recordId,
-      Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined)),
-      getClientIP(context.request),
-    );
-
-    return ok(null, '修改成功');
+    return await editWarranty(context.env, user, recordId, await context.request.json(), getClientIP(context.request));
   } catch (err) {
     console.error('[admin/warranty-records PUT]', err);
     return error('修改记录失败', 500);
@@ -168,6 +118,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     // 数据库级联删除（同一批次，保证原子性）
     const statements: Array<{ sql: string; params: unknown[] }> = [
       { sql: `DELETE FROM warranty_photos WHERE warranty_record_id = ?`, params: [recordId] },
+      { sql: `DELETE FROM certificate_jobs WHERE warranty_record_id = ?`, params: [recordId] },
       { sql: `DELETE FROM certificate_files WHERE warranty_record_id = ?`, params: [recordId] },
       { sql: `DELETE FROM warranty_audit_logs WHERE warranty_record_id = ?`, params: [recordId] },
       // 回收该质保对应的积分发放流水，避免删除后积分仍残留

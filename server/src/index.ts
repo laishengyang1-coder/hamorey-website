@@ -4,8 +4,10 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { corsOrigins, env } from './env.js';
 import { handleFunctionRequest } from './function-router.js';
+import { startHealthMonitoring } from './service-health.js';
 import { healthRouter } from './routes/health.js';
 import { apiEnv } from './cloudflare-env.js';
+import { startCertificateRecovery } from './certificate-recovery.js';
 import { startAutoApproveTimer } from './auto-approve.js';
 import { AUTO_APPROVE_MINUTES } from '../../functions/api/_lib.ts';
 
@@ -58,6 +60,9 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 
 app.listen(env.PORT, () => {
   console.log(`[hamorey-api] listening on ${env.PORT}`);
+
+  startCertificateRecovery(apiEnv);
+  startHealthMonitoring();
 
   // 启动质保记录超时自动审核（默认关闭请设 DISABLE_AUTO_APPROVE=1）
   if (process.env.DISABLE_AUTO_APPROVE !== '1') {

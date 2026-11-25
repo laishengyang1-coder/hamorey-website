@@ -5,6 +5,7 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { queryFirst } from '../_lib';
 import { ok, error } from '../_middleware';
+import { getNationalStoreRanking } from '../_points-ranking';
 
 interface Env { DB: D1Database; }
 
@@ -22,7 +23,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          SELECT o.name, o.province, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.province_org_id
          WHERE wr.status = 'active' AND wr.province_org_id NOT IN (SELECT id FROM excl)
-         GROUP BY o.id ORDER BY count DESC LIMIT 10`
+         GROUP BY o.id ORDER BY count DESC, o.name ASC, o.id ASC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
@@ -32,8 +33,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
            UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
          SELECT o.name, o.province, o.city, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.store_id
-         WHERE wr.status = 'active' AND o.id NOT IN (SELECT id FROM excl)
-         GROUP BY o.id ORDER BY count DESC LIMIT 10`
+         WHERE wr.status = 'active' AND o.type = 'STORE' AND o.id NOT IN (SELECT id FROM excl)
+         GROUP BY o.id ORDER BY count DESC, o.name ASC, o.id ASC LIMIT 10`
       ).all();
       return ok(rows.results || []);
     }
@@ -56,21 +57,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // 门店积分排行榜（**累计获得**口径：只累加发放类流水 award/adjust，
     // 不含冻结 freeze 与兑换扣减 deduct —— 兑换只影响余额，不应把榜单排名拉低）
     if (type === 'points-ranking') {
-      const rows = await db.prepare(
-        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
-           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
-         SELECT o.name, o.province, o.city,
-                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
-                                  ELSE 0 END), 0) AS count
-         FROM points_ledger pl
-         JOIN organizations o ON o.id = pl.organization_id
-         WHERE o.type = 'STORE'
-           AND pl.organization_id NOT IN (SELECT id FROM excl)
-         GROUP BY o.id
-         ORDER BY count DESC, o.name ASC
-         LIMIT 20`
-      ).all();
-      return ok(rows.results || []);
+      const rows = await getNationalStoreRanking(db);
+      return ok(rows.map(({ name, province, city, count }) => ({ name, province, city, count })));
     }
 
     // 质保登记趋势（近30天每日量，补零；MySQL原生日期函数）
@@ -122,21 +110,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const rows = await db.prepare(
         `SELECT o.id, o.name, o.province, o.city, o.status,
                 MAX(wr.created_at) AS last_active,
-                COUNT(wr.id) AS record_count
+                COUNT(wr.id) AS record_count,
+                TIMESTAMPDIFF(DAY, MAX(wr.created_at), NOW()) AS days_since,
+                (MAX(wr.created_at) IS NULL OR MAX(wr.created_at) < DATE_SUB(NOW(), INTERVAL 30 DAY)) AS is_inactive
          FROM organizations o
          LEFT JOIN warranty_records wr ON wr.store_id = o.id AND wr.status NOT IN ('draft')
          WHERE o.type = 'STORE'
          GROUP BY o.id
          ORDER BY
            CASE WHEN last_active IS NULL THEN 1 ELSE 0 END ASC,
-           last_active ASC
-         LIMIT 100`
+           last_active ASC, o.id ASC`
       ).all();
-      const now = Date.now();
       const items = (rows.results || []).map((r: any) => ({
         ...r,
-        days_since: r.last_active ? Math.floor((now - new Date(r.last_active + 'Z').getTime()) / 86400000) : null,
-        is_inactive: r.last_active ? (new Date(r.last_active + 'Z').getTime() < now - 30 * 86400000) : true,
+        is_inactive: Boolean(r.is_inactive),
       }));
       return ok(items);
     }

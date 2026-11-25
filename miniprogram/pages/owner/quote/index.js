@@ -6,6 +6,7 @@
  *  - 天窗冰甲 → 整体报价
  */
 const api = require('../../../utils/api');
+const { formatYuan } = require('../../../utils/price');
 
 // 车身部位分组（PPF/改色共13个漆面）
 const PPF_GROUPS = {
@@ -118,37 +119,24 @@ Page({
       return;
     }
 
+    const parts = prices.map(p => ({ ...p, checked: false, price_fmt: formatYuan(p.price_cents) }));
+    const layout = cat === 'sunroof_film'
+      ? { '天窗冰甲': parts.map(p => p.part_name) }
+      : (cat === 'window_film' ? WF_GROUPS : PPF_GROUPS);
+
+    const byName = new Map(parts.map(p => [p.part_name, p]));
     const groups = [];
-    const groupedNames = new Set();
-
-    if (cat === 'window_film') {
-      // 窗膜：按玻璃位置分组
-      Object.keys(WF_GROUPS).forEach(group => {
-        const parts = [];
-        WF_GROUPS[group].forEach(name => {
-          const found = prices.find(p => p.part_name === name);
-          if (found) { parts.push({ ...found, checked: false, price_fmt: Math.round((found.price_cents || 0) / 100) + '' }); groupedNames.add(name); }
-        });
-        if (parts.length > 0) groups.push({ group, parts });
-      });
-    } else if (cat === 'sunroof_film') {
-      const parts = prices.map(p => ({ ...p, checked: false, price_fmt: Math.round((p.price_cents || 0) / 100) + '' }));
-      if (parts.length > 0) groups.push({ group: '天窗冰甲', parts });
-    } else {
-      // PPF / color_ppf：按车身区域分组
-      Object.keys(PPF_GROUPS).forEach(group => {
-        const parts = [];
-        PPF_GROUPS[group].forEach(name => {
-          const found = prices.find(p => p.part_name === name);
-          if (found) { parts.push({ ...found, checked: false, price_fmt: Math.round((found.price_cents || 0) / 100) + '' }); groupedNames.add(name); }
-        });
-        if (parts.length > 0) groups.push({ group, parts });
-      });
+    for (const group of Object.keys(layout)) {
+      const grouped = [];
+      for (const name of layout[group]) {
+        if (byName.has(name)) {
+          grouped.push(byName.get(name));
+          byName.delete(name);
+        }
+      }
+      if (grouped.length) groups.push({ group, parts: grouped });
     }
-
-    // 未匹配放"其他"
-    const others = prices.filter(p => !groupedNames.has(p.part_name)).map(p => ({ ...p, checked: false, price_fmt: Math.round((p.price_cents || 0) / 100) + '' }));
-    if (others.length > 0) groups.push({ group: '其他', parts: others });
+    if (byName.size) groups.push({ group: '其他', parts: Array.from(byName.values()) });
 
     this.setData({ groupedParts: groups, selectedParts: [], totalPrice: 0 });
   },
@@ -205,8 +193,8 @@ Page({
     this.data.groupedParts.forEach(g => {
       const allChecked = g.parts.length > 0 && g.parts.every(p => p.checked);
       g.groupChecked = allChecked;
-      g.parts.forEach(p => { if (p.checked) { selected.push(p); sum += p.price_cents || 0; } });
+      g.parts.forEach(p => { if (p.checked) { selected.push(p); sum += Number(p.price_cents) || 0; } });
     });
-    this.setData({ selectedParts: selected, totalPrice: Math.round(sum / 100) });
+    this.setData({ selectedParts: selected, totalPrice: formatYuan(sum) });
   }
 });

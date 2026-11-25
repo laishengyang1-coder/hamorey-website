@@ -67,10 +67,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          FROM points_ledger pl
          JOIN organizations o ON o.id = pl.organization_id
          WHERE pl.related_type = 'star_plan' AND pl.change_type = 'award'
-           AND pl.created_at >= ? AND pl.created_at < ?
+           AND pl.created_at >= ? AND pl.created_at < DATE_ADD(?, INTERVAL 1 DAY)
          GROUP BY o.id, o.name, o.code, o.type, o.province, o.city
-         ORDER BY star_points DESC, task_count DESC`,
-        `${startDate} 00:00:00`, `${endDate} 23:59:59`,
+         ORDER BY star_points DESC, task_count DESC, o.name ASC, o.id ASC`,
+        startDate, endDate,
       );
       // 附排名
       const ranked = rows.map((r: any, i: number) => ({ ...r, rank: i + 1 }));
@@ -87,7 +87,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
            FROM points_ledger pl
            JOIN organizations o ON pl.organization_id = o.id
            LEFT JOIN users u ON pl.operator_user_id = u.id
-           ${where} ORDER BY pl.created_at DESC LIMIT ? OFFSET ?`,
+           ${where} ORDER BY pl.created_at DESC, pl.id DESC LIMIT ? OFFSET ?`,
           pageSize, offset),
         queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM points_ledger pl ${where}`),
       ]);

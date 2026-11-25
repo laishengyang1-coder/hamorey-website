@@ -153,7 +153,7 @@ export default function StarPlanPage() {
     { key: 'code', title: '编号', dataIndex: 'code' },
     { key: 'type', title: '类型', dataIndex: 'type', render: (v) => (v === 'PROVINCE' ? '省代' : '门店') },
     { key: 'province', title: '地区', dataIndex: 'province', render: (v, row) => `${(row as LeaderItem).province || ''}${(row as LeaderItem).city ? ' · ' + (row as LeaderItem).city : ''}` },
-    { key: 'task_count', title: '任务数', dataIndex: 'task_count' },
+    { key: 'task_count', title: '加分笔数', dataIndex: 'task_count' },
     { key: 'star_points', title: '繁星积分', dataIndex: 'star_points', render: (v) => <span className="font-semibold text-[#5C1A1A]">{v as number}</span> },
   ];
 
@@ -192,7 +192,7 @@ export default function StarPlanPage() {
             className="rounded-lg bg-[#5C1A1A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A2828] disabled:opacity-50">
             {savingConfig ? '保存中...' : '保存活动期'}
           </button>
-          <span className="text-xs text-gray-400">排行榜按此活动期统计繁星积分</span>
+          <span className="text-xs text-gray-400">排行榜按活动期内的加分流水统计，每次入账计 1 笔</span>
         </div>
       </div>
 

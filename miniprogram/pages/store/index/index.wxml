@@ -34,7 +34,7 @@
 
     <!-- 自店排名 -->
     <view class="my-rank-card" wx:if="{{myRank && myRank.points > 0}}">
-      <view class="my-rank-index">{{myRank.rank > 99 ? '99+' : myRank.rank}}</view>
+      <view class="my-rank-index">{{myRank.rank}}</view>
       <view class="my-rank-info">
         <view class="my-rank-name">{{myRank.name}}</view>
         <view class="my-rank-label">我的排名</view>

@@ -2,10 +2,12 @@
  * 和膜 HAMOREY — 我的（车主 / 访客个人中心）
  */
 
+const { displayVersion } = require('../../../config/version');
 const auth = require('../../../utils/auth');
 
 Page({
   data: {
+    version: displayVersion(),
     isLoggedIn: false,
     userInfo: null,
     role: '',

@@ -59,7 +59,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const conditions = [];
     const params: unknown[] = [user.orgId];
 
-    if (isLookup) {
+    if (isLookup || status === 'available') {
       conditions.push("status IN ('in_stock', 'partial_used')");
       conditions.push('used_count < usage_limit');
     } else if (status) {

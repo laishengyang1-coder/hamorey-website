@@ -4,16 +4,16 @@
   <view class="points-hero">
     <view class="points-hero-balance">
       <view class="points-hero-label">可用积分</view>
-      <view class="points-hero-value">{{points.available || 0}}</view>
+      <view class="points-hero-value">{{points ? points.available : '—'}}</view>
     </view>
     <view class="points-hero-row">
       <view class="points-hero-item">
         <text class="points-hero-item-label">冻结积分</text>
-        <text class="points-hero-item-value">{{points.frozen || 0}}</text>
+        <text class="points-hero-item-value">{{points ? points.frozen : '—'}}</text>
       </view>
       <view class="points-hero-item">
         <text class="points-hero-item-label">账户总积分</text>
-        <text class="points-hero-item-value">{{(points.available || 0) + (points.frozen || 0)}}</text>
+        <text class="points-hero-item-value">{{points ? points.available + points.frozen : '—'}}</text>
       </view>
     </view>
   </view>
@@ -38,7 +38,11 @@
 
     <!-- Loading / Empty / List -->
     <view wx:if="{{loading}}" class="loading-container" style="padding:80rpx"><view class="loading-spinner"></view></view>
-    <view wx:elif="{{!loading && ledger.length === 0}}" class="empty-state" style="padding:60rpx">
+    <view wx:elif="{{error}}" class="empty-state">
+      <view class="empty-state-text">{{error}}</view>
+      <button size="mini" bindtap="retryPage">重试</button>
+    </view>
+    <view wx:elif="{{ledger.length === 0}}" class="empty-state" style="padding:60rpx">
       <view class="empty-state-text">暂无积分记录</view>
     </view>
     <view wx:else class="section-body">
@@ -47,10 +51,16 @@
           <view class="ledger-desc">{{item.reason || fmt.ledger(item.change_type)}}</view>
           <view class="ledger-time">{{fmt.dateTime(item.created_at)}}</view>
         </view>
-        <view class="ledger-amount {{item.points_change > 0 ? 'text-success' : ''}}">
-          {{item.points_change > 0 ? '+' : ''}}{{item.points_change || 0}}
+        <view class="ledger-amount">
+          <view wx:if="{{item.availableDelta || !item.frozenDelta}}" class="{{item.availableDelta > 0 ? 'text-success' : ''}}">可用 {{item.availableText}}</view>
+          <view wx:if="{{item.frozenDelta}}">冻结 {{item.frozenText}}</view>
         </view>
       </view>
+    </view>
+    <view wx:if="{{!loading && !error && pages > 1}}" class="ledger-pagination">
+      <button size="mini" disabled="{{page <= 1}}" bindtap="previousPage">上一页</button>
+      <text>{{page}} / {{pages}} 页 · 共 {{total}} 条</text>
+      <button size="mini" disabled="{{page >= pages}}" bindtap="nextPage">下一页</button>
     </view>
   </view>
 </view>

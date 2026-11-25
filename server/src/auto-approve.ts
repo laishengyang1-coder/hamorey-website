@@ -9,9 +9,8 @@
 // 写审计日志、发放门店积分与省代返利。
 // ============================================================
 
-import { queryFirst, queryAll, execute, batch, generateId, isOrgPointsExempt, AUTO_APPROVE_MINUTES } from '../../functions/api/_lib.ts';
-import { createCertificateImage, type PartPriceItem } from '../../functions/api/_certificate.ts';
-import { getCertificateSeal } from '../../functions/api/_seal.ts';
+import { queryFirst, queryAll, generateId, isOrgPointsExempt, AUTO_APPROVE_MINUTES } from '../../functions/api/_lib.ts';
+import { certificateJob, commitReview, tryIssueCertificate, warrantyExpiry } from '../../functions/api/_certificate-workflow.ts';
 import { notifyWarrantyActivated } from '../../functions/api/_sms.ts';
 
 /** 提交后超过多少分钟仍未审核则自动通过 —— 定义在 functions/api/_lib.ts（唯一来源） */
@@ -19,6 +18,7 @@ import { notifyWarrantyActivated } from '../../functions/api/_sms.ts';
 interface EnvLike {
   DB: any;
   R2: any;
+  CERTIFICATE_BUCKET?: any;
 }
 
 interface PendingRecord {
@@ -103,10 +103,7 @@ export async function runAutoApprove(env: EnvLike): Promise<{ approved: number; 
  */
 async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<boolean> {
   // 计算到期日
-  const installDate = new Date(record.installation_date);
-  const expiryDate = new Date(installDate);
-  expiryDate.setFullYear(expiryDate.getFullYear() + record.warranty_years_snapshot);
-  const expiryDateStr = expiryDate.toISOString().split('T')[0];
+  const expiryDateStr = warrantyExpiry(record.installation_date, record.warranty_years_snapshot);
 
   // 生成证书编号
   const certNo = `HM-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${generateId().slice(0, 8).toUpperCase()}`;
@@ -132,84 +129,25 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
   );
   const rebateRatio = rebateRule?.rebate_ratio ?? 0;
   // 省代返利：四舍五入取整；门店得分>=1 且返利比例>0 时保底返 1 分（避免 1 分奖品返利为 0）
-  let provincePoints = rebateRatio > 0 && storePoints > 0 ? Math.max(1, Math.round(storePoints * rebateRatio)) : 0;
+  let provincePoints = record.province_org_id && rebateRatio > 0 && storePoints > 0 ? Math.max(1, Math.round(storePoints * rebateRatio)) : 0;
   // 豁免组织（如远方集团下属门店）：门店与省代均不发积分、不参与排行等活动
   if (await isOrgPointsExempt(env.DB, record.store_id)) {
     storePoints = 0;
     provincePoints = 0;
   }
 
-  // 生成质保证书长图 PNG
-  let certFileKey = '';
-  try {
-    const seal = await getCertificateSeal();
-    // 补充证书长图所需数据：质保码(卷号) + 官方指导价 + 部位价值参考
-    const codeAndPrice = await queryFirst<{ code: string; warranty_price_cents: number | null; product_category: string | null }>(
-      env.DB,
-      `SELECT wc.code, pm.warranty_price_cents, p.category AS product_category
-       FROM product_models pm
-       JOIN warranty_codes wc ON wc.id = ?
-       LEFT JOIN products p ON p.id = pm.product_id
-       WHERE pm.id = ?`,
-      record.warranty_code_id, record.product_model_id,
-    );
-    const partPriceRows = await queryAll<{ name: string; price_cents: number }>(
-      env.DB,
-      `SELECT cp.name, cli.price_cents FROM claim_prices cli JOIN claim_parts cp ON cp.id = cli.claim_part_id
-       WHERE cli.product_model_id = ? AND cli.status = 'active' ORDER BY cp.category, cp.sort_order`,
-      record.product_model_id,
-    );
-    const partPrices: PartPriceItem[] = partPriceRows.map(r => ({ name: r.name, priceCents: r.price_cents }));
-    const pngBytes = await createCertificateImage({
-      certificateNo: certNo,
-      customerName: record.customer_name_snapshot,
-      // ⚠️ 兜底值须与 functions/api/admin/reviews-[id].ts#handleApprove 保持一致，
-      //    否则「自动审核」与「手动审核」出来的证书图对同一份数据会不一样（2026-09-30 统一为「临时车牌」）
-      plateNo: record.plate_no_snapshot || '临时车牌',
-      vin: record.vin_snapshot || '-',
-      vehicleBrand: record.vehicle_brand_snapshot,
-      vehicleModel: record.vehicle_model_snapshot,
-      productName: record.product_name_snapshot,
-      productCategory: codeAndPrice?.product_category,
-      productModel: record.product_model_snapshot,
-      storeName: record.store_name_snapshot,
-      installationDate: record.installation_date,
-      expiryDate: expiryDateStr,
-      warrantyYears: record.warranty_years_snapshot,
-      issueDate: new Date().toISOString().slice(0, 10),
-      warrantyCode: codeAndPrice?.code,
-      warrantyPriceCents: codeAndPrice?.warranty_price_cents,
-      partPrices,
-    }, seal);
-    certFileKey = `certificates/${certNo}.png`;
-    await env.R2.put(certFileKey, pngBytes, {
-      httpMetadata: { contentType: 'image/png' },
-    });
-  } catch (imgErr) {
-    console.error('[auto-approve] 证书长图生成失败', imgErr);
-    // 证书生成失败不阻塞审核
-    certFileKey = '';
-  }
-
-  // 1. 先更新状态（乐观锁），仅当仍处 pending 时生效。
-  //    affectedRows = 0 说明已被人工审核，直接跳过避免重复发积分。
-  const updateRes = await execute(
-    env.DB,
-    `UPDATE warranty_records SET status = 'active', certificate_no = ?, warranty_expiry_date = ?,
+  const statements: Array<{ sql: string; params: unknown[] }> = [{
+    sql: `UPDATE warranty_records SET status = 'active', certificate_no = ?, warranty_expiry_date = ?,
           approved_at = datetime('now'), approved_by = NULL, store_points_awarded = ?, province_points_awarded = ?,
-          updated_at = datetime('now') WHERE id = ? AND status = 'pending'`,
-    certNo, expiryDateStr, storePoints, provincePoints, record.id,
-  );
-  if (!updateRes?.meta?.changes) {
-    return false;
-  }
-
-  // 2. 其余步骤：质保码+1、审计日志、证书文件、积分流水、操作日志。
-  const statements: Array<{ sql: string; params: unknown[] }> = [];
+          updated_at = datetime('now') WHERE id = ? AND status = 'pending' AND DATE(installation_date) = ?`,
+    params: [certNo, expiryDateStr, storePoints, provincePoints, record.id,
+      new Date(record.installation_date).toISOString().slice(0, 10)],
+  }];
 
   statements.push({
-    sql: `UPDATE warranty_codes SET used_count = used_count + 1,
-          status = CASE WHEN used_count + 1 >= usage_limit THEN 'exhausted' ELSE 'partial_used' END
+    sql: `UPDATE warranty_codes SET status = CASE WHEN status IN ('frozen','voided') THEN status
+            WHEN used_count + 1 >= usage_limit THEN 'exhausted' ELSE 'partial_used' END,
+          used_count = used_count + 1
           WHERE id = ?`,
     params: [record.warranty_code_id],
   });
@@ -221,14 +159,7 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
     params: [auditLogId, record.id, `系统自动通过（提交后超过${AUTO_APPROVE_MINUTES}分钟未有人审核）`],
   });
 
-  if (certFileKey) {
-    const certFileId = generateId();
-    statements.push({
-      sql: `INSERT INTO certificate_files (id, warranty_record_id, file_key, file_url, version, generated_by, created_at)
-            VALUES (?, ?, ?, NULL, 1, NULL, datetime('now'))`,
-      params: [certFileId, record.id, certFileKey],
-    });
-  }
+  statements.push(certificateJob(record.id, null));
 
   const modelName = record.product_name_snapshot || record.product_model_snapshot || '未知型号';
 
@@ -256,20 +187,8 @@ async function autoApproveOne(env: EnvLike, record: PendingRecord): Promise<bool
     params: [generateId(), record.id, JSON.stringify({ certNo }), 'system'],
   });
 
-  try {
-    await batch(env.DB, statements);
-  } catch (err) {
-    if (certFileKey) await env.R2.delete(certFileKey).catch(() => undefined);
-    // 回滚已置为 active 的状态，等待下次重试
-    await execute(
-      env.DB,
-      `UPDATE warranty_records SET status = 'pending', certificate_no = NULL, warranty_expiry_date = NULL,
-            approved_at = NULL, approved_by = NULL, store_points_awarded = 0, province_points_awarded = 0
-       WHERE id = ? AND status = 'active'`,
-      record.id,
-    );
-    throw err;
-  }
+  if (!await commitReview(env.DB, statements)) return false;
+  await tryIssueCertificate(env, record.id);
 
   // 自动通过同样通知车主（短信失败只记日志，不影响审核结果，也不会触发回滚）
   await notifyWarrantyActivated({

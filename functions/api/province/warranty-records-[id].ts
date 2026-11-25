@@ -4,11 +4,13 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryFirst, queryAll, execute, writeOperationLog, getAuthUser } from '../_lib';
+import { queryFirst, queryAll, getAuthUser } from '../_lib';
 import { ok, error, getClientIP } from '../_middleware';
+import { editWarranty } from '../_edit-warranty';
 
 interface Env {
   DB: D1Database;
+  R2: R2Bucket;
 }
 
 function extractId(pathname: string): string {
@@ -58,32 +60,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     const recordId = extractId(new URL(context.request.url).pathname);
     if (!recordId) return error('缺少记录 ID', 400);
 
-    const body = (await context.request.json()) as {
-      customer_name?: string; customer_phone?: string; plate_no?: string;
-      vin?: string; vehicle_brand?: string; vehicle_model?: string;
-      installation_date?: string;
-    };
-
-    const updates: string[] = [];
-    const params: unknown[] = [];
-    const fieldMap: Record<string, string> = {
-      customer_name: 'customer_name_snapshot', customer_phone: 'customer_phone_snapshot',
-      plate_no: 'plate_no_snapshot', vin: 'vin_snapshot',
-      vehicle_brand: 'vehicle_brand_snapshot', vehicle_model: 'vehicle_model_snapshot',
-      installation_date: 'installation_date',
-    };
-
-    for (const [key, col] of Object.entries(fieldMap)) {
-      if (body[key as keyof typeof body] !== undefined) { updates.push(`${col} = ?`); params.push(body[key as keyof typeof body]); }
-    }
-    if (updates.length === 0) return error('没有需要更新的字段', 400);
-    updates.push("updated_at = datetime('now')");
-    params.push(recordId);
-
-    await execute(context.env.DB, `UPDATE warranty_records SET ${updates.join(', ')} WHERE id = ? AND province_org_id = ?`, ...params, user.orgId);
-
-    await writeOperationLog(context.env.DB, user.userId, 'edit_warranty_record', 'warranty_records', recordId, body, getClientIP(context.request));
-    return ok(null, '修改成功');
+    return await editWarranty(context.env, user, recordId, await context.request.json(), getClientIP(context.request));
   } catch (err) {
     console.error('[province/warranty-records PUT]', err);
     return error('修改记录失败', 500);

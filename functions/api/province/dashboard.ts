@@ -9,6 +9,8 @@
 import { type PagesFunction } from '@cloudflare/workers-types';
 import { queryFirst, queryAll, getAuthUser } from '../_lib';
 import { ok, error } from '../_middleware';
+import { countAvailableWarrantyCodes } from '../_warranty-inventory';
+import { getNationalStoreRanking } from '../_points-ranking';
 
 interface Env { DB: D1Database; }
 
@@ -26,8 +28,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       const rows = await queryAll<{ name: string; count: number }>(db,
         `SELECT o.name, COUNT(wr.id) AS count FROM warranty_records wr
          JOIN organizations o ON o.id = wr.store_id
-         WHERE wr.status = 'active' AND o.parent_id = ?
-         GROUP BY o.name ORDER BY count DESC LIMIT 10`,
+         WHERE wr.status = 'active' AND o.type = 'STORE' AND o.parent_id = ?
+         GROUP BY o.id ORDER BY count DESC, o.name ASC, o.id ASC LIMIT 10`,
         orgId
       );
       return ok(rows);
@@ -47,27 +49,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       return ok(rows);
     }
     if (type === 'national-points-ranking') {
-      const rows = await queryAll<{ name: string; count: number; province: string; city: string }>(db,
-        `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
-           UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
-         SELECT o.name, o.province, o.city,
-                COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
-                                  ELSE 0 END), 0) AS count
-         FROM points_ledger pl
-         JOIN organizations o ON o.id = pl.organization_id
-         WHERE o.type = 'STORE'
-           AND pl.organization_id NOT IN (SELECT id FROM excl)
-         GROUP BY o.id
-         ORDER BY count DESC, o.name ASC
-         LIMIT 20`,
-      );
-      return ok(rows);
+      const rows = await getNationalStoreRanking(db);
+      return ok(rows.map(({ name, province, city, count }) => ({ name, province, city, count })));
     }
 
     // 汇总概览
     const [storeCount, codeCount, recordCount, pendingCount, todayRecords, points] = await Promise.all([
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM organizations WHERE parent_id = ? AND type = 'STORE'`, orgId),
-      queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE owner_org_id = ? AND status IN ('in_stock','partial_used')`, orgId),
+      countAvailableWarrantyCodes(db, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE province_org_id = ? AND status NOT IN ('draft')`, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE province_org_id = ? AND status = 'pending'`, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE province_org_id = ? AND date(created_at) = date('now')`, orgId),

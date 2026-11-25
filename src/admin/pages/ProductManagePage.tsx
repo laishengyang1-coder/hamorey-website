@@ -50,7 +50,7 @@ export default function ProductManagePage() {
   const [saving, setSaving] = useState(false);
 
   const formatMoney = (cents?: number | null) => (
-    cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`
+    cents == null ? '-' : `¥${(cents / 100).toLocaleString('zh-CN')}`
   );
 
   const toCents = (value: string) => {

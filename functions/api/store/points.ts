@@ -17,7 +17,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const points = await getOrgPoints(context.env.DB, user!.orgId);
     const ledger = await queryAll(
       context.env.DB,
-      `SELECT * FROM points_ledger WHERE organization_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT * FROM points_ledger WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
       user!.orgId, pageSize, offset,
     );
     const totalRow = await queryAll<{ cnt: number }>(

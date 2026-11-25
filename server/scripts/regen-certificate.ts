@@ -12,7 +12,7 @@
 //   - functions/api/_seal.ts        → getCertificateSeal
 //
 // 写回方式：
-//   - 对象 key 原地覆盖 certificates/<证书号>.png（保证既有链接不失效）
+//   - 历史固定链接原地更新；队列生成的证书每个版本单独保留。
 //   - 覆盖前先把原对象备份到 certificates/backup/<证书号>.<原生成时间戳>.png
 //   - 在 certificate_files 插入一条 version = 当前最大 version + 1 的新行作为留痕
 //     （允许同一 file_key 对应多行，公开下载接口取 version 最大的一行）
@@ -147,11 +147,13 @@ interface WarrantyRecordRow {
   installation_date: string;
   warranty_expiry_date: string | null;
   warranty_years_snapshot: number;
+  approved_date: string | null;
   warranty_code_id: string;
   product_model_id: string;
 }
 
 interface CertFileRow {
+  file_key: string;
   version: number;
   date_str: string; // YYYY-MM-DD（MySQL 直接格式化，避免时区漂移）
   ts_str: string;   // YYYYMMDDHHmmss
@@ -177,6 +179,14 @@ async function main(): Promise<void> {
     apiEnv: Record<string, any>;
   };
   const { pool } = (await import('../src/db.js')) as { pool: { end: () => Promise<void> } };
+  const run = (db: any) => processCertificate(db, apiEnv.R2, args);
+  try {
+    if (args.dryRun) await run(apiEnv.DB);
+    else await apiEnv.DB.transaction(run);
+  } finally { await pool.end(); }
+}
+
+async function processCertificate(DB: any, R2: any, args: Args) {
   const { createCertificateImage } = (await import('../../functions/api/_certificate.ts')) as {
     createCertificateImage: (data: any, seal?: Uint8Array | null) => Promise<Uint8Array>;
   };
@@ -184,42 +194,35 @@ async function main(): Promise<void> {
     getCertificateSeal: () => Promise<Uint8Array | null>;
   };
 
-  // 单例连接池会让进程无法自然退出，结束时显式关闭。
-  const shutdown = async (): Promise<void> => {
-    try { await pool.end(); } catch { /* ignore */ }
-  };
-
-  const DB = apiEnv.DB as any;
-  const R2 = apiEnv.R2 as any;
-
   const { certNo, dryRun, issueDate: issueDateOverride } = args;
   const restore = args.restore;
   const restoreBackupKeyOverride = args.backupKey;
-  const fileKey = `certificates/${certNo}.png`;
 
   // ---------- 查记录（按当前数据库数据） ----------
   const record = (await DB.prepare(
     `SELECT id, certificate_no, customer_name_snapshot, plate_no_snapshot, vin_snapshot,
             vehicle_brand_snapshot, vehicle_model_snapshot, product_name_snapshot,
             product_model_snapshot, store_name_snapshot, installation_date,
-            warranty_expiry_date, warranty_years_snapshot, warranty_code_id, product_model_id
-     FROM warranty_records WHERE certificate_no = ? LIMIT 1`,
+            warranty_expiry_date, warranty_years_snapshot, warranty_code_id, product_model_id,
+            DATE_FORMAT(approved_at, '%Y-%m-%d') AS approved_date
+     FROM warranty_records WHERE certificate_no = ? LIMIT 1 ${dryRun ? '' : 'FOR UPDATE'}`,
   ).bind(certNo).first()) as WarrantyRecordRow | null;
 
   if (!record) {
     console.error(`错误：未找到证书号为 ${certNo} 的质保记录（warranty_records 无此 certificate_no）。`);
-    process.exit(1);
+    throw new Error('操作未执行');
   }
 
   // ---------- 查历史证书文件行（用 MySQL 直接格式化日期，规避时区漂移） ----------
   const certRows = (await DB.prepare(
-    `SELECT version, DATE_FORMAT(created_at, '%Y-%m-%d') AS date_str,
+    `SELECT version, file_key, DATE_FORMAT(created_at, '%Y-%m-%d') AS date_str,
             DATE_FORMAT(created_at, '%Y%m%d%H%i%s') AS ts_str
      FROM certificate_files WHERE warranty_record_id = ? ORDER BY version ASC, created_at ASC`,
   ).bind(record.id).all()).results as CertFileRow[];
 
   const originalRow = certRows[0] ?? null;                    // 最早一行 = 原始生成
   const currentRow = certRows[certRows.length - 1] ?? null;   // 最新一行 = 当前对象
+  const fileKey = currentRow?.file_key || `certificates/${certNo}.png`;
   const maxVersion = currentRow ? Number(currentRow.version) : 0;
   const newVersion = maxVersion + 1;
 
@@ -234,13 +237,13 @@ async function main(): Promise<void> {
 
     if (!sourceKey) {
       console.error('错误：无 certificate_files 历史行，无法推断默认备份 key。请用 --backup-key=<key> 指定。');
-      process.exit(1);
+      throw new Error('操作未执行');
     }
 
     const head = await R2.head(sourceKey);
     if (!head) {
       console.error(`错误：备份对象不存在：${sourceKey}。请用 --backup-key=<key> 指定正确的备份 key。`);
-      process.exit(1);
+      throw new Error('操作未执行');
     }
 
     console.log('===== RESTORE（把备份旧图写回，不改数据库）=====');
@@ -253,31 +256,29 @@ async function main(): Promise<void> {
       console.log('---- DRY-RUN：不写任何东西 ----');
       console.log('==================================================');
       console.log('dry-run 结束：未写入对象存储，未写入数据库。');
-      await shutdown();
-      return;
+        return;
     }
 
     const backupObj = await R2.get(sourceKey);
     if (!backupObj) {
       console.error(`错误：读取备份对象失败：${sourceKey}`);
-      process.exit(1);
+      throw new Error('操作未执行');
     }
     await R2.put(fileKey, backupObj.body, {
       httpMetadata: { contentType: backupObj.httpMetadata?.contentType || 'image/png' },
     });
     console.log(`已写回 → ${fileKey}（${backupObj.body.length} 字节）`);
     console.log('未改动 certificate_files / warranty_records / warranty_codes / points_ledger，无需重启 API。');
-    await shutdown();
     return;
   }
 
   const today = new Date().toISOString().slice(0, 10);
   const issueDate = issueDateOverride
-    ?? originalRow?.date_str
-    ?? today;
+    ?? (originalRow?.file_key.startsWith('certificates/generated/') ? record.approved_date : originalRow?.date_str)
+    ?? record.approved_date ?? today;
   const issueDateSource = issueDateOverride
     ? '--issue-date 显式指定'
-    : (originalRow ? `沿用原生成日期 · certificate_files v${originalRow.version}.created_at` : '无历史行，回退为今天');
+    : (originalRow && !originalRow.file_key.startsWith('certificates/generated/') ? '沿用首版生成日期' : record.approved_date ? '沿用审核签发日期' : '按可用签发日期');
 
   // 备份命名用「当前对象」的生成时间戳，避免二次重出时覆盖掉最初的备份。
   const backupTs = currentRow?.ts_str ?? today.replace(/-/g, '') + '000000';
@@ -333,12 +334,11 @@ async function main(): Promise<void> {
     console.log(`质保录入单位: ${data.storeName}`);
     console.log(`部位价值条数: ${partPrices.length}`);
     console.log(`签发日期    : ${issueDate}  [${issueDateSource}]`);
-    console.log(`对象 key    : ${fileKey}（原地覆盖）`);
+    console.log(`现有对象    : ${fileKey}`);
     console.log(`备份 key    : ${backupKey}`);
     console.log(`当前版本    : ${maxVersion} → 新版本 ${newVersion}`);
     console.log('=================================');
     console.log('dry-run 结束：未写入对象存储，未写入数据库。');
-    await shutdown();
     return;
   }
 
@@ -359,27 +359,28 @@ async function main(): Promise<void> {
 
   const png = await createCertificateImage(data, seal);
 
-  // ---------- 原地覆盖上传 ----------
-  await R2.put(fileKey, png, { httpMetadata: { contentType: 'image/png' } });
-  console.log(`已重出并上传 → ${fileKey}（${png.length} 字节）`);
+  const newFileKey = fileKey.startsWith('certificates/generated/')
+    ? `certificates/generated/${certNo}/${randomUUID()}.png` : fileKey;
+  await R2.put(newFileKey, png, { httpMetadata: { contentType: 'image/png' } });
+  console.log(`已重出并上传 → ${newFileKey}（${png.length} 字节）`);
 
   // ---------- 插入留痕行（version = 最大 version + 1） ----------
   await DB.prepare(
     `INSERT INTO certificate_files (id, warranty_record_id, file_key, file_url, version, generated_by, created_at)
      VALUES (?, ?, ?, NULL, ?, NULL, datetime('now'))`,
-  ).bind(randomUUID(), record.id, fileKey, newVersion).run();
-  console.log(`已写入 certificate_files：version=${newVersion}，file_key=${fileKey}`);
+  ).bind(randomUUID(), record.id, newFileKey, newVersion).run();
+  await DB.prepare('DELETE FROM certificate_jobs WHERE warranty_record_id = ?').bind(record.id).run();
+  console.log(`已写入 certificate_files：version=${newVersion}，file_key=${newFileKey}`);
 
   console.log('');
   console.log('完成：');
   console.log(`  证书号    : ${certNo}`);
   console.log(`  车主姓名  : ${data.customerName}`);
   console.log(`  签发日期  : ${issueDate}（${issueDateSource}）`);
-  console.log(`  对象 key  : ${fileKey}`);
+  console.log(`  对象 key  : ${newFileKey}`);
   console.log(`  备份 key  : ${backupKey}`);
   console.log(`  新版本号  : ${newVersion}`);
   console.log('  未改动 warranty_records / warranty_codes / points_ledger，无需重启 API。');
-  await shutdown();
 }
 
 main()

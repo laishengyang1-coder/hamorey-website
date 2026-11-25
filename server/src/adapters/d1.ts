@@ -253,10 +253,30 @@ export class MySqlD1Database {
     return new MySqlD1PreparedStatement(this.pool, sql);
   }
 
-  async batch(statements: MySqlD1PreparedStatement[]): Promise<D1RunResult[]> {
+  private async runTransaction<T>(run: (connection: PoolConnection) => Promise<T>): Promise<T> {
     const connection = await this.pool.getConnection();
     try {
       await connection.beginTransaction();
+      const result = await run(connection);
+      await connection.commit();
+      return result;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  transaction<T>(run: (tx: Pick<D1Database, 'prepare'>) => Promise<T>): Promise<T> {
+    return this.runTransaction(connection => {
+      const tx = { prepare: (sql: string) => new MySqlD1PreparedStatement(connection, sql) };
+      return run(tx as unknown as Pick<D1Database, 'prepare'>);
+    });
+  }
+
+  batch(statements: MySqlD1PreparedStatement[]): Promise<D1RunResult[]> {
+    return this.runTransaction(async connection => {
       const results: D1RunResult[] = [];
       for (const statement of statements) {
         const { sql, params } = statement.execution;
@@ -269,14 +289,8 @@ export class MySqlD1Database {
           },
         });
       }
-      await connection.commit();
       return results;
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
+    });
   }
 }
 

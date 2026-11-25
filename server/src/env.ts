@@ -21,6 +21,7 @@ const envSchema = z.object({
 
   COS_SECRET_ID: z.string().optional(),
   COS_SECRET_KEY: z.string().optional(),
+  COS_HEALTH_KEY: z.string().min(1).optional(),
   COS_BUCKET: z.string().optional(),
   COS_REGION: z.string().default('ap-guangzhou'),
   R2_PUBLIC_BASE_URL: z.string().optional(),

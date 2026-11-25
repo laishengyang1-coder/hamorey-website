@@ -2,6 +2,7 @@
 // PointsLedgerPage — 总部积分流水+人工调整
 // ============================================================
 
+import { pointsChangeColumns } from '../../shared/components/PointsChange';
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
@@ -91,11 +92,7 @@ export default function PointsLedgerPage() {
       const labels: Record<string, string> = { award: '奖励', deduct: '扣减', freeze: '冻结', release: '释放', adjust: '调整', revoke: '撤回' };
       return <StatusBadge status={v as string} label={labels[v as string] || (v as string)} />;
     }},
-    { key: 'points_change', title: '积分变动', dataIndex: 'points_change', render: (v) => (
-      <span className={Number(v) > 0 ? 'text-emerald-600' : Number(v) < 0 ? 'text-red-600' : 'text-gray-500'}>
-        {Number(v) > 0 ? '+' : ''}{v}
-      </span>
-    )},
+    ...pointsChangeColumns,
     { key: 'reason', title: '原因', dataIndex: 'reason', render: (v) => (v as string) || '-' },
     { key: 'created_at', title: '时间', dataIndex: 'created_at', render: (v) => (v as string)?.slice(0, 16) },
   ];

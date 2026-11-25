@@ -163,7 +163,7 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
   const label = valueLabel || '条';
   const visibleItems = items.slice(0, 10);
   const maxCount = items.length > 0 ? items[0].count : 1;
-  const totalCount = items.reduce((s, i) => s + i.count, 0);
+  const totalCount = visibleItems.reduce((s, i) => s + i.count, 0);
 
   return (
     <div className="admin-card p-3.5 h-full flex flex-col">
@@ -246,8 +246,8 @@ function RankingSection({ title, subtitle, valueLabel, items, showProgress }: {
 
           {/* 底部汇总 */}
           <div className="shrink-0 mt-auto pt-1.5 border-t border-[var(--paper-border)] flex items-center justify-between">
-            <span className="text-[10px] text-[var(--paper-muted)]">共 {items.length} 名</span>
-            <span className="text-[10px] text-[var(--paper-muted)]">合计 <span className="font-semibold text-[#5C1A1A]">{totalCount.toLocaleString()}</span> {label}</span>
+            <span className="text-[10px] text-[var(--paper-muted)]">展示 {visibleItems.length} 名</span>
+            <span className="text-[10px] text-[var(--paper-muted)]">榜内合计 <span className="font-semibold text-[#5C1A1A]">{totalCount.toLocaleString()}</span> {label}</span>
           </div>
         </>
       )}

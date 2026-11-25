@@ -7,17 +7,7 @@
 const api = require('../../../utils/api');
 const { warrantyStatus, installPosition } = require('../../../utils/warranty');
 
-function formatWarrantyPrice(cents) {
-  if (cents === null || cents === undefined || cents === '') return '--';
-  const yuan = Math.round(Number(cents) / 100);
-  return `¥${yuan}`;
-}
-
-function formatPriceCents(cents) {
-  if (cents === null || cents === undefined || cents === '') return '--';
-  const yuan = Math.round(Number(cents) / 100);
-  return `¥${yuan.toLocaleString('zh-CN')}`;
-}
+const { formatWarrantyPrice } = require('../../../utils/price');
 
 /** 日期格式化：兼容 ISO 时间戳与 YYYY-MM-DD，输出 YYYY-MM-DD */
 function fmtDate(s) {
@@ -108,7 +98,7 @@ Page({
     partPrices.forEach((p, i) => {
       partCols[i % 2].push({
         name: p.name,
-        priceText: formatPriceCents(p.priceCents)
+        priceText: formatWarrantyPrice(p.priceCents, true)
       });
     });
 

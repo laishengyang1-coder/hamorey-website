@@ -3,6 +3,7 @@
 // 总部实时查看各组织积分情况，点击进入积分明细
 // ============================================================
 
+import { LedgerChangeSummary } from '../../shared/components/PointsChange';
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
@@ -319,9 +320,7 @@ export default function OrgPointsPage() {
                     <div className="min-w-0 mr-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-[var(--paper-text)]">{TYPE_LABELS[l.change_type] || l.change_type}</span>
-                        <span className={`text-xs font-semibold ${l.points_change > 0 ? 'text-emerald-700' : l.points_change < 0 ? 'text-red-600' : 'text-[var(--paper-muted)]'}`}>
-                          {l.points_change > 0 ? '+' : ''}{l.points_change}
-                        </span>
+                        <LedgerChangeSummary row={l} />
                       </div>
                       <div className="mt-0.5 text-xs text-[var(--paper-muted)]">{l.reason || '-'}</div>
                       <div className="mt-0.5 text-[10px] text-[var(--paper-muted)]">

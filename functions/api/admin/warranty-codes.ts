@@ -4,7 +4,8 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { generateId, queryAll, queryFirst, execute, parsePagination, writeOperationLog, getAuthUser } from '../_lib';
+import { generateId, queryAll, queryFirst, batch, parsePagination, getAuthUser } from '../_lib';
+import { availableWarrantyCodeSql } from '../_warranty-inventory';
 import { ok, error, getClientIP, validationError } from '../_middleware';
 
 interface Env {
@@ -17,34 +18,28 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     // 质保码库存树形可视化
     if (url.searchParams.get('type') === 'tree') {
-      const [hq, provinces, stores] = await Promise.all([
-        queryFirst<{ id: string; name: string; total: number; available: number }>(
-          context.env.DB,
-          `SELECT o.id, o.name, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='HQ' GROUP BY o.id`,
-        ),
-        queryAll<{ id: string; name: string; province: string; total: number; available: number }>(
-          context.env.DB,
-          `SELECT o.id, o.name, o.province, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='PROVINCE' GROUP BY o.id ORDER BY total DESC`,
-        ),
-        queryAll<{ id: string; name: string; parent_id: string; province: string; city: string; total: number; available: number }>(
-          context.env.DB,
-          `SELECT o.id, o.name, o.parent_id, o.province, o.city, COUNT(wc.id) AS total, COALESCE(SUM(CASE WHEN wc.status='in_stock' THEN 1 ELSE 0 END),0) AS available FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id=o.id WHERE o.type='STORE' GROUP BY o.id ORDER BY total DESC, o.code ASC`,
-        ),
-      ]);
-      // 按 parent_id 分组门店
-      const storeMap: Record<string, typeof stores> = {};
-      for (const s of stores) {
-        const pid = s.parent_id || '';
-        if (!storeMap[pid]) storeMap[pid] = [];
-        storeMap[pid].push(s);
+      interface StockNode {
+        id: string; type: string; name: string; parent_id: string | null;
+        province: string | null; city: string | null; total: number; available: number;
       }
+      const nodes = await queryAll<StockNode>(context.env.DB,
+        `SELECT o.id, o.type, o.name, o.parent_id, o.province, o.city, COUNT(wc.id) AS total,
+                SUM(CASE WHEN ${availableWarrantyCodeSql} THEN 1 ELSE 0 END) AS available
+         FROM organizations o LEFT JOIN warranty_codes wc ON wc.owner_org_id = o.id
+         WHERE o.type IN ('HQ', 'PROVINCE', 'STORE')
+         GROUP BY o.id ORDER BY total DESC, o.code ASC`,
+      );
+      const hq = nodes.find(node => node.type === 'HQ');
+      const provinces = nodes.filter(node => node.type === 'PROVINCE');
+      const stores = nodes.filter(node => node.type === 'STORE');
+      const provinceIds = new Set(provinces.map(node => node.id));
       const tree = {
         hq: hq ? { name: hq.name, total: hq.total, available: hq.available } : { name: '总部', total: 0, available: 0 },
-        provinces: provinces.map((p) => ({
-          ...p,
-          stores: storeMap[p.id] || [],
-          storeCount: (storeMap[p.id] || []).length,
-        })),
+        provinces: provinces.map(province => {
+          const children = stores.filter(store => store.parent_id === province.id);
+          return { ...province, stores: children, storeCount: children.length };
+        }),
+        ungroupedStores: stores.filter(store => !store.parent_id || !provinceIds.has(store.parent_id)),
       };
       return ok(tree);
     }
@@ -186,20 +181,33 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const batchNo = (body.batch_no && body.batch_no.trim()) || `MANUAL-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;
     const codeId = generateId();
 
-    // 直接分配给门店，状态为 in_stock（可立即用于录入质保）
-    await execute(
-      context.env.DB,
-      `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
-       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 0, 'in_stock', datetime('now'))`,
-      codeId, code, body.product_model_id, model.display_name, batchNo, body.store_id, usageLimit,
-    );
-
-    await writeOperationLog(
-      context.env.DB, user.userId, 'admin_create_warranty_code',
-      'warranty_codes', codeId,
-      { code, product_model_id: body.product_model_id, store_id: body.store_id, batch_no: batchNo, usage_limit: usageLimit },
-      getClientIP(context.request),
-    );
+    const detail = { code, product_model_id: body.product_model_id, store_id: store.id, batch_no: batchNo, usage_limit: usageLimit };
+    try {
+      await batch(context.env.DB, [
+        {
+          sql: `INSERT INTO warranty_codes (id, code, product_model_id, imported_product_name, batch_no, import_batch_id, owner_org_id, usage_limit, used_count, status, created_at)
+                VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 0, 'in_stock', datetime('now'))`,
+          params: [codeId, code, body.product_model_id, model.display_name, batchNo, store.id, usageLimit],
+        },
+        {
+          sql: `INSERT INTO code_allocations (id, warranty_code_id, from_org_id, to_org_id, action, operator_user_id, reason, created_at)
+                VALUES (?, ?, ?, ?, 'allocate', ?, '总部手动建码并首次分配给门店', datetime('now'))`,
+          params: [generateId(), codeId, user.orgId, store.id, user.userId],
+        },
+        {
+          sql: `INSERT INTO operation_logs (id, user_id, action, target_type, target_id, detail_json, ip_address, created_at)
+                VALUES (?, ?, 'admin_create_warranty_code', 'warranty_codes', ?, ?, ?, datetime('now'))`,
+          params: [generateId(), user.userId, codeId, JSON.stringify(detail), getClientIP(context.request)],
+        },
+      ]);
+    } catch (err) {
+      // 两个请求同时通过存在性检查时，以唯一约束裁决并向重复方返回相同的结果。
+      if (err instanceof Error && /Duplicate entry|UNIQUE constraint failed/i.test(err.message) &&
+          await queryFirst(context.env.DB, 'SELECT id FROM warranty_codes WHERE code = ? COLLATE NOCASE', code)) {
+        return error('该质保码已存在', 409);
+      }
+      throw err;
+    }
 
     return ok({ id: codeId, code }, '新增成功，质保码已分配给所选门店，可立即用于录入质保');
   } catch (err) {

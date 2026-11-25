@@ -56,7 +56,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
          FROM points_ledger pl
          JOIN organizations o ON pl.organization_id = o.id
          LEFT JOIN users u ON pl.operator_user_id = u.id
-         ${where} ORDER BY pl.created_at DESC LIMIT ? OFFSET ?`,
+         ${where} ORDER BY pl.created_at DESC, pl.id DESC LIMIT ? OFFSET ?`,
         ...params, pageSize, offset),
       queryFirst<{ cnt: number }>(context.env.DB, `SELECT COUNT(*) AS cnt FROM points_ledger pl ${where}`, ...params),
     ]);

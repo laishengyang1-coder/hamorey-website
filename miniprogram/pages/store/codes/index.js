@@ -12,7 +12,7 @@ Page({
   data: {
     statusTabs: [
       { label: '全部', value: '' },
-      { label: '可用', value: 'in_stock' },
+      { label: '可用', value: 'available' },
       { label: '部分使用', value: 'partial_used' },
       { label: '已用完', value: 'exhausted' }
     ],

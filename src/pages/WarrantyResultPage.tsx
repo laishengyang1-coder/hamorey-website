@@ -9,7 +9,7 @@ import { StatusBadge } from '../shared/components/StatusBadge';
 import type { WarrantyCardData, WarrantyVehicleGroup } from '../types/api';
 
 function formatWarrantyPrice(cents?: number | null): string {
-  return cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+  return cents == null ? '-' : `¥${(cents / 100).toLocaleString('zh-CN')}`;
 }
 
 export default function WarrantyResultPage() {

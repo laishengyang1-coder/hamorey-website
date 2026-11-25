@@ -24,7 +24,7 @@ import bannerImg from '../assets/hamorey/product-ppf.jpg';
 type QueryState = 'idle' | 'loading' | 'success' | 'error' | 'empty';
 
 function formatWarrantyPrice(cents?: number | null): string {
-  return cents == null ? '-' : `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+  return cents == null ? '-' : `¥${(cents / 100).toLocaleString('zh-CN')}`;
 }
 
 function fmtDate(s?: string | null): string {

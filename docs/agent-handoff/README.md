@@ -81,3 +81,5 @@
 - [Codex 工作与接收记录](CODEX.md)
 - [WorkBuddy 工作与接收记录](WORKBUDDY.md)
 - [原有生产交接](../workbuddy-handoff.md)
+
+- 2026-11-25 运行核查修复和微信开发版 2.42 见 [Codex 交接](CODEX.md)。新环境需先创建证书任务表。小程序正式发布由业务方安排。

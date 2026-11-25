@@ -76,7 +76,7 @@ export default function CodeAllocationHistoryPage() {
       key: 'model_name', title: '产品型号', dataIndex: 'model_name',
       render: (value, record) => value || record.imported_product_name || record.model_code || '-',
     },
-    { key: 'from_org_name', title: '转出方', dataIndex: 'from_org_name', render: (value) => value || '总部未分配' },
+    { key: 'from_org_name', title: '转出方', dataIndex: 'from_org_name', render: (value, row) => value || (row.action === 'adjust' ? '未记录' : '总部未分配') },
     { key: 'to_org_name', title: '接收方', dataIndex: 'to_org_name', render: (value) => value || '总部' },
     {
       key: 'action', title: '类型', dataIndex: 'action', width: '92px',

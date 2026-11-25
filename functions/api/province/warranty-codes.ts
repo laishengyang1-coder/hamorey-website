@@ -49,8 +49,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const conditions: string[] = [];
     const params: unknown[] = [effectiveOwner];
 
-    if (status) { conditions.push('status = ?'); params.push(status); }
-    if (transferable) {
+    if (status && status !== 'available') { conditions.push('status = ?'); params.push(status); }
+    if (transferable || status === 'available') {
       conditions.push("status IN ('in_stock', 'partial_used')");
       conditions.push('used_count < usage_limit');
     }

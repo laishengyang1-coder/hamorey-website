@@ -11,9 +11,9 @@ Page({
     storeName: '',
     storeCity: '',
     stats: {
-      recordCount: 0,
-      codeCount: 0,
-      points: 0
+      recordCount: '—',
+      codeCount: '—',
+      points: '—'
     },
     nationalRanking: [],
     myRank: null
@@ -39,28 +39,19 @@ Page({
    * 加载概览数据
    */
   async loadDashboard() {
-    try {
-      // 获取记录数
-      const recordsRes = await api.get('/store/warranty-records', { pageSize: 1 }, { loading: false });
-      // 获取质保码数
-      const codesRes = await api.get('/store/warranty-codes', { pageSize: 1, status: 'in_stock' }, { loading: false });
-      // 获取积分
-      const pointsRes = await api.get('/store/points', {}, { loading: false });
-      // 获取全国积分排行
-      const rankRes = await api.get('/store/dashboard', { type: 'national-points-ranking' }, { loading: false });
-
-      const stats = {
-        recordCount: recordsRes.ok ? (recordsRes.data.total || 0) : 0,
-        codeCount: codesRes.ok ? (codesRes.data.total || 0) : 0,
-        points: pointsRes.ok ? (pointsRes.data.available || 0) : 0
-      };
-
-      const ranking = rankRes.ok ? (rankRes.data.ranking || []) : [];
-      const myRank = rankRes.ok ? (rankRes.data.myRank || null) : null;
-
-      this.setData({ stats, nationalRanking: ranking, myRank });
-    } catch (e) {
-      // 静默处理
+    const [summary, rank] = await Promise.all([
+      api.get('/store/dashboard', {}, { loading: false }),
+      api.get('/store/dashboard', { type: 'national-points-ranking' }, { loading: false }),
+    ]);
+    if (summary.ok) {
+      this.setData({ stats: {
+        recordCount: summary.data.recordCount,
+        codeCount: summary.data.codeCount,
+        points: summary.data.availablePoints,
+      } });
+    }
+    if (rank.ok) {
+      this.setData({ nationalRanking: rank.data.ranking || [], myRank: rank.data.myRank || null });
     }
   },
 

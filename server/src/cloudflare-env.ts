@@ -4,13 +4,18 @@ import { env } from './env.js';
 import { createD1Database } from './adapters/d1.js';
 import { CosR2Bucket, MissingR2Bucket } from './adapters/r2.js';
 
-export function createCloudflareEnv(): Record<string, unknown> {
+export function createCloudflareEnv() {
   const cos = createCosClient();
+  // A stalled upload must release its per-certificate database lock and allow a retry.
+  const certificateCos = createCosClient({ Timeout: 12_000, ChunkRetryTimes: 0 });
 
   return {
     DB: createD1Database(pool),
     R2: cos && env.COS_BUCKET
       ? new CosR2Bucket(cos, env.COS_BUCKET, env.COS_REGION)
+      : new MissingR2Bucket(),
+    CERTIFICATE_BUCKET: certificateCos && env.COS_BUCKET
+      ? new CosR2Bucket(certificateCos, env.COS_BUCKET, env.COS_REGION)
       : new MissingR2Bucket(),
     SITE_URL: env.SITE_URL,
     BRAND_NAME: env.BRAND_NAME,

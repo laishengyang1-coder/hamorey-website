@@ -57,7 +57,7 @@ export default function DashboardPage() {
       finally { setLoading(false); }
     }
     fetchData();
-    apiRequest<{ ranking: RankingItem[]; myRank: MyRank }>('/store/dashboard?type=national-points-ranking')
+    apiRequest<{ ranking: RankingItem[]; myRank: MyRank | null }>('/store/dashboard?type=national-points-ranking')
       .then((res) => { setPointsRanking(res.ranking); setMyRank(res.myRank); })
       .catch(() => {});
   }, []);

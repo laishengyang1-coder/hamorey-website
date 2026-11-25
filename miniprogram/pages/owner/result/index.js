@@ -6,11 +6,7 @@
 const api = require('../../../utils/api');
 const { warrantyStatus } = require('../../../utils/warranty');
 
-function formatWarrantyPrice(cents) {
-  if (cents === null || cents === undefined || cents === '') return '--';
-  const yuan = Math.round(Number(cents) / 100);
-  return `¥${yuan}`;
-}
+const { formatWarrantyPrice } = require('../../../utils/price');
 
 function fmtDate(s) {
   if (!s) return '--';

@@ -17,11 +17,12 @@ interface ProvinceNode extends TreeNode {
   stores: StoreNode[]; storeCount: number;
 }
 interface StoreNode extends TreeNode {
-  id: string; parent_id: string; city: string | null;
+  id: string; parent_id: string | null; city: string | null;
 }
 interface TreeData {
   hq: TreeNode;
   provinces: ProvinceNode[];
+  ungroupedStores?: StoreNode[];
 }
 
 // ─── Layout constants ───
@@ -211,6 +212,16 @@ export function CodeInventoryTree({ data }: { data: TreeData | null }) {
           <TreeNodeGroup key={root.id} node={root} nodeMap={nodeMap} onToggle={toggle} />
         ))}
       </svg>
+      {data.ungroupedStores && data.ungroupedStores.length > 0 && (
+        <section className="mt-4 border-t border-[var(--paper-border)] pt-3 text-sm">
+          <h4 className="font-semibold">未关联省代的门店</h4>
+          <ul className="mt-2 space-y-1">
+            {data.ungroupedStores.map(store => (
+              <li key={store.id}>{store.name} · 总 {store.total} 卷 / 可用 {store.available} 卷</li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

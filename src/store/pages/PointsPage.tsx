@@ -2,6 +2,7 @@
 // Store PointsPage — 门店积分
 // ============================================================
 
+import { pointsChangeColumns } from '../../shared/components/PointsChange';
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../lib/api';
 import { PageHeader } from '../../shared/components/PageHeader';
@@ -37,8 +38,7 @@ export default function PointsPage() {
       const typeMap: Record<string, string> = { award: '获得', deduct: '扣减', freeze: '冻结', release: '释放', adjust: '调整', revoke: '撤回' };
       return <StatusBadge status={typeMap[v as string] || (v as string)} />;
     }},
-    { key: 'points_change', title: '积分变动', dataIndex: 'points_change', render: (v) => <span className={Number(v) > 0 ? 'text-green-600' : Number(v) < 0 ? 'text-red-500' : ''}>{v as number}</span> },
-    { key: 'frozen_change', title: '冻结变动', dataIndex: 'frozen_change', render: (v) => (v as number) !== 0 ? String(v) : '-' },
+    ...pointsChangeColumns,
     { key: 'reason', title: '原因', dataIndex: 'reason' },
   ];
 

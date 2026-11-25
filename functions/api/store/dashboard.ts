@@ -5,8 +5,10 @@
 // ============================================================
 
 import { type PagesFunction } from '@cloudflare/workers-types';
-import { queryFirst, queryAll, getAuthUser } from '../_lib';
+import { queryFirst, getAuthUser } from '../_lib';
 import { ok, error } from '../_middleware';
+import { countAvailableWarrantyCodes } from '../_warranty-inventory';
+import { getNationalStoreRanking } from '../_points-ranking';
 
 interface Env { DB: D1Database; }
 
@@ -21,65 +23,16 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     // 全国积分排行（**累计获得**口径：只累加 award/adjust，兑换/冻结不影响榜单；含自店排名）
     if (type === 'national-points-ranking') {
-      const [rows, myPointsRow] = await Promise.all([
-        queryAll<{ name: string; count: number; province: string; city: string; org_id: string }>(db,
-          `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
-             UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
-           SELECT o.name, o.province, o.city, o.id AS org_id,
-                  COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
-                                    ELSE 0 END), 0) AS count
-           FROM points_ledger pl
-           JOIN organizations o ON o.id = pl.organization_id
-           WHERE o.type = 'STORE'
-             AND pl.organization_id NOT IN (SELECT id FROM excl)
-           GROUP BY o.id
-           ORDER BY count DESC, o.name ASC
-           LIMIT 20`,
-        ),
-        queryFirst<{ points: number }>(db,
-          `SELECT COALESCE(SUM(CASE WHEN change_type IN ('award','adjust') THEN points_change
-                                    ELSE 0 END), 0) AS points
-           FROM points_ledger
-           WHERE organization_id = ?`,
-          orgId,
-        ),
-      ]);
-
-      // 查询自店排名（有多少门店可用积分比我们高）
-      const myPoints = myPointsRow?.points ?? 0;
-      let myRank = rows.length + 1; // 默认排在最末之后
-      if (myPoints > 0) {
-        const rankRow = await queryFirst<{ ranking_position: number }>(db,
-          `WITH RECURSIVE excl AS (SELECT id FROM organizations WHERE points_exempt = 1
-             UNION ALL SELECT o.id FROM organizations o JOIN excl e ON o.parent_id = e.id)
-           SELECT COUNT(*) + 1 AS ranking_position FROM (
-             SELECT o.id, COALESCE(SUM(CASE WHEN pl.change_type IN ('award','adjust') THEN pl.points_change
-                                           ELSE 0 END), 0) AS pts
-             FROM points_ledger pl
-             JOIN organizations o ON o.id = pl.organization_id
-             WHERE o.type = 'STORE'
-               AND pl.organization_id NOT IN (SELECT id FROM excl)
-             GROUP BY o.id
-             HAVING pts > ?
-           ) AS ranked_stores`,
-          myPoints,
-        );
-        myRank = rankRow?.ranking_position ?? 1;
-      }
-
-      // 获取自店名称
-      const store = await queryFirst<{ name: string }>(db,
-        `SELECT name FROM organizations WHERE id = ?`, orgId,
-      );
-
+      const rows = await getNationalStoreRanking(db, orgId);
+      const mine = rows.find(row => row.org_id === orgId);
       return ok({
-        ranking: rows,
-        myRank: { rank: myRank, points: myPoints, name: store?.name || '本店' },
+        ranking: rows.slice(0, 20),
+        myRank: mine ? { rank: mine.position, points: mine.count, name: mine.name } : null,
       });
     }
 
     const [codeCount, recordCount, pendingCount, rejectedCount, points] = await Promise.all([
-      queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_codes WHERE owner_org_id = ? AND status IN ('in_stock','partial_used')`, orgId),
+      countAvailableWarrantyCodes(db, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE store_id = ? AND status NOT IN ('draft')`, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE store_id = ? AND status = 'pending'`, orgId),
       queryFirst<{ cnt: number }>(db, `SELECT COUNT(*) AS cnt FROM warranty_records WHERE store_id = ? AND status = 'rejected'`, orgId),

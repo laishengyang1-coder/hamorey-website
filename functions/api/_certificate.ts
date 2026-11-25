@@ -49,6 +49,7 @@ function esc(s: unknown): string {
 
 function fmtDate(s: string): string {
   if (!s) return '-';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
   const d = new Date(s);
   if (isNaN(d.getTime())) return String(s).slice(0, 10);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -56,7 +57,7 @@ function fmtDate(s: string): string {
 
 function fmtPrice(cents?: number | null): string {
   if (cents == null) return '-';
-  return `¥${Math.round(cents / 100).toLocaleString('zh-CN')}`;
+  return `¥${(cents / 100).toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`;
 }
 
 export function buildCertificateSvg(data: CertificateData, sealBase64?: string | null): string {
