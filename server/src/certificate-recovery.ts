@@ -1,4 +1,14 @@
+import type { Pool, RowDataPacket } from 'mysql2/promise';
 import { tryIssueCertificate, type CertificateEnv } from '../../functions/api/_certificate-workflow.ts';
+
+export async function probeCertificates(database: Pick<Pool, 'query'>) {
+  const [rows] = await database.query<RowDataPacket[]>(`SELECT
+    EXISTS (SELECT 1 FROM certificate_jobs WHERE attempts > 0 OR requested_at < NOW() - INTERVAL 5 MINUTE) AS has_delayed_jobs,
+    EXISTS (SELECT 1 FROM warranty_records wr WHERE wr.status IN ('active','expired')
+      AND COALESCE(wr.approved_at, wr.created_at) < NOW() - INTERVAL 5 MINUTE
+      AND NOT EXISTS (SELECT 1 FROM certificate_files cf WHERE cf.warranty_record_id = wr.id)) AS has_missing_files`);
+  if (Number(rows[0].has_delayed_jobs) > 0 || Number(rows[0].has_missing_files) > 0) throw new Error('Certificate generation is delayed');
+}
 
 export async function recoverCertificates(env: CertificateEnv) {
   // Also discover older interrupted approvals which predate the durable queue.

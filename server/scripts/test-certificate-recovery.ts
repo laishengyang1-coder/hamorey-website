@@ -14,7 +14,7 @@ import { onRequestPut as provinceEdit } from '../../functions/api/province/warra
 import { onRequestPost as approve } from '../../functions/api/admin/reviews-[id]';
 import { onRequestGet as download } from '../../functions/api/public/certificates';
 import { runAutoApprove } from '../src/auto-approve';
-import { recoverCertificates } from '../src/certificate-recovery';
+import { probeCertificates, recoverCertificates } from '../src/certificate-recovery';
 
 const [, , socketPath, childDatabase] = process.argv;
 assert(isAbsolute(socketPath) && (await stat(socketPath)).isSocket(), 'Requires an isolated local MySQL socket');
@@ -107,6 +107,10 @@ async function main() {
     }
     assert(!validInstallDate('2026-02-30'));
     assert.equal(warrantyExpiry('2024-02-29',2),'2026-03-01');
+    await probeCertificates(instance);
+    await sql("INSERT INTO certificate_jobs (warranty_record_id,revision,requested_at) VALUES ('w1','overdue',NOW() - INTERVAL 6 MINUTE)");
+    await assert.rejects(probeCertificates(instance), /generation is delayed/);
+    await sql("DELETE FROM certificate_jobs WHERE revision='overdue'");
     failCos = true;
     const req = () => approve(context('admin/reviews/w1/approve',{}));
     await Promise.all([req(), req(), runAutoApprove(env)]);
@@ -115,6 +119,7 @@ async function main() {
     assert.deepEqual((await sql('SELECT used_count,status FROM warranty_codes'))[0],{used_count:19,status:'partial_used'});
     assert.equal(await count('certificate_files'),0);
     assert.equal((await sql('SELECT attempts FROM certificate_jobs'))[0].attempts,1);
+    await assert.rejects(probeCertificates(instance), /generation is delayed/);
     assert.equal((await publicCert()).status,503);
     assert.equal((await sql("SELECT COUNT(*) n FROM operation_logs WHERE action='certificate_retry_alert'"))[0].n,1);
     const no = (await sql('SELECT certificate_no FROM warranty_records'))[0].certificate_no;
@@ -124,6 +129,7 @@ async function main() {
     await sql('UPDATE certificate_jobs SET next_attempt_at=NOW()');
     await recoverCertificates(env);
     assert.equal(await count('certificate_jobs'),0);
+    await probeCertificates(instance);
     const initial = await publicCert();
     assert.equal(initial.status,200);
     assert.equal(Buffer.from(await initial.arrayBuffer()).subarray(0,8).toString('hex'),'89504e470d0a1a0a');
@@ -170,12 +176,15 @@ async function main() {
     assert.equal(await count('certificate_jobs'),0);
     assert.equal((await publicCert()).status,200);
     await sql('DELETE FROM certificate_files'); // Simulate a pre-migration interrupted approval with no job.
+    await sql("UPDATE warranty_records SET approved_at=NOW() - INTERVAL 6 MINUTE");
+    await assert.rejects(probeCertificates(instance), /generation is delayed/);
     await recoverCertificates(env);
     assert.equal(await count('certificate_files'),1);
     assert.equal(await count('points_ledger'),2);
     assert.equal(await count('warranty_audit_logs'),1);
     assert.equal((await sql('SELECT certificate_no FROM warranty_records'))[0].certificate_no,no);
-    console.log('PASS MySQL: concurrent approval and quota, storage failure and backoff, actual PNG download, scoped edits, four-process signing, interrupted indexing, legacy recovery');
+    await probeCertificates(instance);
+    console.log('PASS MySQL: certificate health SQL (healthy/failed/missing/recovered), concurrent approval and quota, storage failure and backoff, actual PNG download, scoped edits, four-process signing, interrupted indexing, legacy recovery');
   } finally {
     await admin.query('DROP DATABASE ' + database);
     await admin.end();

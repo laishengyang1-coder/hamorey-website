@@ -1,6 +1,7 @@
 import { createCosClient, hasCosConfig } from './cos.js';
 import { pingDatabase, pool } from './db.js';
 import { env } from './env.js';
+import { probeCertificates } from './certificate-recovery.js';
 import { probeCanary } from './storage-canary.js';
 import type { RowDataPacket } from 'mysql2/promise';
 
@@ -35,15 +36,6 @@ async function probeObject() {
   validateRangeRead(await cos.getObject({ Bucket: env.COS_BUCKET, Region: env.COS_REGION, Key: key, Range: 'bytes=0-0' }));
 }
 
-async function probeCertificates() {
-  const [rows] = await pool.query<RowDataPacket[]>(`SELECT
-    EXISTS (SELECT 1 FROM certificate_jobs WHERE attempts > 0 OR requested_at < NOW() - INTERVAL 5 MINUTE) delayed,
-    EXISTS (SELECT 1 FROM warranty_records wr WHERE wr.status IN ('active','expired')
-      AND COALESCE(wr.approved_at, wr.created_at) < NOW() - INTERVAL 5 MINUTE
-      AND NOT EXISTS (SELECT 1 FROM certificate_files cf WHERE cf.warranty_record_id = wr.id)) missing`);
-  if (rows[0].delayed || rows[0].missing) throw new Error('Certificate generation is delayed');
-}
-
 let writeStatus: Check = 'missing';
 let nextWriteAt = 0;
 let writeCheckedAt = 0;
@@ -75,7 +67,7 @@ export function getServiceHealth() {
   if (cached && Date.now() < expires) return Promise.resolve(cached);
   if (!running) {
     running = checkServices({ mysql: pingDatabase, cos: hasCosConfig() ? probeObject : undefined,
-      cosWrite: writeStatus === 'ok' && Date.now() - writeCheckedAt > 17 * 60_000 ? 'error' : writeStatus, certificates: probeCertificates })
+      cosWrite: writeStatus === 'ok' && Date.now() - writeCheckedAt > 17 * 60_000 ? 'error' : writeStatus, certificates: () => probeCertificates(pool) })
       .then(result => {
         cached = result;
         expires = Date.now() + (result.ok ? 30_000 : 5_000);
