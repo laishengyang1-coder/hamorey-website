@@ -380,3 +380,23 @@
 | Git 提交 / 推送 | ✅ `ddb5e4b` 已推送 `origin/main` |
 | 网站部署 | ✅ Run `45357460607` Success，线上入口与 API 健康核验通过 |
 | 小程序 | ❌ 本轮未改 `miniprogram/`（`<web-view>` 直连线上域名自动同步生效） |
+
+## 2026-11-25：3D 高定选色工坊 V8（iOS 26 Liquid Glass 液态玻璃 UI 重塑与流畅度优化，已上线）
+
+- **用户需求**：参照最新 iOS 26 视觉语言与动态交互细节重构选色工坊 UI，并完成流畅度优化、BUG 修复与字体排版统一后部署上线。
+- **基线**：`710208b`。**业务提交**：`22a8802`。
+- **范围**：仅官网前端 `src/`（`ColorStudioPage.tsx`、`ColorStudioIOSLiquidGlass.css`、`IosGlassPill.tsx`）与交接文档；未触碰 `miniprogram/`、`functions/`、`server/`、`migrations/` 与 `scripts/warranty-years.lock.json`。
+
+### 改动清单
+
+| 模块 | 核心改动 | 涉及文件 |
+|---|---|---|
+| iOS 26 液态玻璃设计系统 | 自适应明暗液态玻璃（暗棚/落日深邃黑曜玻璃、展厅白棚自动切换磨砂日光白玻璃 + 深色字）、1px 镜面内描边、随当前车漆变色的折射色晕、同心圆角几何、Apple Store 级精致色珠选中环与全页 `SF Pro / PingFang SC` 等宽数字字体统一；保留 `?ui=classic` URL 回退参数 | `src/pages/ColorStudioIOSLiquidGlass.css`、`src/pages/ColorStudioPage.tsx` |
+| 弹簧滑动玻璃透镜与性能优化 | 新增 `IosGlassSegmented` 弹性滑动玻璃透镜组件（覆盖桌面视角、三档灯光、Model 3/Y 切换、底部工艺筛选与移动端车型切换）；移除嵌套 `backdrop-filter` 与定时器竞态，优化为 `blur(20px) saturate(180%)` + `contain: layout style` + `prefers-reduced-motion` 支持 | `src/components/color-studio/IosGlassPill.tsx`、`src/pages/ColorStudioIOSLiquidGlass.css` |
+| 移动端 HUD 与白棚/浅色对比度修复 | 同步手机端 `3A` 顶部液态玻璃信息胶囊与灵动岛加载条；修复「流光样板 + 展厅」白棚文字对比度与浅色车衣「装车预览」主按钮对比度 | `src/pages/ColorStudioPage.tsx`、`src/pages/ColorStudioIOSLiquidGlass.css` |
+
+### 检查与线上核验（2026-11-25 08:59 Asia/Shanghai）
+
+- **本地验证**：`npm run build`（65 项 API 契约 + 40 项质保年限 + SPA 校验）与 `npm --prefix server run build` 全通；本地 Chrome 桌面端 1440×900（暗棚整车、白棚天鹅白样板）与移动端 390×844 实拍验真均 0 报错、0 溢出。
+- **腾讯云部署**：`22a8802`（Run [45521467498](https://github.com/laishengyang1-coder/hamorey-website/actions/runs/45521467498)）**Success**。
+- **线上核验**：`https://hemoppf.cn/color-studio` 线上入口脚本 `assets/index-DDfEd_dW.js` 与 `22a8802` 一致；`https://api.hemoppf.cn/api/health` 返回 `api/mysql/cos` 全 `ok`。
